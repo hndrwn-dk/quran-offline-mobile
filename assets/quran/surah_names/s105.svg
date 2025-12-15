@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="500" viewBox="0 0 1600 500">
+  <g transform="translate(800,250)">
+    <text xml:space="preserve"
+          id="surahText"
+          x="0" y="0"
+          text-anchor="middle"
+          dominant-baseline="central"
+          direction="rtl"
+          style="font-family:'Thuluth','Amiri Quran','Scheherazade New','Noto Naskh Arabic',serif; font-size:220px; fill:#000000;">
+      سُورَةُ ٱلْفِيل
+    </text>
+  </g>
+</svg>

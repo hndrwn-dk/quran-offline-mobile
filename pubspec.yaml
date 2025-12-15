@@ -1,0 +1,74 @@
+name: quran_offline
+description: A production-ready offline-first Quran reader app with Material 3 design
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_riverpod: ^2.5.1
+  
+  # Database
+  drift: ^2.14.1
+  sqlite3_flutter_libs: ^0.5.18
+  path_provider: ^2.1.2
+  path: ^1.8.3
+  
+  # JSON & Async
+  json_annotation: ^4.8.1
+  
+  # Share
+  share_plus: ^7.2.1
+  
+  # URL Launcher
+  url_launcher: ^6.2.5
+  
+  # Utilities
+  shared_preferences: ^2.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  build_runner: ^2.4.7
+  drift_dev: ^2.14.1
+  json_serializable: ^6.7.1
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.10
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/quran/
+    - assets/quran/surah_names/
+    - assets/fonts/
+    - assets/icon/
+  
+  fonts:
+    - family: UthmanicHafsV22
+      fonts:
+        - asset: assets/fonts/uthmanic_hafs_v22.ttf
+    - family: UthmanicHafs
+      fonts:
+        - asset: assets/fonts/uthmanic_hafs_v22.ttf
+    - family: KFGQPCUthmanic
+      fonts:
+        - asset: assets/fonts/KFGQPC Uthmanic Script HAFS Regular.otf
+    - family: ScheherazadeNew
+      fonts:
+        - asset: assets/fonts/ScheherazadeNew-Regular.ttf
+
+flutter_native_splash:
+  image: assets/icon/splash_icon.png
+  color: "#FFFFFF"
+  color_dark: "#121212"
+  android: true
+  ios: true
+  fullscreen: true
+
