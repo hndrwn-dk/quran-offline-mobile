@@ -1,0 +1,7 @@
+# This file ensures the assets/icon/ directory is tracked by git
+# Add your icon PNG files here:
+# - app_icon_1024.png
+# - ic_launcher_background.png
+# - ic_launcher_foreground.png
+# - ic_launcher_monochrome.png
+
