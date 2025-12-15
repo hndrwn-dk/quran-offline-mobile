@@ -1,0 +1,35 @@
+{
+  "version": "v4-uthmani+translit+EN(SI)+ID(KEMENAG)+ZH(MaJian)+JA(Mita)",
+  "source": "Quran Foundation / Quran.com v4",
+  "script": "text_uthmani",
+  "hasTransliteration": true,
+  "translations": {
+    "en": {
+      "id": 20,
+      "name": "Saheeh International",
+      "language": "english"
+    },
+    "id": {
+      "id": 33,
+      "name": "Indonesian Islamic Affairs Ministry",
+      "language": "indonesian"
+    },
+    "zh": {
+      "id": 109,
+      "name": "Muhammad Makin",
+      "language": "chinese"
+    },
+    "ja": {
+      "id": 35,
+      "name": "Ryoichi Mita",
+      "language": "japanese"
+    }
+  },
+  "surahCount": 114,
+  "ayahTotal": 6236,
+  "generatedAt": 1763039119,
+  "checks": {
+    "verseCounts": true,
+    "sha256": true
+  }
+}
