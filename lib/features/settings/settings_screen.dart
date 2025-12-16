@@ -13,6 +13,9 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        toolbarHeight: 54,
+        centerTitle: false,
+        titleSpacing: 16,
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -57,6 +60,14 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ],
         ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+          ),
+        ),
       ),
       body: ListView(
         children: [
@@ -86,8 +97,9 @@ class SettingsScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
             child: Text(
               'About',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),

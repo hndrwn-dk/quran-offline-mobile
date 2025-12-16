@@ -26,11 +26,19 @@ class SurahHeaderCard extends StatelessWidget {
     final isMeccan = _isMeccan(surahInfo.id);
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant,
-        borderRadius: BorderRadius.circular(24),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+            spreadRadius: 0,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,11 +50,11 @@ class SurahHeaderCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   color: colorScheme.onSurface,
                   letterSpacing: -0.6,
-                  fontSize: 30,
+                  fontSize: 28,
                 ),
           ),
-          const SizedBox(height: 12),
-          // Arabic name (hero)
+          const SizedBox(height: 6),
+          // Arabic name (hero) - larger size
           Directionality(
             textDirection: TextDirection.rtl,
             child: Align(
@@ -56,26 +64,26 @@ class SurahHeaderCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontFamily: 'UthmanicHafsV22',
                       fontFamilyFallback: const ['UthmanicHafs'],
-                      height: 1.5,
+                      height: 1.4,
                       color: colorScheme.onSurface,
-                      fontSize: 30,
+                      fontSize: 34,
                     ),
                 textDirection: TextDirection.rtl,
                 textAlign: TextAlign.right,
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           // Meta row: Meccan/Medinan + verse count
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: isMeccan
                       ? colorScheme.primaryContainer.withOpacity(0.65)
                       : colorScheme.secondaryContainer.withOpacity(0.65),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   isMeccan ? 'Meccan' : 'Medinan',
@@ -87,7 +95,7 @@ class SurahHeaderCard extends StatelessWidget {
                       ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
               Text(
                 '$verseCount verses',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(

@@ -103,77 +103,90 @@ class ReadScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        toolbarHeight: 54,
+        centerTitle: false,
+        titleSpacing: 16,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.08),
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.18),
-                            width: 1,
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.menu_book_outlined,
-                          size: 20,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Qur'an",
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: -0.5,
-                                ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Read and reflect',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _CustomSegmentedButton(
-                    selectedMode: readMode,
-                    onModeChanged: (mode) {
-                      ref.read(readModeProvider.notifier).state = mode;
-                    },
-                  ),
-                ],
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.08),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.18),
+                  width: 1,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.menu_book_outlined,
+                size: 18,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
-            Expanded(
-              child: switch (readMode) {
-                ReadMode.surah => const SurahListView(),
-                ReadMode.juz => const JuzListView(),
-                ReadMode.pages => const PageListView(),
-              },
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Qur'an",
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Read and reflect',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
             ),
           ],
         ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(52), // 6 + 34 (button) + 6 + 1 (divider) + 5 (buffer)
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 6),
+                    _CustomSegmentedButton(
+                      selectedMode: readMode,
+                      onModeChanged: (mode) {
+                        ref.read(readModeProvider.notifier).state = mode;
+                      },
+                    ),
+                    const SizedBox(height: 6),
+                  ],
+                ),
+              ),
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+              ),
+            ],
+          ),
+        ),
       ),
+      body: switch (readMode) {
+        ReadMode.surah => const SurahListView(),
+        ReadMode.juz => const JuzListView(),
+        ReadMode.pages => const PageListView(),
+      },
     );
   }
 }
@@ -248,7 +261,7 @@ class _CustomSegmentButton extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(20),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: isSelected
                   ? colorScheme.primary
