@@ -107,12 +107,13 @@ flutter run
 
 - **[TESTING.md](docs/TESTING.md)** - Testing guide for Android & iOS
 - **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Android & iOS deployment overview
+- **[ANDROID_BUILD_AND_PLAY_STORE.md](docs/ANDROID_BUILD_AND_PLAY_STORE.md)** - Comprehensive Android build & Play Store deployment guide (step-by-step, beginner-friendly)
 - **[IOS_BUILD_AND_APP_STORE.md](docs/IOS_BUILD_AND_APP_STORE.md)** - Comprehensive iOS build & App Store deployment guide (step-by-step, beginner-friendly)
 
 ## Building for Release
 
 ### Android
-See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Android deployment guide.
+See [ANDROID_BUILD_AND_PLAY_STORE.md](docs/ANDROID_BUILD_AND_PLAY_STORE.md) for comprehensive Android build and Play Store deployment guide (step-by-step, beginner-friendly).
 
 ```bash
 flutter build appbundle
@@ -128,6 +129,7 @@ flutter build ipa
 
 **Quick Reference:**
 - [DEPLOYMENT.md](docs/DEPLOYMENT.md) - Android & iOS deployment overview
+- [ANDROID_BUILD_AND_PLAY_STORE.md](docs/ANDROID_BUILD_AND_PLAY_STORE.md) - Detailed Android build & Play Store guide
 - [IOS_BUILD_AND_APP_STORE.md](docs/IOS_BUILD_AND_APP_STORE.md) - Detailed iOS build & App Store guide
 - [TESTING.md](docs/TESTING.md) - Testing guide for Android & iOS
 

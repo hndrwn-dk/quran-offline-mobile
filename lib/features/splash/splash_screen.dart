@@ -4,6 +4,7 @@ import 'package:quran_offline/core/database/importer.dart';
 import 'package:quran_offline/core/providers/import_progress_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -35,19 +36,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   Future<void> _initializeApp() async {
     try {
+      // Check if data is already imported before showing progress bar
+      final prefs = await SharedPreferences.getInstance();
+      final importedVersion = prefs.getString('quran_data_version');
+      final isAlreadyImported = importedVersion == DataImporter.currentVersion;
+      
       final db = ref.read(databaseProvider);
       final importer = DataImporter(
         db,
         onProgress: (progress) {
-          if (mounted) {
+          // Only show progress if data is not already imported
+          if (mounted && !isAlreadyImported) {
             ref.read(importProgressProvider.notifier).state = progress;
           }
         },
       );
       await importer.ensureDataImported();
       if (mounted) {
-        // Ensure splash screen shows for at least 1 second for smooth experience
-        await Future.delayed(const Duration(seconds: 1));
+        // Only delay if data was just imported (first time)
+        if (!isAlreadyImported) {
+          // Ensure splash screen shows for at least 1 second for smooth experience
+          await Future.delayed(const Duration(seconds: 1));
+        }
         if (mounted) {
           setState(() {
             _isInitialized = true;
@@ -130,28 +140,30 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 48),
-                  // Loading message and progress
-                  Text(
-                    'Please wait, getting things ready…',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                  // Only show loading message and progress bar when actually importing
+                  if (isInitializing) ...[
+                    const SizedBox(height: 48),
+                    Text(
+                      'Please wait, getting things ready…',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: 200,
-                    child: LinearProgressIndicator(
-                      value: isInitializing ? progress.progress : null,
-                      minHeight: 2,
-                      borderRadius: BorderRadius.circular(1),
-                      backgroundColor: colorScheme.surfaceContainerHighest,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        colorScheme.primaryContainer,
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: 200,
+                      child: LinearProgressIndicator(
+                        value: progress.progress,
+                        minHeight: 2,
+                        borderRadius: BorderRadius.circular(1),
+                        backgroundColor: colorScheme.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          colorScheme.primaryContainer,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),

@@ -16,6 +16,9 @@ class SearchScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        toolbarHeight: 54,
+        centerTitle: false,
+        titleSpacing: 16,
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -59,6 +62,14 @@ class SearchScreen extends ConsumerWidget {
               ],
             ),
           ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+          ),
         ),
       ),
       body: Column(

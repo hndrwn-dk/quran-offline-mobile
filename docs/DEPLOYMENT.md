@@ -209,87 +209,31 @@ For step-by-step instructions including version configuration, app icons, signin
 
 ## Google Play Store Submission
 
-### 1. Prepare Store Listing
+> 📱 **For detailed Android build and Play Store deployment guide**, see [ANDROID_BUILD_AND_PLAY_STORE.md](ANDROID_BUILD_AND_PLAY_STORE.md) - A comprehensive step-by-step guide from installing requirements to submitting to Play Store, perfect for beginners.
 
-**Required Assets:**
-- App icon: 512x512px PNG (no transparency)
-- Feature graphic: 1024x500px PNG
-- Screenshots:
-  - Phone: At least 2, max 8 (16:9 or 9:16)
-  - Tablet: At least 1, max 8 (16:9 or 9:16)
-- Short description: 80 characters
-- Full description: 4000 characters
+### Quick Reference
 
-**App Information:**
-- App name: "Quran Offline"
-- Short description: "Offline-first Quran reader with multiple reading modes"
-- Full description: (see below)
-- Category: Books & Reference
-- Content rating: Everyone
-- Privacy policy URL (required)
-
-### 2. Create Privacy Policy
-
-Required for Play Store. Example content:
-- App is offline-first
-- No data collection
-- No analytics
-- Local storage only
-
-Host on GitHub Pages or similar.
-
-### 3. Content Rating
-
-1. Go to Play Console > App Content
-2. Complete content rating questionnaire
-3. Answer: No violence, no user-generated content, educational content
-
-### 4. Upload App Bundle
-
-1. Go to Play Console > Production (or Internal Testing)
-2. Create new release
-3. Upload `app-release.aab`
-4. Add release notes
-5. Review and roll out
-
-### 5. Required Permissions
-
-Ensure `android/app/src/main/AndroidManifest.xml` only has necessary permissions:
-```xml
-<uses-permission android:name="android.permission.INTERNET" />
+**Build Android App:**
+```bash
+flutter build appbundle --release
 ```
 
-**Note**: INTERNET permission is included by default in Flutter apps but is not actively used since the app is fully offline.
+**Play Console:**
+- Create app at [Google Play Console](https://play.google.com/console)
+- Upload App Bundle (.aab file)
+- Complete store listing, content rating, and privacy policy
+- Submit for review
 
-### 6. Play Store Listing Example
+For complete detailed instructions including:
+- Installing Java, Android Studio, Flutter
+- Setting up Android development environment
+- Configuring app signing and keystore
+- Building and testing on emulator/device
+- Registering Google Play Console account
+- Preparing Play Store assets
+- Uploading and submitting to Play Store
 
-**Short Description:**
-```
-Offline-first Quran reader with multiple reading modes, bookmarks, and search
-```
-
-**Full Description:**
-```
-Quran Offline is a production-ready, offline-first Quran reader app built with Material 3 design.
-
-Features:
-• Read by Surah, Juz, or Pages
-• Multi-language translations (Indonesian, English, Chinese, Japanese)
-• Bookmarks to save your favorite verses
-• Offline search through translations
-• Customizable text sizes
-• Optional transliteration
-• Share verses with others
-• Dark mode support
-• Tablet-optimized layout
-
-Privacy-First:
-• Works fully offline
-• No analytics or tracking
-• All data stored locally
-
-Perfect for daily reading, study, and reflection. Works completely offline - no internet required.
-```
+See: **[ANDROID_BUILD_AND_PLAY_STORE.md](ANDROID_BUILD_AND_PLAY_STORE.md)**
 
 ## Apple App Store Submission
 

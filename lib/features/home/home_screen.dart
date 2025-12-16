@@ -45,8 +45,8 @@ class HomeScreen extends ConsumerWidget {
             label: 'Bookmarks',
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
+            icon: Icon(Icons.tune_outlined),
+            selectedIcon: Icon(Icons.tune),
             label: 'Settings',
           ),
         ],
