@@ -12,7 +12,7 @@ class DataImporter {
   final AppDatabase _db;
   final void Function(ImportProgress)? onProgress;
   static const String _versionKey = 'quran_data_version';
-  static const String _currentVersion = 'v5-uthmani+translit+EN(SI)+ID(KEMENAG)+ZH(MaJian)+JA(Mita)-cleaned';
+  static const String currentVersion = 'v5-uthmani+translit+EN(SI)+ID(KEMENAG)+ZH(MaJian)+JA(Mita)-cleaned';
 
   DataImporter(this._db, {this.onProgress});
 
@@ -20,12 +20,12 @@ class DataImporter {
     final prefs = await SharedPreferences.getInstance();
     final importedVersion = prefs.getString(_versionKey);
 
-    if (importedVersion == _currentVersion) {
+    if (importedVersion == currentVersion) {
       return;
     }
 
     await _importData();
-    await prefs.setString(_versionKey, _currentVersion);
+    await prefs.setString(_versionKey, currentVersion);
   }
 
   Future<void> _importData() async {

@@ -56,7 +56,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     return GestureDetector(
       onLongPress: () => _showAyahActions(context, settings),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -93,7 +93,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             Semantics(
               label: 'Arabic text',
               child: Directionality(
@@ -116,7 +116,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               ),
             ),
             if (settings.showTransliteration && widget.verse.translit != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               SelectableText(
                 widget.verse.translit!,
                 style: TextStyle(
@@ -128,7 +128,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               ),
             ],
             if (translation != null) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: 8),
               SelectableText(
                 translation,
                 style: TextStyle(

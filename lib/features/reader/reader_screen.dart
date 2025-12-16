@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
+import 'package:quran_offline/core/providers/juz_surahs_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
+import 'package:quran_offline/core/utils/juz_info.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
 import 'package:quran_offline/features/reader/ayah_card.dart';
 import 'package:quran_offline/features/reader/surah_header_card.dart';
@@ -23,6 +25,178 @@ class ReaderScreen extends ConsumerWidget {
       JuzSource(:final juzNo) => 'Juz $juzNo',
       PageSource(:final pageNo) => 'Page $pageNo',
     };
+  }
+
+  /// Build premium 2-line editorial AppBar for Juz reading
+  PreferredSizeWidget _buildJuzAppBar(
+    BuildContext context,
+    WidgetRef ref,
+    int juzNo,
+  ) {
+    final juzSurahsAsync = ref.watch(juzSurahsProvider(juzNo));
+    final surahsAsync = ref.watch(surahNamesProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final totalAyah = JuzInfo.getTotalAyah(juzNo) ?? 0;
+
+    return AppBar(
+      leading: Navigator.canPop(context) ? const BackButton() : null,
+      automaticallyImplyLeading: false,
+      toolbarHeight: 54,
+      centerTitle: false,
+      titleSpacing: 16,
+      title: juzSurahsAsync.when(
+        data: (juzSurahs) {
+          return surahsAsync.when(
+            data: (surahs) {
+              if (juzSurahs.surahIds.isEmpty) {
+                return Text(
+                  'Juz $juzNo',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                );
+              }
+
+              // Get first and last surah names
+              final firstSurahId = juzSurahs.surahIds.first;
+              final lastSurahId = juzSurahs.surahIds.last;
+              
+              final firstSurah = surahs.firstWhere(
+                (s) => s.id == firstSurahId,
+                orElse: () => SurahInfo(
+                  id: firstSurahId,
+                  arabicName: '',
+                  englishName: 'Surah $firstSurahId',
+                  englishMeaning: '',
+                ),
+              );
+              
+              final lastSurah = surahs.firstWhere(
+                (s) => s.id == lastSurahId,
+                orElse: () => SurahInfo(
+                  id: lastSurahId,
+                  arabicName: '',
+                  englishName: 'Surah $lastSurahId',
+                  englishMeaning: '',
+                ),
+              );
+
+              // Format surah names with proper diacritics for common surahs
+              String formatSurahName(String name) {
+                final formattedNames = {
+                  'Al-Fatiha': 'Al-Fātiḥah',
+                  'Al-Baqarah': 'Al-Baqarah',
+                  'Ali Imran': 'Āl ʿImrān',
+                  'An-Nisa': 'An-Nisāʾ',
+                  'Al-Maidah': 'Al-Māʾidah',
+                  "Al-An'am": 'Al-Anʿām',
+                  "Al-A'raf": 'Al-Aʿrāf',
+                  'Al-Anfal': 'Al-Anfāl',
+                  'At-Tawbah': 'At-Tawbah',
+                  "Ar-Ra'd": 'Ar-Raʿd',
+                  'Al-Hijr': 'Al-Ḥijr',
+                  "Al-Isra'": 'Al-Isrāʾ',
+                  'Al-Kahf': 'Al-Kahf',
+                  'Al-Anbiya': 'Al-Anbiyāʾ',
+                  "Al-Mu'minun": 'Al-Muʾminūn',
+                  "Ash-Shu'ara": 'Ash-Shuʿarāʾ',
+                  "Al-'Ankabut": 'Al-ʿAnkabūt',
+                  "Al-Jumu'ah": 'Al-Jumuʿah',
+                  "Al-Ma'arij": 'Al-Maʿārij',
+                  "Al-A'la": 'Al-Aʿlā',
+                };
+                return formattedNames[name] ?? name;
+              }
+
+              final firstSurahName = formatSurahName(firstSurah.englishName);
+              final lastSurahName = formatSurahName(lastSurah.englishName);
+              
+              // Build subtitle: "148 ayah • Al-Fātiḥah → Al-Baqarah"
+              final subtitle = totalAyah > 0
+                  ? '$totalAyah ayah • $firstSurahName → $lastSurahName'
+                  : '$firstSurahName → $lastSurahName';
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Line 1: "Juz 1" (titleLarge, bold)
+                  Text(
+                    'Juz $juzNo',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                  // Line 2: "148 ayah • Al-Fātiḥah → Al-Baqarah" (labelMedium/bodySmall, muted)
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          height: 1.2,
+                        ) ??
+                        Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                              height: 1.2,
+                            ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              );
+            },
+            loading: () => Text(
+              'Juz $juzNo',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            error: (_, __) => Text(
+              'Juz $juzNo',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          );
+        },
+        loading: () => Text(
+          'Juz $juzNo',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        error: (_, __) => Text(
+          'Juz $juzNo',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.text_fields),
+          tooltip: 'Text settings',
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const TextSettingsDialog(),
+            );
+          },
+        ),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Divider(
+          height: 1,
+          thickness: 1,
+          color: colorScheme.outlineVariant.withOpacity(0.3),
+        ),
+      ),
+    );
   }
 
   @override
@@ -50,39 +224,77 @@ class ReaderScreen extends ConsumerWidget {
 
     final versesAsync = ref.watch(readerVersesProvider(source));
 
-    // Minimal AppBar - no title, just back button and text settings + subtle divider
+    // AppBar with 2-line editorial title for Juz, minimal for Page/Surah
     final appBar = isLargeScreen
         ? null
-        : AppBar(
-            leading: Navigator.canPop(context) ? const BackButton() : null,
-            automaticallyImplyLeading: false,
-            toolbarHeight: 54,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.text_fields),
-                tooltip: 'Text settings',
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => const TextSettingsDialog(),
-                  );
-                },
+        : switch (source) {
+            JuzSource(:final juzNo) => _buildJuzAppBar(context, ref, juzNo),
+            PageSource(:final pageNo) => AppBar(
+                leading: Navigator.canPop(context) ? const BackButton() : null,
+                automaticallyImplyLeading: false,
+                toolbarHeight: 54,
+                centerTitle: false,
+                titleSpacing: 16,
+                title: Text('Page $pageNo'),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.text_fields),
+                    tooltip: 'Text settings',
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => const TextSettingsDialog(),
+                      );
+                    },
+                  ),
+                ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(1),
+                  child: Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .outlineVariant
+                        .withOpacity(0.3),
+                  ),
+                ),
               ),
-            ],
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(1),
-              child: Divider(
-                height: 1,
-                thickness: 1,
-                color: Theme.of(context)
-                    .colorScheme
-                    .outlineVariant
-                    .withOpacity(0.3),
-              ),
-            ),
-          );
+            _ => AppBar(
+                leading: Navigator.canPop(context) ? const BackButton() : null,
+                automaticallyImplyLeading: false,
+                toolbarHeight: 54,
+                centerTitle: false,
+                titleSpacing: 16,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.text_fields),
+                    tooltip: 'Text settings',
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => const TextSettingsDialog(),
+                      );
+                    },
+                  ),
+                ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(1),
+                  child: Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .outlineVariant
+                        .withOpacity(0.3),
+                  ),
+                ),
+              ), // No title for Surah (header card shows surah name)
+          };
 
     return Scaffold(
       appBar: appBar,
@@ -119,7 +331,7 @@ class ReaderScreen extends ConsumerWidget {
                       : null;
 
                   return ListView.builder(
-                    padding: EdgeInsets.zero,
+                    padding: const EdgeInsets.only(top: 10),
                     itemCount: verses.length + (isSurahSource && currentSurahInfo != null ? 1 : 0),
                     itemBuilder: (context, index) {
                       // Show header card at the top for surah reading
@@ -153,19 +365,16 @@ class ReaderScreen extends ConsumerWidget {
                         children: [
                           // Surah header for first surah in Juz/Page and on surah transitions
                           if (showSurahHeader) ...[
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-                          child: SurahHeaderCard(
-                            surahInfo: surahInfo,
-                            verseCount: verses.where((v) => v.surahId == verse.surahId).length,
-                          ),
+                            SurahHeaderCard(
+                              surahInfo: surahInfo,
+                              verseCount: verses.where((v) => v.surahId == verse.surahId).length,
                             ),
                           ],
                           // Show Bismillah before first ayah of each surah (except Surah 1 and Surah 9)
                           // Note: Surah 1's first ayah IS the Bismillah, so we don't show it separately
                           if (isFirstAyah && Bismillah.shouldShowBismillah(verse.surahId)) ...[
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
                               child: Directionality(
                                 textDirection: TextDirection.rtl,
                                 child: Column(
@@ -187,7 +396,7 @@ class ReaderScreen extends ConsumerWidget {
                                       ),
                                     ),
                                   if (settings.showTransliteration) ...[
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 6),
                                     SelectableText(
                                       Bismillah.transliteration,
                                       style: TextStyle(
@@ -198,7 +407,7 @@ class ReaderScreen extends ConsumerWidget {
                                       ),
                                     ),
                                   ],
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 6),
                                   SelectableText(
                                     Bismillah.getTranslation(settings.language),
                                     style: TextStyle(
@@ -212,21 +421,26 @@ class ReaderScreen extends ConsumerWidget {
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                               child: Divider(
                                 height: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.2),
+                                thickness: 1,
+                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
                               ),
                             ),
                           ],
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Column(
                               children: [
                                 AyahCard(verse: verse),
-                                Divider(
-                                  height: 1,
-                                  color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.2),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  child: Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                  ),
                                 ),
                               ],
                             ),
@@ -241,7 +455,7 @@ class ReaderScreen extends ConsumerWidget {
                   final isSurahSource = source is SurahSource;
                   
                   return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.only(top: 10),
                     itemCount: verses.length,
                     itemBuilder: (context, index) {
                       final verse = verses[index];
@@ -254,7 +468,7 @@ class ReaderScreen extends ConsumerWidget {
                         children: [
                           if (isSurahSource && isFirstVerse) ...[
                             Padding(
-                              padding: const EdgeInsets.only(top: 24, bottom: 16),
+                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                               child: Text(
                                 'Surah ${verse.surahId}',
                                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -263,14 +477,18 @@ class ReaderScreen extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                            Divider(
-                              height: 1,
-                              color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              child: Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                              ),
                             ),
                           ],
                           if (showSurahDivider) ...[
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                               child: Text(
                                 'Surah ${verse.surahId}',
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -278,17 +496,18 @@ class ReaderScreen extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                            Divider(
-                              height: 1,
-                              color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              child: Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                              ),
                             ),
                           ],
                           if (isFirstAyah && Bismillah.shouldShowBismillah(verse.surahId)) ...[
                             Padding(
-                              padding: EdgeInsets.only(
-                                top: (isSurahSource && isFirstVerse) ? 24 : 0,
-                                bottom: 16,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
                               child: Directionality(
                                 textDirection: TextDirection.rtl,
                                 child: Column(
@@ -310,7 +529,7 @@ class ReaderScreen extends ConsumerWidget {
                                       ),
                                     ),
                                   if (settings.showTransliteration) ...[
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 6),
                                     SelectableText(
                                       Bismillah.transliteration,
                                       style: TextStyle(
@@ -321,7 +540,7 @@ class ReaderScreen extends ConsumerWidget {
                                       ),
                                     ),
                                   ],
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 6),
                                   SelectableText(
                                     Bismillah.getTranslation(settings.language),
                                     style: TextStyle(
@@ -334,15 +553,30 @@ class ReaderScreen extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                            Divider(
-                              height: 1,
-                              color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.2),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              child: Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                              ),
                             ),
                           ],
-                          AyahCard(verse: verse),
-                          Divider(
-                            height: 1,
-                            color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.2),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              children: [
+                                AyahCard(verse: verse),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  child: Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       );
@@ -354,7 +588,7 @@ class ReaderScreen extends ConsumerWidget {
                   final isSurahSource = source is SurahSource;
                   
                   return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.only(top: 10),
                     itemCount: verses.length,
                     itemBuilder: (context, index) {
                       final verse = verses[index];
@@ -367,7 +601,7 @@ class ReaderScreen extends ConsumerWidget {
                         children: [
                           if (isSurahSource && isFirstVerse) ...[
                             Padding(
-                              padding: const EdgeInsets.only(top: 24, bottom: 16),
+                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                               child: Text(
                                 'Surah ${verse.surahId}',
                                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -376,14 +610,18 @@ class ReaderScreen extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                            Divider(
-                              height: 1,
-                              color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              child: Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                              ),
                             ),
                           ],
                           if (showSurahDivider) ...[
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                               child: Text(
                                 'Surah ${verse.surahId}',
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -391,17 +629,18 @@ class ReaderScreen extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                            Divider(
-                              height: 1,
-                              color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              child: Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                              ),
                             ),
                           ],
                           if (isFirstAyah && Bismillah.shouldShowBismillah(verse.surahId)) ...[
                             Padding(
-                              padding: EdgeInsets.only(
-                                top: (isSurahSource && isFirstVerse) ? 24 : 0,
-                                bottom: 16,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
                               child: Directionality(
                                 textDirection: TextDirection.rtl,
                                 child: Column(
@@ -423,7 +662,7 @@ class ReaderScreen extends ConsumerWidget {
                                       ),
                                     ),
                                   if (settings.showTransliteration) ...[
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 6),
                                     SelectableText(
                                       Bismillah.transliteration,
                                       style: TextStyle(
@@ -434,7 +673,7 @@ class ReaderScreen extends ConsumerWidget {
                                       ),
                                     ),
                                   ],
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 6),
                                   SelectableText(
                                     Bismillah.getTranslation(settings.language),
                                     style: TextStyle(
@@ -447,15 +686,30 @@ class ReaderScreen extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                            Divider(
-                              height: 1,
-                              color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.2),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              child: Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                              ),
                             ),
                           ],
-                          AyahCard(verse: verse),
-                          Divider(
-                            height: 1,
-                            color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.2),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              children: [
+                                AyahCard(verse: verse),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  child: Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       );

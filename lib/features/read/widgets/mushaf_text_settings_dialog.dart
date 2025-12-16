@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
-import 'package:quran_offline/core/utils/mushaf_layout.dart';
 
 class MushafTextSettingsDialog extends ConsumerStatefulWidget {
   const MushafTextSettingsDialog({super.key});
@@ -132,9 +131,7 @@ class _MushafTextSettingsDialogState extends ConsumerState<MushafTextSettingsDia
             child: FilledButton(
               onPressed: () async {
                 if (_currentSize != settings.mushafFontSize) {
-                  // Invalidate cache for old font size
-                  await MushafLayoutCache.invalidateCacheForFontSize(settings.mushafFontSize);
-                  // Update setting
+                  // Update setting (no cache to invalidate in ayah-based layout)
                   await ref.read(settingsProvider.notifier).updateMushafFontSize(_currentSize);
                 }
                 if (mounted) {

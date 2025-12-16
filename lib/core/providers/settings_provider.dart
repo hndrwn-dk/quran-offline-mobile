@@ -13,9 +13,9 @@ class AppSettings {
   AppSettings({
     this.language = 'id',
     this.showTransliteration = false,
-    this.arabicFontSize = 24.0,
+    this.arabicFontSize = 30.0,
     this.translationFontSize = 16.0,
-    this.mushafFontSize = 28.0,
+    this.mushafFontSize = 30.0,
     this.themeMode = ThemeMode.system,
   });
 
@@ -52,9 +52,9 @@ class AppSettings {
     return AppSettings(
       language: json['language'] as String? ?? 'id',
       showTransliteration: json['showTransliteration'] as bool? ?? false,
-      arabicFontSize: (json['arabicFontSize'] as num?)?.toDouble() ?? 24.0,
+      arabicFontSize: (json['arabicFontSize'] as num?)?.toDouble() ?? 30.0,
       translationFontSize: (json['translationFontSize'] as num?)?.toDouble() ?? 16.0,
-      mushafFontSize: (json['mushafFontSize'] as num?)?.toDouble() ?? 28.0,
+      mushafFontSize: (json['mushafFontSize'] as num?)?.toDouble() ?? 30.0,
       themeMode: ThemeMode.values.firstWhere(
         (e) => e.name == json['themeMode'],
         orElse: () => ThemeMode.system,
@@ -72,9 +72,9 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final prefs = await SharedPreferences.getInstance();
     final language = prefs.getString('language') ?? 'id';
     final showTransliteration = prefs.getBool('showTransliteration') ?? false;
-    final arabicFontSize = prefs.getDouble('arabicFontSize') ?? 24.0;
+    final arabicFontSize = prefs.getDouble('arabicFontSize') ?? 30.0;
     final translationFontSize = prefs.getDouble('translationFontSize') ?? 16.0;
-    final mushafFontSize = prefs.getDouble('mushafFontSize') ?? 28.0;
+    final mushafFontSize = prefs.getDouble('mushafFontSize') ?? 30.0;
     final themeModeStr = prefs.getString('themeMode') ?? 'system';
     final themeMode = ThemeMode.values.firstWhere(
       (e) => e.name == themeModeStr,
