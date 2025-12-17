@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
@@ -97,6 +98,47 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
         title: 'Page $pageNo',
         source: PageSource(pageNo),
       ));
+    }
+  }
+
+  // Search by Ayat Number (format: "X:Y" or "X:Y" with spaces)
+  // Examples: "1:1", "2:255", "112:1", "1: 1", "2 : 255"
+  final ayatNumberPattern = RegExp(r'^(\d+)\s*:\s*(\d+)$');
+  final ayatMatch = ayatNumberPattern.firstMatch(query.trim());
+  if (ayatMatch != null) {
+    final surahId = int.tryParse(ayatMatch.group(1)!);
+    final ayahNo = int.tryParse(ayatMatch.group(2)!);
+    
+    if (surahId != null && ayahNo != null && surahId >= 1 && surahId <= 114 && ayahNo >= 1) {
+      // Validate ayah exists by checking database
+      final db = ref.read(databaseProvider);
+      final verses = await db.getVersesByRange(surahId, ayahNo, ayahNo);
+      
+      if (verses.isNotEmpty) {
+        // Get surah name for display
+        surahsAsync.when(
+          data: (surahs) {
+            final surah = surahs.firstWhere(
+              (s) => s.id == surahId,
+              orElse: () => SurahInfo(
+                id: surahId,
+                arabicName: '',
+                englishName: 'Surah $surahId',
+                englishMeaning: '',
+              ),
+            );
+            
+            results.add(SearchResult(
+              type: 'verse',
+              title: 'QS $surahId:$ayahNo',
+              subtitle: surah.englishName,
+              source: SurahSource(surahId, targetAyahNo: ayahNo),
+            ));
+          },
+          loading: () {},
+          error: (_, __) {},
+        );
+      }
     }
   }
 

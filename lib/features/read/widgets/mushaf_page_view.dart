@@ -109,85 +109,119 @@ class _MushafPageState extends ConsumerState<MushafPage> {
               data: (surahs) {
                 final surahIds = surahIdsSnapshot.data ?? [];
                 if (surahIds.isEmpty) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Page ${widget.pageNo}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurface,
-                            ),
-                      ),
-                    ],
+                  return Text(
+                    'Mushaf - Page ${widget.pageNo}',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
+                        ),
                   );
                 }
 
-                // Format subtitle: "Surah X–Y" or "N surah"
+                // Get first and last surah names
+                final firstSurahId = surahIds.first;
+                final lastSurahId = surahIds.last;
+                
+                final firstSurah = surahs.firstWhere(
+                  (s) => s.id == firstSurahId,
+                  orElse: () => SurahInfo(
+                    id: firstSurahId,
+                    arabicName: '',
+                    englishName: 'Surah $firstSurahId',
+                    englishMeaning: '',
+                  ),
+                );
+                
+                final lastSurah = surahs.firstWhere(
+                  (s) => s.id == lastSurahId,
+                  orElse: () => SurahInfo(
+                    id: lastSurahId,
+                    arabicName: '',
+                    englishName: 'Surah $lastSurahId',
+                    englishMeaning: '',
+                  ),
+                );
+
+                // Format surah names with proper diacritics for common surahs
+                String formatSurahName(String name) {
+                  final formattedNames = {
+                    'Al-Fatiha': 'Al-Fātiḥah',
+                    'Al-Baqarah': 'Al-Baqarah',
+                    'Ali Imran': 'Āl ʿImrān',
+                    'An-Nisa': 'An-Nisāʾ',
+                    'Al-Maidah': 'Al-Māʾidah',
+                    "Al-An'am": 'Al-Anʿām',
+                    "Al-A'raf": 'Al-Aʿrāf',
+                    'Al-Anfal': 'Al-Anfāl',
+                    'At-Tawbah': 'At-Tawbah',
+                    "Ar-Ra'd": 'Ar-Raʿd',
+                    'Al-Hijr': 'Al-Ḥijr',
+                    "Al-Isra'": 'Al-Isrāʾ',
+                    'Al-Kahf': 'Al-Kahf',
+                    'Al-Anbiya': 'Al-Anbiyāʾ',
+                    "Al-Mu'minun": 'Al-Muʾminūn',
+                    "Ash-Shu'ara": 'Ash-Shuʿarāʾ',
+                    "Al-'Ankabut": 'Al-ʿAnkabūt',
+                    "Al-Jumu'ah": 'Al-Jumuʿah',
+                    "Al-Ma'arij": 'Al-Maʿārij',
+                    "Al-A'la": 'Al-Aʿlā',
+                  };
+                  return formattedNames[name] ?? name;
+                }
+
+                final firstSurahName = formatSurahName(firstSurah.englishName);
+                final lastSurahName = formatSurahName(lastSurah.englishName);
+
+                // Format subtitle: "Surah FirstName - Surah LastName" for multiple, "Surah Name" for single
                 String subtitle;
                 if (surahIds.length == 1) {
-                  final surah = surahs.firstWhere(
-                    (s) => s.id == surahIds.first,
-                    orElse: () => SurahInfo(
-                      id: surahIds.first,
-                      arabicName: '',
-                      englishName: 'Surah ${surahIds.first}',
-                      englishMeaning: '',
-                    ),
-                  );
-                  subtitle = 'Surah ${surah.id}';
-                } else if (surahIds.length == 2) {
-                  subtitle = 'Surah ${surahIds.first}–${surahIds.last}';
+                  subtitle = 'Surah $firstSurahName';
                 } else {
-                  subtitle = '${surahIds.length} surah';
+                  subtitle = 'Surah $firstSurahName - Surah $lastSurahName';
                 }
 
                 return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Line 1: "Mushaf - Page 604" (titleLarge, bold)
                     Text(
-                      'Page ${widget.pageNo}',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
+                      'Mushaf - Page ${widget.pageNo}',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
                           ),
                     ),
+                    const SizedBox(height: 2),
+                    // Line 2: "Surah Al-Ikhlas - Surah An Naas" (labelMedium/bodySmall, muted)
                     Text(
                       subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
                             color: colorScheme.onSurfaceVariant,
-                          ),
+                            height: 1.2,
+                          ) ??
+                          Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                height: 1.2,
+                              ),
                     ),
                   ],
                 );
               },
-              loading: () => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Page ${widget.pageNo}',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
-                  ),
-                ],
+              loading: () => Text(
+                'Mushaf - Page ${widget.pageNo}',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
               ),
-              error: (_, __) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Page ${widget.pageNo}',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
-                  ),
-                ],
+              error: (_, __) => Text(
+                'Mushaf - Page ${widget.pageNo}',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
               ),
             );
           },
@@ -241,8 +275,14 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: blocks.map((block) {
                         if (block.isSurahHeader) {
+                          // Shadow yang adaptif ke theme dan nyaman untuk mata
+                          final isDark = Theme.of(context).brightness == Brightness.dark;
+                          final shadowColor = isDark
+                              ? colorScheme.primary.withOpacity(0.15)
+                              : colorScheme.primary.withOpacity(0.12);
+                          
                           return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             child: Directionality(
                               textDirection: TextDirection.rtl,
                               child: Text(
@@ -251,9 +291,18 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                       fontFamily: 'UthmanicHafsV22',
                                       fontFamilyFallback: const ['UthmanicHafs'],
-                                      fontSize: fontSize + 2,
+                                      fontSize: fontSize + 4,
+                                      fontWeight: FontWeight.w600,
                                       height: 1.7,
                                       color: colorScheme.onSurface,
+                                      letterSpacing: 0.5,
+                                      shadows: [
+                                        Shadow(
+                                          color: shadowColor,
+                                          offset: const Offset(0, 1.5),
+                                          blurRadius: 3,
+                                        ),
+                                      ],
                                     ),
                               ),
                             ),
@@ -319,7 +368,7 @@ class _AyahRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ayahNo = block.ayahNo ?? 0;
-    final badgeSize = 22.0;
+    final badgeSize = 28.0; // Diperbesar dari 22.0 untuk visibility lebih baik
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -368,27 +417,63 @@ class _AyahBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final displayNumber = MushafLayout.toArabicIndicDigits(ayahNo.toString());
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // Style ornament dengan kontras maksimal - background gelap, nomor terang
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: colorScheme.surface,
+        // Background gelap solid untuk kontras maksimal dengan nomor terang
+        color: isDark 
+            ? colorScheme.surfaceContainerHigh
+            : colorScheme.surfaceContainerHighest,
+        // Border tebal dan kontras
         border: Border.all(
-          color: colorScheme.onSurface.withOpacity(0.35),
-          width: 1.2,
+          color: colorScheme.onSurface.withOpacity(isDark ? 0.7 : 0.8),
+          width: 2.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withOpacity(0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       alignment: Alignment.center,
-      child: Text(
-        displayNumber,
-        style: TextStyle(
-          fontSize: size * 0.55,
-          height: 1.0,
-          fontFamily: 'UthmanicHafsV22',
-          fontFamilyFallback: const ['UthmanicHafs'],
-          color: colorScheme.onSurface,
+      child: Container(
+        // Inner circle dengan background lebih gelap
+        width: size * 0.72,
+        height: size * 0.72,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          // Background sangat gelap untuk kontras maksimal
+          color: isDark
+              ? colorScheme.surfaceContainerHighest
+              : colorScheme.surfaceContainerHigh,
+          border: Border.all(
+            color: colorScheme.onSurface.withOpacity(isDark ? 0.4 : 0.5),
+            width: 1.5,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          displayNumber,
+          style: TextStyle(
+            // Font size lebih besar untuk visibility
+            fontSize: size * 0.65,
+            height: 1.0,
+            fontFamily: 'UthmanicHafsV22',
+            fontFamilyFallback: const ['UthmanicHafs'],
+            // Warna nomor sangat kontras - gelap di light mode, terang di dark mode
+            color: isDark
+                ? Colors.white.withOpacity(0.95) // Putih di dark mode
+                : Colors.black87, // Hitam gelap di light mode
+            fontWeight: FontWeight.w800, // Sangat bold
+            letterSpacing: 0.3,
+          ),
         ),
       ),
     );

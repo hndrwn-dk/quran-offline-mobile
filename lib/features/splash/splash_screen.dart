@@ -72,7 +72,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         }
       }
     } catch (e) {
-      debugPrint('Initialization error: $e');
       if (mounted) {
         setState(() {
           _isInitialized = true;

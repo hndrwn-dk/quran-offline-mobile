@@ -43,35 +43,51 @@ class SurahHeaderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Latin name (hero)
-          Text(
-            surahInfo.englishName,
-            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                  letterSpacing: -0.6,
-                  fontSize: 28,
+          // Row untuk sejajarkan Latin dan Arabic name
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              // Latin name (hero) - tetap seperti semula
+              Expanded(
+                child: Text(
+                  surahInfo.englishName,
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onSurface,
+                        letterSpacing: -0.6,
+                        fontSize: 28,
+                      ),
                 ),
-          ),
-          const SizedBox(height: 6),
-          // Arabic name (hero) - larger size
-          Directionality(
-            textDirection: TextDirection.rtl,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                surahInfo.arabicName,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontFamily: 'UthmanicHafsV22',
-                      fontFamilyFallback: const ['UthmanicHafs'],
-                      height: 1.4,
-                      color: colorScheme.onSurface,
-                      fontSize: 34,
-                    ),
-                textDirection: TextDirection.rtl,
-                textAlign: TextAlign.right,
               ),
-            ),
+              const SizedBox(width: 12),
+              // Arabic name (Suratul format) - styling sama dengan Mushaf mode
+              Directionality(
+                textDirection: TextDirection.rtl,
+                child: Text(
+                  surahInfo.arabicName,
+                  textAlign: TextAlign.right,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontFamily: 'UthmanicHafsV22',
+                        fontFamilyFallback: const ['UthmanicHafs'],
+                        fontSize: 30,
+                        fontWeight: FontWeight.w600,
+                        height: 1.7,
+                        color: colorScheme.onSurface,
+                        letterSpacing: 0.5,
+                        shadows: [
+                          Shadow(
+                            color: colorScheme.primary.withOpacity(
+                              Theme.of(context).brightness == Brightness.dark ? 0.15 : 0.12,
+                            ),
+                            offset: const Offset(0, 1.5),
+                            blurRadius: 3,
+                          ),
+                        ],
+                      ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           // Meta row: Meccan/Medinan + verse count
