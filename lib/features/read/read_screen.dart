@@ -260,43 +260,57 @@ class _CustomSegmentButton extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? colorScheme.primary
-                  : colorScheme.surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isSelected
-                    ? Colors.transparent
-                    : colorScheme.outline.withOpacity(0.12),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  size: 18,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Reduce padding if space is limited (less than 80px width)
+              final horizontalPadding = constraints.maxWidth < 80 ? 8.0 : 12.0;
+              
+              return Container(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
+                decoration: BoxDecoration(
                   color: isSelected
-                      ? colorScheme.onPrimary
-                      : colorScheme.onSurface.withOpacity(0.6),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      ? colorScheme.primary
+                      : colorScheme.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
                     color: isSelected
-                        ? colorScheme.onPrimary
-                        : colorScheme.onSurface.withOpacity(0.6),
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        ? Colors.transparent
+                        : colorScheme.outline.withOpacity(0.12),
+                    width: 1,
                   ),
                 ),
-              ],
-            ),
+                child: ClipRect(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        icon,
+                        size: 18,
+                        color: isSelected
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          label,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: isSelected
+                                ? colorScheme.onPrimary
+                                : colorScheme.onSurface.withOpacity(0.6),
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),
