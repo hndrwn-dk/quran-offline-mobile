@@ -11,7 +11,7 @@ class AppSettings {
   final ThemeMode themeMode;
 
   AppSettings({
-    this.language = 'id',
+    this.language = 'en',
     this.showTransliteration = false,
     this.arabicFontSize = 30.0,
     this.translationFontSize = 16.0,
@@ -50,7 +50,7 @@ class AppSettings {
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
     return AppSettings(
-      language: json['language'] as String? ?? 'id',
+      language: json['language'] as String? ?? 'en',
       showTransliteration: json['showTransliteration'] as bool? ?? false,
       arabicFontSize: (json['arabicFontSize'] as num?)?.toDouble() ?? 30.0,
       translationFontSize: (json['translationFontSize'] as num?)?.toDouble() ?? 16.0,
@@ -70,7 +70,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    final language = prefs.getString('language') ?? 'id';
+    final language = prefs.getString('language') ?? 'en';
     final showTransliteration = prefs.getBool('showTransliteration') ?? false;
     final arabicFontSize = prefs.getDouble('arabicFontSize') ?? 30.0;
     final translationFontSize = prefs.getDouble('translationFontSize') ?? 16.0;
