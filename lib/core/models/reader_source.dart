@@ -4,7 +4,8 @@ sealed class ReaderSource {
 
 class SurahSource extends ReaderSource {
   final int surahId;
-  const SurahSource(this.surahId);
+  final int? targetAyahNo;
+  const SurahSource(this.surahId, {this.targetAyahNo});
 }
 
 class JuzSource extends ReaderSource {

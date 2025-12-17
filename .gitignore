@@ -58,6 +58,17 @@ app.*.map.json
 .env
 .env.local
 
+# Android signing keys (NEVER commit these!)
+android/key.properties
+*.jks
+*.keystore
+*.p12
+
+# iOS certificates (NEVER commit these!)
+*.mobileprovision
+*.p8
+*.cer
+
 # Coverage
 coverage/
 

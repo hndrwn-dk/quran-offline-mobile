@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/juz_surahs_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
@@ -12,8 +14,80 @@ import 'package:quran_offline/features/reader/ayah_card.dart';
 import 'package:quran_offline/features/reader/surah_header_card.dart';
 import 'package:quran_offline/features/reader/text_settings_dialog.dart';
 
-class ReaderScreen extends ConsumerWidget {
+class ReaderScreen extends ConsumerStatefulWidget {
   const ReaderScreen({super.key});
+
+  @override
+  ConsumerState<ReaderScreen> createState() => _ReaderScreenState();
+}
+
+class _ReaderScreenState extends ConsumerState<ReaderScreen> {
+  final ItemScrollController _itemScrollController = ItemScrollController();
+  final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
+  bool _hasScrolledToTarget = false;
+  ReaderSource? _lastSource = null;
+  
+  @override
+  void dispose() {
+    // ItemScrollController and ItemPositionsListener don't need explicit disposal
+    super.dispose();
+  }
+  
+  @override
+  void initState() {
+    super.initState();
+    _lastSource = ref.read(readerSourceProvider);
+  }
+  
+  void _scrollToAyah(List<Verse> verses, int targetAyahNo, bool isSurahSource, bool hasHeader) {
+    if (_hasScrolledToTarget) return;
+    
+    // Find the index of the target ayah in the verses list
+    int? targetIndex;
+    for (int i = 0; i < verses.length; i++) {
+      if (verses[i].ayahNo == targetAyahNo) {
+        targetIndex = i;
+        break;
+      }
+    }
+    
+    if (targetIndex == null) return;
+    
+    // Adjust index if header is present (header is at index 0)
+    final itemIndex = isSurahSource && hasHeader ? targetIndex + 1 : targetIndex;
+    
+    // Wait for initial frame, then scroll to item
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _hasScrolledToTarget) return;
+      
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (!mounted || _hasScrolledToTarget) return;
+        
+        try {
+          _itemScrollController.scrollTo(
+            index: itemIndex,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+            alignment: 0.15, // Position 15% from top of viewport
+          );
+          
+          // Mark as successful after scroll completes
+          Future.delayed(const Duration(milliseconds: 600), () {
+            if (mounted) {
+              _hasScrolledToTarget = true;
+              ref.read(targetAyahProvider.notifier).state = null;
+            }
+          });
+        } catch (e) {
+          // If scroll fails, mark as done to prevent infinite retries
+          if (mounted) {
+            _hasScrolledToTarget = true;
+            ref.read(targetAyahProvider.notifier).state = null;
+          }
+        }
+      });
+    });
+  }
 
   String _getTitle(ReaderSource? source, List<SurahInfo>? surahs) {
     if (source == null) return 'Reader';
@@ -200,10 +274,35 @@ class ReaderScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final source = ref.watch(readerSourceProvider);
     final isLargeScreen = Responsive.isLargeScreen(context);
     final surahsAsync = ref.watch(surahNamesProvider);
+    
+    // Listen to source changes reactively (ref.listen automatically handles lifecycle)
+    ref.listen<ReaderSource?>(readerSourceProvider, (previous, next) {
+      if (previous != next) {
+        setState(() {
+          _hasScrolledToTarget = false;
+          _lastSource = next;
+        });
+        // Optionally reset scroll position
+        try {
+          _itemScrollController.jumpTo(index: 0);
+        } catch (e) {
+          // Ignore if scroll controller not ready
+        }
+      }
+    });
+    
+    // Listen to target ayah changes
+    ref.listen<int?>(targetAyahProvider, (previous, next) {
+      if (next != null && next != previous) {
+        setState(() {
+          _hasScrolledToTarget = false;
+        });
+      }
+    });
     
     if (source == null && !isLargeScreen) {
       return Scaffold(
@@ -330,7 +429,21 @@ class ReaderScreen extends ConsumerWidget {
                         )
                       : null;
 
-                  return ListView.builder(
+                  // Scroll to target ayah if needed - trigger as soon as verses are loaded
+                  final targetAyah = ref.watch(targetAyahProvider);
+                  
+                  // Trigger scroll immediately when conditions are met
+                  if (targetAyah != null && isSurahSource && !_hasScrolledToTarget) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted && !_hasScrolledToTarget) {
+                        _scrollToAyah(verses, targetAyah, isSurahSource, currentSurahInfo != null);
+                      }
+                    });
+                  }
+                  
+                  return ScrollablePositionedList.builder(
+                    itemScrollController: _itemScrollController,
+                    itemPositionsListener: _itemPositionsListener,
                     padding: const EdgeInsets.only(top: 10),
                     itemCount: verses.length + (isSurahSource && currentSurahInfo != null ? 1 : 0),
                     itemBuilder: (context, index) {
@@ -454,7 +567,9 @@ class ReaderScreen extends ConsumerWidget {
                   final settings = ref.watch(settingsProvider);
                   final isSurahSource = source is SurahSource;
                   
-                  return ListView.builder(
+                  return ScrollablePositionedList.builder(
+                    itemScrollController: _itemScrollController,
+                    itemPositionsListener: _itemPositionsListener,
                     padding: const EdgeInsets.only(top: 10),
                     itemCount: verses.length,
                     itemBuilder: (context, index) {
@@ -587,7 +702,9 @@ class ReaderScreen extends ConsumerWidget {
                   final settings = ref.watch(settingsProvider);
                   final isSurahSource = source is SurahSource;
                   
-                  return ListView.builder(
+                  return ScrollablePositionedList.builder(
+                    itemScrollController: _itemScrollController,
+                    itemPositionsListener: _itemPositionsListener,
                     padding: const EdgeInsets.only(top: 10),
                     itemCount: verses.length,
                     itemBuilder: (context, index) {

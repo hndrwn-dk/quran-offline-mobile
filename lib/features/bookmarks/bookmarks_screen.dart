@@ -299,8 +299,7 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                             orElse: () => SurahInfo(id: b.surahId, arabicName: '', englishName: 'Surah ${b.surahId}', englishMeaning: ''),
                           )
                           .englishName
-                          .toLowerCase() ??
-                          '';
+                          .toLowerCase();
                       final matchesQuery = query.isEmpty ||
                           surahName.contains(query) ||
                           b.surahId.toString().contains(query) ||
@@ -331,7 +330,8 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                             if (_selectionMode) {
                               _toggleSelection(bookmark);
                             } else {
-                              ref.read(readerSourceProvider.notifier).state = SurahSource(bookmark.surahId);
+                              ref.read(readerSourceProvider.notifier).state = SurahSource(bookmark.surahId, targetAyahNo: bookmark.ayahNo);
+                              ref.read(targetAyahProvider.notifier).state = bookmark.ayahNo;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(

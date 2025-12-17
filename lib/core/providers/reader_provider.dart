@@ -7,6 +7,7 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 });
 
 final readerSourceProvider = StateProvider<ReaderSource?>((ref) => null);
+final targetAyahProvider = StateProvider<int?>((ref) => null);
 
 final readerVersesProvider = FutureProvider.family<List<Verse>, ReaderSource>((ref, source) async {
   final db = ref.read(databaseProvider);

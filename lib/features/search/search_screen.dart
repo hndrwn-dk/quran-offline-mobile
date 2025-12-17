@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/enhanced_search_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 
 class SearchScreen extends ConsumerWidget {
   const SearchScreen({super.key});
@@ -96,7 +98,7 @@ class SearchScreen extends ConsumerWidget {
                       child: TextField(
                         style: Theme.of(context).textTheme.bodyLarge,
                         decoration: InputDecoration(
-                          hintText: 'Search surah, juz, page, or translation...',
+                          hintText: 'Surah, Juz, Page, Verse (2:255), or translation...',
                           hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
@@ -129,23 +131,75 @@ class SearchScreen extends ConsumerWidget {
             child: resultsAsync.when(
               data: (results) {
                 if (query.isEmpty) {
+                  final colorScheme = Theme.of(context).colorScheme;
                   return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search,
-                          size: 64,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Search for surahs, juz, pages, or verses',
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search,
+                            size: 64,
+                            color: colorScheme.onSurface.withOpacity(0.3),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 24),
+                          Text(
+                            'Search the Qur\'an',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'You can search by:',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          _buildSearchHint(
+                            context,
+                            Icons.book,
+                            'Surah',
+                            'Al-Fatihah, Al-Baqarah, etc.',
+                            colorScheme,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildSearchHint(
+                            context,
+                            Icons.format_list_numbered,
+                            'Juz',
+                            'Juz 1, Juz 2, etc.',
+                            colorScheme,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildSearchHint(
+                            context,
+                            Icons.pages,
+                            'Page',
+                            'Page 604, Page 1, etc.',
+                            colorScheme,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildSearchHint(
+                            context,
+                            Icons.numbers,
+                            'Verse',
+                            '2:255, 3:190, etc.',
+                            colorScheme,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildSearchHint(
+                            context,
+                            Icons.translate,
+                            'Translation',
+                            'Any word in translation text',
+                            colorScheme,
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }
@@ -218,13 +272,34 @@ class SearchScreen extends ConsumerWidget {
                             : null,
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
-                          ref.read(readerSourceProvider.notifier).state = result.source;
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ReaderScreen(),
-                            ),
-                          );
+                          // For page results, navigate to Mushaf mode
+                          if (result.type == 'page' && result.source is PageSource) {
+                            final pageSource = result.source as PageSource;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MushafPageView(
+                                  initialPage: pageSource.pageNo,
+                                ),
+                              ),
+                            );
+                          } else {
+                            // For surah, juz, and verse results, use ReaderScreen
+                            ref.read(readerSourceProvider.notifier).state = result.source;
+                            // Set target ayah if source is SurahSource with targetAyahNo
+                            if (result.source is SurahSource) {
+                              final surahSource = result.source as SurahSource;
+                              ref.read(targetAyahProvider.notifier).state = surahSource.targetAyahNo;
+                            } else {
+                              ref.read(targetAyahProvider.notifier).state = null;
+                            }
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ReaderScreen(),
+                              ),
+                            );
+                          }
                         },
                       ),
                     );
@@ -235,6 +310,57 @@ class SearchScreen extends ConsumerWidget {
               error: (error, stack) => Center(
                 child: Text('Error: $error'),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchHint(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String example,
+    ColorScheme colorScheme,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 20,
+            color: colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  example,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
