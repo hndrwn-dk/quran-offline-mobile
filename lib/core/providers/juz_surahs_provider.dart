@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
-import 'package:quran_offline/core/providers/surah_names_provider.dart';
 
 class JuzSurahsInfo {
   final int juzNo;
