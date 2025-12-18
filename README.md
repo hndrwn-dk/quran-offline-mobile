@@ -92,8 +92,6 @@ The app uses Drift (SQLite) for local storage:
 
 ## Testing
 
-See [TESTING.md](docs/TESTING.md) for detailed testing instructions on Android and iOS.
-
 Quick start:
 ```bash
 # Generate required code first
@@ -103,35 +101,20 @@ flutter pub run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
-## Documentation
-
-- **[TESTING.md](docs/TESTING.md)** - Testing guide for Android & iOS
-- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Android & iOS deployment overview
-- **[ANDROID_BUILD_AND_PLAY_STORE.md](docs/ANDROID_BUILD_AND_PLAY_STORE.md)** - Comprehensive Android build & Play Store deployment guide (step-by-step, beginner-friendly)
-- **[IOS_BUILD_AND_APP_STORE.md](docs/IOS_BUILD_AND_APP_STORE.md)** - Comprehensive iOS build & App Store deployment guide (step-by-step, beginner-friendly)
-
 ## Building for Release
 
 ### Android
-See [ANDROID_BUILD_AND_PLAY_STORE.md](docs/ANDROID_BUILD_AND_PLAY_STORE.md) for comprehensive Android build and Play Store deployment guide (step-by-step, beginner-friendly).
 
 ```bash
 flutter build appbundle
 ```
 
 ### iOS
-See [IOS_BUILD_AND_APP_STORE.md](docs/IOS_BUILD_AND_APP_STORE.md) for comprehensive iOS build and App Store deployment guide (step-by-step, beginner-friendly).
 
 ```bash
 flutter build ios
 flutter build ipa
 ```
-
-**Quick Reference:**
-- [DEPLOYMENT.md](docs/DEPLOYMENT.md) - Android & iOS deployment overview
-- [ANDROID_BUILD_AND_PLAY_STORE.md](docs/ANDROID_BUILD_AND_PLAY_STORE.md) - Detailed Android build & Play Store guide
-- [IOS_BUILD_AND_APP_STORE.md](docs/IOS_BUILD_AND_APP_STORE.md) - Detailed iOS build & App Store guide
-- [TESTING.md](docs/TESTING.md) - Testing guide for Android & iOS
 
 ## Privacy
 
