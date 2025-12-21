@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/juz_surahs_provider.dart';
+import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
@@ -40,7 +41,10 @@ class JuzListView extends ConsumerWidget {
                           Expanded(
                             child: InkWell(
                               onTap: () {
-                                ref.read(readerSourceProvider.notifier).state = JuzSource(juzNo);
+                                final source = JuzSource(juzNo);
+                                ref.read(readerSourceProvider.notifier).state = source;
+                                // Save last read
+                                ref.read(lastReadProvider.notifier).saveLastRead(source);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -59,7 +63,10 @@ class JuzListView extends ConsumerWidget {
                           ),
                           InkWell(
                             onTap: () {
-                              ref.read(readerSourceProvider.notifier).state = JuzSource(juzNo);
+                              final source = JuzSource(juzNo);
+                              ref.read(readerSourceProvider.notifier).state = source;
+                              // Save last read
+                              ref.read(lastReadProvider.notifier).saveLastRead(source);
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(

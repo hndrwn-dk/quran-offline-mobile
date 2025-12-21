@@ -103,6 +103,14 @@ class AppDatabase extends _$AppDatabase {
         .get();
   }
 
+  Future<int?> getPageForAyah(int surahId, int ayahNo) async {
+    final verse = await (select(verses)
+          ..where((v) => v.surahId.equals(surahId) & v.ayahNo.equals(ayahNo))
+          ..limit(1))
+        .getSingleOrNull();
+    return verse?.page;
+  }
+
   Future<List<Verse>> searchVerses(String query, String lang) {
     final langColumn = switch (lang) {
       'en' => verses.trEn,

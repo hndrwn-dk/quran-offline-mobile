@@ -38,6 +38,28 @@ class AppLocalizations {
     };
   }
 
+  /// Get localized text for "Last Read"
+  static String getLastRead(String language) {
+    return switch (language) {
+      'id' => 'Terakhir Dibaca',
+      'en' => 'Last Read',
+      'zh' => '最后阅读',
+      'ja' => '最後に読んだ',
+      _ => 'Last Read',
+    };
+  }
+
+  /// Get localized text for "Continue reading"
+  static String getContinueReading(String language) {
+    return switch (language) {
+      'id' => 'Lanjutkan membaca',
+      'en' => 'Continue reading',
+      'zh' => '继续阅读',
+      'ja' => '読み続ける',
+      _ => 'Continue reading',
+    };
+  }
+
   /// Get localized text for "Page X" format
   static String getPageText(int pageNo, String language) {
     final pageLabel = _getPage(language);

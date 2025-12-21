@@ -27,6 +27,13 @@
 - **Info Icon**: Tap the info icon next to tajweed toggle to view the color guide
 - **Global Setting**: Tajweed setting applies to all reading modes (Surah, Juz, Mushaf)
 
+### 🔖 Bookmark in Mushaf Mode
+- **Bookmark Support**: Bookmark any verse directly from Mushaf mode
+- **Visual Indicator**: Bookmark icon displayed below ayah number badge
+- **Quick Navigation**: Tap bookmark in Bookmarks screen to jump directly to the verse in Mushaf mode
+- **Auto-Scroll**: Automatically scrolls to the exact bookmarked verse when opened
+- **Unified Bookmarks**: All bookmarks work seamlessly across Surah, Juz, and Mushaf modes
+
 ## Technical Improvements
 - Added tajweed column to database schema (version 2)
 - Implemented HTML tajweed tag parsing with color rendering

@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/juz_surahs_provider.dart';
+import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
@@ -29,17 +31,123 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   double _swipeStartX = 0.0;
   double _swipeStartY = 0.0;
   bool _isSwiping = false;
+  bool _scrollListenerSetup = false;
   
-  @override
-  void dispose() {
-    // ItemScrollController and ItemPositionsListener don't need explicit disposal
-    super.dispose();
-  }
   
   @override
   void initState() {
     super.initState();
-    _lastSource = ref.read(readerSourceProvider);
+  }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_scrollListenerSetup) {
+      _setupScrollListener();
+    }
+  }
+  
+  void _setupScrollListener() {
+    if (_scrollListenerSetup) return;
+    _scrollListenerSetup = true;
+    
+    // Listen to item positions changes using ValueNotifier
+    _itemPositionsListener.itemPositions.addListener(_onItemPositionsChanged);
+  }
+  
+  Timer? _debounceTimer;
+  
+  void _onItemPositionsChanged() {
+    if (!mounted) return;
+    
+    final source = ref.read(readerSourceProvider);
+    if (source == null || (source is! SurahSource && source is! JuzSource)) return;
+    
+    // Cancel previous debounce timer
+    _debounceTimer?.cancel();
+    
+    // Get current item positions
+    final positions = _itemPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
+    
+    // Find the item that is currently at the top of the viewport
+    // itemLeadingEdge: position of leading edge (0 = top of viewport, negative = above, >1 = below)
+    // itemTrailingEdge: position of trailing edge
+    // We want the item whose leading edge is closest to 0 (top of viewport) but still visible
+    final visiblePositions = positions.where((pos) {
+      // Item is visible if it has passed the top (trailingEdge > 0) and hasn't completely passed bottom (leadingEdge < 1)
+      return pos.itemTrailingEdge > 0 && pos.itemLeadingEdge < 1.0 && pos.index >= 0;
+    }).toList();
+    
+    int? targetIndex;
+    if (visiblePositions.isNotEmpty) {
+      // Sort by itemLeadingEdge ascending - the one with smallest leading edge is closest to top
+      visiblePositions.sort((a, b) => a.itemLeadingEdge.compareTo(b.itemLeadingEdge));
+      // Take the first one (closest to top, but make sure it's actually visible)
+      final topItem = visiblePositions.first;
+      // Use the item that is most visible at the top
+      // If the top item's leading edge is very negative (way above viewport), use the next one
+      // Otherwise, use the top item
+      if (topItem.itemLeadingEdge < -0.3 && visiblePositions.length > 1) {
+        // Top item is too far above, use the next visible item
+        targetIndex = visiblePositions[1].index;
+      } else {
+        // Use the top item (closest to top of viewport)
+        targetIndex = topItem.index;
+      }
+    }
+    
+    // Fallback: if no good match, use the first item that has passed top
+    if (targetIndex == null) {
+      final passedTop = positions.where((pos) => pos.itemTrailingEdge > 0 && pos.index >= 0).toList();
+      if (passedTop.isNotEmpty) {
+        passedTop.sort((a, b) => a.itemTrailingEdge.compareTo(b.itemTrailingEdge));
+        targetIndex = passedTop.first.index;
+      }
+    }
+    
+    if (targetIndex == null || targetIndex < 0) return;
+    
+    // Debounce: wait 500ms after scroll stops before updating
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        _updateLastRead(source, targetIndex!);
+      }
+    });
+  }
+  
+  void _updateLastRead(ReaderSource source, int itemIndex) {
+    // Get verses to find ayah number
+    final versesAsync = ref.read(readerVersesProvider(source));
+    versesAsync.whenData((verses) {
+      if (!mounted || verses.isEmpty) return;
+      
+      // For SurahSource, check if we have a header (index 0)
+      // For JuzSource, no header, so itemIndex directly maps to verseIndex
+      final isSurahSource = source is SurahSource;
+      final hasHeader = isSurahSource && itemIndex > 0;
+      final verseIndex = hasHeader ? itemIndex - 1 : itemIndex;
+      
+      if (verseIndex >= 0 && verseIndex < verses.length) {
+        final visibleAyah = verses[verseIndex].ayahNo;
+        final currentSource = ref.read(readerSourceProvider);
+        
+        if (source is SurahSource && currentSource is SurahSource && currentSource.surahId == source.surahId) {
+          ref.read(lastReadProvider.notifier).saveLastRead(currentSource, ayahNo: visibleAyah);
+        } else if (source is JuzSource && currentSource is JuzSource && currentSource.juzNo == source.juzNo) {
+          ref.read(lastReadProvider.notifier).saveLastRead(currentSource, ayahNo: visibleAyah);
+        }
+      }
+    });
+  }
+  
+  @override
+  void dispose() {
+    // Cancel debounce timer
+    _debounceTimer?.cancel();
+    // Remove listener
+    _itemPositionsListener.itemPositions.removeListener(_onItemPositionsChanged);
+    super.dispose();
   }
   
   /// Navigate to next/previous surah, juz, or page based on swipe direction
@@ -316,7 +424,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     
     // Listen to source changes reactively (ref.listen automatically handles lifecycle)
     ref.listen<ReaderSource?>(readerSourceProvider, (previous, next) {
-      if (previous != next) {
+      if (previous != next && next != null) {
+        // Save last read (without ayahNo, will be updated when user scrolls)
+        ref.read(lastReadProvider.notifier).saveLastRead(next);
         setState(() {
           _hasScrolledToTarget = false;
           _lastSource = next;
@@ -498,9 +608,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
                   // Scroll to target ayah if needed - trigger as soon as verses are loaded
                   final targetAyah = ref.watch(targetAyahProvider);
+                  final isJuzSource = source is JuzSource;
                   
-                  // Trigger scroll immediately when conditions are met
-                  if (targetAyah != null && isSurahSource && !_hasScrolledToTarget) {
+                  // Trigger scroll immediately when conditions are met (for both Surah and Juz)
+                  if (targetAyah != null && (isSurahSource || isJuzSource) && !_hasScrolledToTarget) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted && !_hasScrolledToTarget) {
                         _scrollToAyah(verses, targetAyah, isSurahSource, currentSurahInfo != null);

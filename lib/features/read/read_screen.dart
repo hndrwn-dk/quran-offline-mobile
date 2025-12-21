@@ -7,6 +7,7 @@ import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/read/juz_list_view.dart';
 import 'package:quran_offline/features/read/page_list_view.dart';
 import 'package:quran_offline/features/read/surah_list_view.dart';
+import 'package:quran_offline/features/read/widgets/last_read_card.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 
 class ReadScreen extends ConsumerStatefulWidget {
@@ -272,9 +273,24 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
           _isSwiping = false;
         },
         child: switch (readMode) {
-          ReadMode.surah => const SurahListView(),
-          ReadMode.juz => const JuzListView(),
-          ReadMode.pages => const PageListView(),
+          ReadMode.surah => Column(
+              children: [
+                const LastReadCard(),
+                const Expanded(child: SurahListView()),
+              ],
+            ),
+          ReadMode.juz => Column(
+              children: [
+                const LastReadCard(),
+                const Expanded(child: JuzListView()),
+              ],
+            ),
+          ReadMode.pages => Column(
+              children: [
+                const LastReadCard(),
+                const Expanded(child: PageListView()),
+              ],
+            ),
         },
       ),
     );
