@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -9,6 +10,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
+    final appLanguage = settings.appLanguage;
 
     return Scaffold(
       appBar: AppBar(
@@ -42,7 +44,7 @@ class SettingsScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Settings',
+                  AppLocalizations.getSettingsText('settings_title', appLanguage),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.3,
@@ -51,7 +53,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Preferences & display',
+                  AppLocalizations.getSubtitleText('settings_subtitle', appLanguage),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -71,32 +73,141 @@ class SettingsScreen extends ConsumerWidget {
       ),
       body: ListView(
         children: [
-          ListTile(
-            title: const Text('Language'),
-            subtitle: Text(_getLanguageName(settings.language)),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showLanguageDialog(context, ref),
+          // Qur'an Settings section
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+            child: Text(
+              AppLocalizations.getSettingsText('quran_settings_header', appLanguage),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Theme(
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent,
+            ),
+            child: ExpansionTile(
+              title: Text(AppLocalizations.getSettingsText('translation_language_title', appLanguage)),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _getLanguageName(settings.language),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  Text(
+                    AppLocalizations.getSettingsText('translation_language_subtitle', appLanguage),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              childrenPadding: EdgeInsets.zero,
+              children: ['id', 'en', 'zh', 'ja'].map((lang) {
+                return RadioListTile<String>(
+                  title: Text(_getLanguageName(lang)),
+                  value: lang,
+                  groupValue: settings.language,
+                  dense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  onChanged: (value) {
+                    if (value != null) {
+                      ref.read(settingsProvider.notifier).updateLanguage(value);
+                    }
+                  },
+                );
+              }).toList(),
+            ),
           ),
           SwitchListTile(
-            title: const Text('Show Transliteration'),
+            title: Text(AppLocalizations.getSettingsText('show_transliteration_title', appLanguage)),
+            subtitle: Text(
+              AppLocalizations.getSettingsText('show_transliteration_subtitle', appLanguage),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
             value: settings.showTransliteration,
             onChanged: (value) {
               ref.read(settingsProvider.notifier).updateShowTransliteration(value);
             },
           ),
           const Divider(),
+          // App Settings section
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+            child: Text(
+              AppLocalizations.getSettingsText('app_settings_header', appLanguage),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Theme(
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent,
+            ),
+            child: ExpansionTile(
+              title: Text(AppLocalizations.getSettingsText('app_language_title', appLanguage)),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _getLanguageName(settings.appLanguage),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  Text(
+                    AppLocalizations.getSettingsText('app_language_subtitle', appLanguage),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              childrenPadding: EdgeInsets.zero,
+              children: ['id', 'en', 'zh', 'ja'].map((lang) {
+                return RadioListTile<String>(
+                  title: Text(_getLanguageName(lang)),
+                  value: lang,
+                  groupValue: settings.appLanguage,
+                  dense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  onChanged: (value) {
+                    if (value != null) {
+                      ref.read(settingsProvider.notifier).updateAppLanguage(value);
+                    }
+                  },
+                );
+              }).toList(),
+            ),
+          ),
           ListTile(
-            title: const Text('Theme'),
-            subtitle: Text(_getThemeModeName(settings.themeMode)),
+            title: Text(AppLocalizations.getSettingsText('theme_title', appLanguage)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(_getThemeModeName(settings.themeMode, appLanguage)),
+                Text(
+                  AppLocalizations.getSettingsText('theme_subtitle', appLanguage),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _showThemeDialog(context, ref),
           ),
           const Divider(),
-          // About / Support section
+          // About section
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
             child: Text(
-              'About',
+              AppLocalizations.getSettingsText('about_header', appLanguage),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
@@ -104,19 +215,21 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           ListTile(
-            title: const Text('Support the developer'),
-            subtitle: const Text('Optional donation via Buy Me a Coffee'),
+            title: Text(AppLocalizations.getSettingsText('support_title', appLanguage)),
+            subtitle: Text(AppLocalizations.getSettingsText('support_subtitle', appLanguage)),
             trailing: const Icon(Icons.open_in_new, size: 18),
             onTap: () => _openSupportLink(context),
-            onLongPress: () => _showSupportInfo(context),
+            onLongPress: () => _showSupportInfo(context, ref),
           ),
           ListTile(
-            title: const Text('Privacy Policy'),
+            title: Text(AppLocalizations.getSettingsText('privacy_title', appLanguage)),
+            subtitle: Text(AppLocalizations.getSettingsText('privacy_subtitle', appLanguage)),
             trailing: const Icon(Icons.open_in_new, size: 18),
             onTap: () => _openPrivacyLink(context),
           ),
           ListTile(
-            title: const Text('Terms of Service'),
+            title: Text(AppLocalizations.getSettingsText('terms_title', appLanguage)),
+            subtitle: Text(AppLocalizations.getSettingsText('terms_subtitle', appLanguage)),
             trailing: const Icon(Icons.open_in_new, size: 18),
             onTap: () => _openTermsLink(context),
           ),
@@ -135,54 +248,28 @@ class SettingsScreen extends ConsumerWidget {
     };
   }
 
-  String _getThemeModeName(ThemeMode mode) {
+  String _getThemeModeName(ThemeMode mode, String language) {
     return switch (mode) {
-      ThemeMode.system => 'System',
-      ThemeMode.light => 'Light',
-      ThemeMode.dark => 'Dark',
+      ThemeMode.system => AppLocalizations.getSettingsText('theme_system', language),
+      ThemeMode.light => AppLocalizations.getSettingsText('theme_light', language),
+      ThemeMode.dark => AppLocalizations.getSettingsText('theme_dark', language),
     };
   }
 
-  void _showLanguageDialog(BuildContext context, WidgetRef ref) {
-    final languages = ['id', 'en', 'zh', 'ja'];
-    final currentLang = ref.read(settingsProvider).language;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Language'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: languages.map((lang) {
-            return RadioListTile<String>(
-              title: Text(_getLanguageName(lang)),
-              value: lang,
-              groupValue: currentLang,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(settingsProvider.notifier).updateLanguage(value);
-                  Navigator.pop(context);
-                }
-              },
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
 
   void _showThemeDialog(BuildContext context, WidgetRef ref) {
     final currentMode = ref.read(settingsProvider).themeMode;
+    final appLanguage = ref.read(settingsProvider).appLanguage;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Select Theme'),
+        title: Text(AppLocalizations.getSettingsText('select_theme_dialog', appLanguage)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: ThemeMode.values.map((mode) {
             return RadioListTile<ThemeMode>(
-              title: Text(_getThemeModeName(mode)),
+              title: Text(_getThemeModeName(mode, appLanguage)),
               value: mode,
               groupValue: currentMode,
               onChanged: (value) {
@@ -226,13 +313,14 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  void _showSupportInfo(BuildContext context) {
+  void _showSupportInfo(BuildContext context, WidgetRef ref) {
+    final appLanguage = ref.read(settingsProvider).appLanguage;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Support the developer'),
-        content: const Text(
-          'This is an optional external donation and does not unlock features.',
+        title: Text(AppLocalizations.getSettingsText('support_dialog_title', appLanguage)),
+        content: Text(
+          AppLocalizations.getSettingsText('support_dialog_content', appLanguage),
         ),
         actions: [
           TextButton(

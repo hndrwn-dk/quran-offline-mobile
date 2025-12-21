@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppSettings {
-  final String language;
+  final String language; // For translation
+  final String appLanguage; // For UI/menu
   final bool showTransliteration;
   final double arabicFontSize;
   final double translationFontSize;
@@ -12,6 +13,7 @@ class AppSettings {
 
   AppSettings({
     this.language = 'en',
+    this.appLanguage = 'en',
     this.showTransliteration = false,
     this.arabicFontSize = 30.0,
     this.translationFontSize = 16.0,
@@ -21,6 +23,7 @@ class AppSettings {
 
   AppSettings copyWith({
     String? language,
+    String? appLanguage,
     bool? showTransliteration,
     double? arabicFontSize,
     double? translationFontSize,
@@ -29,6 +32,7 @@ class AppSettings {
   }) {
     return AppSettings(
       language: language ?? this.language,
+      appLanguage: appLanguage ?? this.appLanguage,
       showTransliteration: showTransliteration ?? this.showTransliteration,
       arabicFontSize: arabicFontSize ?? this.arabicFontSize,
       translationFontSize: translationFontSize ?? this.translationFontSize,
@@ -40,6 +44,7 @@ class AppSettings {
   Map<String, dynamic> toJson() {
     return {
       'language': language,
+      'appLanguage': appLanguage,
       'showTransliteration': showTransliteration,
       'arabicFontSize': arabicFontSize,
       'translationFontSize': translationFontSize,
@@ -49,8 +54,10 @@ class AppSettings {
   }
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
+    final language = json['language'] as String? ?? 'en';
     return AppSettings(
-      language: json['language'] as String? ?? 'en',
+      language: language,
+      appLanguage: json['appLanguage'] as String? ?? language, // Default to language for backward compatibility
       showTransliteration: json['showTransliteration'] as bool? ?? false,
       arabicFontSize: (json['arabicFontSize'] as num?)?.toDouble() ?? 30.0,
       translationFontSize: (json['translationFontSize'] as num?)?.toDouble() ?? 16.0,
@@ -71,6 +78,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     final language = prefs.getString('language') ?? 'en';
+    final appLanguage = prefs.getString('appLanguage') ?? language; // Default to language for backward compatibility
     final showTransliteration = prefs.getBool('showTransliteration') ?? false;
     final arabicFontSize = prefs.getDouble('arabicFontSize') ?? 30.0;
     final translationFontSize = prefs.getDouble('translationFontSize') ?? 16.0;
@@ -83,6 +91,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
 
     state = AppSettings(
       language: language,
+      appLanguage: appLanguage,
       showTransliteration: showTransliteration,
       arabicFontSize: arabicFontSize,
       translationFontSize: translationFontSize,
@@ -95,6 +104,12 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('language', language);
     state = state.copyWith(language: language);
+  }
+
+  Future<void> updateAppLanguage(String appLanguage) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('appLanguage', appLanguage);
+    state = state.copyWith(appLanguage: appLanguage);
   }
 
   Future<void> updateShowTransliteration(bool show) async {

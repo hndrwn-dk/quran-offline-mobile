@@ -1,0 +1,686 @@
+{
+  "1": {
+    "en": "The Opener",
+    "id": "Pembukaan",
+    "zh": "开端章",
+    "ja": "開端"
+  },
+  "2": {
+    "en": "The Cow",
+    "id": "Sapi Betina",
+    "zh": "黄牛",
+    "ja": "雌牛"
+  },
+  "3": {
+    "en": "Family of Imran",
+    "id": "Keluarga Imran",
+    "zh": "仪姆兰的家属",
+    "ja": "イムラーン家"
+  },
+  "4": {
+    "en": "The Women",
+    "id": "Wanita",
+    "zh": "妇女",
+    "ja": "婦人"
+  },
+  "5": {
+    "en": "The Table Spread",
+    "id": "Jamuan (Hidangan Makanan)",
+    "zh": "筵席",
+    "ja": "食卓"
+  },
+  "6": {
+    "en": "The Cattle",
+    "id": "Binatang Ternak",
+    "zh": "牲畜",
+    "ja": "家畜"
+  },
+  "7": {
+    "en": "The Heights",
+    "id": "Tempat-tempat Tinggi",
+    "zh": "高处",
+    "ja": "高壁"
+  },
+  "8": {
+    "en": "The Spoils of War",
+    "id": "Rampasan Perang",
+    "zh": "战利品",
+    "ja": "戦利品"
+  },
+  "9": {
+    "en": "The Repentance",
+    "id": "Pengampunan",
+    "zh": "忏悔",
+    "ja": "悔悟"
+  },
+  "10": {
+    "en": "Jonah",
+    "id": "Yunus",
+    "zh": "优努斯",
+    "ja": "ユーヌス"
+  },
+  "11": {
+    "en": "Hud",
+    "id": "Hud",
+    "zh": "呼德",
+    "ja": "フード"
+  },
+  "12": {
+    "en": "Joseph",
+    "id": "Yusuf",
+    "zh": "优素福",
+    "ja": "ユースフ"
+  },
+  "13": {
+    "en": "The Thunder",
+    "id": "Guruh (Petir)",
+    "zh": "雷霆",
+    "ja": "雷電"
+  },
+  "14": {
+    "en": "Abraham",
+    "id": "Ibrahim",
+    "zh": "易卜拉欣",
+    "ja": "イブラーヒーム"
+  },
+  "15": {
+    "en": "The Rocky Tract",
+    "id": "Bukit",
+    "zh": "石谷",
+    "ja": "アル・ヒジュル"
+  },
+  "16": {
+    "en": "The Bee",
+    "id": "Lebah Madu",
+    "zh": "蜜蜂",
+    "ja": "蜜蜂"
+  },
+  "17": {
+    "en": "The Night Journey",
+    "id": "Perjalanan Malam",
+    "zh": "夜行",
+    "ja": "夜の旅"
+  },
+  "18": {
+    "en": "The Cave",
+    "id": "Para Penghuni Gua",
+    "zh": "山洞",
+    "ja": "洞窟"
+  },
+  "19": {
+    "en": "Mary",
+    "id": "Maryam",
+    "zh": "麦尔彦",
+    "ja": "マルヤム"
+  },
+  "20": {
+    "en": "Ta-Ha",
+    "id": "Tha-Ha",
+    "zh": "塔哈",
+    "ja": "ター・ハー"
+  },
+  "21": {
+    "en": "The Prophets",
+    "id": "Para Nabi",
+    "zh": "众先知",
+    "ja": "預言者"
+  },
+  "22": {
+    "en": "The Pilgrimage",
+    "id": "Haji",
+    "zh": "朝觐",
+    "ja": "巡礼"
+  },
+  "23": {
+    "en": "The Believers",
+    "id": "Orang-orang Mukmin",
+    "zh": "信士",
+    "ja": "信者たち"
+  },
+  "24": {
+    "en": "The Light",
+    "id": "Cahaya",
+    "zh": "光明",
+    "ja": "御光"
+  },
+  "25": {
+    "en": "The Criterion",
+    "id": "Pembeda",
+    "zh": "准则",
+    "ja": "識別"
+  },
+  "26": {
+    "en": "The Poets",
+    "id": "Penyair",
+    "zh": "众诗人",
+    "ja": "詩人たち"
+  },
+  "27": {
+    "en": "The Ant",
+    "id": "Semut",
+    "zh": "蚂蚁",
+    "ja": "蟻"
+  },
+  "28": {
+    "en": "The Stories",
+    "id": "Kisah-kisah",
+    "zh": "故事",
+    "ja": "物語"
+  },
+  "29": {
+    "en": "The Spider",
+    "id": "Laba-laba",
+    "zh": "蜘蛛",
+    "ja": "蜘蛛"
+  },
+  "30": {
+    "en": "The Romans",
+    "id": "Bangsa Romawi",
+    "zh": "罗马人",
+    "ja": "ビザンチン"
+  },
+  "31": {
+    "en": "Luqman",
+    "id": "Luqman",
+    "zh": "鲁格曼",
+    "ja": "ルクマーン"
+  },
+  "32": {
+    "en": "The Prostration",
+    "id": "Sujud",
+    "zh": "叩头",
+    "ja": "アッ・サジダ"
+  },
+  "33": {
+    "en": "The Combined Forces",
+    "id": "Golongan yang Bersekutu",
+    "zh": "同盟军",
+    "ja": "部族連合"
+  },
+  "34": {
+    "en": "Sheba",
+    "id": "Saba\\'",
+    "zh": "赛伯邑",
+    "ja": "サバア"
+  },
+  "35": {
+    "en": "Originator",
+    "id": "Pencipta",
+    "zh": "创造者",
+    "ja": "創造者"
+  },
+  "36": {
+    "en": "Ya Sin",
+    "id": "Yas Sin",
+    "zh": "雅辛",
+    "ja": "ヤー・スィーン"
+  },
+  "37": {
+    "en": "Those who set the Ranks",
+    "id": "Barisan-barisan",
+    "zh": "列班者",
+    "ja": "整列者"
+  },
+  "38": {
+    "en": "The Letter \"Saad\"",
+    "id": "Shad",
+    "zh": "萨德",
+    "ja": "サード"
+  },
+  "39": {
+    "en": "The Troops",
+    "id": "Para Rombongan",
+    "zh": "队伍",
+    "ja": "集団"
+  },
+  "40": {
+    "en": "The Forgiver",
+    "id": "Sang Maha Pengampun",
+    "zh": "赦宥者",
+    "ja": "ガーフィル"
+  },
+  "41": {
+    "en": "Explained in Detail",
+    "id": "Yang Dijelaskan",
+    "zh": "奉绥来特",
+    "ja": "フッスィラ"
+  },
+  "42": {
+    "en": "The Consultation",
+    "id": "Musyawarah",
+    "zh": "协商",
+    "ja": "相談"
+  },
+  "43": {
+    "en": "The Ornaments of Gold",
+    "id": "Perhiasan",
+    "zh": "金饰",
+    "ja": "金の装飾"
+  },
+  "44": {
+    "en": "The Smoke",
+    "id": "Kabut",
+    "zh": "烟雾",
+    "ja": "煙霧"
+  },
+  "45": {
+    "en": "The Crouching",
+    "id": "Yang Bertekuk Lutut",
+    "zh": "屈膝",
+    "ja": "跪く時"
+  },
+  "46": {
+    "en": "The Wind-Curved Sandhills",
+    "id": "Bukit-bukir Pasir",
+    "zh": "沙丘",
+    "ja": "砂丘"
+  },
+  "47": {
+    "en": "Muhammad",
+    "id": "Muhammad",
+    "zh": "穆罕默德",
+    "ja": "ムハンマド"
+  },
+  "48": {
+    "en": "The Victory",
+    "id": "Kemenangan",
+    "zh": "胜利",
+    "ja": "勝利"
+  },
+  "49": {
+    "en": "The Rooms",
+    "id": "Kamar-kamar",
+    "zh": "寝室",
+    "ja": "部屋"
+  },
+  "50": {
+    "en": "The Letter \"Qaf\"",
+    "id": "Qaf",
+    "zh": "戛弗",
+    "ja": "カーフ"
+  },
+  "51": {
+    "en": "The Winnowing Winds",
+    "id": "Angin yang Menerbangkan",
+    "zh": "播种者",
+    "ja": "撒き散らすもの"
+  },
+  "52": {
+    "en": "The Mount",
+    "id": "Bukit",
+    "zh": "山岳",
+    "ja": "山"
+  },
+  "53": {
+    "en": "The Star",
+    "id": "Bintang",
+    "zh": "星宿",
+    "ja": "星"
+  },
+  "54": {
+    "en": "The Moon",
+    "id": "Bulan",
+    "zh": "月亮",
+    "ja": "月"
+  },
+  "55": {
+    "en": "The Beneficent",
+    "id": "Yang Maha Pemurah",
+    "zh": "至仁主",
+    "ja": "慈悲あまねく御方"
+  },
+  "56": {
+    "en": "The Inevitable",
+    "id": "Hari Kiamat",
+    "zh": "大事",
+    "ja": "出来事"
+  },
+  "57": {
+    "en": "The Iron",
+    "id": "Besi",
+    "zh": "铁",
+    "ja": "鉄"
+  },
+  "58": {
+    "en": "The Pleading Woman",
+    "id": "Wanita yang Menggugat",
+    "zh": "辩诉者",
+    "ja": "抗弁する女"
+  },
+  "59": {
+    "en": "The Exile",
+    "id": "Pengusiran",
+    "zh": "放逐",
+    "ja": "集合"
+  },
+  "60": {
+    "en": "She that is to be examined",
+    "id": "Wanita yang Diuji",
+    "zh": "受考验的妇人",
+    "ja": "試問される女"
+  },
+  "61": {
+    "en": "The Ranks",
+    "id": "Barisan",
+    "zh": "列阵",
+    "ja": "戦列"
+  },
+  "62": {
+    "en": "The Congregation, Friday",
+    "id": "Hari Jum\\'at",
+    "zh": "聚礼",
+    "ja": "合同礼拝"
+  },
+  "63": {
+    "en": "The Hypocrites",
+    "id": "Kaum Munafik",
+    "zh": "伪信者",
+    "ja": "偽信者たち"
+  },
+  "64": {
+    "en": "The Mutual Disillusion",
+    "id": "Hari Dinampakkan Kesalahan",
+    "zh": "相欺",
+    "ja": "騙し合い"
+  },
+  "65": {
+    "en": "The Divorce",
+    "id": "Perceraian",
+    "zh": "离婚",
+    "ja": "離婚"
+  },
+  "66": {
+    "en": "The Prohibition",
+    "id": "Mengharamkan",
+    "zh": "禁戒",
+    "ja": "禁止"
+  },
+  "67": {
+    "en": "The Sovereignty",
+    "id": "Kerajaan",
+    "zh": "国权",
+    "ja": "大権"
+  },
+  "68": {
+    "en": "The Pen",
+    "id": "Pena",
+    "zh": "笔",
+    "ja": "筆"
+  },
+  "69": {
+    "en": "The Reality",
+    "id": "Kenyataan (Hari Kiamat)",
+    "zh": "真灾",
+    "ja": "真実"
+  },
+  "70": {
+    "en": "The Ascending Stairways",
+    "id": "Tempat yang Naik",
+    "zh": "天梯",
+    "ja": "階段"
+  },
+  "71": {
+    "en": "Noah",
+    "id": "Nuh",
+    "zh": "努哈",
+    "ja": "ヌーフ"
+  },
+  "72": {
+    "en": "The Jinn",
+    "id": "Jin",
+    "zh": "精灵",
+    "ja": "幽精"
+  },
+  "73": {
+    "en": "The Enshrouded One",
+    "id": "Orang yang Berselimut",
+    "zh": "披衣的人",
+    "ja": "衣を纏う者"
+  },
+  "74": {
+    "en": "The Cloaked One",
+    "id": "Orang yang Berkemul",
+    "zh": "盖被的人",
+    "ja": "包る者"
+  },
+  "75": {
+    "en": "The Resurrection",
+    "id": "Hari Berbangkit",
+    "zh": "复活",
+    "ja": "復活"
+  },
+  "76": {
+    "en": "The Man",
+    "id": "Manusia",
+    "zh": "人",
+    "ja": "人間"
+  },
+  "77": {
+    "en": "The Emissaries",
+    "id": "Malaikat-malaikan yang Diutus",
+    "zh": "天使",
+    "ja": "送られるもの"
+  },
+  "78": {
+    "en": "The Tidings",
+    "id": "Berita Besar",
+    "zh": "消息",
+    "ja": "消息"
+  },
+  "79": {
+    "en": "Those who drag forth",
+    "id": "Malaikat yang Mencabut",
+    "zh": "急掣的",
+    "ja": "引き離すもの"
+  },
+  "80": {
+    "en": "He Frowned",
+    "id": "Ia Bermuka Masam",
+    "zh": "皱眉",
+    "ja": "眉をひそめて"
+  },
+  "81": {
+    "en": "The Overthrowing",
+    "id": "Menggulung",
+    "zh": "黯黮",
+    "ja": "包み隠す"
+  },
+  "82": {
+    "en": "The Cleaving",
+    "id": "Terbelah",
+    "zh": "破裂",
+    "ja": "裂ける"
+  },
+  "83": {
+    "en": "The Defrauding",
+    "id": "Orang-orang Curang",
+    "zh": "称量不公",
+    "ja": "量を減らす者"
+  },
+  "84": {
+    "en": "The Sundering",
+    "id": "Terbelah",
+    "zh": "绽裂",
+    "ja": "割れる"
+  },
+  "85": {
+    "en": "The Mansions of the Stars",
+    "id": "Gugusan Bintang",
+    "zh": "十二宫",
+    "ja": "星座"
+  },
+  "86": {
+    "en": "The Nightcommer",
+    "id": "Yang Datang di Malam Hari",
+    "zh": "启明星",
+    "ja": "夜訪れるもの"
+  },
+  "87": {
+    "en": "The Most High",
+    "id": "Yang Paling Tinggi",
+    "zh": "至尊",
+    "ja": "至高者"
+  },
+  "88": {
+    "en": "The Overwhelming",
+    "id": "Hari Pembalasan",
+    "zh": "大灾",
+    "ja": "圧倒的事態"
+  },
+  "89": {
+    "en": "The Dawn",
+    "id": "Fajar",
+    "zh": "黎明",
+    "ja": "暁"
+  },
+  "90": {
+    "en": "The City",
+    "id": "Negeri",
+    "zh": "地方",
+    "ja": "町"
+  },
+  "91": {
+    "en": "The Sun",
+    "id": "Matahari",
+    "zh": "太阳",
+    "ja": "太陽"
+  },
+  "92": {
+    "en": "The Night",
+    "id": "Malam",
+    "zh": "黑夜",
+    "ja": "夜"
+  },
+  "93": {
+    "en": "The Morning Hours",
+    "id": "Waktu Dhuha",
+    "zh": "上午",
+    "ja": "朝"
+  },
+  "94": {
+    "en": "The Relief",
+    "id": "Melapangkan",
+    "zh": "开拓",
+    "ja": "胸を広げる"
+  },
+  "95": {
+    "en": "The Fig",
+    "id": "Buah Tin",
+    "zh": "无花果",
+    "ja": "無花果"
+  },
+  "96": {
+    "en": "The Clot",
+    "id": "Segumpal Darah",
+    "zh": "血块",
+    "ja": "凝血"
+  },
+  "97": {
+    "en": "The Power",
+    "id": "Kemuliaan",
+    "zh": "高贵",
+    "ja": "みいつ"
+  },
+  "98": {
+    "en": "The Clear Proof",
+    "id": "Pembuktian",
+    "zh": "明证",
+    "ja": "明証"
+  },
+  "99": {
+    "en": "The Earthquake",
+    "id": "Kegoncangan",
+    "zh": "地震",
+    "ja": "地震"
+  },
+  "100": {
+    "en": "The Courser",
+    "id": "Berlari Kencang",
+    "zh": "奔驰的马队",
+    "ja": "進撃する馬"
+  },
+  "101": {
+    "en": "The Calamity",
+    "id": "Hari Kiamat",
+    "zh": "大难",
+    "ja": "恐れ戦く"
+  },
+  "102": {
+    "en": "The Rivalry in world increase",
+    "id": "Bermegah-megahan",
+    "zh": "竞赛富遮",
+    "ja": "蓄積"
+  },
+  "103": {
+    "en": "The Declining Day",
+    "id": "Waktu Sore",
+    "zh": "时光",
+    "ja": "時間"
+  },
+  "104": {
+    "en": "The Traducer",
+    "id": "Pengumpat",
+    "zh": "诽谤者",
+    "ja": "中傷者"
+  },
+  "105": {
+    "en": "The Elephant",
+    "id": "Gajah",
+    "zh": "象",
+    "ja": "象"
+  },
+  "106": {
+    "en": "Quraysh",
+    "id": "Suku Quraisy",
+    "zh": "古来氏",
+    "ja": "クライシュ族"
+  },
+  "107": {
+    "en": "The Small kindnesses",
+    "id": "Barang yang Berguna",
+    "zh": "什物",
+    "ja": "慈善"
+  },
+  "108": {
+    "en": "The Abundance",
+    "id": "Nikmat Berlimpah",
+    "zh": "多福",
+    "ja": "潤沢"
+  },
+  "109": {
+    "en": "The Disbelievers",
+    "id": "Orang-orang Kafir",
+    "zh": "不信道的人们",
+    "ja": "不信者たち"
+  },
+  "110": {
+    "en": "The Divine Support",
+    "id": "Pertolongan",
+    "zh": "援助",
+    "ja": "援助"
+  },
+  "111": {
+    "en": "The Palm Fiber",
+    "id": "Gejolak Api (Sabut)",
+    "zh": "火焰",
+    "ja": "棕櫚"
+  },
+  "112": {
+    "en": "The Sincerity",
+    "id": "Ikhlash",
+    "zh": "忠诚",
+    "ja": "純正"
+  },
+  "113": {
+    "en": "The Daybreak",
+    "id": "Waktu Shubuh",
+    "zh": "曙光",
+    "ja": "黎明"
+  },
+  "114": {
+    "en": "Mankind",
+    "id": "Umat Manusia",
+    "zh": "世人",
+    "ja": "人々"
+  }
+}

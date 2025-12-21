@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
+import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/read/juz_list_view.dart';
 import 'package:quran_offline/features/read/page_list_view.dart';
 import 'package:quran_offline/features/read/surah_list_view.dart';
@@ -13,6 +15,7 @@ class ReadScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final readMode = ref.watch(readModeProvider);
+    final settings = ref.watch(settingsProvider);
     final isLargeScreen = Responsive.isLargeScreen(context);
 
     if (isLargeScreen) {
@@ -63,7 +66,7 @@ class ReadScreen extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Read and reflect',
+                                    AppLocalizations.getSubtitleText('read_subtitle', settings.appLanguage),
                                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                                         ),
@@ -143,7 +146,7 @@ class ReadScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Read and reflect',
+                  AppLocalizations.getSubtitleText('read_subtitle', settings.appLanguage),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -192,7 +195,7 @@ class ReadScreen extends ConsumerWidget {
 }
 
 /// Custom segmented button with icons, styled like Material You chips
-class _CustomSegmentedButton extends StatelessWidget {
+class _CustomSegmentedButton extends ConsumerWidget {
   final ReadMode selectedMode;
   final ValueChanged<ReadMode> onModeChanged;
 
@@ -202,15 +205,17 @@ class _CustomSegmentedButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final settings = ref.watch(settingsProvider);
+    final appLanguage = settings.appLanguage;
     
     return Row(
       children: [
         _CustomSegmentButton(
           mode: ReadMode.surah,
           icon: Icons.menu_book_outlined,
-          label: 'Surah',
+          label: AppLocalizations.getMenuText('surah', appLanguage),
           isSelected: selectedMode == ReadMode.surah,
           onTap: () => onModeChanged(ReadMode.surah),
         ),
@@ -218,7 +223,7 @@ class _CustomSegmentedButton extends StatelessWidget {
         _CustomSegmentButton(
           mode: ReadMode.juz,
           icon: Icons.library_books_outlined,
-          label: 'Juz',
+          label: AppLocalizations.getMenuText('juz', appLanguage),
           isSelected: selectedMode == ReadMode.juz,
           onTap: () => onModeChanged(ReadMode.juz),
         ),
@@ -226,7 +231,7 @@ class _CustomSegmentedButton extends StatelessWidget {
         _CustomSegmentButton(
           mode: ReadMode.pages,
           icon: Icons.auto_stories_outlined,
-          label: 'Mushaf',
+          label: AppLocalizations.getMenuText('mushaf', appLanguage),
           isSelected: selectedMode == ReadMode.pages,
           onTap: () => onModeChanged(ReadMode.pages),
         ),

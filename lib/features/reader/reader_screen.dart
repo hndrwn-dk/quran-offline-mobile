@@ -488,47 +488,76 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                           if (isFirstAyah && Bismillah.shouldShowBismillah(verse.surahId)) ...[
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Directionality(
-                                textDirection: TextDirection.rtl,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: SelectableText(
-                                        Bismillah.arabic,
-                                      style: TextStyle(
-                                        fontSize: settings.arabicFontSize * 1.1,
-                                        fontFamily: 'UthmanicHafsV22',
-                                        fontFamilyFallback: const ['UthmanicHafs'],
-                                        height: 1.7,
-                                        color: Theme.of(context).colorScheme.onSurface,
-                                      ),
-                                        textDirection: TextDirection.rtl,
-                                        textAlign: TextAlign.right,
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Opacity(
+                                          opacity: 0,
+                                          child: Text(
+                                            '${verse.surahId}:${verse.ayahNo}',
+                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                        Opacity(
+                                          opacity: 0,
+                                          child: IconButton(
+                                            icon: const Icon(Icons.bookmark_outline, size: 20),
+                                            visualDensity: VisualDensity.compact,
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                            onPressed: () {},
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Directionality(
+                                      textDirection: TextDirection.rtl,
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: SelectableText(
+                                          Bismillah.arabic,
+                                          style: TextStyle(
+                                            fontSize: settings.arabicFontSize * 1.1,
+                                            fontFamily: 'UthmanicHafsV22',
+                                            fontFamilyFallback: const ['UthmanicHafs'],
+                                            height: 1.7,
+                                            color: Theme.of(context).colorScheme.onSurface,
+                                          ),
+                                          textDirection: TextDirection.rtl,
+                                          textAlign: TextAlign.right,
+                                        ),
                                       ),
                                     ),
-                                  if (settings.showTransliteration) ...[
-                                    const SizedBox(height: 6),
+                                    if (settings.showTransliteration) ...[
+                                      const SizedBox(height: 8),
+                                      SelectableText(
+                                        Bismillah.transliteration,
+                                        style: TextStyle(
+                                          fontSize: settings.translationFontSize * 0.85,
+                                          fontStyle: FontStyle.italic,
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                    const SizedBox(height: 8),
                                     SelectableText(
-                                      Bismillah.transliteration,
+                                      Bismillah.getTranslation(settings.language),
                                       style: TextStyle(
-                                        fontSize: settings.translationFontSize * 0.85,
-                                        fontStyle: FontStyle.italic,
+                                        fontSize: settings.translationFontSize,
                                         color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                        height: 1.4,
+                                        height: 1.5,
                                       ),
                                     ),
-                                  ],
-                                  const SizedBox(height: 6),
-                                  SelectableText(
-                                    Bismillah.getTranslation(settings.language),
-                                    style: TextStyle(
-                                      fontSize: settings.translationFontSize,
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                      height: 1.5,
-                                    ),
-                                  ),
                                   ],
                                 ),
                               ),
@@ -623,47 +652,76 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                           if (isFirstAyah && Bismillah.shouldShowBismillah(verse.surahId)) ...[
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Directionality(
-                                textDirection: TextDirection.rtl,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: SelectableText(
-                                        Bismillah.arabic,
-                                        style: TextStyle(
-                                          fontSize: settings.arabicFontSize * 1.1,
-                                          fontFamily: 'UthmanicHafsV22',
-                                          fontFamilyFallback: const ['UthmanicHafs'],
-                                          height: 1.7,
-                                          color: Theme.of(context).colorScheme.onSurface,
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Opacity(
+                                          opacity: 0,
+                                          child: Text(
+                                            '${verse.surahId}:${verse.ayahNo}',
+                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
                                         ),
-                                        textDirection: TextDirection.rtl,
-                                        textAlign: TextAlign.right,
+                                        Opacity(
+                                          opacity: 0,
+                                          child: IconButton(
+                                            icon: const Icon(Icons.bookmark_outline, size: 20),
+                                            visualDensity: VisualDensity.compact,
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                            onPressed: () {},
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Directionality(
+                                      textDirection: TextDirection.rtl,
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: SelectableText(
+                                          Bismillah.arabic,
+                                          style: TextStyle(
+                                            fontSize: settings.arabicFontSize * 1.1,
+                                            fontFamily: 'UthmanicHafsV22',
+                                            fontFamilyFallback: const ['UthmanicHafs'],
+                                            height: 1.7,
+                                            color: Theme.of(context).colorScheme.onSurface,
+                                          ),
+                                          textDirection: TextDirection.rtl,
+                                          textAlign: TextAlign.right,
+                                        ),
                                       ),
                                     ),
-                                  if (settings.showTransliteration) ...[
-                                    const SizedBox(height: 6),
+                                    if (settings.showTransliteration) ...[
+                                      const SizedBox(height: 8),
+                                      SelectableText(
+                                        Bismillah.transliteration,
+                                        style: TextStyle(
+                                          fontSize: settings.translationFontSize * 0.85,
+                                          fontStyle: FontStyle.italic,
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                    const SizedBox(height: 8),
                                     SelectableText(
-                                      Bismillah.transliteration,
+                                      Bismillah.getTranslation(settings.language),
                                       style: TextStyle(
-                                        fontSize: settings.translationFontSize * 0.85,
-                                        fontStyle: FontStyle.italic,
+                                        fontSize: settings.translationFontSize,
                                         color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                        height: 1.4,
+                                        height: 1.5,
                                       ),
                                     ),
-                                  ],
-                                  const SizedBox(height: 6),
-                                  SelectableText(
-                                    Bismillah.getTranslation(settings.language),
-                                    style: TextStyle(
-                                      fontSize: settings.translationFontSize,
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                      height: 1.5,
-                                    ),
-                                  ),
                                   ],
                                 ),
                               ),
@@ -758,47 +816,76 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                           if (isFirstAyah && Bismillah.shouldShowBismillah(verse.surahId)) ...[
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Directionality(
-                                textDirection: TextDirection.rtl,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: SelectableText(
-                                        Bismillah.arabic,
-                                        style: TextStyle(
-                                          fontSize: settings.arabicFontSize * 1.1,
-                                          fontFamily: 'UthmanicHafsV22',
-                                          fontFamilyFallback: const ['UthmanicHafs'],
-                                          height: 1.7,
-                                          color: Theme.of(context).colorScheme.onSurface,
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Opacity(
+                                          opacity: 0,
+                                          child: Text(
+                                            '${verse.surahId}:${verse.ayahNo}',
+                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
                                         ),
-                                        textDirection: TextDirection.rtl,
-                                        textAlign: TextAlign.right,
+                                        Opacity(
+                                          opacity: 0,
+                                          child: IconButton(
+                                            icon: const Icon(Icons.bookmark_outline, size: 20),
+                                            visualDensity: VisualDensity.compact,
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                            onPressed: () {},
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Directionality(
+                                      textDirection: TextDirection.rtl,
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: SelectableText(
+                                          Bismillah.arabic,
+                                          style: TextStyle(
+                                            fontSize: settings.arabicFontSize * 1.1,
+                                            fontFamily: 'UthmanicHafsV22',
+                                            fontFamilyFallback: const ['UthmanicHafs'],
+                                            height: 1.7,
+                                            color: Theme.of(context).colorScheme.onSurface,
+                                          ),
+                                          textDirection: TextDirection.rtl,
+                                          textAlign: TextAlign.right,
+                                        ),
                                       ),
                                     ),
-                                  if (settings.showTransliteration) ...[
-                                    const SizedBox(height: 6),
+                                    if (settings.showTransliteration) ...[
+                                      const SizedBox(height: 8),
+                                      SelectableText(
+                                        Bismillah.transliteration,
+                                        style: TextStyle(
+                                          fontSize: settings.translationFontSize * 0.85,
+                                          fontStyle: FontStyle.italic,
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                    const SizedBox(height: 8),
                                     SelectableText(
-                                      Bismillah.transliteration,
+                                      Bismillah.getTranslation(settings.language),
                                       style: TextStyle(
-                                        fontSize: settings.translationFontSize * 0.85,
-                                        fontStyle: FontStyle.italic,
+                                        fontSize: settings.translationFontSize,
                                         color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                        height: 1.4,
+                                        height: 1.5,
                                       ),
                                     ),
-                                  ],
-                                  const SizedBox(height: 6),
-                                  SelectableText(
-                                    Bismillah.getTranslation(settings.language),
-                                    style: TextStyle(
-                                      fontSize: settings.translationFontSize,
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                      height: 1.5,
-                                    ),
-                                  ),
                                   ],
                                 ),
                               ),
