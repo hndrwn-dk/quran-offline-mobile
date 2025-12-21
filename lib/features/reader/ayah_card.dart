@@ -5,6 +5,7 @@ import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
+import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
 class AyahCard extends ConsumerStatefulWidget {
   final Verse verse;
@@ -113,18 +114,20 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                 textDirection: TextDirection.rtl,
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: SelectableText(
-                    widget.verse.arabic,
-                    style: TextStyle(
-                      fontSize: settings.arabicFontSize * 1.15,
-                      fontFamily: 'UthmanicHafsV22',
-                      fontFamilyFallback: const ['UthmanicHafs'],
-                      height: 1.7,
-                      color: colorScheme.onSurface,
-                    ),
-                    textDirection: TextDirection.rtl,
-                    textAlign: TextAlign.right,
-                  ),
+                  child: settings.showTajweed
+                      ? _buildTajweedText(settings, colorScheme)
+                      : SelectableText(
+                          widget.verse.arabic,
+                          style: TextStyle(
+                            fontSize: settings.arabicFontSize * 1.15,
+                            fontFamily: 'UthmanicHafsV22',
+                            fontFamilyFallback: const ['UthmanicHafs'],
+                            height: 1.7,
+                            color: colorScheme.onSurface,
+                          ),
+                          textDirection: TextDirection.rtl,
+                          textAlign: TextAlign.right,
+                        ),
                 ),
               ),
             ),
@@ -192,6 +195,35 @@ class _AyahCardState extends ConsumerState<AyahCard> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTajweedText(AppSettings settings, ColorScheme colorScheme) {
+    final tajweedHtml = widget.verse.tajweed;
+    
+    if (tajweedHtml == null || tajweedHtml.isEmpty) {
+      // Fallback to regular text if tajweed not available
+      return SelectableText(
+        widget.verse.arabic,
+        style: TextStyle(
+          fontSize: settings.arabicFontSize * 1.15,
+          fontFamily: 'UthmanicHafsV22',
+          fontFamilyFallback: const ['UthmanicHafs'],
+          height: 1.7,
+          color: colorScheme.onSurface,
+        ),
+        textDirection: TextDirection.rtl,
+        textAlign: TextAlign.right,
+      );
+    }
+    
+    return TajweedText(
+      tajweedHtml: tajweedHtml,
+      fontSize: settings.arabicFontSize * 1.15,
+      defaultColor: colorScheme.onSurface,
+      textDirection: TextDirection.rtl,
+      textAlign: TextAlign.right,
+      height: 1.7,
     );
   }
 

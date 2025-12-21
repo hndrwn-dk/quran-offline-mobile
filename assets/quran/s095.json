@@ -1,1 +1,162 @@
-[{"s":95,"a":1,"ar":"وَٱلتِّينِ وَٱلزَّيْتُونِ","tl":"wal-tīni wal-zaytūni","tr":{"en":"By the fig and the olive<sup foot_note=197782>1</sup>","id":"Demi (buah) Tin dan (buah) Zaitun,<sup foot_note=135867>1</sup>","zh":"以无花果和橄榄果盟誓，","ja":"無花果とオリーブにおいて，"},"m":{"juz":30,"hizb":60,"rub":null,"page":597,"ruku":539}},{"s":95,"a":2,"ar":"وَطُورِ سِينِينَ","tl":"waṭūri sīnīna","tr":{"en":"And [by] Mount Sinai","id":"demi gunung Sinai, <sup foot_note=135868>1</sup>","zh":"以西奈山盟誓，","ja":"シナイ山において，"},"m":{"juz":30,"hizb":60,"rub":null,"page":597,"ruku":539}},{"s":95,"a":3,"ar":"وَهَـٰذَا ٱلْبَلَدِ ٱلْأَمِينِ","tl":"wahādhā l-baladi l-amīni","tr":{"en":"And [by] this secure city [i.e., Makkah],","id":"dan demi negeri (Mekkah) yang aman ini.","zh":"以这个安宁的城市盟誓，","ja":"また平安なこの町において（誓う）。"},"m":{"juz":30,"hizb":60,"rub":null,"page":597,"ruku":539}},{"s":95,"a":4,"ar":"لَقَدْ خَلَقْنَا ٱلْإِنسَـٰنَ فِىٓ أَحْسَنِ تَقْوِيمٍ","tl":"laqad khalaqnā l-insāna fī aḥsani taqwīmin","tr":{"en":"We have certainly created man in the best of stature;<sup foot_note=197783>1</sup>","id":"Sungguh, Kami telah menciptakan manusia dalam bentuk yang sebaik-baiknya,","zh":"我确已把人造成具有最美的形态，","ja":"本当にわれは，人間を最も美しい姿に創った。"},"m":{"juz":30,"hizb":60,"rub":null,"page":597,"ruku":539}},{"s":95,"a":5,"ar":"ثُمَّ رَدَدْنَـٰهُ أَسْفَلَ سَـٰفِلِينَ","tl":"thumma radadnāhu asfala sāfilīna","tr":{"en":"Then We return him to the lowest of the low,<sup foot_note=197784>1</sup>","id":"kemudian Kami kembalikan dia ke tempat yang serendah-rendahnya,","zh":"然后，我使他变成最卑劣的；","ja":"それからわれは，かれを最も低く下げた。"},"m":{"juz":30,"hizb":60,"rub":null,"page":597,"ruku":539}},{"s":95,"a":6,"ar":"إِلَّا ٱلَّذِينَ ءَامَنُوا۟ وَعَمِلُوا۟ ٱلصَّـٰلِحَـٰتِ فَلَهُمْ أَجْرٌ غَيْرُ مَمْنُونٍ","tl":"illā alladhīna āmanū waʿamilū l-ṣāliḥāti falahum ajrun ghayru mamnūnin","tr":{"en":"Except for those who believe and do righteous deeds, for they will have a reward uninterrupted.","id":"kecuali orang-orang yang beriman dan mengerjakan kebajikan; maka mereka akan mendapat pahala yang tidak ada putus-putusnya.","zh":"但信道而且行善者，将受不断的报酬","ja":"信仰して善行に勤しむ者は別である。かれらに対しては果てしない報奨があろう。"},"m":{"juz":30,"hizb":60,"rub":null,"page":597,"ruku":539}},{"s":95,"a":7,"ar":"فَمَا يُكَذِّبُكَ بَعْدُ بِٱلدِّينِ","tl":"famā yukadhibuka baʿdu bil-dīni","tr":{"en":"So what yet causes you to deny the Recompense?<sup foot_note=197785>1</sup>","id":"Maka apa yang menyebabkan (mereka) mendustakanmu (tentang) hari pembalasan setelah (adanya keterangan-keterangan) itu?","zh":"此后，你怎么还否认报应呢？","ja":"なぜそれでも，おまえは宗教（真実）を否定するのか。"},"m":{"juz":30,"hizb":60,"rub":null,"page":597,"ruku":539}},{"s":95,"a":8,"ar":"أَلَيْسَ ٱللَّهُ بِأَحْكَمِ ٱلْحَـٰكِمِينَ","tl":"alaysa l-lahu bi-aḥkami l-ḥākimīna","tr":{"en":"Is not Allāh the most just of judges?","id":"Bukankah Allah Hakim yang paling adil?","zh":"难道安拉不是最公道的判决者吗？","ja":"アッラーは，最も優れた審判者ではないか。"},"m":{"juz":30,"hizb":60,"rub":null,"page":597,"ruku":539}}]
+[
+  {
+    "s": 95,
+    "a": 1,
+    "ar": "وَٱلتِّينِ وَٱلزَّيْتُونِ",
+    "tl": "wal-tīni wal-zaytūni",
+    "tr": {
+      "en": "By the fig and the olive<sup foot_note=197782>1</sup>",
+      "id": "Demi (buah) Tin dan (buah) Zaitun,<sup foot_note=135867>1</sup>",
+      "zh": "以无花果和橄榄果盟誓，",
+      "ja": "無花果とオリーブにおいて，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 597,
+      "ruku": 539
+    },
+    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>تِّينِ وَ<tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>زَّيْت<tajweed class=madda_permissible>ُو</tajweed>نِ <span class=end>١</span>"
+  },
+  {
+    "s": 95,
+    "a": 2,
+    "ar": "وَطُورِ سِينِينَ",
+    "tl": "waṭūri sīnīna",
+    "tr": {
+      "en": "And [by] Mount Sinai",
+      "id": "demi gunung Sinai, <sup foot_note=135868>1</sup>",
+      "zh": "以西奈山盟誓，",
+      "ja": "シナイ山において，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 597,
+      "ruku": 539
+    },
+    "tj": "وَطُورِ سِين<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٢</span>"
+  },
+  {
+    "s": 95,
+    "a": 3,
+    "ar": "وَهَـٰذَا ٱلْبَلَدِ ٱلْأَمِينِ",
+    "tl": "wahādhā l-baladi l-amīni",
+    "tr": {
+      "en": "And [by] this secure city [i.e., Makkah],",
+      "id": "dan demi negeri (Mekkah) yang aman ini.",
+      "zh": "以这个安宁的城市盟誓，",
+      "ja": "また平安なこの町において（誓う）。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 597,
+      "ruku": 539
+    },
+    "tj": "وَهَ<tajweed class=madda_normal>ـٰ</tajweed>ذَا <tajweed class=ham_wasl>ٱ</tajweed>لْبَلَدِ <tajweed class=ham_wasl>ٱ</tajweed>لْأَم<tajweed class=madda_permissible>ِي</tajweed>نِ <span class=end>٣</span>"
+  },
+  {
+    "s": 95,
+    "a": 4,
+    "ar": "لَقَدْ خَلَقْنَا ٱلْإِنسَـٰنَ فِىٓ أَحْسَنِ تَقْوِيمٍ",
+    "tl": "laqad khalaqnā l-insāna fī aḥsani taqwīmin",
+    "tr": {
+      "en": "We have certainly created man in the best of stature;<sup foot_note=197783>1</sup>",
+      "id": "Sungguh, Kami telah menciptakan manusia dalam bentuk yang sebaik-baiknya,",
+      "zh": "我确已把人造成具有最美的形态，",
+      "ja": "本当にわれは，人間を最も美しい姿に創った。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 597,
+      "ruku": 539
+    },
+    "tj": "لَقَ<tajweed class=qalaqah>دْ</tajweed> خَلَ<tajweed class=qalaqah>قْ</tajweed>نَا <tajweed class=ham_wasl>ٱ</tajweed>لْإِ<tajweed class=ikhafa>نس</tajweed>َ<tajweed class=madda_normal>ـٰ</tajweed>نَ ف<tajweed class=madda_obligatory>ِىٓ</tajweed> أَحْسَنِ تَ<tajweed class=qalaqah>قْ</tajweed>و<tajweed class=madda_permissible>ِي</tajweed>مٍ <span class=end>٤</span>"
+  },
+  {
+    "s": 95,
+    "a": 5,
+    "ar": "ثُمَّ رَدَدْنَـٰهُ أَسْفَلَ سَـٰفِلِينَ",
+    "tl": "thumma radadnāhu asfala sāfilīna",
+    "tr": {
+      "en": "Then We return him to the lowest of the low,<sup foot_note=197784>1</sup>",
+      "id": "kemudian Kami kembalikan dia ke tempat yang serendah-rendahnya,",
+      "zh": "然后，我使他变成最卑劣的；",
+      "ja": "それからわれは，かれを最も低く下げた。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 597,
+      "ruku": 539
+    },
+    "tj": "ثُ<tajweed class=ghunnah>مّ</tajweed>َ رَدَ<tajweed class=qalaqah>دْ</tajweed>نَ<tajweed class=madda_normal>ـٰ</tajweed>هُ أَسْفَلَ سَ<tajweed class=madda_normal>ـٰ</tajweed>فِل<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٥</span>"
+  },
+  {
+    "s": 95,
+    "a": 6,
+    "ar": "إِلَّا ٱلَّذِينَ ءَامَنُوا۟ وَعَمِلُوا۟ ٱلصَّـٰلِحَـٰتِ فَلَهُمْ أَجْرٌ غَيْرُ مَمْنُونٍ",
+    "tl": "illā alladhīna āmanū waʿamilū l-ṣāliḥāti falahum ajrun ghayru mamnūnin",
+    "tr": {
+      "en": "Except for those who believe and do righteous deeds, for they will have a reward uninterrupted.",
+      "id": "kecuali orang-orang yang beriman dan mengerjakan kebajikan; maka mereka akan mendapat pahala yang tidak ada putus-putusnya.",
+      "zh": "但信道而且行善者，将受不断的报酬",
+      "ja": "信仰して善行に勤しむ者は別である。かれらに対しては果てしない報奨があろう。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 597,
+      "ruku": 539
+    },
+    "tj": "إِلَّا <tajweed class=ham_wasl>ٱ</tajweed>لَّذِينَ ءَامَنُو<tajweed class=slnt>اْ</tajweed> وَعَمِلُو<tajweed class=slnt>اْ</tajweed> <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>صَّ<tajweed class=madda_normal>ـٰ</tajweed>لِحَ<tajweed class=madda_normal>ـٰ</tajweed>تِ فَلَهُمْ أَ<tajweed class=qalaqah>جْ</tajweed>رٌ غَيْرُ مَمْن<tajweed class=madda_permissible>ُو</tajweed>نٍ <span class=end>٦</span>"
+  },
+  {
+    "s": 95,
+    "a": 7,
+    "ar": "فَمَا يُكَذِّبُكَ بَعْدُ بِٱلدِّينِ",
+    "tl": "famā yukadhibuka baʿdu bil-dīni",
+    "tr": {
+      "en": "So what yet causes you to deny the Recompense?<sup foot_note=197785>1</sup>",
+      "id": "Maka apa yang menyebabkan (mereka) mendustakanmu (tentang) hari pembalasan setelah (adanya keterangan-keterangan) itu?",
+      "zh": "此后，你怎么还否认报应呢？",
+      "ja": "なぜそれでも，おまえは宗教（真実）を否定するのか。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 597,
+      "ruku": 539
+    },
+    "tj": "فَمَا يُكَذِّبُكَ بَعْدُ بِ<tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>دّ<tajweed class=madda_permissible>ِي</tajweed>نِ <span class=end>٧</span>"
+  },
+  {
+    "s": 95,
+    "a": 8,
+    "ar": "أَلَيْسَ ٱللَّهُ بِأَحْكَمِ ٱلْحَـٰكِمِينَ",
+    "tl": "alaysa l-lahu bi-aḥkami l-ḥākimīna",
+    "tr": {
+      "en": "Is not Allāh the most just of judges?",
+      "id": "Bukankah Allah Hakim yang paling adil?",
+      "zh": "难道安拉不是最公道的判决者吗？",
+      "ja": "アッラーは，最も優れた審判者ではないか。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 597,
+      "ruku": 539
+    },
+    "tj": "أَلَيْسَ <tajweed class=ham_wasl>ٱ</tajweed>للَّهُ بِأَحْكَمِ <tajweed class=ham_wasl>ٱ</tajweed>لْحَ<tajweed class=madda_normal>ـٰ</tajweed>كِم<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٨</span>"
+  }
+]

@@ -1,1 +1,122 @@
-[{"s":114,"a":1,"ar":" قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ","tl":"qul aʿūdhu birabbi l-nāsi","tr":{"en":"Say, \"I seek refuge in the Lord of mankind,","id":"Katakanlah, \"Aku berlindung kepada Tuhannya manusia,","zh":"你说：“我求庇于世人的养主，","ja":"言え，「ご加護を乞い願う，人間の主，"},"m":{"juz":30,"hizb":60,"rub":null,"page":604,"ruku":558}},{"s":114,"a":2,"ar":"مَلِكِ ٱلنَّاسِ","tl":"maliki l-nāsi","tr":{"en":"The Sovereign of mankind,","id":"Raja manusia,","zh":"世人的君主，","ja":"人間の王，"},"m":{"juz":30,"hizb":60,"rub":null,"page":604,"ruku":558}},{"s":114,"a":3,"ar":"إِلَـٰهِ ٱلنَّاسِ","tl":"ilāhi l-nāsi","tr":{"en":"The God of mankind,","id":"sembahan manusia,","zh":"世人的主宰，","ja":"人間の神に。"},"m":{"juz":30,"hizb":60,"rub":null,"page":604,"ruku":558}},{"s":114,"a":4,"ar":"مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ","tl":"min sharri l-waswāsi l-khanāsi","tr":{"en":"From the evil of the retreating whisperer<sup foot_note=197832>1</sup> -","id":"dari kejahatan (bisikan) setan yang bersembunyi,","zh":"免遭潜伏的教唆者的毒害，","ja":"こっそりと忍び込み，囁く者の悪から。"},"m":{"juz":30,"hizb":60,"rub":null,"page":604,"ruku":558}},{"s":114,"a":5,"ar":"ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ","tl":"alladhī yuwaswisu fī ṣudūri l-nāsi","tr":{"en":"Who whispers [evil] into the breasts of mankind -","id":"yang membisikkan (kejahatan) ke dalam dada manusia,","zh":"他在世人的胸中教唆，","ja":"それが人間の胸に囁きかける，"},"m":{"juz":30,"hizb":60,"rub":null,"page":604,"ruku":558}},{"s":114,"a":6,"ar":"مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ","tl":"mina l-jinati wal-nāsi","tr":{"en":"From among the jinn and mankind\".<sup foot_note=197833>1</sup>","id":"dari (golongan) jin dan manusia.\"","zh":"他是属于精灵和人类的。","ja":"ジン（幽精）であろうと，人間であろうと。」"},"m":{"juz":30,"hizb":60,"rub":null,"page":604,"ruku":558}}]
+[
+  {
+    "s": 114,
+    "a": 1,
+    "ar": " قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ",
+    "tl": "qul aʿūdhu birabbi l-nāsi",
+    "tr": {
+      "en": "Say, \"I seek refuge in the Lord of mankind,",
+      "id": "Katakanlah, \"Aku berlindung kepada Tuhannya manusia,",
+      "zh": "你说：“我求庇于世人的养主，",
+      "ja": "言え，「ご加護を乞い願う，人間の主，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 604,
+      "ruku": 558
+    },
+    "tj": "قُلْ أَعُوذُ بِرَبِّ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed><tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_permissible>َا</tajweed>سِ <span class=end>١</span>"
+  },
+  {
+    "s": 114,
+    "a": 2,
+    "ar": "مَلِكِ ٱلنَّاسِ",
+    "tl": "maliki l-nāsi",
+    "tr": {
+      "en": "The Sovereign of mankind,",
+      "id": "Raja manusia,",
+      "zh": "世人的君主，",
+      "ja": "人間の王，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 604,
+      "ruku": 558
+    },
+    "tj": "مَلِكِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed><tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_permissible>َا</tajweed>سِ <span class=end>٢</span>"
+  },
+  {
+    "s": 114,
+    "a": 3,
+    "ar": "إِلَـٰهِ ٱلنَّاسِ",
+    "tl": "ilāhi l-nāsi",
+    "tr": {
+      "en": "The God of mankind,",
+      "id": "sembahan manusia,",
+      "zh": "世人的主宰，",
+      "ja": "人間の神に。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 604,
+      "ruku": 558
+    },
+    "tj": "إِلَ<tajweed class=madda_normal>ـٰ</tajweed>هِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed><tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_permissible>َا</tajweed>سِ <span class=end>٣</span>"
+  },
+  {
+    "s": 114,
+    "a": 4,
+    "ar": "مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ",
+    "tl": "min sharri l-waswāsi l-khanāsi",
+    "tr": {
+      "en": "From the evil of the retreating whisperer<sup foot_note=197832>1</sup> -",
+      "id": "dari kejahatan (bisikan) setan yang bersembunyi,",
+      "zh": "免遭潜伏的教唆者的毒害，",
+      "ja": "こっそりと忍び込み，囁く者の悪から。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 604,
+      "ruku": 558
+    },
+    "tj": "مِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ <tajweed class=ham_wasl>ٱ</tajweed>لْوَسْوَاسِ <tajweed class=ham_wasl>ٱ</tajweed>لْخَ<tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_permissible>َا</tajweed>سِ <span class=end>٤</span>"
+  },
+  {
+    "s": 114,
+    "a": 5,
+    "ar": "ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ",
+    "tl": "alladhī yuwaswisu fī ṣudūri l-nāsi",
+    "tr": {
+      "en": "Who whispers [evil] into the breasts of mankind -",
+      "id": "yang membisikkan (kejahatan) ke dalam dada manusia,",
+      "zh": "他在世人的胸中教唆，",
+      "ja": "それが人間の胸に囁きかける，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 604,
+      "ruku": 558
+    },
+    "tj": "ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed><tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_permissible>َا</tajweed>سِ <span class=end>٥</span>"
+  },
+  {
+    "s": 114,
+    "a": 6,
+    "ar": "مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ",
+    "tl": "mina l-jinati wal-nāsi",
+    "tr": {
+      "en": "From among the jinn and mankind\".<sup foot_note=197833>1</sup>",
+      "id": "dari (golongan) jin dan manusia.\"",
+      "zh": "他是属于精灵和人类的。",
+      "ja": "ジン（幽精）であろうと，人間であろうと。」"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 604,
+      "ruku": 558
+    },
+    "tj": "مِنَ <tajweed class=ham_wasl>ٱ</tajweed>لْجِ<tajweed class=ghunnah>نّ</tajweed>َةِ وَ<tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed><tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_permissible>َا</tajweed>سِ <span class=end>٦</span>"
+  }
+]

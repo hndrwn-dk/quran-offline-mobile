@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
+import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
 class TextSettingsDialog extends ConsumerStatefulWidget {
   const TextSettingsDialog({super.key});
@@ -14,6 +16,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
   double _currentArabicSize = 24.0;
   double _currentTranslationSize = 16.0;
   bool _showTransliteration = false;
+  bool _showTajweed = false;
   String _currentLanguage = 'en';
 
   @override
@@ -23,6 +26,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
     _currentArabicSize = settings.arabicFontSize;
     _currentTranslationSize = settings.translationFontSize;
     _showTransliteration = settings.showTransliteration;
+    _showTajweed = settings.showTajweed;
     _currentLanguage = settings.language;
   }
 
@@ -34,6 +38,140 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
       'ja' => 'Japanese',
       _ => lang,
     };
+  }
+
+  void _showTajweedGuide(BuildContext context, ColorScheme colorScheme) {
+    final settings = ref.read(settingsProvider);
+    final appLanguage = settings.appLanguage;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.getSettingsText('tajweed_guide_title', appLanguage)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.getSettingsText('tajweed_guide_intro', appLanguage),
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 16),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_ikhfa', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_ikhfa_desc', appLanguage),
+                isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00897B),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_idgham', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_idgham_desc', appLanguage),
+                isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_iqlab', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_iqlab_desc', appLanguage),
+                isDark ? const Color(0xFFBA68C8) : const Color(0xFF7B1FA2),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_ghunnah', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_ghunnah_desc', appLanguage),
+                isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_qalqalah', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_qalqalah_desc', appLanguage),
+                isDark ? const Color(0xFFE57373) : const Color(0xFFC62828),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_laam_shamsiyah', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_laam_shamsiyah_desc', appLanguage),
+                isDark ? const Color(0xFFFFD54F) : const Color(0xFFF57F17),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_madd', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_madd_desc', appLanguage),
+                isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_ham_wasl', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_ham_wasl_desc', appLanguage),
+                colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                AppLocalizations.getSettingsText('tajweed_guide_closing', appLanguage),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.getSettingsText('tajweed_guide_got_it', appLanguage)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTajweedRuleItem(
+    BuildContext context,
+    String name,
+    String description,
+    Color color,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  description,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
 
@@ -215,6 +353,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
           // Transliteration Toggle
           Container(
             padding: const EdgeInsets.symmetric(vertical: 8),
+            margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
               color: colorScheme.surfaceVariant.withOpacity(0.3),
               borderRadius: BorderRadius.circular(12),
@@ -234,6 +373,48 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
               },
             ),
           ),
+          // Tajweed Toggle
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceVariant.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SwitchListTile(
+              title: Row(
+                children: [
+                  Text(
+                    'Show Tajweed',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.info_outline, size: 20),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    visualDensity: VisualDensity.compact,
+                    color: colorScheme.primary,
+                    onPressed: () => _showTajweedGuide(context, colorScheme),
+                    tooltip: 'Tajweed guide',
+                  ),
+                ],
+              ),
+              subtitle: Text(
+                'Color-coded tajweed rules for proper recitation',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              value: _showTajweed,
+              onChanged: (value) {
+                setState(() {
+                  _showTajweed = value;
+                });
+              },
+            ),
+          ),
           const SizedBox(height: 24),
           // Preview
           Container(
@@ -247,17 +428,26 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
               children: [
                 Directionality(
                   textDirection: TextDirection.rtl,
-                  child: Text(
-                    'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ',
-                    style: TextStyle(
-                      fontSize: _currentArabicSize,
-                      fontFamily: 'UthmanicHafsV22',
-                      fontFamilyFallback: const ['UthmanicHafs'],
-                      height: 1.7,
-                      color: colorScheme.onSurface,
-                    ),
-                    textAlign: TextAlign.right,
-                  ),
+                  child: _showTajweed
+                      ? TajweedText(
+                          tajweedHtml: 'بِسْمِ <tajweed class=ham_wasl>ٱ</tajweed>للَّهِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّح<tajweed class=madda_permissible>ِي</tajweed>مِ',
+                          fontSize: _currentArabicSize,
+                          defaultColor: colorScheme.onSurface,
+                          textDirection: TextDirection.rtl,
+                          textAlign: TextAlign.right,
+                          height: 1.7,
+                        )
+                      : Text(
+                          'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ',
+                          style: TextStyle(
+                            fontSize: _currentArabicSize,
+                            fontFamily: 'UthmanicHafsV22',
+                            fontFamilyFallback: const ['UthmanicHafs'],
+                            height: 1.7,
+                            color: colorScheme.onSurface,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
                 ),
                 if (_showTransliteration) ...[
                   const SizedBox(height: 12),
@@ -300,6 +490,10 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                 // Update Transliteration
                 if (_showTransliteration != settings.showTransliteration) {
                   await ref.read(settingsProvider.notifier).updateShowTransliteration(_showTransliteration);
+                }
+                // Update Tajweed
+                if (_showTajweed != settings.showTajweed) {
+                  await ref.read(settingsProvider.notifier).updateShowTajweed(_showTajweed);
                 }
                 // Update Language
                 if (_currentLanguage != settings.language) {
