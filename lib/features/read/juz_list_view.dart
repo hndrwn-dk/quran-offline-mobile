@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/juz_surahs_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 
 class JuzListView extends ConsumerWidget {
@@ -12,6 +14,7 @@ class JuzListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surahsAsync = ref.watch(surahNamesProvider);
+    final settings = ref.watch(settingsProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
     return ListView.builder(
@@ -65,7 +68,7 @@ class JuzListView extends ConsumerWidget {
                               );
                             },
                             child: Text(
-                              'Read Juz',
+                              AppLocalizations.getReadJuz(settings.appLanguage),
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: colorScheme.primary,
                                 decoration: TextDecoration.underline,
@@ -154,15 +157,23 @@ class JuzListView extends ConsumerWidget {
                                               color: colorScheme.onSurface,
                                             ),
                                           ),
-                                          if (surahInfo.englishMeaning.isNotEmpty) ...[
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              surahInfo.englishMeaning,
-                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                color: colorScheme.onSurfaceVariant,
-                                              ),
-                                            ),
-                                          ],
+                                          Builder(
+                                            builder: (context) {
+                                              final meaning = surahInfo.getMeaning(settings.appLanguage);
+                                              if (meaning.isEmpty) return const SizedBox.shrink();
+                                              return Column(
+                                                children: [
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    meaning,
+                                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                      color: colorScheme.onSurfaceVariant,
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          ),
                                         ],
                                       ),
                                     ),

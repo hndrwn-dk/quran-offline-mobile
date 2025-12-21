@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/utils/bismillah.dart';
 
 class TextSettingsDialog extends ConsumerStatefulWidget {
   const TextSettingsDialog({super.key});
@@ -13,6 +14,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
   double _currentArabicSize = 24.0;
   double _currentTranslationSize = 16.0;
   bool _showTransliteration = false;
+  String _currentLanguage = 'en';
 
   @override
   void initState() {
@@ -21,7 +23,19 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
     _currentArabicSize = settings.arabicFontSize;
     _currentTranslationSize = settings.translationFontSize;
     _showTransliteration = settings.showTransliteration;
+    _currentLanguage = settings.language;
   }
+
+  String _getLanguageName(String lang) {
+    return switch (lang) {
+      'id' => 'Indonesian',
+      'en' => 'English',
+      'zh' => 'Chinese',
+      'ja' => 'Japanese',
+      _ => lang,
+    };
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +48,11 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
         color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // Handle bar
           Center(
             child: Container(
@@ -153,6 +168,50 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
               ),
             ),
           ),
+          // Translation Language
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceVariant.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                dividerColor: Colors.transparent,
+              ),
+              child: ExpansionTile(
+                title: Text(
+                  'Translation Language',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                subtitle: Text(
+                  _getLanguageName(_currentLanguage),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                childrenPadding: EdgeInsets.zero,
+                children: ['id', 'en', 'zh', 'ja'].map((lang) {
+                  return RadioListTile<String>(
+                    title: Text(_getLanguageName(lang)),
+                    value: lang,
+                    groupValue: _currentLanguage,
+                    dense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _currentLanguage = value;
+                        });
+                      }
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
           // Transliteration Toggle
           Container(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -214,7 +273,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                 ],
                 const SizedBox(height: 12),
                 Text(
-                  'In the name of Allah, the Most Gracious, the Most Merciful',
+                  Bismillah.getTranslation(_currentLanguage),
                   style: TextStyle(
                     fontSize: _currentTranslationSize,
                     color: colorScheme.onSurfaceVariant,
@@ -242,6 +301,10 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                 if (_showTransliteration != settings.showTransliteration) {
                   await ref.read(settingsProvider.notifier).updateShowTransliteration(_showTransliteration);
                 }
+                // Update Language
+                if (_currentLanguage != settings.language) {
+                  await ref.read(settingsProvider.notifier).updateLanguage(_currentLanguage);
+                }
                 if (mounted) {
                   Navigator.of(context).pop();
                 }
@@ -250,6 +313,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
             ),
           ),
         ],
+        ),
       ),
     );
   }

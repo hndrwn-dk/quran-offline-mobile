@@ -7,19 +7,32 @@ class SurahInfo {
   final String arabicName;
   final String englishName;
   final String englishMeaning;
+  final Map<String, String>? localizedMeanings;
 
   SurahInfo({
     required this.id,
     required this.arabicName,
     required this.englishName,
     required this.englishMeaning,
+    this.localizedMeanings,
   });
+
+  /// Get localized meaning based on language code
+  /// Falls back to englishMeaning if not found
+  String getMeaning(String language) {
+    if (localizedMeanings == null) return englishMeaning;
+    return localizedMeanings![language] ?? englishMeaning;
+  }
 }
 
 final surahNamesProvider = FutureProvider<List<SurahInfo>>((ref) async {
   final surahNamesData = await rootBundle.loadString('assets/quran/surah_names/manifest.json');
   final surahNames = jsonDecode(surahNamesData) as Map<String, dynamic>;
   final items = surahNames['items'] as List<dynamic>;
+
+  // Load localized meanings from JSON
+  final meaningsData = await rootBundle.loadString('assets/quran/surah_meanings.json');
+  final meaningsMap = jsonDecode(meaningsData) as Map<String, dynamic>;
 
   final englishNames = _getEnglishNames();
   final englishMeanings = _getEnglishMeanings();
@@ -29,46 +42,54 @@ final surahNamesProvider = FutureProvider<List<SurahInfo>>((ref) async {
     final arabicName = item['display'] as String;
     final englishName = englishNames[id] ?? 'Surah $id';
     final englishMeaning = englishMeanings[id] ?? '';
+    
+    // Get localized meanings for this surah
+    final surahMeanings = meaningsMap['$id'] as Map<String, dynamic>?;
+    final localizedMeanings = surahMeanings != null
+        ? Map<String, String>.from(surahMeanings.map((key, value) => MapEntry(key, value.toString())))
+        : null;
+
     return SurahInfo(
       id: id,
       arabicName: arabicName,
       englishName: englishName,
       englishMeaning: englishMeaning,
+      localizedMeanings: localizedMeanings,
     );
   }).toList();
 });
 
 Map<int, String> _getEnglishNames() {
   return {
-    1: 'Al-Fatiha',
+    1: 'Al-Fatihah',
     2: 'Al-Baqarah',
-    3: 'Ali Imran',
+    3: 'Ali \'Imran',
     4: 'An-Nisa',
-    5: 'Al-Maidah',
-    6: "Al-An'am",
-    7: "Al-A'raf",
+    5: 'Al-Ma\'idah',
+    6: 'Al-An\'am',
+    7: 'Al-A\'raf',
     8: 'Al-Anfal',
     9: 'At-Tawbah',
     10: 'Yunus',
     11: 'Hud',
     12: 'Yusuf',
-    13: "Ar-Ra'd",
+    13: 'Ar-Ra\'d',
     14: 'Ibrahim',
     15: 'Al-Hijr',
     16: 'An-Nahl',
-    17: "Al-Isra'",
+    17: 'Al-Isra',
     18: 'Al-Kahf',
     19: 'Maryam',
-    20: 'Ta-Ha',
-    21: 'Al-Anbiya',
+    20: 'Taha',
+    21: 'Al-Anbya',
     22: 'Al-Hajj',
-    23: "Al-Mu'minun",
+    23: 'Al-Mu\'minun',
     24: 'An-Nur',
     25: 'Al-Furqan',
-    26: "Ash-Shu'ara",
+    26: 'Ash-Shu\'ara',
     27: 'An-Naml',
     28: 'Al-Qasas',
-    29: "Al-'Ankabut",
+    29: 'Al-\'Ankabut',
     30: 'Ar-Rum',
     31: 'Luqman',
     32: 'As-Sajdah',
@@ -81,7 +102,7 @@ Map<int, String> _getEnglishNames() {
     39: 'Az-Zumar',
     40: 'Ghafir',
     41: 'Fussilat',
-    42: 'Ash-Shura',
+    42: 'Ash-Shuraa',
     43: 'Az-Zukhruf',
     44: 'Ad-Dukhan',
     45: 'Al-Jathiyah',
@@ -100,8 +121,8 @@ Map<int, String> _getEnglishNames() {
     58: 'Al-Mujadila',
     59: 'Al-Hashr',
     60: 'Al-Mumtahanah',
-    61: 'As-Saff',
-    62: "Al-Jumu'ah",
+    61: 'As-Saf',
+    62: 'Al-Jumu\'ah',
     63: 'Al-Munafiqun',
     64: 'At-Taghabun',
     65: 'At-Talaq',
@@ -109,7 +130,7 @@ Map<int, String> _getEnglishNames() {
     67: 'Al-Mulk',
     68: 'Al-Qalam',
     69: 'Al-Haqqah',
-    70: "Al-Ma'arij",
+    70: 'Al-Ma\'arij',
     71: 'Nuh',
     72: 'Al-Jinn',
     73: 'Al-Muzzammil',
@@ -118,31 +139,31 @@ Map<int, String> _getEnglishNames() {
     76: 'Al-Insan',
     77: 'Al-Mursalat',
     78: 'An-Naba',
-    79: "An-Nazi'at",
-    80: 'Abasa',
+    79: 'An-Nazi\'at',
+    80: '\'Abasa',
     81: 'At-Takwir',
     82: 'Al-Infitar',
     83: 'Al-Mutaffifin',
     84: 'Al-Inshiqaq',
     85: 'Al-Buruj',
     86: 'At-Tariq',
-    87: "Al-A'la",
+    87: 'Al-A\'la',
     88: 'Al-Ghashiyah',
     89: 'Al-Fajr',
     90: 'Al-Balad',
     91: 'Ash-Shams',
     92: 'Al-Layl',
-    93: 'Ad-Duha',
+    93: 'Ad-Duhaa',
     94: 'Ash-Sharh',
     95: 'At-Tin',
-    96: 'Al-Alaq',
+    96: 'Al-\'Alaq',
     97: 'Al-Qadr',
     98: 'Al-Bayyinah',
     99: 'Az-Zalzalah',
-    100: "Al-'Adiyat",
+    100: 'Al-\'Adiyat',
     101: 'Al-Qari\'ah',
     102: 'At-Takathur',
-    103: 'Al-Asr',
+    103: 'Al-\'Asr',
     104: 'Al-Humazah',
     105: 'Al-Fil',
     106: 'Quraysh',

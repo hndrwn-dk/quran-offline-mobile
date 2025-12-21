@@ -4,7 +4,9 @@ import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 
 class BookmarksScreen extends ConsumerStatefulWidget {
@@ -85,6 +87,7 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
     ref.watch(bookmarkRefreshProvider);
     final bookmarksAsync = ref.watch(bookmarksProvider);
     final surahsAsync = ref.watch(surahNamesProvider);
+    final settings = ref.watch(settingsProvider);
     final colorScheme = Theme.of(context).colorScheme;
     TextStyle _titleStyle() => Theme.of(context).textTheme.titleLarge!.copyWith(
           fontWeight: FontWeight.w700,
@@ -137,7 +140,7 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                       Text('Bookmarks', style: _titleStyle()),
                       const SizedBox(height: 2),
                       Text(
-                        'Saved for later',
+                        AppLocalizations.getSubtitleText('bookmarks_subtitle', settings.appLanguage),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: colorScheme.onSurfaceVariant,
                             ),
@@ -402,15 +405,23 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                                               color: colorScheme.onSurface,
                                             ),
                                       ),
-                                      if (surahInfo.englishMeaning.isNotEmpty) ...[
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          surahInfo.englishMeaning,
-                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                color: colorScheme.onSurfaceVariant,
+                                      Builder(
+                                        builder: (context) {
+                                          final meaning = surahInfo.getMeaning(settings.appLanguage);
+                                          if (meaning.isEmpty) return const SizedBox.shrink();
+                                          return Column(
+                                            children: [
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                meaning,
+                                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                      color: colorScheme.onSurfaceVariant,
+                                                    ),
                                               ),
-                                        ),
-                                      ],
+                                            ],
+                                          );
+                                        },
+                                      ),
                                     ],
                                   ),
                                 ),
