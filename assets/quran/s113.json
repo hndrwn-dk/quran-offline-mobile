@@ -1,1 +1,102 @@
-[{"s":113,"a":1,"ar":" قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ","tl":"qul aʿūdhu birabbi l-falaqi","tr":{"en":"Say, \"I seek refuge in the Lord of daybreak","id":"Katakanlah, \"Aku berlindung kepada Tuhan yang menguasai subuh (fajar),","zh":"你说：“我求庇于曙光的主，","ja":"言え，「黎明の主にご加護を乞い願う。"},"m":{"juz":30,"hizb":60,"rub":null,"page":604,"ruku":557}},{"s":113,"a":2,"ar":"مِن شَرِّ مَا خَلَقَ","tl":"min sharri mā khalaqa","tr":{"en":"From the evil of that which He created","id":"dari kejahatan (makhluk yang) Dia ciptakan,","zh":"免遭他所创造者的毒害；","ja":"かれが創られるものの悪（災難）から，"},"m":{"juz":30,"hizb":60,"rub":null,"page":604,"ruku":557}},{"s":113,"a":3,"ar":"وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ","tl":"wamin sharri ghāsiqin idhā waqaba","tr":{"en":"And from the evil of darkness when it settles","id":"dan dari kejahatan malam apabila telah gelap gulita,","zh":"免遭黑夜笼罩时的毒害；","ja":"深まる夜の闇の悪（危害）から，"},"m":{"juz":30,"hizb":60,"rub":null,"page":604,"ruku":557}},{"s":113,"a":4,"ar":"وَمِن شَرِّ ٱلنَّفَّـٰثَـٰتِ فِى ٱلْعُقَدِ","tl":"wamin sharri l-nafāthāti fī l-ʿuqadi","tr":{"en":"And from the evil of the blowers in knots<sup foot_note=197831>1</sup>","id":"dan dari kejahatan (perempuan-perempuan) penyihir yang meniup pada buhul-buhul (talinya),","zh":"免遭吹破坚决的主意者的毒害；","ja":"結び目に息を吹きかける（妖術使いの）女たちの悪から，"},"m":{"juz":30,"hizb":60,"rub":null,"page":604,"ruku":557}},{"s":113,"a":5,"ar":"وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ","tl":"wamin sharri ḥāsidin idhā ḥasada","tr":{"en":"And from the evil of an envier when he envies.\"","id":"dan dari kejahatan orang yang dengki apabila dia dengki.\"","zh":"免遭嫉妒者嫉妒时的毒害。”","ja":"また，嫉妬する者の嫉妬の悪（災厄）から。」"},"m":{"juz":30,"hizb":60,"rub":null,"page":604,"ruku":557}}]
+[
+  {
+    "s": 113,
+    "a": 1,
+    "ar": " قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ",
+    "tl": "qul aʿūdhu birabbi l-falaqi",
+    "tr": {
+      "en": "Say, \"I seek refuge in the Lord of daybreak",
+      "id": "Katakanlah, \"Aku berlindung kepada Tuhan yang menguasai subuh (fajar),",
+      "zh": "你说：“我求庇于曙光的主，",
+      "ja": "言え，「黎明の主にご加護を乞い願う。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 604,
+      "ruku": 557
+    },
+    "tj": "قُلْ أَعُوذُ بِرَبِّ <tajweed class=ham_wasl>ٱ</tajweed>لْفَلَ<tajweed class=qalaqah>ق</tajweed>ِ <span class=end>١</span>"
+  },
+  {
+    "s": 113,
+    "a": 2,
+    "ar": "مِن شَرِّ مَا خَلَقَ",
+    "tl": "min sharri mā khalaqa",
+    "tr": {
+      "en": "From the evil of that which He created",
+      "id": "dari kejahatan (makhluk yang) Dia ciptakan,",
+      "zh": "免遭他所创造者的毒害；",
+      "ja": "かれが創られるものの悪（災難）から，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 604,
+      "ruku": 557
+    },
+    "tj": "مِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ مَا خَلَ<tajweed class=qalaqah>ق</tajweed>َ <span class=end>٢</span>"
+  },
+  {
+    "s": 113,
+    "a": 3,
+    "ar": "وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ",
+    "tl": "wamin sharri ghāsiqin idhā waqaba",
+    "tr": {
+      "en": "And from the evil of darkness when it settles",
+      "id": "dan dari kejahatan malam apabila telah gelap gulita,",
+      "zh": "免遭黑夜笼罩时的毒害；",
+      "ja": "深まる夜の闇の悪（危害）から，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 604,
+      "ruku": 557
+    },
+    "tj": "وَمِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ غَاسِقٍ إِذَا وَقَ<tajweed class=qalaqah>ب</tajweed>َ <span class=end>٣</span>"
+  },
+  {
+    "s": 113,
+    "a": 4,
+    "ar": "وَمِن شَرِّ ٱلنَّفَّـٰثَـٰتِ فِى ٱلْعُقَدِ",
+    "tl": "wamin sharri l-nafāthāti fī l-ʿuqadi",
+    "tr": {
+      "en": "And from the evil of the blowers in knots<sup foot_note=197831>1</sup>",
+      "id": "dan dari kejahatan (perempuan-perempuan) penyihir yang meniup pada buhul-buhul (talinya),",
+      "zh": "免遭吹破坚决的主意者的毒害；",
+      "ja": "結び目に息を吹きかける（妖術使いの）女たちの悪から，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 604,
+      "ruku": 557
+    },
+    "tj": "وَمِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed><tajweed class=ghunnah>نّ</tajweed>َفَّ<tajweed class=madda_normal>ـٰ</tajweed>ثَ<tajweed class=madda_normal>ـٰ</tajweed>تِ فِى <tajweed class=ham_wasl>ٱ</tajweed>لْعُقَ<tajweed class=qalaqah>د</tajweed>ِ <span class=end>٤</span>"
+  },
+  {
+    "s": 113,
+    "a": 5,
+    "ar": "وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+    "tl": "wamin sharri ḥāsidin idhā ḥasada",
+    "tr": {
+      "en": "And from the evil of an envier when he envies.\"",
+      "id": "dan dari kejahatan orang yang dengki apabila dia dengki.\"",
+      "zh": "免遭嫉妒者嫉妒时的毒害。”",
+      "ja": "また，嫉妬する者の嫉妬の悪（災厄）から。」"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 604,
+      "ruku": 557
+    },
+    "tj": "وَمِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ حَاسِدٍ إِذَا حَسَ<tajweed class=qalaqah>د</tajweed>َ <span class=end>٥</span>"
+  }
+]

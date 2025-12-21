@@ -11,7 +11,7 @@ class DataImporter {
   final AppDatabase _db;
   final void Function(ImportProgress)? onProgress;
   static const String _versionKey = 'quran_data_version';
-  static const String currentVersion = 'v5-uthmani+translit+EN(SI)+ID(KEMENAG)+ZH(MaJian)+JA(Mita)-cleaned';
+  static const String currentVersion = 'v6-uthmani+tajweed+translit+EN(SI)+ID(KEMENAG)+ZH(MaJian)+JA(Mita)-cleaned';
 
   DataImporter(this._db, {this.onProgress});
 
@@ -64,6 +64,7 @@ class DataImporter {
                   page: metadata?.page ?? 0,
                   juz: metadata?.juz ?? 0,
                   arabic: verse.arabic,
+                  tajweed: Value(verse.tajweed),
                   translit: Value(verse.translit),
                   trEn: Value(verse.translations?['en'] != null 
                       ? TranslationCleaner.clean(verse.translations!['en']) 

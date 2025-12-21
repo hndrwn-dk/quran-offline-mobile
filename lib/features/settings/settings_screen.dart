@@ -135,6 +135,34 @@ class SettingsScreen extends ConsumerWidget {
               ref.read(settingsProvider.notifier).updateShowTransliteration(value);
             },
           ),
+          SwitchListTile(
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(AppLocalizations.getSettingsText('show_tajweed_title', appLanguage)),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.info_outline, size: 20),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  visualDensity: VisualDensity.compact,
+                  color: Theme.of(context).colorScheme.primary,
+                  onPressed: () => _showTajweedGuide(context, ref),
+                  tooltip: 'Tajweed guide',
+                ),
+              ],
+            ),
+            subtitle: Text(
+              AppLocalizations.getSettingsText('show_tajweed_subtitle', appLanguage),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            value: settings.showTajweed,
+            onChanged: (value) {
+              ref.read(settingsProvider.notifier).updateShowTajweed(value);
+            },
+          ),
           const Divider(),
           // App Settings section
           Padding(
@@ -326,6 +354,140 @@ class SettingsScreen extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTajweedGuide(BuildContext context, WidgetRef ref) {
+    final appLanguage = ref.read(settingsProvider).appLanguage;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.getSettingsText('tajweed_guide_title', appLanguage)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.getSettingsText('tajweed_guide_intro', appLanguage),
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 16),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_ikhfa', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_ikhfa_desc', appLanguage),
+                isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00897B),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_idgham', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_idgham_desc', appLanguage),
+                isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_iqlab', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_iqlab_desc', appLanguage),
+                isDark ? const Color(0xFFBA68C8) : const Color(0xFF7B1FA2),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_ghunnah', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_ghunnah_desc', appLanguage),
+                isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_qalqalah', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_qalqalah_desc', appLanguage),
+                isDark ? const Color(0xFFE57373) : const Color(0xFFC62828),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_laam_shamsiyah', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_laam_shamsiyah_desc', appLanguage),
+                isDark ? const Color(0xFFFFD54F) : const Color(0xFFF57F17),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_madd', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_madd_desc', appLanguage),
+                isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
+              ),
+              _buildTajweedRuleItem(
+                context,
+                AppLocalizations.getSettingsText('tajweed_rule_ham_wasl', appLanguage),
+                AppLocalizations.getSettingsText('tajweed_rule_ham_wasl_desc', appLanguage),
+                colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                AppLocalizations.getSettingsText('tajweed_guide_closing', appLanguage),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.getSettingsText('tajweed_guide_got_it', appLanguage)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTajweedRuleItem(
+    BuildContext context,
+    String name,
+    String description,
+    Color color,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  description,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

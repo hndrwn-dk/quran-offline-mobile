@@ -44,6 +44,13 @@ class AppLocalizations {
     return '$pageLabel $pageNo';
   }
 
+  /// Get localized text for "Mushaf - Page X" format
+  static String getMushafPageText(int pageNo, String language) {
+    final mushafLabel = _getMushaf(language);
+    final pageLabel = _getPage(language);
+    return '$mushafLabel - $pageLabel $pageNo';
+  }
+
   /// Get localized text for AppBar subtitles based on language code
   static String getSubtitleText(String key, String language) {
     return switch (key) {
@@ -299,6 +306,8 @@ class AppLocalizations {
       'translation_language_subtitle' => _getTranslationLanguageSubtitle(language),
       'show_transliteration_title' => _getShowTransliterationTitle(language),
       'show_transliteration_subtitle' => _getShowTransliterationSubtitle(language),
+      'show_tajweed_title' => _getShowTajweedTitle(language),
+      'show_tajweed_subtitle' => _getShowTajweedSubtitle(language),
       'app_settings_header' => _getAppSettingsHeader(language),
       'app_language_title' => _getAppLanguageTitle(language),
       'app_language_subtitle' => _getAppLanguageSubtitle(language),
@@ -317,6 +326,26 @@ class AppLocalizations {
       'theme_dark' => _getThemeDark(language),
       'support_dialog_title' => _getSupportDialogTitle(language),
       'support_dialog_content' => _getSupportDialogContent(language),
+      'tajweed_guide_title' => _getTajweedGuideTitle(language),
+      'tajweed_guide_intro' => _getTajweedGuideIntro(language),
+      'tajweed_guide_closing' => _getTajweedGuideClosing(language),
+      'tajweed_guide_got_it' => _getTajweedGuideGotIt(language),
+      'tajweed_rule_ikhfa' => _getTajweedRuleIkhfa(language),
+      'tajweed_rule_ikhfa_desc' => _getTajweedRuleIkhfaDesc(language),
+      'tajweed_rule_idgham' => _getTajweedRuleIdgham(language),
+      'tajweed_rule_idgham_desc' => _getTajweedRuleIdghamDesc(language),
+      'tajweed_rule_iqlab' => _getTajweedRuleIqlab(language),
+      'tajweed_rule_iqlab_desc' => _getTajweedRuleIqlabDesc(language),
+      'tajweed_rule_ghunnah' => _getTajweedRuleGhunnah(language),
+      'tajweed_rule_ghunnah_desc' => _getTajweedRuleGhunnahDesc(language),
+      'tajweed_rule_qalqalah' => _getTajweedRuleQalqalah(language),
+      'tajweed_rule_qalqalah_desc' => _getTajweedRuleQalqalahDesc(language),
+      'tajweed_rule_laam_shamsiyah' => _getTajweedRuleLaamShamsiyah(language),
+      'tajweed_rule_laam_shamsiyah_desc' => _getTajweedRuleLaamShamsiyahDesc(language),
+      'tajweed_rule_madd' => _getTajweedRuleMadd(language),
+      'tajweed_rule_madd_desc' => _getTajweedRuleMaddDesc(language),
+      'tajweed_rule_ham_wasl' => _getTajweedRuleHamWasl(language),
+      'tajweed_rule_ham_wasl_desc' => _getTajweedRuleHamWaslDesc(language),
       _ => key,
     };
   }
@@ -378,6 +407,26 @@ class AppLocalizations {
       'zh' => '在阿拉伯经文下方显示拉丁音译。',
       'ja' => 'アラビア語の節の下にラテン音訳を表示。',
       _ => 'Show Latin transliteration under Arabic verses.',
+    };
+  }
+
+  static String _getShowTajweedTitle(String language) {
+    return switch (language) {
+      'id' => 'Tampilkan Tajweed',
+      'en' => 'Show Tajweed',
+      'zh' => '显示泰吉维德',
+      'ja' => 'タジウィードを表示',
+      _ => 'Show Tajweed',
+    };
+  }
+
+  static String _getShowTajweedSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Tampilkan aturan tajweed dengan kode warna untuk pelafalan yang benar.',
+      'en' => 'Color-coded tajweed rules for proper recitation.',
+      'zh' => '彩色编码的泰吉维德规则，用于正确诵读。',
+      'ja' => '正しい朗読のための色分けされたタジウィード規則。',
+      _ => 'Color-coded tajweed rules for proper recitation.',
     };
   }
 
@@ -558,6 +607,172 @@ class AppLocalizations {
       'zh' => '这是可选的外部捐赠，不会解锁功能。',
       'ja' => 'これはオプションの外部寄付であり、機能のロックを解除しません。',
       _ => 'This is an optional external donation and does not unlock features.',
+    };
+  }
+
+  // Tajweed Guide Localizations
+  static String _getTajweedGuideTitle(String language) {
+    return switch (language) {
+      'id' => 'Panduan Warna Tajweed',
+      'en' => 'Tajweed Color Guide',
+      'zh' => '泰吉维德颜色指南',
+      'ja' => 'タジウィードカラーガイド',
+      _ => 'Tajweed Color Guide',
+    };
+  }
+
+  static String _getTajweedGuideIntro(String language) {
+    return switch (language) {
+      'id' => 'Warna berikut menunjukkan aturan tajweed yang berbeda:',
+      'en' => 'The following colors indicate different tajweed rules:',
+      'zh' => '以下颜色表示不同的泰吉维德规则：',
+      'ja' => '次の色は異なるタジウィード規則を示しています：',
+      _ => 'The following colors indicate different tajweed rules:',
+    };
+  }
+
+  static String _getTajweedGuideClosing(String language) {
+    return switch (language) {
+      'id' => 'Warna-warna ini membantu Anda mengidentifikasi dan menerapkan aturan tajweed yang benar saat membaca.',
+      'en' => 'These colors help you identify and apply proper tajweed rules while reciting.',
+      'zh' => '这些颜色帮助您在诵读时识别和应用正确的泰吉维德规则。',
+      'ja' => 'これらの色は、朗読中に適切なタジウィード規則を識別して適用するのに役立ちます。',
+      _ => 'These colors help you identify and apply proper tajweed rules while reciting.',
+    };
+  }
+
+  static String _getTajweedGuideGotIt(String language) {
+    return switch (language) {
+      'id' => 'Mengerti',
+      'en' => 'Got it',
+      'zh' => '知道了',
+      'ja' => '了解しました',
+      _ => 'Got it',
+    };
+  }
+
+  // Tajweed Rule Names
+  static String _getTajweedRuleIkhfa(String language) {
+    return 'Ikhfa'; // Arabic term, same in all languages
+  }
+
+  static String _getTajweedRuleIkhfaDesc(String language) {
+    return switch (language) {
+      'id' => 'Penyembunyian',
+      'en' => 'Concealment',
+      'zh' => '隐藏',
+      'ja' => '隠蔽',
+      _ => 'Concealment',
+    };
+  }
+
+  static String _getTajweedRuleIdgham(String language) {
+    return 'Idgham'; // Arabic term
+  }
+
+  static String _getTajweedRuleIdghamDesc(String language) {
+    return switch (language) {
+      'id' => 'Penggabungan',
+      'en' => 'Merging',
+      'zh' => '合并',
+      'ja' => '統合',
+      _ => 'Merging',
+    };
+  }
+
+  static String _getTajweedRuleIqlab(String language) {
+    return 'Iqlab'; // Arabic term
+  }
+
+  static String _getTajweedRuleIqlabDesc(String language) {
+    return switch (language) {
+      'id' => 'Konversi',
+      'en' => 'Conversion',
+      'zh' => '转换',
+      'ja' => '変換',
+      _ => 'Conversion',
+    };
+  }
+
+  static String _getTajweedRuleGhunnah(String language) {
+    return 'Ghunnah'; // Arabic term
+  }
+
+  static String _getTajweedRuleGhunnahDesc(String language) {
+    return switch (language) {
+      'id' => 'Nasalisasi',
+      'en' => 'Nasalization',
+      'zh' => '鼻音化',
+      'ja' => '鼻音化',
+      _ => 'Nasalization',
+    };
+  }
+
+  static String _getTajweedRuleQalqalah(String language) {
+    return 'Qalqalah'; // Arabic term
+  }
+
+  static String _getTajweedRuleQalqalahDesc(String language) {
+    return switch (language) {
+      'id' => 'Gema',
+      'en' => 'Echo',
+      'zh' => '回声',
+      'ja' => 'エコー',
+      _ => 'Echo',
+    };
+  }
+
+  static String _getTajweedRuleLaamShamsiyah(String language) {
+    return switch (language) {
+      'id' => 'Laam Syamsiyah',
+      'en' => 'Laam Shamsiyah',
+      'zh' => '太阳拉姆',
+      'ja' => 'ラーム・シャムスィーヤ',
+      _ => 'Laam Shamsiyah',
+    };
+  }
+
+  static String _getTajweedRuleLaamShamsiyahDesc(String language) {
+    return switch (language) {
+      'id' => 'Lam Matahari',
+      'en' => 'Solar Lam',
+      'zh' => '太阳拉姆',
+      'ja' => '太陽のラーム',
+      _ => 'Solar Lam',
+    };
+  }
+
+  static String _getTajweedRuleMadd(String language) {
+    return 'Madd'; // Arabic term
+  }
+
+  static String _getTajweedRuleMaddDesc(String language) {
+    return switch (language) {
+      'id' => 'Pemanjangan',
+      'en' => 'Elongation',
+      'zh' => '延长',
+      'ja' => '延長',
+      _ => 'Elongation',
+    };
+  }
+
+  static String _getTajweedRuleHamWasl(String language) {
+    return switch (language) {
+      'id' => 'Ham Wasl',
+      'en' => 'Ham Wasl',
+      'zh' => '连接哈姆扎',
+      'ja' => 'ハム・ワスル',
+      _ => 'Ham Wasl',
+    };
+  }
+
+  static String _getTajweedRuleHamWaslDesc(String language) {
+    return switch (language) {
+      'id' => 'Hamzah Penyambung',
+      'en' => 'Connecting Hamza',
+      'zh' => '连接哈姆扎',
+      'ja' => '接続ハムザ',
+      _ => 'Connecting Hamza',
     };
   }
 }

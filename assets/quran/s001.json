@@ -1,1 +1,142 @@
-[{"s":1,"a":1,"ar":"بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ","tl":"bis'mi l-lahi l-raḥmāni l-raḥīmi","tr":{"en":"In the name of Allāh,<sup foot_note=195932>1</sup> the Entirely Merciful, the Especially Merciful.<sup foot_note=195931>2</sup>","id":"Dengan nama Allah Yang Maha Pengasih, Maha Penyayang.","zh":"奉至仁至慈的安拉之名","ja":"慈悲あまねく慈愛深きアッラーの御名において。"},"m":{"juz":1,"hizb":1,"rub":null,"page":1,"ruku":1}},{"s":1,"a":2,"ar":"ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ","tl":"al-ḥamdu lillahi rabbi l-ʿālamīna","tr":{"en":"[All] praise is [due] to Allāh, Lord<sup foot_note=195933>1</sup> of the worlds -","id":"Segala puji bagi Allah, Tuhan seluruh alam,","zh":"一切赞颂，全归安拉，养育众世界的主，","ja":"万有の主，アッラーにこそ凡ての称讃あれ，"},"m":{"juz":1,"hizb":1,"rub":null,"page":1,"ruku":1}},{"s":1,"a":3,"ar":"ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ","tl":"al-raḥmāni l-raḥīmi","tr":{"en":"The Entirely Merciful, the Especially Merciful,","id":"Yang Maha Pengasih, Maha Penyayang,","zh":"至仁至慈的主，","ja":"慈悲あまねく慈愛深き御方，"},"m":{"juz":1,"hizb":1,"rub":null,"page":1,"ruku":1}},{"s":1,"a":4,"ar":"مَـٰلِكِ يَوْمِ ٱلدِّينِ","tl":"māliki yawmi l-dīni","tr":{"en":"Sovereign of the Day of Recompense.<sup foot_note=195934>1</sup>","id":"Pemilik hari pembalasan.<sup foot_note=134952>1</sup>","zh":"报应日的主。","ja":"最後の審きの日の主宰者に。"},"m":{"juz":1,"hizb":1,"rub":null,"page":1,"ruku":1}},{"s":1,"a":5,"ar":"إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ","tl":"iyyāka naʿbudu wa-iyyāka nastaʿīnu","tr":{"en":"It is You we worship and You we ask for help.","id":"Hanya kepada Engkaulah kami menyembah dan hanya kepada Engkaulah kami mohon pertolongan.","zh":"我们只崇拜你，我们只求你祐助。","ja":"わたしたちはあなたにのみ崇め仕え，あなたにのみ御助けを請い願う。"},"m":{"juz":1,"hizb":1,"rub":null,"page":1,"ruku":1}},{"s":1,"a":6,"ar":"ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ","tl":"ih'dinā l-ṣirāṭa l-mus'taqīma","tr":{"en":"Guide us to the straight path -","id":"Tunjukilah kami jalan yang lurus,<sup foot_note=134953>1</sup>","zh":"求你引领我们上正路，","ja":"わたしたちを正しい道に導きたまえ，"},"m":{"juz":1,"hizb":1,"rub":null,"page":1,"ruku":1}},{"s":1,"a":7,"ar":"صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ","tl":"ṣirāṭa alladhīna anʿamta ʿalayhim ghayri l-maghḍūbi ʿalayhim walā l-ḍālīna","tr":{"en":"The path of those upon whom You have bestowed favor, not of those who have earned [Your] anger or of those who are astray.","id":"(yaitu) jalan orang-orang yang telah Engkau beri nikmat kepadanya; bukan (jalan) mereka yang dimurkai, dan bukan (pula jalan) mereka yang sesat.<sup foot_note=134954>1</sup>","zh":"你所祐助者的路，不是受谴怒者的路，也不是迷误者的路。","ja":"あなたが御恵みを下された人々の道に，あなたの怒りを受けし者，また踏み迷える人々の道ではなく。"},"m":{"juz":1,"hizb":1,"rub":null,"page":1,"ruku":1}}]
+[
+  {
+    "s": 1,
+    "a": 1,
+    "ar": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+    "tl": "bis'mi l-lahi l-raḥmāni l-raḥīmi",
+    "tr": {
+      "en": "In the name of Allāh,<sup foot_note=195932>1</sup> the Entirely Merciful, the Especially Merciful.<sup foot_note=195931>2</sup>",
+      "id": "Dengan nama Allah Yang Maha Pengasih, Maha Penyayang.",
+      "zh": "奉至仁至慈的安拉之名",
+      "ja": "慈悲あまねく慈愛深きアッラーの御名において。"
+    },
+    "m": {
+      "juz": 1,
+      "hizb": 1,
+      "rub": null,
+      "page": 1,
+      "ruku": 1
+    },
+    "tj": "بِسْمِ <tajweed class=ham_wasl>ٱ</tajweed>للَّهِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّح<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>١</span>"
+  },
+  {
+    "s": 1,
+    "a": 2,
+    "ar": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
+    "tl": "al-ḥamdu lillahi rabbi l-ʿālamīna",
+    "tr": {
+      "en": "[All] praise is [due] to Allāh, Lord<sup foot_note=195933>1</sup> of the worlds -",
+      "id": "Segala puji bagi Allah, Tuhan seluruh alam,",
+      "zh": "一切赞颂，全归安拉，养育众世界的主，",
+      "ja": "万有の主，アッラーにこそ凡ての称讃あれ，"
+    },
+    "m": {
+      "juz": 1,
+      "hizb": 1,
+      "rub": null,
+      "page": 1,
+      "ruku": 1
+    },
+    "tj": "ٱلْحَمْدُ لِلَّهِ رَبِّ <tajweed class=ham_wasl>ٱ</tajweed>لْعَ<tajweed class=madda_normal>ـٰ</tajweed>لَم<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٢</span>"
+  },
+  {
+    "s": 1,
+    "a": 3,
+    "ar": "ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+    "tl": "al-raḥmāni l-raḥīmi",
+    "tr": {
+      "en": "The Entirely Merciful, the Especially Merciful,",
+      "id": "Yang Maha Pengasih, Maha Penyayang,",
+      "zh": "至仁至慈的主，",
+      "ja": "慈悲あまねく慈愛深き御方，"
+    },
+    "m": {
+      "juz": 1,
+      "hizb": 1,
+      "rub": null,
+      "page": 1,
+      "ruku": 1
+    },
+    "tj": "ٱ<tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّح<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>٣</span>"
+  },
+  {
+    "s": 1,
+    "a": 4,
+    "ar": "مَـٰلِكِ يَوْمِ ٱلدِّينِ",
+    "tl": "māliki yawmi l-dīni",
+    "tr": {
+      "en": "Sovereign of the Day of Recompense.<sup foot_note=195934>1</sup>",
+      "id": "Pemilik hari pembalasan.<sup foot_note=134952>1</sup>",
+      "zh": "报应日的主。",
+      "ja": "最後の審きの日の主宰者に。"
+    },
+    "m": {
+      "juz": 1,
+      "hizb": 1,
+      "rub": null,
+      "page": 1,
+      "ruku": 1
+    },
+    "tj": "مَ<tajweed class=madda_normal>ـٰ</tajweed>لِكِ يَوْمِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>دّ<tajweed class=madda_permissible>ِي</tajweed>نِ <span class=end>٤</span>"
+  },
+  {
+    "s": 1,
+    "a": 5,
+    "ar": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+    "tl": "iyyāka naʿbudu wa-iyyāka nastaʿīnu",
+    "tr": {
+      "en": "It is You we worship and You we ask for help.",
+      "id": "Hanya kepada Engkaulah kami menyembah dan hanya kepada Engkaulah kami mohon pertolongan.",
+      "zh": "我们只崇拜你，我们只求你祐助。",
+      "ja": "わたしたちはあなたにのみ崇め仕え，あなたにのみ御助けを請い願う。"
+    },
+    "m": {
+      "juz": 1,
+      "hizb": 1,
+      "rub": null,
+      "page": 1,
+      "ruku": 1
+    },
+    "tj": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَع<tajweed class=madda_permissible>ِي</tajweed>نُ <span class=end>٥</span>"
+  },
+  {
+    "s": 1,
+    "a": 6,
+    "ar": "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+    "tl": "ih'dinā l-ṣirāṭa l-mus'taqīma",
+    "tr": {
+      "en": "Guide us to the straight path -",
+      "id": "Tunjukilah kami jalan yang lurus,<sup foot_note=134953>1</sup>",
+      "zh": "求你引领我们上正路，",
+      "ja": "わたしたちを正しい道に導きたまえ，"
+    },
+    "m": {
+      "juz": 1,
+      "hizb": 1,
+      "rub": null,
+      "page": 1,
+      "ruku": 1
+    },
+    "tj": "ٱهْدِنَا <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>صِّر<tajweed class=madda_normal>َٲ</tajweed>طَ <tajweed class=ham_wasl>ٱ</tajweed>لْمُسْتَق<tajweed class=madda_permissible>ِي</tajweed>مَ <span class=end>٦</span>"
+  },
+  {
+    "s": 1,
+    "a": 7,
+    "ar": "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
+    "tl": "ṣirāṭa alladhīna anʿamta ʿalayhim ghayri l-maghḍūbi ʿalayhim walā l-ḍālīna",
+    "tr": {
+      "en": "The path of those upon whom You have bestowed favor, not of those who have earned [Your] anger or of those who are astray.",
+      "id": "(yaitu) jalan orang-orang yang telah Engkau beri nikmat kepadanya; bukan (jalan) mereka yang dimurkai, dan bukan (pula jalan) mereka yang sesat.<sup foot_note=134954>1</sup>",
+      "zh": "你所祐助者的路，不是受谴怒者的路，也不是迷误者的路。",
+      "ja": "あなたが御恵みを下された人々の道に，あなたの怒りを受けし者，また踏み迷える人々の道ではなく。"
+    },
+    "m": {
+      "juz": 1,
+      "hizb": 1,
+      "rub": null,
+      "page": 1,
+      "ruku": 1
+    },
+    "tj": "صِر<tajweed class=madda_normal>َٲ</tajweed>طَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ <tajweed class=ham_wasl>ٱ</tajweed>لْمَغْضُوبِ عَلَيْهِمْ وَلَا <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>ضّ<tajweed class=madda_necessary>َا</tajweed>ٓلّ<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٧</span>"
+  }
+]
