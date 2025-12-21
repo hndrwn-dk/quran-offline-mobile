@@ -18,6 +18,13 @@
 - Info icon to view color guide
 - Applies to all reading modes (Surah, Juz, Mushaf)
 
+### Bookmark in Mushaf Mode
+- Bookmark any verse directly from Mushaf mode
+- Bookmark icon below ayah number badge
+- Quick navigation from Bookmarks screen to exact verse
+- Auto-scroll to bookmarked verse
+- Unified bookmarks across all reading modes
+
 ---
 
 **Version**: 1.0.0 (Build 4)

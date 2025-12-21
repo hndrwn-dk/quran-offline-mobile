@@ -131,15 +131,17 @@ class TajweedText extends StatelessWidget {
           text: match.content,
           style: TextStyle(color: color),
         ));
-      } else if (match.type == _MatchType.span && match.classAttr.contains('end')) {
-        // Ayah number - style it differently
-        spans.add(TextSpan(
-          text: match.content,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.bold,
-          ),
-        ));
+      } else if (match.type == _MatchType.span) {
+        // Check if this is the end marker: <span class=end>...</span>
+        final classAttr = match.classAttr.trim();
+        // Match exactly "end" (with or without quotes)
+        if (classAttr == 'end' || classAttr == '"end"' || classAttr == "'end'") {
+          // Skip ayah number marker - we already display it as a badge
+          // Do nothing, just skip this match
+        } else {
+          // Regular span (not end marker) - render it
+          spans.add(TextSpan(text: match.content));
+        }
       } else {
         // Regular span
         spans.add(TextSpan(text: match.content));
