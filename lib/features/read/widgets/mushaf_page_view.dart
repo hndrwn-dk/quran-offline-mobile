@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
+import 'package:quran_offline/core/widgets/tajweed_text.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
 
 class MushafPageView extends ConsumerStatefulWidget {
@@ -94,6 +96,9 @@ class _MushafPageState extends ConsumerState<MushafPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final settings = ref.watch(settingsProvider);
     final fontSize = settings.mushafFontSize;
+    final appLanguage = settings.appLanguage;
+    // Watch showTajweed to trigger rebuild when toggled
+    ref.watch(settingsProvider.select((s) => s.showTajweed));
     final surahsAsync = ref.watch(surahNamesProvider);
     
     return Scaffold(
@@ -110,7 +115,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                 final surahIds = surahIdsSnapshot.data ?? [];
                 if (surahIds.isEmpty) {
                   return Text(
-                    'Mushaf - Page ${widget.pageNo}',
+                    AppLocalizations.getMushafPageText(widget.pageNo, appLanguage),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           height: 1.2,
@@ -187,7 +192,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                   children: [
                     // Line 1: "Mushaf - Page 604" (titleLarge, bold)
                     Text(
-                      'Mushaf - Page ${widget.pageNo}',
+                      AppLocalizations.getMushafPageText(widget.pageNo, appLanguage),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             height: 1.2,
@@ -210,14 +215,14 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                 );
               },
               loading: () => Text(
-                'Mushaf - Page ${widget.pageNo}',
+                AppLocalizations.getMushafPageText(widget.pageNo, appLanguage),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       height: 1.2,
                     ),
               ),
               error: (_, __) => Text(
-                'Mushaf - Page ${widget.pageNo}',
+                AppLocalizations.getMushafPageText(widget.pageNo, appLanguage),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       height: 1.2,
@@ -354,7 +359,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
   }
 }
 
-class _AyahRow extends StatelessWidget {
+class _AyahRow extends ConsumerWidget {
   final MushafAyahBlock block;
   final double fontSize;
   final ColorScheme colorScheme;
@@ -366,9 +371,11 @@ class _AyahRow extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ayahNo = block.ayahNo ?? 0;
     final badgeSize = 28.0; // Diperbesar dari 22.0 untuk visibility lebih baik
+    final settings = ref.watch(settingsProvider);
+    final showTajweed = settings.showTajweed && block.tajweed != null && block.tajweed!.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -384,17 +391,26 @@ class _AyahRow extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(
-                block.text,
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                  fontFamily: 'UthmanicHafsV22',
-                  fontFamilyFallback: const ['UthmanicHafs'],
-                  fontSize: fontSize,
-                  height: 1.8,
-                  color: colorScheme.onSurface,
-                ),
-              ),
+              child: showTajweed
+                  ? TajweedText(
+                      tajweedHtml: block.tajweed!,
+                      fontSize: fontSize,
+                      defaultColor: colorScheme.onSurface,
+                      textDirection: TextDirection.rtl,
+                      textAlign: TextAlign.right,
+                      height: 1.8,
+                    )
+                  : Text(
+                      block.text,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontFamily: 'UthmanicHafsV22',
+                        fontFamilyFallback: const ['UthmanicHafs'],
+                        fontSize: fontSize,
+                        height: 1.8,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
             ),
           ],
         ),

@@ -1,1 +1,142 @@
-[{"s":107,"a":1,"ar":" أَرَءَيْتَ ٱلَّذِى يُكَذِّبُ بِٱلدِّينِ","tl":"ara-ayta alladhī yukadhibu bil-dīni","tr":{"en":"Have you seen the one who denies the Recompense?","id":"Tahukah kamu (orang) yang mendustakan agama?","zh":"你曾见否认报应日的人吗？","ja":"あなたは，審判を嘘であるとする者を見たか。"},"m":{"juz":30,"hizb":60,"rub":null,"page":602,"ruku":551}},{"s":107,"a":2,"ar":"فَذَٰلِكَ ٱلَّذِى يَدُعُّ ٱلْيَتِيمَ","tl":"fadhālika alladhī yaduʿʿu l-yatīma","tr":{"en":"For that is the one who drives away the orphan","id":"Maka itulah orang yang menghardik anak yatim,","zh":"他就是那个呵斥孤儿，","ja":"かれは，孤児に手荒くする者であり，"},"m":{"juz":30,"hizb":60,"rub":null,"page":602,"ruku":551}},{"s":107,"a":3,"ar":"وَلَا يَحُضُّ عَلَىٰ طَعَامِ ٱلْمِسْكِينِ","tl":"walā yaḥuḍḍu ʿalā ṭaʿāmi l-mis'kīni","tr":{"en":"And does not encourage the feeding of the poor.","id":"dan tidak mengajak memberi makan orang miskin.","zh":"且不勉励人赈济贫民的人。","ja":"また貧者に食物を与えることを勧めない者である。"},"m":{"juz":30,"hizb":60,"rub":null,"page":602,"ruku":551}},{"s":107,"a":4,"ar":"فَوَيْلٌ لِّلْمُصَلِّينَ","tl":"fawaylun lil'muṣallīna","tr":{"en":"So woe to those who pray","id":"Maka celakalah orang yang salat,","zh":"伤哉！礼拜的人们，","ja":"災いなるかな，礼拝する者でありながら，"},"m":{"juz":30,"hizb":60,"rub":null,"page":602,"ruku":551}},{"s":107,"a":5,"ar":"ٱلَّذِينَ هُمْ عَن صَلَاتِهِمْ سَاهُونَ","tl":"alladhīna hum ʿan ṣalātihim sāhūna","tr":{"en":"[But] who are heedless of their prayer<sup foot_note=197823>1</sup> -","id":"(yaitu) orang-orang yang lalai terhadap salatnya,<sup foot_note=135878>1</sup>","zh":"他们是疏忽拜功的，","ja":"自分の礼拝を忽せにする者。"},"m":{"juz":30,"hizb":60,"rub":null,"page":602,"ruku":551}},{"s":107,"a":6,"ar":"ٱلَّذِينَ هُمْ يُرَآءُونَ","tl":"alladhīna hum yurāūna","tr":{"en":"Those who make show [of their deeds]","id":"yang berbuat riya`,<sup foot_note=135879>1</sup>","zh":"他们是沽名钓誉的，","ja":"（人に）見られるための礼拝をし，"},"m":{"juz":30,"hizb":60,"rub":null,"page":602,"ruku":551}},{"s":107,"a":7,"ar":"وَيَمْنَعُونَ ٱلْمَاعُونَ","tl":"wayamnaʿūna l-māʿūna","tr":{"en":"And withhold [simple] assistance.","id":"dan enggan (memberikan) bantuan.<sup foot_note=135880>1</sup>","zh":"他们是不肯借人什物的。","ja":"慈善を断わる者に。"},"m":{"juz":30,"hizb":60,"rub":null,"page":602,"ruku":551}}]
+[
+  {
+    "s": 107,
+    "a": 1,
+    "ar": " أَرَءَيْتَ ٱلَّذِى يُكَذِّبُ بِٱلدِّينِ",
+    "tl": "ara-ayta alladhī yukadhibu bil-dīni",
+    "tr": {
+      "en": "Have you seen the one who denies the Recompense?",
+      "id": "Tahukah kamu (orang) yang mendustakan agama?",
+      "zh": "你曾见否认报应日的人吗？",
+      "ja": "あなたは，審判を嘘であるとする者を見たか。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 602,
+      "ruku": 551
+    },
+    "tj": "أَرَءَيْتَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِى يُكَذِّبُ بِ<tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>دّ<tajweed class=madda_permissible>ِي</tajweed>نِ <span class=end>١</span>"
+  },
+  {
+    "s": 107,
+    "a": 2,
+    "ar": "فَذَٰلِكَ ٱلَّذِى يَدُعُّ ٱلْيَتِيمَ",
+    "tl": "fadhālika alladhī yaduʿʿu l-yatīma",
+    "tr": {
+      "en": "For that is the one who drives away the orphan",
+      "id": "Maka itulah orang yang menghardik anak yatim,",
+      "zh": "他就是那个呵斥孤儿，",
+      "ja": "かれは，孤児に手荒くする者であり，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 602,
+      "ruku": 551
+    },
+    "tj": "فَذ<tajweed class=madda_normal>َٲ</tajweed>لِكَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِى يَدُعُّ <tajweed class=ham_wasl>ٱ</tajweed>لْيَت<tajweed class=madda_permissible>ِي</tajweed>مَ <span class=end>٢</span>"
+  },
+  {
+    "s": 107,
+    "a": 3,
+    "ar": "وَلَا يَحُضُّ عَلَىٰ طَعَامِ ٱلْمِسْكِينِ",
+    "tl": "walā yaḥuḍḍu ʿalā ṭaʿāmi l-mis'kīni",
+    "tr": {
+      "en": "And does not encourage the feeding of the poor.",
+      "id": "dan tidak mengajak memberi makan orang miskin.",
+      "zh": "且不勉励人赈济贫民的人。",
+      "ja": "また貧者に食物を与えることを勧めない者である。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 602,
+      "ruku": 551
+    },
+    "tj": "وَلَا يَحُضُّ عَلَىٰ طَعَامِ <tajweed class=ham_wasl>ٱ</tajweed>لْمِسْك<tajweed class=madda_permissible>ِي</tajweed>نِ <span class=end>٣</span>"
+  },
+  {
+    "s": 107,
+    "a": 4,
+    "ar": "فَوَيْلٌ لِّلْمُصَلِّينَ",
+    "tl": "fawaylun lil'muṣallīna",
+    "tr": {
+      "en": "So woe to those who pray",
+      "id": "Maka celakalah orang yang salat,",
+      "zh": "伤哉！礼拜的人们，",
+      "ja": "災いなるかな，礼拝する者でありながら，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 602,
+      "ruku": 551
+    },
+    "tj": "فَوَيْ<tajweed class=idgham_wo_ghunnah>لٌ ل</tajweed>ِّلْمُصَلّ<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٤</span>"
+  },
+  {
+    "s": 107,
+    "a": 5,
+    "ar": "ٱلَّذِينَ هُمْ عَن صَلَاتِهِمْ سَاهُونَ",
+    "tl": "alladhīna hum ʿan ṣalātihim sāhūna",
+    "tr": {
+      "en": "[But] who are heedless of their prayer<sup foot_note=197823>1</sup> -",
+      "id": "(yaitu) orang-orang yang lalai terhadap salatnya,<sup foot_note=135878>1</sup>",
+      "zh": "他们是疏忽拜功的，",
+      "ja": "自分の礼拝を忽せにする者。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 602,
+      "ruku": 551
+    },
+    "tj": "ٱلَّذِينَ هُمْ عَ<tajweed class=ikhafa>ن ص</tajweed>َلَاتِهِمْ سَاه<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥</span>"
+  },
+  {
+    "s": 107,
+    "a": 6,
+    "ar": "ٱلَّذِينَ هُمْ يُرَآءُونَ",
+    "tl": "alladhīna hum yurāūna",
+    "tr": {
+      "en": "Those who make show [of their deeds]",
+      "id": "yang berbuat riya`,<sup foot_note=135879>1</sup>",
+      "zh": "他们是沽名钓誉的，",
+      "ja": "（人に）見られるための礼拝をし，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 602,
+      "ruku": 551
+    },
+    "tj": "ٱلَّذِينَ هُمْ يُر<tajweed class=madda_obligatory>َا</tajweed>ٓء<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦</span>"
+  },
+  {
+    "s": 107,
+    "a": 7,
+    "ar": "وَيَمْنَعُونَ ٱلْمَاعُونَ",
+    "tl": "wayamnaʿūna l-māʿūna",
+    "tr": {
+      "en": "And withhold [simple] assistance.",
+      "id": "dan enggan (memberikan) bantuan.<sup foot_note=135880>1</sup>",
+      "zh": "他们是不肯借人什物的。",
+      "ja": "慈善を断わる者に。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 602,
+      "ruku": 551
+    },
+    "tj": "وَيَمْنَعُونَ <tajweed class=ham_wasl>ٱ</tajweed>لْمَاع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧</span>"
+  }
+]

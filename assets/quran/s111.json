@@ -1,1 +1,102 @@
-[{"s":111,"a":1,"ar":" تَبَّتْ يَدَآ أَبِى لَهَبٍ وَتَبَّ","tl":"tabbat yadā abī lahabin watabba","tr":{"en":"May the hands of Abū Lahab be ruined, and ruined is he.<sup foot_note=197827>1</sup>","id":"Binasalah kedua tangan Abu Lahab dan benar-benar binasa dia!<sup foot_note=135881>1</sup>","zh":"愿焰父两手受伤！他必定受伤，","ja":"アブー・ラハブの両手は滅び，かれも滅びてしまえ。"},"m":{"juz":30,"hizb":60,"rub":null,"page":603,"ruku":555}},{"s":111,"a":2,"ar":"مَآ أَغْنَىٰ عَنْهُ مَالُهُۥ وَمَا كَسَبَ","tl":"mā aghnā ʿanhu māluhu wamā kasaba","tr":{"en":"His wealth will not avail him or that which he gained.","id":"Tidaklah berguna baginya hartanya dan apa yang dia usahakan.","zh":"他的财产，和他所获得的，将无裨于他，","ja":"かれの富も儲けた金も，かれのために役立ちはしない。"},"m":{"juz":30,"hizb":60,"rub":null,"page":603,"ruku":555}},{"s":111,"a":3,"ar":"سَيَصْلَىٰ نَارًا ذَاتَ لَهَبٍ","tl":"sayaṣlā nāran dhāta lahabin","tr":{"en":"He will [enter to] burn in a Fire of [blazing] flame","id":"Kelak dia akan masuk ke dalam api yang bergejolak (neraka).","zh":"他将入有焰的烈火，","ja":"やがてかれは，燃え盛る炎の業火の中で焼かれよう。"},"m":{"juz":30,"hizb":60,"rub":null,"page":603,"ruku":555}},{"s":111,"a":4,"ar":"وَٱمْرَأَتُهُۥ حَمَّالَةَ ٱلْحَطَبِ","tl":"wa-im'ra-atuhu ḥammālata l-ḥaṭabi","tr":{"en":"And his wife [as well] - the carrier of firewood.<sup foot_note=197828>1</sup>","id":"Dan (begitu pula) istrinya, pembawa kayu bakar (penyebar fitnah).","zh":"他的担柴的妻子，也将入烈火，","ja":"かれの妻はその薪を運ぶ，"},"m":{"juz":30,"hizb":60,"rub":null,"page":603,"ruku":555}},{"s":111,"a":5,"ar":"فِى جِيدِهَا حَبْلٌ مِّن مَّسَدٍۭ","tl":"fī jīdihā ḥablun min masadin","tr":{"en":"Around her neck is a rope of [twisted] fiber.","id":"Di lehernya ada tali dari sabut yang dipintal.","zh":"她的颈上系着一条坚实的棕绳。","ja":"首に棕櫚の荒縄かけて。"},"m":{"juz":30,"hizb":60,"rub":null,"page":603,"ruku":555}}]
+[
+  {
+    "s": 111,
+    "a": 1,
+    "ar": " تَبَّتْ يَدَآ أَبِى لَهَبٍ وَتَبَّ",
+    "tl": "tabbat yadā abī lahabin watabba",
+    "tr": {
+      "en": "May the hands of Abū Lahab be ruined, and ruined is he.<sup foot_note=197827>1</sup>",
+      "id": "Binasalah kedua tangan Abu Lahab dan benar-benar binasa dia!<sup foot_note=135881>1</sup>",
+      "zh": "愿焰父两手受伤！他必定受伤，",
+      "ja": "アブー・ラハブの両手は滅び，かれも滅びてしまえ。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 603,
+      "ruku": 555
+    },
+    "tj": "تَبَّتْ يَد<tajweed class=madda_obligatory>َآ</tajweed> أَبِى لَهَ<tajweed class=idgham_ghunnah>بٍ و</tajweed>َتَ<tajweed class=qalaqah>ب</tajweed>َّ <span class=end>١</span>"
+  },
+  {
+    "s": 111,
+    "a": 2,
+    "ar": "مَآ أَغْنَىٰ عَنْهُ مَالُهُۥ وَمَا كَسَبَ",
+    "tl": "mā aghnā ʿanhu māluhu wamā kasaba",
+    "tr": {
+      "en": "His wealth will not avail him or that which he gained.",
+      "id": "Tidaklah berguna baginya hartanya dan apa yang dia usahakan.",
+      "zh": "他的财产，和他所获得的，将无裨于他，",
+      "ja": "かれの富も儲けた金も，かれのために役立ちはしない。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 603,
+      "ruku": 555
+    },
+    "tj": "م<tajweed class=madda_obligatory>َآ</tajweed> أَغْنَىٰ عَنْهُ مَالُهُ<tajweed class=madda_normal>ۥ</tajweed> وَمَا كَسَ<tajweed class=qalaqah>ب</tajweed>َ <span class=end>٢</span>"
+  },
+  {
+    "s": 111,
+    "a": 3,
+    "ar": "سَيَصْلَىٰ نَارًا ذَاتَ لَهَبٍ",
+    "tl": "sayaṣlā nāran dhāta lahabin",
+    "tr": {
+      "en": "He will [enter to] burn in a Fire of [blazing] flame",
+      "id": "Kelak dia akan masuk ke dalam api yang bergejolak (neraka).",
+      "zh": "他将入有焰的烈火，",
+      "ja": "やがてかれは，燃え盛る炎の業火の中で焼かれよう。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 603,
+      "ruku": 555
+    },
+    "tj": "سَيَصْلَىٰ نَا<tajweed class=ikhafa>رًا ذ</tajweed>َاتَ لَهَ<tajweed class=qalaqah>ب</tajweed>ٍ <span class=end>٣</span>"
+  },
+  {
+    "s": 111,
+    "a": 4,
+    "ar": "وَٱمْرَأَتُهُۥ حَمَّالَةَ ٱلْحَطَبِ",
+    "tl": "wa-im'ra-atuhu ḥammālata l-ḥaṭabi",
+    "tr": {
+      "en": "And his wife [as well] - the carrier of firewood.<sup foot_note=197828>1</sup>",
+      "id": "Dan (begitu pula) istrinya, pembawa kayu bakar (penyebar fitnah).",
+      "zh": "他的担柴的妻子，也将入烈火，",
+      "ja": "かれの妻はその薪を運ぶ，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 603,
+      "ruku": 555
+    },
+    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>مْرَأَتُهُ<tajweed class=madda_normal>ۥ</tajweed> حَ<tajweed class=ghunnah>مّ</tajweed>َالَةَ <tajweed class=ham_wasl>ٱ</tajweed>لْحَطَ<tajweed class=qalaqah>ب</tajweed>ِ <span class=end>٤</span>"
+  },
+  {
+    "s": 111,
+    "a": 5,
+    "ar": "فِى جِيدِهَا حَبْلٌ مِّن مَّسَدٍۭ",
+    "tl": "fī jīdihā ḥablun min masadin",
+    "tr": {
+      "en": "Around her neck is a rope of [twisted] fiber.",
+      "id": "Di lehernya ada tali dari sabut yang dipintal.",
+      "zh": "她的颈上系着一条坚实的棕绳。",
+      "ja": "首に棕櫚の荒縄かけて。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 603,
+      "ruku": 555
+    },
+    "tj": "فِى جِيدِهَا حَ<tajweed class=qalaqah>بْ</tajweed><tajweed class=idgham_ghunnah>لٌ م</tajweed>ّ<tajweed class=idgham_ghunnah>ِن م</tajweed>َّسَ<tajweed class=qalaqah>د</tajweed>ِۭ <span class=end>٥</span>"
+  }
+]

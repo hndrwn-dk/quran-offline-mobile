@@ -1,1 +1,102 @@
-[{"s":97,"a":1,"ar":"إِنَّآ أَنزَلْنَـٰهُ فِى لَيْلَةِ ٱلْقَدْرِ","tl":"innā anzalnāhu fī laylati l-qadri","tr":{"en":"Indeed, We sent it [i.e., the Qur’ān] down during the Night of Decree.","id":"Sesungguhnya Kami telah menurunkannya (Alquran) pada malam qadar.<sup foot_note=135870>1</sup>","zh":"我在那高贵的夜间确已降示它，","ja":"本当にわれは，みいつの夜に，この（クルアーン）を下した。"},"m":{"juz":30,"hizb":60,"rub":null,"page":598,"ruku":541}},{"s":97,"a":2,"ar":"وَمَآ أَدْرَىٰكَ مَا لَيْلَةُ ٱلْقَدْرِ","tl":"wamā adrāka mā laylatu l-qadri","tr":{"en":"And what can make you know what is the Night of Decree?","id":"Dan tahukah kamu apakah malam kemuliaan itu?","zh":"你怎能知道那高贵的夜间是什么？","ja":"みいつの夜が何であるかを，あなたに理解させるものは何か。"},"m":{"juz":30,"hizb":60,"rub":null,"page":598,"ruku":541}},{"s":97,"a":3,"ar":"لَيْلَةُ ٱلْقَدْرِ خَيْرٌ مِّنْ أَلْفِ شَهْرٍ","tl":"laylatu l-qadri khayrun min alfi shahrin","tr":{"en":"The Night of Decree is better than a thousand months.","id":"Malam kemuliaan itu lebih baik daripada seribu bulan.","zh":"那高贵的夜间，胜过一千个月，","ja":"みいつの夜は，千月よりも優る。"},"m":{"juz":30,"hizb":60,"rub":null,"page":598,"ruku":541}},{"s":97,"a":4,"ar":"تَنَزَّلُ ٱلْمَلَـٰٓئِكَةُ وَٱلرُّوحُ فِيهَا بِإِذْنِ رَبِّهِم مِّن كُلِّ أَمْرٍ","tl":"tanazzalu l-malāikatu wal-rūḥu fīhā bi-idh'ni rabbihim min kulli amrin","tr":{"en":"The angels and the Spirit [i.e., Gabriel] descend therein by permission of their Lord for every matter.<sup foot_note=197788>1</sup>","id":"Pada malam itu turun para malaikat dan Ruh (Jibril) dengan izin Tuhannya untuk mengatur semua urusan.","zh":"众天使和精神，奉他们的主的命令，为一切事务而在那夜间降临","ja":"（その夜）天使たちと聖霊は，主の許しのもとに，凡ての神命を齎して下る。"},"m":{"juz":30,"hizb":60,"rub":null,"page":598,"ruku":541}},{"s":97,"a":5,"ar":"سَلَـٰمٌ هِىَ حَتَّىٰ مَطْلَعِ ٱلْفَجْرِ","tl":"salāmun hiya ḥattā maṭlaʿi l-fajri","tr":{"en":"Peace it is<sup foot_note=197789>1</sup> until the emergence of dawn.","id":"Sejahteralah (malam itu) sampai terbit fajar.","zh":"那夜间全是平安的，直到黎明显著的时候。","ja":"暁の明けるまで，（それは）平安である。"},"m":{"juz":30,"hizb":60,"rub":null,"page":598,"ruku":541}}]
+[
+  {
+    "s": 97,
+    "a": 1,
+    "ar": "إِنَّآ أَنزَلْنَـٰهُ فِى لَيْلَةِ ٱلْقَدْرِ",
+    "tl": "innā anzalnāhu fī laylati l-qadri",
+    "tr": {
+      "en": "Indeed, We sent it [i.e., the Qur’ān] down during the Night of Decree.",
+      "id": "Sesungguhnya Kami telah menurunkannya (Alquran) pada malam qadar.<sup foot_note=135870>1</sup>",
+      "zh": "我在那高贵的夜间确已降示它，",
+      "ja": "本当にわれは，みいつの夜に，この（クルアーン）を下した。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 598,
+      "ruku": 541
+    },
+    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_obligatory>َآ</tajweed> أَ<tajweed class=ikhafa>نز</tajweed>َلْنَ<tajweed class=madda_normal>ـٰ</tajweed>هُ فِى لَيْلَةِ <tajweed class=ham_wasl>ٱ</tajweed>لْقَ<tajweed class=qalaqah>دْ</tajweed>رِ <span class=end>١</span>"
+  },
+  {
+    "s": 97,
+    "a": 2,
+    "ar": "وَمَآ أَدْرَىٰكَ مَا لَيْلَةُ ٱلْقَدْرِ",
+    "tl": "wamā adrāka mā laylatu l-qadri",
+    "tr": {
+      "en": "And what can make you know what is the Night of Decree?",
+      "id": "Dan tahukah kamu apakah malam kemuliaan itu?",
+      "zh": "你怎能知道那高贵的夜间是什么？",
+      "ja": "みいつの夜が何であるかを，あなたに理解させるものは何か。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 598,
+      "ruku": 541
+    },
+    "tj": "وَم<tajweed class=madda_obligatory>َآ</tajweed> أَ<tajweed class=qalaqah>دْ</tajweed>رَ<tajweed class=madda_normal>ٮٰ</tajweed>كَ مَا لَيْلَةُ <tajweed class=ham_wasl>ٱ</tajweed>لْقَ<tajweed class=qalaqah>دْ</tajweed>رِ <span class=end>٢</span>"
+  },
+  {
+    "s": 97,
+    "a": 3,
+    "ar": "لَيْلَةُ ٱلْقَدْرِ خَيْرٌ مِّنْ أَلْفِ شَهْرٍ",
+    "tl": "laylatu l-qadri khayrun min alfi shahrin",
+    "tr": {
+      "en": "The Night of Decree is better than a thousand months.",
+      "id": "Malam kemuliaan itu lebih baik daripada seribu bulan.",
+      "zh": "那高贵的夜间，胜过一千个月，",
+      "ja": "みいつの夜は，千月よりも優る。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 598,
+      "ruku": 541
+    },
+    "tj": "لَيْلَةُ <tajweed class=ham_wasl>ٱ</tajweed>لْقَ<tajweed class=qalaqah>دْ</tajweed>رِ خَيْ<tajweed class=idgham_ghunnah>رٌ م</tajweed>ِّنْ أَلْفِ شَهْرٍ <span class=end>٣</span>"
+  },
+  {
+    "s": 97,
+    "a": 4,
+    "ar": "تَنَزَّلُ ٱلْمَلَـٰٓئِكَةُ وَٱلرُّوحُ فِيهَا بِإِذْنِ رَبِّهِم مِّن كُلِّ أَمْرٍ",
+    "tl": "tanazzalu l-malāikatu wal-rūḥu fīhā bi-idh'ni rabbihim min kulli amrin",
+    "tr": {
+      "en": "The angels and the Spirit [i.e., Gabriel] descend therein by permission of their Lord for every matter.<sup foot_note=197788>1</sup>",
+      "id": "Pada malam itu turun para malaikat dan Ruh (Jibril) dengan izin Tuhannya untuk mengatur semua urusan.",
+      "zh": "众天使和精神，奉他们的主的命令，为一切事务而在那夜间降临",
+      "ja": "（その夜）天使たちと聖霊は，主の許しのもとに，凡ての神命を齎して下る。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 598,
+      "ruku": 541
+    },
+    "tj": "تَنَزَّلُ <tajweed class=ham_wasl>ٱ</tajweed>لْمَلَ<tajweed class=madda_obligatory>ـٰٓ</tajweed>ئِكَةُ وَ<tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رُّوحُ فِيهَا بِإِذْنِ رَبِّه<tajweed class=idgham_shafawi>ِم م</tajweed>ِّ<tajweed class=ikhafa>ن ك</tajweed>ُلِّ أَمْرٍ <span class=end>٤</span>"
+  },
+  {
+    "s": 97,
+    "a": 5,
+    "ar": "سَلَـٰمٌ هِىَ حَتَّىٰ مَطْلَعِ ٱلْفَجْرِ",
+    "tl": "salāmun hiya ḥattā maṭlaʿi l-fajri",
+    "tr": {
+      "en": "Peace it is<sup foot_note=197789>1</sup> until the emergence of dawn.",
+      "id": "Sejahteralah (malam itu) sampai terbit fajar.",
+      "zh": "那夜间全是平安的，直到黎明显著的时候。",
+      "ja": "暁の明けるまで，（それは）平安である。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 598,
+      "ruku": 541
+    },
+    "tj": "سَلَ<tajweed class=madda_normal>ـٰ</tajweed>مٌ هِىَ حَتَّىٰ مَ<tajweed class=qalaqah>طْ</tajweed>لَعِ <tajweed class=ham_wasl>ٱ</tajweed>لْفَ<tajweed class=qalaqah>جْ</tajweed>رِ <span class=end>٥</span>"
+  }
+]

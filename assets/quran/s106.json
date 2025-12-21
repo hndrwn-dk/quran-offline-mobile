@@ -1,1 +1,82 @@
-[{"s":106,"a":1,"ar":" لِإِيلَـٰفِ قُرَيْشٍ","tl":"liīlāfi qurayshin","tr":{"en":"For the accustomed security of the Quraysh<sup foot_note=197820>1</sup> -","id":"Karena kebiasaan orang-orang Quraisy,","zh":"因为保护古来氏，","ja":"クライシュ族の保護のため，"},"m":{"juz":30,"hizb":60,"rub":null,"page":602,"ruku":550}},{"s":106,"a":2,"ar":"إِۦلَـٰفِهِمْ رِحْلَةَ ٱلشِّتَآءِ وَٱلصَّيْفِ","tl":"īlāfihim riḥ'lata l-shitāi wal-ṣayfi","tr":{"en":"Their accustomed security [in] the caravan of winter and summer<sup foot_note=197821>1</sup> -","id":"(yaitu) kebiasaan mereka bepergian pada musim dingin dan musim panas.<sup foot_note=135877>1</sup>","zh":"因为在冬季和夏季的旅行中保护他们，","ja":"冬と夏のかれらの隊商の保護のため，（そのアッラーの御恵みのために）"},"m":{"juz":30,"hizb":60,"rub":null,"page":602,"ruku":550}},{"s":106,"a":3,"ar":"فَلْيَعْبُدُوا۟ رَبَّ هَـٰذَا ٱلْبَيْتِ","tl":"falyaʿbudū rabba hādhā l-bayti","tr":{"en":"Let them worship the Lord of this House,<sup foot_note=197822>1</sup>","id":"Maka hendaklah mereka menyembah Tuhan (pemilik) rumah ini (Ka'bah),","zh":"故教他们崇敬这天房的主，","ja":"かれらに，この聖殿の主に仕えさせよ。"},"m":{"juz":30,"hizb":60,"rub":null,"page":602,"ruku":550}},{"s":106,"a":4,"ar":"ٱلَّذِىٓ أَطْعَمَهُم مِّن جُوعٍ وَءَامَنَهُم مِّنْ خَوْفٍۭ","tl":"alladhī aṭʿamahum min jūʿin waāmanahum min khawfin","tr":{"en":"Who has fed them, [saving them] from hunger and made them safe, [saving them] from fear.","id":"yang telah memberi makanan kepada mereka untuk menghilangkan lapar dan mengamankan mereka dari rasa ketakutan.","zh":"他曾为饥荒而赈济他们，曾为恐怖而保佑他们。","ja":"飢えに際しては，かれらに食物を与え，また恐れに際しては，それを除き心を安らかにして下さる御方に。"},"m":{"juz":30,"hizb":60,"rub":null,"page":602,"ruku":550}}]
+[
+  {
+    "s": 106,
+    "a": 1,
+    "ar": " لِإِيلَـٰفِ قُرَيْشٍ",
+    "tl": "liīlāfi qurayshin",
+    "tr": {
+      "en": "For the accustomed security of the Quraysh<sup foot_note=197820>1</sup> -",
+      "id": "Karena kebiasaan orang-orang Quraisy,",
+      "zh": "因为保护古来氏，",
+      "ja": "クライシュ族の保護のため，"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 602,
+      "ruku": 550
+    },
+    "tj": "لِإِيلَ<tajweed class=madda_normal>ـٰ</tajweed>فِ قُر<tajweed class=madda_permissible>َي</tajweed>ْشٍ <span class=end>١</span>"
+  },
+  {
+    "s": 106,
+    "a": 2,
+    "ar": "إِۦلَـٰفِهِمْ رِحْلَةَ ٱلشِّتَآءِ وَٱلصَّيْفِ",
+    "tl": "īlāfihim riḥ'lata l-shitāi wal-ṣayfi",
+    "tr": {
+      "en": "Their accustomed security [in] the caravan of winter and summer<sup foot_note=197821>1</sup> -",
+      "id": "(yaitu) kebiasaan mereka bepergian pada musim dingin dan musim panas.<sup foot_note=135877>1</sup>",
+      "zh": "因为在冬季和夏季的旅行中保护他们，",
+      "ja": "冬と夏のかれらの隊商の保護のため，（そのアッラーの御恵みのために）"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 602,
+      "ruku": 550
+    },
+    "tj": "إ<tajweed class=madda_normal>ِۦ</tajweed>لَ<tajweed class=madda_normal>ـٰ</tajweed>فِهِمْ رِحْلَةَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>شِّت<tajweed class=madda_obligatory>َا</tajweed>ٓءِ وَ<tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>صّ<tajweed class=madda_permissible>َي</tajweed>ْفِ <span class=end>٢</span>"
+  },
+  {
+    "s": 106,
+    "a": 3,
+    "ar": "فَلْيَعْبُدُوا۟ رَبَّ هَـٰذَا ٱلْبَيْتِ",
+    "tl": "falyaʿbudū rabba hādhā l-bayti",
+    "tr": {
+      "en": "Let them worship the Lord of this House,<sup foot_note=197822>1</sup>",
+      "id": "Maka hendaklah mereka menyembah Tuhan (pemilik) rumah ini (Ka'bah),",
+      "zh": "故教他们崇敬这天房的主，",
+      "ja": "かれらに，この聖殿の主に仕えさせよ。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 602,
+      "ruku": 550
+    },
+    "tj": "فَلْيَعْبُدُو<tajweed class=slnt>اْ</tajweed> رَبَّ هَ<tajweed class=madda_normal>ـٰ</tajweed>ذَا <tajweed class=ham_wasl>ٱ</tajweed>لْب<tajweed class=madda_permissible>َي</tajweed>ْتِ <span class=end>٣</span>"
+  },
+  {
+    "s": 106,
+    "a": 4,
+    "ar": "ٱلَّذِىٓ أَطْعَمَهُم مِّن جُوعٍ وَءَامَنَهُم مِّنْ خَوْفٍۭ",
+    "tl": "alladhī aṭʿamahum min jūʿin waāmanahum min khawfin",
+    "tr": {
+      "en": "Who has fed them, [saving them] from hunger and made them safe, [saving them] from fear.",
+      "id": "yang telah memberi makanan kepada mereka untuk menghilangkan lapar dan mengamankan mereka dari rasa ketakutan.",
+      "zh": "他曾为饥荒而赈济他们，曾为恐怖而保佑他们。",
+      "ja": "飢えに際しては，かれらに食物を与え，また恐れに際しては，それを除き心を安らかにして下さる御方に。"
+    },
+    "m": {
+      "juz": 30,
+      "hizb": 60,
+      "rub": null,
+      "page": 602,
+      "ruku": 550
+    },
+    "tj": "ٱلَّذ<tajweed class=madda_obligatory>ِىٓ</tajweed> أَ<tajweed class=qalaqah>طْ</tajweed>عَمَه<tajweed class=idgham_shafawi>ُم م</tajweed>ِّ<tajweed class=ikhafa>ن ج</tajweed>ُو<tajweed class=idgham_ghunnah>عٍ و</tajweed>َءَامَنَه<tajweed class=idgham_shafawi>ُم م</tajweed>ِّنْ خ<tajweed class=madda_permissible>َو</tajweed>ْفِۭ <span class=end>٤</span>"
+  }
+]
