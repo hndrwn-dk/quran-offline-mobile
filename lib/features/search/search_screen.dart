@@ -4,6 +4,8 @@ import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/enhanced_search_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
+import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 
@@ -14,6 +16,7 @@ class SearchScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final query = ref.watch(searchQueryProvider);
     final resultsAsync = ref.watch(enhancedSearchResultsProvider);
+    final settings = ref.watch(settingsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -56,7 +59,7 @@ class SearchScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Search across the Qur’an',
+                  AppLocalizations.getSubtitleText('search_subtitle', settings.appLanguage),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -98,7 +101,7 @@ class SearchScreen extends ConsumerWidget {
                       child: TextField(
                         style: Theme.of(context).textTheme.bodyLarge,
                         decoration: InputDecoration(
-                          hintText: 'Surah, Juz, Page, Verse (2:255), or translation...',
+                          hintText: AppLocalizations.getSearchText('search_placeholder', settings.appLanguage),
                           hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
@@ -145,7 +148,7 @@ class SearchScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            'Search the Qur\'an',
+                            AppLocalizations.getSearchText('search_title', settings.appLanguage),
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               color: colorScheme.onSurface,
                               fontWeight: FontWeight.w600,
@@ -153,7 +156,7 @@ class SearchScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'You can search by:',
+                            AppLocalizations.getSearchText('search_by_label', settings.appLanguage),
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: colorScheme.onSurfaceVariant,
                             ),
@@ -162,40 +165,40 @@ class SearchScreen extends ConsumerWidget {
                           _buildSearchHint(
                             context,
                             Icons.book,
-                            'Surah',
-                            'Al-Fatihah, Al-Baqarah, etc.',
+                            AppLocalizations.getMenuText('surah', settings.appLanguage),
+                            AppLocalizations.getSearchText('surah_example', settings.appLanguage),
                             colorScheme,
                           ),
                           const SizedBox(height: 12),
                           _buildSearchHint(
                             context,
                             Icons.format_list_numbered,
-                            'Juz',
-                            'Juz 1, Juz 2, etc.',
+                            AppLocalizations.getMenuText('juz', settings.appLanguage),
+                            AppLocalizations.getSearchText('juz_example', settings.appLanguage),
                             colorScheme,
                           ),
                           const SizedBox(height: 12),
                           _buildSearchHint(
                             context,
                             Icons.pages,
-                            'Page',
-                            'Page 604, Page 1, etc.',
+                            AppLocalizations.getMenuText('page', settings.appLanguage),
+                            AppLocalizations.getSearchText('page_example', settings.appLanguage),
                             colorScheme,
                           ),
                           const SizedBox(height: 12),
                           _buildSearchHint(
                             context,
                             Icons.numbers,
-                            'Verse',
-                            '2:255, 3:190, etc.',
+                            AppLocalizations.getSearchText('verse_label', settings.appLanguage),
+                            AppLocalizations.getSearchText('verse_example', settings.appLanguage),
                             colorScheme,
                           ),
                           const SizedBox(height: 12),
                           _buildSearchHint(
                             context,
                             Icons.translate,
-                            'Translation',
-                            'Any word in translation text',
+                            AppLocalizations.getSearchText('translation_label', settings.appLanguage),
+                            AppLocalizations.getSearchText('translation_example', settings.appLanguage),
                             colorScheme,
                           ),
                         ],
@@ -216,7 +219,7 @@ class SearchScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No results found',
+                          AppLocalizations.getSearchText('no_results', settings.appLanguage),
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                           ),

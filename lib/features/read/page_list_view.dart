@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 
-class PageListView extends StatelessWidget {
+class PageListView extends ConsumerWidget {
   const PageListView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       itemCount: 604,
@@ -51,7 +54,7 @@ class PageListView extends StatelessWidget {
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    'Page $pageNo',
+                    AppLocalizations.getPageText(pageNo, settings.appLanguage),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w500,
                         ),

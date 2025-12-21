@@ -71,25 +71,38 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                IconButton(
-                  icon: Icon(
-                    _isBookmarked ? Icons.bookmark : Icons.bookmark_outline,
-                    size: 20,
-                  ),
-                  color: _isBookmarked
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant.withOpacity(0.6),
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onPressed: () async {
-                    await toggleBookmark(
-                      ref,
-                      widget.verse.surahId,
-                      widget.verse.ayahNo,
-                    );
-                    await _checkBookmark();
-                  },
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.share_outlined, size: 20),
+                      color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => _shareAyah(context, settings),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        _isBookmarked ? Icons.bookmark : Icons.bookmark_outline,
+                        size: 20,
+                      ),
+                      color: _isBookmarked
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant.withOpacity(0.6),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () async {
+                        await toggleBookmark(
+                          ref,
+                          widget.verse.surahId,
+                          widget.verse.ayahNo,
+                        );
+                        await _checkBookmark();
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -190,6 +203,8 @@ class _AyahCardState extends ConsumerState<AyahCard> {
       buffer.writeln(translation);
     }
     buffer.writeln('QS ${widget.verse.surahId}:${widget.verse.ayahNo}');
+    buffer.writeln('');
+    buffer.writeln('https://www.tursinalab.com/products/quranoffline');
 
     await Share.share(buffer.toString());
   }
