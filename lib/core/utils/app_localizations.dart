@@ -27,6 +27,17 @@ class AppLocalizations {
     };
   }
 
+  /// Get localized text for "Read Page" button
+  static String getReadPage(String language) {
+    return switch (language) {
+      'id' => 'Baca Halaman',
+      'en' => 'Read Page',
+      'zh' => '阅读页',
+      'ja' => 'ページを読む',
+      _ => 'Read Page',
+    };
+  }
+
   /// Get localized text for "Page X" format
   static String getPageText(int pageNo, String language) {
     final pageLabel = _getPage(language);

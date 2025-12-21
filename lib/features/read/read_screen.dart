@@ -9,11 +9,32 @@ import 'package:quran_offline/features/read/page_list_view.dart';
 import 'package:quran_offline/features/read/surah_list_view.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 
-class ReadScreen extends ConsumerWidget {
+class ReadScreen extends ConsumerStatefulWidget {
   const ReadScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ReadScreen> createState() => _ReadScreenState();
+}
+
+class _ReadScreenState extends ConsumerState<ReadScreen> {
+  double _swipeStartX = 0.0;
+  double _swipeStartY = 0.0;
+  bool _isSwiping = false;
+
+  void _handleModeNavigation(ReadMode currentMode, bool isNext) {
+    final newMode = switch (currentMode) {
+      ReadMode.surah => isNext ? ReadMode.juz : null,
+      ReadMode.juz => isNext ? ReadMode.pages : ReadMode.surah,
+      ReadMode.pages => isNext ? null : ReadMode.juz,
+    };
+    
+    if (newMode != null) {
+      ref.read(readModeProvider.notifier).state = newMode;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final readMode = ref.watch(readModeProvider);
     final settings = ref.watch(settingsProvider);
     final isLargeScreen = Responsive.isLargeScreen(context);
@@ -86,11 +107,44 @@ class ReadScreen extends ConsumerWidget {
                       ),
                     ),
                     Expanded(
-                      child: switch (readMode) {
-                        ReadMode.surah => const SurahListView(),
-                        ReadMode.juz => const JuzListView(),
-                        ReadMode.pages => const PageListView(),
-                      },
+                      child: GestureDetector(
+                        onHorizontalDragStart: (details) {
+                          _swipeStartX = details.globalPosition.dx;
+                          _swipeStartY = details.globalPosition.dy;
+                          _isSwiping = false;
+                        },
+                        onHorizontalDragUpdate: (details) {
+                          final deltaX = details.globalPosition.dx - _swipeStartX;
+                          final deltaY = details.globalPosition.dy - _swipeStartY;
+                          // Only consider it a horizontal swipe if horizontal movement is significantly greater than vertical
+                          if (deltaX.abs() > 20 && deltaX.abs() > deltaY.abs() * 1.5) {
+                            _isSwiping = true;
+                          }
+                        },
+                        onHorizontalDragEnd: (details) {
+                          if (!_isSwiping) return;
+                          
+                          final deltaX = details.velocity.pixelsPerSecond.dx;
+                          final deltaY = details.velocity.pixelsPerSecond.dy;
+                          // Minimum swipe velocity threshold (pixels per second)
+                          // Also ensure horizontal movement is greater than vertical
+                          const swipeThreshold = 300.0;
+                          
+                          if (deltaX.abs() > swipeThreshold && deltaX.abs() > deltaY.abs()) {
+                            // Swipe left (negative deltaX) = next mode
+                            // Swipe right (positive deltaX) = previous mode
+                            final isNext = deltaX < 0;
+                            _handleModeNavigation(readMode, isNext);
+                          }
+                          
+                          _isSwiping = false;
+                        },
+                        child: switch (readMode) {
+                          ReadMode.surah => const SurahListView(),
+                          ReadMode.juz => const JuzListView(),
+                          ReadMode.pages => const PageListView(),
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -185,11 +239,44 @@ class ReadScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: switch (readMode) {
-        ReadMode.surah => const SurahListView(),
-        ReadMode.juz => const JuzListView(),
-        ReadMode.pages => const PageListView(),
-      },
+      body: GestureDetector(
+        onHorizontalDragStart: (details) {
+          _swipeStartX = details.globalPosition.dx;
+          _swipeStartY = details.globalPosition.dy;
+          _isSwiping = false;
+        },
+        onHorizontalDragUpdate: (details) {
+          final deltaX = details.globalPosition.dx - _swipeStartX;
+          final deltaY = details.globalPosition.dy - _swipeStartY;
+          // Only consider it a horizontal swipe if horizontal movement is significantly greater than vertical
+          if (deltaX.abs() > 20 && deltaX.abs() > deltaY.abs() * 1.5) {
+            _isSwiping = true;
+          }
+        },
+        onHorizontalDragEnd: (details) {
+          if (!_isSwiping) return;
+          
+          final deltaX = details.velocity.pixelsPerSecond.dx;
+          final deltaY = details.velocity.pixelsPerSecond.dy;
+          // Minimum swipe velocity threshold (pixels per second)
+          // Also ensure horizontal movement is greater than vertical
+          const swipeThreshold = 300.0;
+          
+          if (deltaX.abs() > swipeThreshold && deltaX.abs() > deltaY.abs()) {
+            // Swipe left (negative deltaX) = next mode
+            // Swipe right (positive deltaX) = previous mode
+            final isNext = deltaX < 0;
+            _handleModeNavigation(readMode, isNext);
+          }
+          
+          _isSwiping = false;
+        },
+        child: switch (readMode) {
+          ReadMode.surah => const SurahListView(),
+          ReadMode.juz => const JuzListView(),
+          ReadMode.pages => const PageListView(),
+        },
+      ),
     );
   }
 }
