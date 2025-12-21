@@ -26,6 +26,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
   bool _hasScrolledToTarget = false;
   ReaderSource? _lastSource = null;
+  double _swipeStartX = 0.0;
+  double _swipeStartY = 0.0;
+  bool _isSwiping = false;
   
   @override
   void dispose() {
@@ -37,6 +40,38 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   void initState() {
     super.initState();
     _lastSource = ref.read(readerSourceProvider);
+  }
+  
+  /// Navigate to next/previous surah, juz, or page based on swipe direction
+  void _handleSwipeNavigation(ReaderSource currentSource, bool isNext) {
+    final newSource = switch (currentSource) {
+      SurahSource(:final surahId) => () {
+        final nextSurahId = isNext ? surahId + 1 : surahId - 1;
+        if (nextSurahId >= 1 && nextSurahId <= 114) {
+          return SurahSource(nextSurahId);
+        }
+        return null;
+      }(),
+      JuzSource(:final juzNo) => () {
+        final nextJuzNo = isNext ? juzNo + 1 : juzNo - 1;
+        if (nextJuzNo >= 1 && nextJuzNo <= 30) {
+          return JuzSource(nextJuzNo);
+        }
+        return null;
+      }(),
+      PageSource(:final pageNo) => () {
+        final nextPageNo = isNext ? pageNo + 1 : pageNo - 1;
+        if (nextPageNo >= 1 && nextPageNo <= 604) {
+          return PageSource(nextPageNo);
+        }
+        return null;
+      }(),
+    };
+    
+    if (newSource != null) {
+      ref.read(readerSourceProvider.notifier).state = newSource;
+      ref.read(targetAyahProvider.notifier).state = null;
+    }
   }
   
   void _scrollToAyah(List<Verse> verses, int targetAyahNo, bool isSurahSource, bool hasHeader) {
@@ -397,19 +432,51 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
     return Scaffold(
       appBar: appBar,
-      body: versesAsync.when(
-        data: (verses) {
-          if (verses.isEmpty) {
-            return const Center(child: Text('No verses found'));
+      body: GestureDetector(
+        onHorizontalDragStart: (details) {
+          _swipeStartX = details.globalPosition.dx;
+          _swipeStartY = details.globalPosition.dy;
+          _isSwiping = false;
+        },
+        onHorizontalDragUpdate: (details) {
+          final deltaX = details.globalPosition.dx - _swipeStartX;
+          final deltaY = details.globalPosition.dy - _swipeStartY;
+          // Only consider it a horizontal swipe if horizontal movement is significantly greater than vertical
+          if (deltaX.abs() > 20 && deltaX.abs() > deltaY.abs() * 1.5) {
+            _isSwiping = true;
           }
+        },
+        onHorizontalDragEnd: (details) {
+          if (!_isSwiping) return;
+          
+          final deltaX = details.velocity.pixelsPerSecond.dx;
+          final deltaY = details.velocity.pixelsPerSecond.dy;
+          // Minimum swipe velocity threshold (pixels per second)
+          // Also ensure horizontal movement is greater than vertical
+          const swipeThreshold = 300.0;
+          
+          if (deltaX.abs() > swipeThreshold && deltaX.abs() > deltaY.abs() && source != null) {
+            // Swipe left (negative deltaX) = next
+            // Swipe right (positive deltaX) = previous
+            final isNext = deltaX < 0;
+            _handleSwipeNavigation(source, isNext);
+          }
+          
+          _isSwiping = false;
+        },
+        child: versesAsync.when(
+          data: (verses) {
+            if (verses.isEmpty) {
+              return const Center(child: Text('No verses found'));
+            }
 
-          final contentWidth = Responsive.getContentWidth(context);
-          final isLargeScreen = Responsive.isLargeScreen(context);
+            final contentWidth = Responsive.getContentWidth(context);
+            final isLargeScreen = Responsive.isLargeScreen(context);
 
-          return Center(
-            child: SizedBox(
-              width: isLargeScreen ? contentWidth : double.infinity,
-              child: surahsAsync.when(
+            return Center(
+              child: SizedBox(
+                width: isLargeScreen ? contentWidth : double.infinity,
+                child: surahsAsync.when(
                 data: (surahs) {
                   final settings = ref.watch(settingsProvider);
                   final isSurahSource = source is SurahSource;
@@ -928,6 +995,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         error: (error, stack) => Center(
           child: Text('Error: $error'),
         ),
+      ),
       ),
     );
   }
