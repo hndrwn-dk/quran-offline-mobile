@@ -7,6 +7,7 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 
 class BookmarksScreen extends ConsumerStatefulWidget {
@@ -329,18 +330,37 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                         final isLast = index == filtered.length - 1;
 
                         return InkWell(
-                          onTap: () {
+                          onTap: () async {
                             if (_selectionMode) {
                               _toggleSelection(bookmark);
                             } else {
-                              ref.read(readerSourceProvider.notifier).state = SurahSource(bookmark.surahId, targetAyahNo: bookmark.ayahNo);
-                              ref.read(targetAyahProvider.notifier).state = bookmark.ayahNo;
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const ReaderScreen(),
-                                ),
-                              );
+                              // Get page number for this ayah
+                              final db = ref.read(databaseProvider);
+                              final pageNo = await db.getPageForAyah(bookmark.surahId, bookmark.ayahNo);
+                              
+                              if (pageNo != null) {
+                                // Navigate to Mushaf mode with pageNo + surahId + ayahNo
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MushafPageView(
+                                      initialPage: pageNo,
+                                      targetSurahId: bookmark.surahId,
+                                      targetAyahNo: bookmark.ayahNo,
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                // Fallback to Surah mode if page not found
+                                ref.read(readerSourceProvider.notifier).state = SurahSource(bookmark.surahId, targetAyahNo: bookmark.ayahNo);
+                                ref.read(targetAyahProvider.notifier).state = bookmark.ayahNo;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const ReaderScreen(),
+                                  ),
+                                );
+                              }
                             }
                           },
                           onLongPress: () {

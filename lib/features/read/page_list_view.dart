@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
+import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/page_surahs_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
@@ -41,6 +42,9 @@ class PageListView extends ConsumerWidget {
                           Expanded(
                             child: InkWell(
                               onTap: () {
+                                final source = PageSource(pageNo);
+                                // Save last read (without ayahNo, will be updated when user scrolls)
+                                ref.read(lastReadProvider.notifier).saveLastRead(source);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(

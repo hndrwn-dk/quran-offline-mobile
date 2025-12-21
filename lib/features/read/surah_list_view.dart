@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
+import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
@@ -27,7 +28,10 @@ class SurahListView extends ConsumerWidget {
 
             return InkWell(
               onTap: () {
-                ref.read(readerSourceProvider.notifier).state = SurahSource(surah.id);
+                final source = SurahSource(surah.id);
+                ref.read(readerSourceProvider.notifier).state = source;
+                // Save last read (without ayahNo, will be updated when user scrolls)
+                ref.read(lastReadProvider.notifier).saveLastRead(source);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
