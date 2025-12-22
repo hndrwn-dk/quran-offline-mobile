@@ -34,6 +34,15 @@
 - **Auto-Scroll**: Automatically scrolls to the exact bookmarked verse when opened
 - **Unified Bookmarks**: All bookmarks work seamlessly across Surah, Juz, and Mushaf modes
 
+### 🔍 Quick Search in Read Screen
+- **Inline Search**: Quick search icon in AppBar for instant access
+- **Simple Search**: Search by Surah name/number, Juz number, or Page number
+- **Expandable Search Bar**: Tap search icon to expand search bar below AppBar
+- **Instant Results**: Up to 8 results displayed in dropdown with visual badges
+- **Quick Navigation**: Tap any result to navigate directly to Surah, Juz, or Page
+- **Auto-Close**: Search bar automatically closes after navigation
+- **Fully Localized**: Search placeholder and messages in 4 languages
+
 ## Technical Improvements
 - Added tajweed column to database schema (version 2)
 - Implemented HTML tajweed tag parsing with color rendering
