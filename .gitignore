@@ -72,5 +72,9 @@ android/key.properties
 # Coverage
 coverage/
 
+# Release bundles and notes
+bundles_release/
+RELEASE_NOTES_*.md
+
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages

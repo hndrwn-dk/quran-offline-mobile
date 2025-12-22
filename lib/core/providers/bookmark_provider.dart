@@ -36,3 +36,54 @@ Future<bool> isBookmarked(WidgetRef ref, int surahId, int ayahNo) async {
   return bookmark != null;
 }
 
+// Bookmark organization providers
+final bookmarkFoldersProvider = FutureProvider<List<String>>((ref) async {
+  final db = ref.read(databaseProvider);
+  return await db.getAllFolders();
+});
+
+final bookmarkTagsProvider = FutureProvider<List<String>>((ref) async {
+  final db = ref.read(databaseProvider);
+  return await db.getAllTags();
+});
+
+final bookmarksByFolderProvider = FutureProvider.family<List<Bookmark>, String>((ref, folder) async {
+  final db = ref.read(databaseProvider);
+  return await db.getBookmarksByFolder(folder);
+});
+
+final bookmarksByTagProvider = FutureProvider.family<List<Bookmark>, String>((ref, tag) async {
+  final db = ref.read(databaseProvider);
+  return await db.getBookmarksByTag(tag);
+});
+
+Future<void> updateBookmarkOrganization(
+  WidgetRef ref,
+  int surahId,
+  int ayahNo, {
+  String? folder,
+  String? tag,
+  int? color,
+  String? note,
+}) async {
+  final db = ref.read(databaseProvider);
+  await db.updateBookmarkOrganization(
+    surahId,
+    ayahNo,
+    folder: folder,
+    tag: tag,
+    color: color,
+    note: note,
+  );
+  ref.read(bookmarkRefreshProvider.notifier).state++;
+  ref.invalidate(bookmarksProvider);
+  ref.invalidate(bookmarkFoldersProvider);
+  ref.invalidate(bookmarkTagsProvider);
+  if (folder != null) {
+    ref.invalidate(bookmarksByFolderProvider(folder));
+  }
+  if (tag != null) {
+    ref.invalidate(bookmarksByTagProvider(tag));
+  }
+}
+

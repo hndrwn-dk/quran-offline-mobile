@@ -73,23 +73,84 @@ class TajweedText extends StatelessWidget {
 
   List<TextSpan> _parseTajweedHtml(BuildContext context) {
     final spans = <TextSpan>[];
-    final text = tajweedHtml;
+    String text = tajweedHtml;
     
     // Pattern to match tajweed tags: <tajweed class=class_name>content</tajweed>
-    // Also handle <span class=end>ayah_number</span> for ayah numbers
-    final tajweedPattern = RegExp(
-      r'<tajweed\s+class=([^>]+)>(.*?)</tajweed>',
+    // Handle both quoted and unquoted class attributes
+    // Pattern 1: <tajweed class="value">content</tajweed>
+    // Pattern 2: <tajweed class='value'>content</tajweed>
+    // Pattern 3: <tajweed class=value>content</tajweed>
+    // Pattern 4: <tajweed>content</tajweed> (without class attribute)
+    final tajweedPattern1 = RegExp(
+      r'<tajweed\s+class="([^"]+)"\s*>(.*?)</tajweed>',
       dotAll: true,
+      caseSensitive: false,
     );
-    final spanPattern = RegExp(r'<span\s+class=([^>]+)>(.*?)</span>', dotAll: true);
+    final tajweedPattern2 = RegExp(
+      r"<tajweed\s+class='([^']+)'\s*>(.*?)</tajweed>",
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final tajweedPattern3 = RegExp(
+      r'<tajweed\s+class=([^>\s]+)\s*>(.*?)</tajweed>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final tajweedPattern4 = RegExp(
+      r'<tajweed\s*>(.*?)</tajweed>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    
+    // Pattern for span tags: <span class=end>ayah_number</span>
+    final spanPattern1 = RegExp(
+      r'<span\s+class="([^"]+)"\s*>(.*?)</span>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final spanPattern2 = RegExp(
+      r"<span\s+class='([^']+)'\s*>(.*?)</span>",
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final spanPattern3 = RegExp(
+      r'<span\s+class=([^>\s]+)\s*>(.*?)</span>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    
+    // Pattern for alternative format: <class=value>content</class>
+    final classPattern1 = RegExp(
+      r'<class="([^"]+)"\s*>(.*?)</class>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final classPattern2 = RegExp(
+      r"<class='([^']+)'\s*>(.*?)</class>",
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final classPattern3 = RegExp(
+      r'<class=([^>\s]+)\s*>(.*?)</class>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    
+    // Pattern to remove any remaining HTML tags that weren't matched
+    final htmlTagPattern = RegExp(r'<[^>]+>');
     
     int lastIndex = 0;
     
     // Find all matches
     final allMatches = <_Match>[];
     
-    // Find tajweed tags
-    for (final match in tajweedPattern.allMatches(text)) {
+    // Helper function to check if a match is already in allMatches
+    bool isAlreadyMatched(int start, int end) {
+      return allMatches.any((m) => m.start == start && m.end == end);
+    }
+    
+    // Find tajweed tags (try all four patterns)
+    for (final match in tajweedPattern1.allMatches(text)) {
       allMatches.add(_Match(
         start: match.start,
         end: match.end,
@@ -98,16 +159,108 @@ class TajweedText extends StatelessWidget {
         content: match.group(2) ?? '',
       ));
     }
+    for (final match in tajweedPattern2.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_Match(
+          start: match.start,
+          end: match.end,
+          type: _MatchType.tajweed,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+        ));
+      }
+    }
+    for (final match in tajweedPattern3.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_Match(
+          start: match.start,
+          end: match.end,
+          type: _MatchType.tajweed,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+        ));
+      }
+    }
+    for (final match in tajweedPattern4.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_Match(
+          start: match.start,
+          end: match.end,
+          type: _MatchType.tajweed,
+          classAttr: '', // No class attribute
+          content: match.group(1) ?? '',
+        ));
+      }
+    }
     
-    // Find span tags (for ayah numbers)
-    for (final match in spanPattern.allMatches(text)) {
-      allMatches.add(_Match(
-        start: match.start,
-        end: match.end,
-        type: _MatchType.span,
-        classAttr: match.group(1) ?? '',
-        content: match.group(2) ?? '',
-      ));
+    // Find span tags (try all three patterns)
+    for (final match in spanPattern1.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_Match(
+          start: match.start,
+          end: match.end,
+          type: _MatchType.span,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+        ));
+      }
+    }
+    for (final match in spanPattern2.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_Match(
+          start: match.start,
+          end: match.end,
+          type: _MatchType.span,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+        ));
+      }
+    }
+    for (final match in spanPattern3.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_Match(
+          start: match.start,
+          end: match.end,
+          type: _MatchType.span,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+        ));
+      }
+    }
+    
+    // Find class tags (alternative format: <class=value>content</class>)
+    for (final match in classPattern1.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_Match(
+          start: match.start,
+          end: match.end,
+          type: _MatchType.tajweed,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+        ));
+      }
+    }
+    for (final match in classPattern2.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_Match(
+          start: match.start,
+          end: match.end,
+          type: _MatchType.tajweed,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+        ));
+      }
+    }
+    for (final match in classPattern3.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_Match(
+          start: match.start,
+          end: match.end,
+          type: _MatchType.tajweed,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+        ));
+      }
     }
     
     // Sort matches by start position
@@ -115,9 +268,16 @@ class TajweedText extends StatelessWidget {
     
     // Build text spans
     for (final match in allMatches) {
-      // Add text before match
+      // Add text before match (remove any HTML tags from it)
       if (match.start > lastIndex) {
-        final beforeText = text.substring(lastIndex, match.start);
+        var beforeText = text.substring(lastIndex, match.start);
+        // Remove any HTML tags that weren't matched
+        // Also remove incomplete tags like <tajweed, <class=, etc.
+        beforeText = beforeText.replaceAll(htmlTagPattern, '');
+        // Remove incomplete tags that don't have closing >
+        beforeText = beforeText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
+        beforeText = beforeText.replaceAll(RegExp(r'<tajweed[^>]*', caseSensitive: false), '');
+        beforeText = beforeText.replaceAll(RegExp(r'<class=[^>]*', caseSensitive: false), '');
         if (beforeText.isNotEmpty) {
           spans.add(TextSpan(text: beforeText));
         }
@@ -126,11 +286,18 @@ class TajweedText extends StatelessWidget {
       // Add styled text for match
       if (match.type == _MatchType.tajweed) {
         final tajweedClass = match.classAttr.trim();
-        final color = getTajweedColor(tajweedClass, context);
-        spans.add(TextSpan(
-          text: match.content,
-          style: TextStyle(color: color),
-        ));
+        // Clean content from any remaining HTML tags
+        var content = match.content;
+        content = content.replaceAll(htmlTagPattern, '');
+        content = content.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
+        
+        if (content.isNotEmpty) {
+          final color = getTajweedColor(tajweedClass, context);
+          spans.add(TextSpan(
+            text: content,
+            style: TextStyle(color: color),
+          ));
+        }
       } else if (match.type == _MatchType.span) {
         // Check if this is the end marker: <span class=end>...</span>
         final classAttr = match.classAttr.trim();
@@ -140,27 +307,38 @@ class TajweedText extends StatelessWidget {
           // Do nothing, just skip this match
         } else {
           // Regular span (not end marker) - render it
-          spans.add(TextSpan(text: match.content));
+          var content = match.content;
+          content = content.replaceAll(htmlTagPattern, '');
+          if (content.isNotEmpty) {
+            spans.add(TextSpan(text: content));
+          }
         }
-      } else {
-        // Regular span
-        spans.add(TextSpan(text: match.content));
       }
       
       lastIndex = match.end;
     }
     
-    // Add remaining text
+    // Add remaining text (remove any HTML tags from it)
     if (lastIndex < text.length) {
-      final remainingText = text.substring(lastIndex);
+      var remainingText = text.substring(lastIndex);
+      // Remove any HTML tags that weren't matched
+      remainingText = remainingText.replaceAll(htmlTagPattern, '');
+      // Remove incomplete tags
+      remainingText = remainingText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
+      remainingText = remainingText.replaceAll(RegExp(r'<tajweed[^>]*', caseSensitive: false), '');
+      remainingText = remainingText.replaceAll(RegExp(r'<class=[^>]*', caseSensitive: false), '');
       if (remainingText.isNotEmpty) {
         spans.add(TextSpan(text: remainingText));
       }
     }
     
-    // If no matches found, return plain text
+    // If no matches found, remove all HTML tags and return plain text
     if (spans.isEmpty) {
-      return [TextSpan(text: text)];
+      var cleanedText = text.replaceAll(htmlTagPattern, '');
+      cleanedText = cleanedText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
+      cleanedText = cleanedText.replaceAll(RegExp(r'<tajweed[^>]*', caseSensitive: false), '');
+      cleanedText = cleanedText.replaceAll(RegExp(r'<class=[^>]*', caseSensitive: false), '');
+      return [TextSpan(text: cleanedText)];
     }
     
     return spans;
