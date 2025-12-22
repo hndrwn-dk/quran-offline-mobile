@@ -25,6 +25,13 @@
 - Auto-scroll to bookmarked verse
 - Unified bookmarks across all reading modes
 
+### Quick Search in Read Screen
+- Inline search icon in AppBar
+- Search by Surah name/number, Juz, or Page
+- Expandable search bar with instant results
+- Quick navigation to search results
+- Fully localized (4 languages)
+
 ---
 
 **Version**: 1.0.0 (Build 4)

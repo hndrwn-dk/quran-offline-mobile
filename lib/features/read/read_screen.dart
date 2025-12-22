@@ -8,6 +8,7 @@ import 'package:quran_offline/features/read/juz_list_view.dart';
 import 'package:quran_offline/features/read/page_list_view.dart';
 import 'package:quran_offline/features/read/surah_list_view.dart';
 import 'package:quran_offline/features/read/widgets/last_read_card.dart';
+import 'package:quran_offline/features/read/widgets/quick_search_bar.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 
 class ReadScreen extends ConsumerStatefulWidget {
@@ -21,6 +22,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
   double _swipeStartX = 0.0;
   double _swipeStartY = 0.0;
   bool _isSwiping = false;
+  final _searchBarKey = GlobalKey<QuickSearchBarState>();
 
   void _handleModeNavigation(ReadMode currentMode, bool isNext) {
     final newMode = switch (currentMode) {
@@ -210,6 +212,17 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            iconSize: 20,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            constraints: const BoxConstraints(),
+            onPressed: () {
+              _searchBarKey.currentState?.toggle();
+            },
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(52), // 6 + 34 (button) + 6 + 1 (divider) + 5 (buffer)
           child: Column(
@@ -272,26 +285,33 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
           
           _isSwiping = false;
         },
-        child: switch (readMode) {
-          ReadMode.surah => Column(
-              children: [
-                const LastReadCard(),
-                const Expanded(child: SurahListView()),
-              ],
+        child: Column(
+          children: [
+            QuickSearchBar(key: _searchBarKey),
+            Expanded(
+              child: switch (readMode) {
+                ReadMode.surah => Column(
+                    children: [
+                      const LastReadCard(),
+                      const Expanded(child: SurahListView()),
+                    ],
+                  ),
+                ReadMode.juz => Column(
+                    children: [
+                      const LastReadCard(),
+                      const Expanded(child: JuzListView()),
+                    ],
+                  ),
+                ReadMode.pages => Column(
+                    children: [
+                      const LastReadCard(),
+                      const Expanded(child: PageListView()),
+                    ],
+                  ),
+              },
             ),
-          ReadMode.juz => Column(
-              children: [
-                const LastReadCard(),
-                const Expanded(child: JuzListView()),
-              ],
-            ),
-          ReadMode.pages => Column(
-              children: [
-                const LastReadCard(),
-                const Expanded(child: PageListView()),
-              ],
-            ),
-        },
+          ],
+        ),
       ),
     );
   }
@@ -309,7 +329,6 @@ class _CustomSegmentedButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
     final settings = ref.watch(settingsProvider);
     final appLanguage = settings.appLanguage;
     
