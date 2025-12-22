@@ -80,6 +80,8 @@ class AppLocalizations {
       'read_subtitle' => _getReadSubtitle(language),
       'bookmarks_subtitle' => _getBookmarksSubtitle(language),
       'search_subtitle' => _getSearchSubtitle(language),
+      'quick_search_hint' => _getQuickSearchHint(language),
+      'quick_search_no_results' => _getQuickSearchNoResults(language),
       _ => key,
     };
   }
@@ -186,6 +188,26 @@ class AppLocalizations {
       'zh' => '搜索古兰经',
       'ja' => 'コーラン全体を検索',
       _ => 'Search across the Qur\'an',
+    };
+  }
+
+  static String _getQuickSearchHint(String language) {
+    return switch (language) {
+      'id' => 'Cari Surah, Juz, atau Halaman...',
+      'en' => 'Search Surah, Juz, or Page...',
+      'zh' => '搜索章节、卷或页...',
+      'ja' => 'スーラ、ジュズ、またはページを検索...',
+      _ => 'Search Surah, Juz, or Page...',
+    };
+  }
+
+  static String _getQuickSearchNoResults(String language) {
+    return switch (language) {
+      'id' => 'Tidak ada hasil ditemukan',
+      'en' => 'No results found',
+      'zh' => '未找到结果',
+      'ja' => '結果が見つかりません',
+      _ => 'No results found',
     };
   }
 
