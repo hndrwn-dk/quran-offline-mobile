@@ -27,17 +27,42 @@ class Bookmarks extends Table {
   IntColumn get surahId => integer()();
   IntColumn get ayahNo => integer()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get folder => text().nullable()();
+  TextColumn get tag => text().nullable()();
+  IntColumn get color => integer().nullable()(); // Color value as int
+  TextColumn get note => text().nullable()(); // Notes for bookmark
 
   @override
   Set<Column> get primaryKey => {surahId, ayahNo};
 }
 
-@DriftDatabase(tables: [Verses, Bookmarks])
+class Notes extends Table {
+  IntColumn get surahId => integer()();
+  IntColumn get ayahNo => integer()();
+  TextColumn get note => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {surahId, ayahNo};
+}
+
+class Highlights extends Table {
+  IntColumn get surahId => integer()();
+  IntColumn get ayahNo => integer()();
+  IntColumn get color => integer()(); // Color value as int
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {surahId, ayahNo};
+}
+
+@DriftDatabase(tables: [Verses, Bookmarks, Notes, Highlights])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -47,11 +72,28 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('CREATE INDEX IF NOT EXISTS idx_verses_page ON verses(page)');
         await customStatement('CREATE INDEX IF NOT EXISTS idx_verses_juz ON verses(juz)');
         await customStatement('CREATE INDEX IF NOT EXISTS idx_verses_surah_ayah ON verses(surah_id, ayah_no)');
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_notes_surah_ayah ON notes(surah_id, ayah_no)');
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_highlights_surah_ayah ON highlights(surah_id, ayah_no)');
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_bookmarks_folder ON bookmarks(folder)');
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_bookmarks_tag ON bookmarks(tag)');
       },
       onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
           // Add tajweed column
           await m.addColumn(verses, verses.tajweed);
+        }
+        if (from < 3) {
+          // Add notes, highlights tables and bookmark organization fields
+          await m.createTable(notes);
+          await m.createTable(highlights);
+          await m.addColumn(bookmarks, bookmarks.folder);
+          await m.addColumn(bookmarks, bookmarks.tag);
+          await m.addColumn(bookmarks, bookmarks.color);
+          await m.addColumn(bookmarks, bookmarks.note);
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_notes_surah_ayah ON notes(surah_id, ayah_no)');
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_highlights_surah_ayah ON highlights(surah_id, ayah_no)');
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_bookmarks_folder ON bookmarks(folder)');
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_bookmarks_tag ON bookmarks(tag)');
         }
       },
     );
@@ -109,6 +151,13 @@ class AppDatabase extends _$AppDatabase {
           ..limit(1))
         .getSingleOrNull();
     return verse?.page;
+  }
+
+  Future<Verse?> getVerse(int surahId, int ayahNo) async {
+    return await (select(verses)
+          ..where((v) => v.surahId.equals(surahId) & v.ayahNo.equals(ayahNo))
+          ..limit(1))
+        .getSingleOrNull();
   }
 
   Future<List<Verse>> searchVerses(String query, String lang) {
@@ -169,6 +218,162 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<Bookmark>> getAllBookmarks() {
     return (select(bookmarks)
+          ..orderBy([(b) => OrderingTerm(expression: b.createdAt, mode: OrderingMode.desc)]))
+        .get();
+  }
+
+  // Notes methods
+  Future<Note?> getNote(int surahId, int ayahNo) {
+    return (select(this.notes)
+          ..where((n) => n.surahId.equals(surahId) & n.ayahNo.equals(ayahNo))
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  Future<void> saveNote(int surahId, int ayahNo, String noteText) async {
+    final existing = await getNote(surahId, ayahNo);
+    if (existing != null) {
+      await (update(this.notes)..where((n) => n.surahId.equals(surahId) & n.ayahNo.equals(ayahNo)))
+          .write(NotesCompanion(
+        note: Value(noteText),
+        updatedAt: Value(DateTime.now()),
+      ));
+    } else {
+      await into(this.notes).insert(
+        NotesCompanion.insert(
+          surahId: surahId,
+          ayahNo: ayahNo,
+          note: noteText,
+        ),
+      );
+    }
+  }
+
+  Future<void> deleteNote(int surahId, int ayahNo) async {
+    await (delete(this.notes)
+          ..where((n) => n.surahId.equals(surahId) & n.ayahNo.equals(ayahNo)))
+        .go();
+  }
+
+  Future<List<Note>> getNotesBySurah(int surahId) {
+    return (select(this.notes)
+          ..where((n) => n.surahId.equals(surahId))
+          ..orderBy([(n) => OrderingTerm(expression: n.ayahNo)]))
+        .get();
+  }
+
+  Future<List<Note>> getAllNotes() {
+    return (select(this.notes)
+          ..orderBy([
+            (n) => OrderingTerm(expression: n.surahId),
+            (n) => OrderingTerm(expression: n.ayahNo),
+          ]))
+        .get();
+  }
+
+  // Highlights methods
+  Future<Highlight?> getHighlight(int surahId, int ayahNo) {
+    return (select(highlights)
+          ..where((h) => h.surahId.equals(surahId) & h.ayahNo.equals(ayahNo))
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  Future<void> toggleHighlight(int surahId, int ayahNo, int color) async {
+    final existing = await getHighlight(surahId, ayahNo);
+    if (existing != null) {
+      // If same color, remove highlight; otherwise update color
+      if (existing.color == color) {
+        await (delete(highlights)
+              ..where((h) => h.surahId.equals(surahId) & h.ayahNo.equals(ayahNo)))
+            .go();
+      } else {
+        await (update(highlights)..where((h) => h.surahId.equals(surahId) & h.ayahNo.equals(ayahNo)))
+            .write(HighlightsCompanion(color: Value(color)));
+      }
+    } else {
+      await into(highlights).insert(
+        HighlightsCompanion.insert(
+          surahId: surahId,
+          ayahNo: ayahNo,
+          color: color,
+        ),
+      );
+    }
+  }
+
+  Future<void> removeHighlight(int surahId, int ayahNo) async {
+    await (delete(highlights)
+          ..where((h) => h.surahId.equals(surahId) & h.ayahNo.equals(ayahNo)))
+        .go();
+  }
+
+  Future<List<Highlight>> getHighlightsBySurah(int surahId) {
+    return (select(highlights)
+          ..where((h) => h.surahId.equals(surahId))
+          ..orderBy([(h) => OrderingTerm(expression: h.ayahNo)]))
+        .get();
+  }
+
+  Future<List<Highlight>> getAllHighlights() {
+    return (select(highlights)
+          ..orderBy([
+            (h) => OrderingTerm(expression: h.surahId),
+            (h) => OrderingTerm(expression: h.ayahNo),
+          ]))
+        .get();
+  }
+
+  // Bookmark organization methods
+  Future<void> updateBookmarkOrganization(
+    int surahId,
+    int ayahNo, {
+    String? folder,
+    String? tag,
+    int? color,
+    String? note,
+  }) async {
+    await (update(bookmarks)..where((b) => b.surahId.equals(surahId) & b.ayahNo.equals(ayahNo)))
+        .write(BookmarksCompanion(
+      folder: Value(folder),
+      tag: Value(tag),
+      color: Value(color),
+      note: Value(note),
+    ));
+  }
+
+  Future<List<String>> getAllFolders() async {
+    final allBookmarks = await getAllBookmarks();
+    final folders = allBookmarks
+        .where((b) => b.folder != null && b.folder!.isNotEmpty)
+        .map((b) => b.folder!)
+        .toSet()
+        .toList();
+    folders.sort();
+    return folders;
+  }
+
+  Future<List<String>> getAllTags() async {
+    final allBookmarks = await getAllBookmarks();
+    final tags = allBookmarks
+        .where((b) => b.tag != null && b.tag!.isNotEmpty)
+        .map((b) => b.tag!)
+        .toSet()
+        .toList();
+    tags.sort();
+    return tags;
+  }
+
+  Future<List<Bookmark>> getBookmarksByFolder(String folder) {
+    return (select(bookmarks)
+          ..where((b) => b.folder.equals(folder))
+          ..orderBy([(b) => OrderingTerm(expression: b.createdAt, mode: OrderingMode.desc)]))
+        .get();
+  }
+
+  Future<List<Bookmark>> getBookmarksByTag(String tag) {
+    return (select(bookmarks)
+          ..where((b) => b.tag.equals(tag))
           ..orderBy([(b) => OrderingTerm(expression: b.createdAt, mode: OrderingMode.desc)]))
         .get();
   }

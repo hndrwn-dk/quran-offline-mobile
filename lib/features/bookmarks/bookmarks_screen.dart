@@ -7,6 +7,7 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/features/notes/notes_screen.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 
@@ -17,11 +18,14 @@ class BookmarksScreen extends ConsumerStatefulWidget {
   ConsumerState<BookmarksScreen> createState() => _BookmarksScreenState();
 }
 
+enum BookmarkSortBy { date, surah }
+
 class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _selectionMode = false;
   bool _searchMode = false;
   final Set<String> _selectedKeys = {};
+  BookmarkSortBy _sortBy = BookmarkSortBy.date;
 
   String _keyFor(Bookmark b) => '${b.surahId}:${b.ayahNo}';
 
@@ -194,6 +198,23 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                   ]
                 : [
                     IconButton(
+                      icon: const Icon(Icons.note_outlined),
+                      tooltip: 'View notes',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const NotesScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.sort),
+                      tooltip: 'Sort & Filter',
+                      onPressed: () => _showSortFilterDialog(context, ref),
+                    ),
+                    IconButton(
                       icon: const Icon(Icons.search),
                       tooltip: 'Search',
                       onPressed: () {
@@ -296,20 +317,38 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
 
                 return surahsAsync.when(
                   data: (surahs) {
-                    final filtered = bookmarks.where((b) {
-                      final surahName = surahs
-                          .firstWhere(
-                            (s) => s.id == b.surahId,
-                            orElse: () => SurahInfo(id: b.surahId, arabicName: '', englishName: 'Surah ${b.surahId}', englishMeaning: ''),
-                          )
-                          .englishName
-                          .toLowerCase();
-                      final matchesQuery = query.isEmpty ||
-                          surahName.contains(query) ||
-                          b.surahId.toString().contains(query) ||
-                          b.ayahNo.toString().contains(query);
-                      return matchesQuery;
+                    // Apply filter
+                    var filtered = bookmarks.where((b) {
+                      // Filter by search query
+                      if (query.isNotEmpty) {
+                        final surahName = surahs
+                            .firstWhere(
+                              (s) => s.id == b.surahId,
+                              orElse: () => SurahInfo(id: b.surahId, arabicName: '', englishName: 'Surah ${b.surahId}', englishMeaning: ''),
+                            )
+                            .englishName
+                            .toLowerCase();
+                        if (!surahName.contains(query) &&
+                            !b.surahId.toString().contains(query) &&
+                            !b.ayahNo.toString().contains(query)) {
+                          return false;
+                        }
+                      }
+                      return true;
                     }).toList();
+                    
+                    // Apply sort
+                    filtered = filtered.toList()..sort((a, b) {
+                      switch (_sortBy) {
+                        case BookmarkSortBy.date:
+                          return b.createdAt.compareTo(a.createdAt); // Newest first
+                        case BookmarkSortBy.surah:
+                          if (a.surahId != b.surahId) {
+                            return a.surahId.compareTo(b.surahId);
+                          }
+                          return a.ayahNo.compareTo(b.ayahNo);
+                      }
+                    });
 
                     if (filtered.isEmpty) {
                       return const Center(
@@ -364,7 +403,11 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                             }
                           },
                           onLongPress: () {
-                            _toggleSelection(bookmark);
+                            if (!_selectionMode) {
+                              _showBookmarkActions(context, bookmark);
+                            } else {
+                              _toggleSelection(bookmark);
+                            }
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -395,7 +438,7 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                 ],
-                                // Surah number badge (like in Juz main screen)
+                                // Surah number badge
                                 Container(
                                   width: 36,
                                   height: 36,
@@ -418,12 +461,18 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        surahInfo.englishName,
-                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                              color: colorScheme.onSurface,
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              surahInfo.englishName,
+                                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: colorScheme.onSurface,
+                                                  ),
                                             ),
+                                          ),
+                                        ],
                                       ),
                                       Builder(
                                         builder: (context) {
@@ -441,7 +490,7 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                                             ],
                                           );
                                         },
-                                      ),
+                                    ),
                                     ],
                                   ),
                                 ),
@@ -504,6 +553,99 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                 child: Text('Error: $error'),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBookmarkActions(BuildContext context, Bookmark bookmark) {
+    final settings = ref.read(settingsProvider);
+    final appLanguage = settings.appLanguage;
+    
+    showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.delete_outline),
+              title: Text(AppLocalizations.getSettingsText('delete', appLanguage)),
+              onTap: () async {
+                Navigator.pop(context);
+                final confirmed = await _confirmDelete(
+                  context,
+                  message: 'Delete this bookmark?',
+                );
+                if (!confirmed) return;
+                await toggleBookmark(ref, bookmark.surahId, bookmark.ayahNo);
+                setState(() {});
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSortFilterDialog(BuildContext context, WidgetRef ref) {
+    final settings = ref.read(settingsProvider);
+    final appLanguage = settings.appLanguage;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.getSettingsText('sort_by', appLanguage)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RadioListTile<BookmarkSortBy>(
+                title: Text(AppLocalizations.getSettingsText('sort_date', appLanguage)),
+                value: BookmarkSortBy.date,
+                groupValue: _sortBy,
+                onChanged: (value) {
+                  setState(() {
+                    _sortBy = value!;
+                  });
+                },
+              ),
+              RadioListTile<BookmarkSortBy>(
+                title: Text(AppLocalizations.getSettingsText('sort_surah', appLanguage)),
+                value: BookmarkSortBy.surah,
+                groupValue: _sortBy,
+                onChanged: (value) {
+                  setState(() {
+                    _sortBy = value!;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _sortBy = BookmarkSortBy.date;
+              });
+            },
+            child: Text('Reset'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(AppLocalizations.getSettingsText('cancel', appLanguage)),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Apply'),
           ),
         ],
       ),
