@@ -12,6 +12,9 @@ class AppLocalizations {
       'juz' => _getJuz(language),
       'mushaf' => _getMushaf(language),
       'page' => _getPage(language),
+      'notes' => _getNotes(language),
+      'highlights' => _getHighlights(language),
+      'library' => _getLibrary(language),
       _ => key,
     };
   }
@@ -79,9 +82,20 @@ class AppLocalizations {
       'settings_subtitle' => _getSettingsSubtitle(language),
       'read_subtitle' => _getReadSubtitle(language),
       'bookmarks_subtitle' => _getBookmarksSubtitle(language),
+      'bookmarks_empty' => _getBookmarksEmpty(language),
       'search_subtitle' => _getSearchSubtitle(language),
       'quick_search_hint' => _getQuickSearchHint(language),
       'quick_search_no_results' => _getQuickSearchNoResults(language),
+      'notes_subtitle' => _getNotesSubtitle(language),
+      'notes_search_hint' => _getNotesSearchHint(language),
+      'notes_empty' => _getNotesEmpty(language),
+      'notes_no_results' => _getNotesNoResults(language),
+      'highlights_search_hint' => _getHighlightsSearchHint(language),
+      'highlights_empty' => _getHighlightsEmpty(language),
+      'highlights_no_results' => _getHighlightsNoResults(language),
+      'library_subtitle' => _getLibrarySubtitle(language),
+      'library_search_hint' => _getLibrarySearchHint(language),
+      'library_no_results' => _getLibraryNoResults(language),
       _ => key,
     };
   }
@@ -178,6 +192,16 @@ class AppLocalizations {
       'zh' => '稍后保存',
       'ja' => '後で保存',
       _ => 'Saved for later',
+    };
+  }
+
+  static String _getBookmarksEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ada bookmark',
+      'en' => 'No bookmarks yet',
+      'zh' => '还没有书签',
+      'ja' => 'ブックマークがまだありません',
+      _ => 'No bookmarks yet',
     };
   }
 
@@ -390,6 +414,56 @@ class AppLocalizations {
       'tajweed_rule_madd_desc' => _getTajweedRuleMaddDesc(language),
       'tajweed_rule_ham_wasl' => _getTajweedRuleHamWasl(language),
       'tajweed_rule_ham_wasl_desc' => _getTajweedRuleHamWaslDesc(language),
+      // Highlight Guide
+      'highlight_guide_title' => _getHighlightGuideTitle(language),
+      'highlight_guide_intro' => _getHighlightGuideIntro(language),
+      'highlight_guide_closing' => _getHighlightGuideClosing(language),
+      'highlight_guide_got_it' => _getHighlightGuideGotIt(language),
+      'highlight_color_yellow' => _getHighlightColorYellow(language),
+      'highlight_color_yellow_desc' => _getHighlightColorYellowDesc(language),
+      'highlight_color_orange' => _getHighlightColorOrange(language),
+      'highlight_color_orange_desc' => _getHighlightColorOrangeDesc(language),
+      'highlight_color_pink' => _getHighlightColorPink(language),
+      'highlight_color_pink_desc' => _getHighlightColorPinkDesc(language),
+      'highlight_color_red' => _getHighlightColorRed(language),
+      'highlight_color_red_desc' => _getHighlightColorRedDesc(language),
+      'highlight_color_purple' => _getHighlightColorPurple(language),
+      'highlight_color_purple_desc' => _getHighlightColorPurpleDesc(language),
+      'highlight_color_blue' => _getHighlightColorBlue(language),
+      'highlight_color_blue_desc' => _getHighlightColorBlueDesc(language),
+      'highlight_color_cyan' => _getHighlightColorCyan(language),
+      'highlight_color_cyan_desc' => _getHighlightColorCyanDesc(language),
+      'highlight_color_green' => _getHighlightColorGreen(language),
+      'highlight_color_green_desc' => _getHighlightColorGreenDesc(language),
+      'highlight_color_teal' => _getHighlightColorTeal(language),
+      'highlight_color_teal_desc' => _getHighlightColorTealDesc(language),
+      'highlight_color_other' => _getHighlightColorOther(language),
+      'highlight_color_other_desc' => _getHighlightColorOtherDesc(language),
+      'selected' => _getSelected(language),
+      // Notes & Highlights
+      'note_title' => _getNoteTitle(language),
+      'note_hint' => _getNoteHint(language),
+      'delete_note_title' => _getDeleteNoteTitle(language),
+      'delete_note_message' => _getDeleteNoteMessage(language),
+      'highlight_title' => _getHighlightTitle(language),
+      'remove_highlight' => _getRemoveHighlight(language),
+      'save' => _getSave(language),
+      'cancel' => _getCancel(language),
+      'delete' => _getDelete(language),
+      // Bookmark Organization
+      'bookmark_folder' => _getBookmarkFolder(language),
+      'bookmark_tag' => _getBookmarkTag(language),
+      'bookmark_color' => _getBookmarkColor(language),
+      'bookmark_note' => _getBookmarkNote(language),
+      'bookmark_organize' => _getBookmarkOrganize(language),
+      'sort_by' => _getSortBy(language),
+      'filter_by' => _getFilterBy(language),
+      'sort_date' => _getSortDate(language),
+      'sort_surah' => _getSortSurah(language),
+      'sort_category' => _getSortCategory(language),
+      'filter_all' => _getFilterAll(language),
+      'filter_folder' => _getFilterFolder(language),
+      'filter_tag' => _getFilterTag(language),
       _ => key,
     };
   }
@@ -817,6 +891,610 @@ class AppLocalizations {
       'zh' => '连接哈姆扎',
       'ja' => '接続ハムザ',
       _ => 'Connecting Hamza',
+    };
+  }
+
+  // Notes & Highlights Localizations
+  static String _getNoteTitle(String language) {
+    return switch (language) {
+      'id' => 'Catatan',
+      'en' => 'Note',
+      'zh' => '笔记',
+      'ja' => 'ノート',
+      _ => 'Note',
+    };
+  }
+
+  static String _getNoteHint(String language) {
+    return switch (language) {
+      'id' => 'Tulis catatan untuk ayat ini...',
+      'en' => 'Write a note for this verse...',
+      'zh' => '为这节经文写笔记...',
+      'ja' => 'この節のノートを書く...',
+      _ => 'Write a note for this verse...',
+    };
+  }
+
+  static String _getDeleteNoteTitle(String language) {
+    return switch (language) {
+      'id' => 'Hapus catatan?',
+      'en' => 'Delete note?',
+      'zh' => '删除笔记？',
+      'ja' => 'ノートを削除しますか？',
+      _ => 'Delete note?',
+    };
+  }
+
+  static String _getDeleteNoteMessage(String language) {
+    return switch (language) {
+      'id' => 'Catatan ini akan dihapus secara permanen.',
+      'en' => 'This note will be permanently deleted.',
+      'zh' => '此笔记将被永久删除。',
+      'ja' => 'このノートは完全に削除されます。',
+      _ => 'This note will be permanently deleted.',
+    };
+  }
+
+  static String _getHighlightTitle(String language) {
+    return switch (language) {
+      'id' => 'Pilih Warna Highlight',
+      'en' => 'Select Highlight Color',
+      'zh' => '选择高亮颜色',
+      'ja' => 'ハイライト色を選択',
+      _ => 'Select Highlight Color',
+    };
+  }
+
+  static String _getRemoveHighlight(String language) {
+    return switch (language) {
+      'id' => 'Hapus Highlight',
+      'en' => 'Remove Highlight',
+      'zh' => '移除高亮',
+      'ja' => 'ハイライトを削除',
+      _ => 'Remove Highlight',
+    };
+  }
+
+  static String _getSave(String language) {
+    return switch (language) {
+      'id' => 'Simpan',
+      'en' => 'Save',
+      'zh' => '保存',
+      'ja' => '保存',
+      _ => 'Save',
+    };
+  }
+
+  static String _getCancel(String language) {
+    return switch (language) {
+      'id' => 'Batal',
+      'en' => 'Cancel',
+      'zh' => '取消',
+      'ja' => 'キャンセル',
+      _ => 'Cancel',
+    };
+  }
+
+  static String _getDelete(String language) {
+    return switch (language) {
+      'id' => 'Hapus',
+      'en' => 'Delete',
+      'zh' => '删除',
+      'ja' => '削除',
+      _ => 'Delete',
+    };
+  }
+
+  // Bookmark Organization Localizations
+  static String _getBookmarkFolder(String language) {
+    return switch (language) {
+      'id' => 'Folder',
+      'en' => 'Folder',
+      'zh' => '文件夹',
+      'ja' => 'フォルダ',
+      _ => 'Folder',
+    };
+  }
+
+  static String _getBookmarkTag(String language) {
+    return switch (language) {
+      'id' => 'Tag',
+      'en' => 'Tag',
+      'zh' => '标签',
+      'ja' => 'タグ',
+      _ => 'Tag',
+    };
+  }
+
+  static String _getBookmarkColor(String language) {
+    return switch (language) {
+      'id' => 'Warna',
+      'en' => 'Color',
+      'zh' => '颜色',
+      'ja' => '色',
+      _ => 'Color',
+    };
+  }
+
+  static String _getBookmarkNote(String language) {
+    return switch (language) {
+      'id' => 'Catatan',
+      'en' => 'Note',
+      'zh' => '笔记',
+      'ja' => 'ノート',
+      _ => 'Note',
+    };
+  }
+
+  static String _getBookmarkOrganize(String language) {
+    return switch (language) {
+      'id' => 'Organisir Bookmark',
+      'en' => 'Organize Bookmark',
+      'zh' => '整理书签',
+      'ja' => 'ブックマークを整理',
+      _ => 'Organize Bookmark',
+    };
+  }
+
+  static String _getSortBy(String language) {
+    return switch (language) {
+      'id' => 'Urutkan berdasarkan',
+      'en' => 'Sort by',
+      'zh' => '排序方式',
+      'ja' => '並び替え',
+      _ => 'Sort by',
+    };
+  }
+
+  static String _getFilterBy(String language) {
+    return switch (language) {
+      'id' => 'Filter berdasarkan',
+      'en' => 'Filter by',
+      'zh' => '筛选方式',
+      'ja' => 'フィルター',
+      _ => 'Filter by',
+    };
+  }
+
+  static String _getSortDate(String language) {
+    return switch (language) {
+      'id' => 'Tanggal',
+      'en' => 'Date',
+      'zh' => '日期',
+      'ja' => '日付',
+      _ => 'Date',
+    };
+  }
+
+  static String _getSortSurah(String language) {
+    return switch (language) {
+      'id' => 'Surah',
+      'en' => 'Surah',
+      'zh' => '章节',
+      'ja' => 'スーラ',
+      _ => 'Surah',
+    };
+  }
+
+  static String _getSortCategory(String language) {
+    return switch (language) {
+      'id' => 'Kategori',
+      'en' => 'Category',
+      'zh' => '类别',
+      'ja' => 'カテゴリ',
+      _ => 'Category',
+    };
+  }
+
+  static String _getFilterAll(String language) {
+    return switch (language) {
+      'id' => 'Semua',
+      'en' => 'All',
+      'zh' => '全部',
+      'ja' => 'すべて',
+      _ => 'All',
+    };
+  }
+
+  static String _getFilterFolder(String language) {
+    return switch (language) {
+      'id' => 'Folder',
+      'en' => 'Folder',
+      'zh' => '文件夹',
+      'ja' => 'フォルダ',
+      _ => 'Folder',
+    };
+  }
+
+  static String _getFilterTag(String language) {
+    return switch (language) {
+      'id' => 'Tag',
+      'en' => 'Tag',
+      'zh' => '标签',
+      'ja' => 'タグ',
+      _ => 'Tag',
+    };
+  }
+
+  static String _getNotesSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Catatan pribadi Anda',
+      'en' => 'Your personal notes',
+      'zh' => '您的个人笔记',
+      'ja' => 'あなたの個人的なメモ',
+      _ => 'Your personal notes',
+    };
+  }
+
+  static String _getNotesSearchHint(String language) {
+    return switch (language) {
+      'id' => 'Cari catatan...',
+      'en' => 'Search notes...',
+      'zh' => '搜索笔记...',
+      'ja' => 'メモを検索...',
+      _ => 'Search notes...',
+    };
+  }
+
+  static String _getNotesEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ada catatan',
+      'en' => 'No notes yet',
+      'zh' => '还没有笔记',
+      'ja' => 'メモがまだありません',
+      _ => 'No notes yet',
+    };
+  }
+
+  static String _getNotesNoResults(String language) {
+    return switch (language) {
+      'id' => 'Tidak ada hasil',
+      'en' => 'No results found',
+      'zh' => '未找到结果',
+      'ja' => '結果が見つかりません',
+      _ => 'No results found',
+    };
+  }
+
+  static String _getNotes(String language) {
+    return switch (language) {
+      'id' => 'Catatan',
+      'en' => 'Notes',
+      'zh' => '笔记',
+      'ja' => 'メモ',
+      _ => 'Notes',
+    };
+  }
+
+  static String _getHighlights(String language) {
+    return switch (language) {
+      'id' => 'Sorotan',
+      'en' => 'Highlights',
+      'zh' => '高亮',
+      'ja' => 'ハイライト',
+      _ => 'Highlights',
+    };
+  }
+
+  static String _getHighlightsSearchHint(String language) {
+    return switch (language) {
+      'id' => 'Cari sorotan...',
+      'en' => 'Search highlights...',
+      'zh' => '搜索高亮...',
+      'ja' => 'ハイライトを検索...',
+      _ => 'Search highlights...',
+    };
+  }
+
+  static String _getHighlightsEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ada sorotan',
+      'en' => 'No highlights yet',
+      'zh' => '还没有高亮',
+      'ja' => 'ハイライトがまだありません',
+      _ => 'No highlights yet',
+    };
+  }
+
+  static String _getHighlightsNoResults(String language) {
+    return switch (language) {
+      'id' => 'Tidak ada hasil',
+      'en' => 'No results found',
+      'zh' => '未找到结果',
+      'ja' => '結果が見つかりません',
+      _ => 'No results found',
+    };
+  }
+
+  static String _getLibrarySubtitle(String language) {
+    return switch (language) {
+      'id' => 'Koleksi pribadi Anda',
+      'en' => 'Your personal collection',
+      'zh' => '您的个人收藏',
+      'ja' => 'あなたの個人的なコレクション',
+      _ => 'Your personal collection',
+    };
+  }
+
+  static String _getLibrary(String language) {
+    return switch (language) {
+      'id' => 'Perpustakaan',
+      'en' => 'My Library',
+      'zh' => '我的图书馆',
+      'ja' => 'マイライブラリ',
+      _ => 'My Library',
+    };
+  }
+
+  static String _getLibrarySearchHint(String language) {
+    return switch (language) {
+      'id' => 'Cari di semua koleksi...',
+      'en' => 'Search all collections...',
+      'zh' => '搜索所有收藏...',
+      'ja' => 'すべてのコレクションを検索...',
+      _ => 'Search all collections...',
+    };
+  }
+
+  static String _getLibraryNoResults(String language) {
+    return switch (language) {
+      'id' => 'Tidak ada hasil ditemukan',
+      'en' => 'No results found',
+      'zh' => '未找到结果',
+      'ja' => '結果が見つかりません',
+      _ => 'No results found',
+    };
+  }
+
+  // Highlight Guide Localizations
+  static String _getHighlightGuideTitle(String language) {
+    return switch (language) {
+      'id' => 'Panduan Warna Highlight',
+      'en' => 'Highlight Color Guide',
+      'zh' => '高亮颜色指南',
+      'ja' => 'ハイライトカラーガイド',
+      _ => 'Highlight Color Guide',
+    };
+  }
+
+  static String _getHighlightGuideIntro(String language) {
+    return switch (language) {
+      'id' => 'Warna berikut dapat digunakan untuk mengkategorikan ayat yang Anda highlight:',
+      'en' => 'The following colors can be used to categorize verses you highlight:',
+      'zh' => '以下颜色可用于对您高亮的经文进行分类：',
+      'ja' => '次の色を使用して、ハイライトした節を分類できます：',
+      _ => 'The following colors can be used to categorize verses you highlight:',
+    };
+  }
+
+  static String _getHighlightGuideClosing(String language) {
+    return switch (language) {
+      'id' => 'Gunakan warna yang berbeda untuk mengorganisir dan mengkategorikan ayat-ayat penting Anda.',
+      'en' => 'Use different colors to organize and categorize your important verses.',
+      'zh' => '使用不同的颜色来组织和分类您的重要经文。',
+      'ja' => '異なる色を使用して、重要な節を整理して分類します。',
+      _ => 'Use different colors to organize and categorize your important verses.',
+    };
+  }
+
+  static String _getHighlightGuideGotIt(String language) {
+    return switch (language) {
+      'id' => 'Mengerti',
+      'en' => 'Got it',
+      'zh' => '知道了',
+      'ja' => '了解しました',
+      _ => 'Got it',
+    };
+  }
+
+  // Highlight Color Names and Descriptions
+  static String _getHighlightColorYellow(String language) {
+    return switch (language) {
+      'id' => 'Kuning',
+      'en' => 'Yellow',
+      'zh' => '黄色',
+      'ja' => '黄色',
+      _ => 'Yellow',
+    };
+  }
+
+  static String _getHighlightColorYellowDesc(String language) {
+    return switch (language) {
+      'id' => 'Favorit atau ayat penting',
+      'en' => 'Favorite or important verses',
+      'zh' => '收藏或重要经文',
+      'ja' => 'お気に入りまたは重要な節',
+      _ => 'Favorite or important verses',
+    };
+  }
+
+  static String _getHighlightColorOrange(String language) {
+    return switch (language) {
+      'id' => 'Jingga',
+      'en' => 'Orange',
+      'zh' => '橙色',
+      'ja' => 'オレンジ',
+      _ => 'Orange',
+    };
+  }
+
+  static String _getHighlightColorOrangeDesc(String language) {
+    return switch (language) {
+      'id' => 'Ayat yang menginspirasi atau memotivasi',
+      'en' => 'Inspiring or motivating verses',
+      'zh' => '鼓舞或激励的经文',
+      'ja' => 'インスピレーションを与えるまたは動機付けする節',
+      _ => 'Inspiring or motivating verses',
+    };
+  }
+
+  static String _getHighlightColorPink(String language) {
+    return switch (language) {
+      'id' => 'Merah Muda',
+      'en' => 'Pink',
+      'zh' => '粉色',
+      'ja' => 'ピンク',
+      _ => 'Pink',
+    };
+  }
+
+  static String _getHighlightColorPinkDesc(String language) {
+    return switch (language) {
+      'id' => 'Ayat tentang cinta dan kasih sayang',
+      'en' => 'Verses about love and compassion',
+      'zh' => '关于爱与慈悲的经文',
+      'ja' => '愛と慈悲についての節',
+      _ => 'Verses about love and compassion',
+    };
+  }
+
+  static String _getHighlightColorRed(String language) {
+    return switch (language) {
+      'id' => 'Merah',
+      'en' => 'Red',
+      'zh' => '红色',
+      'ja' => '赤',
+      _ => 'Red',
+    };
+  }
+
+  static String _getHighlightColorRedDesc(String language) {
+    return switch (language) {
+      'id' => 'Ayat penting atau peringatan',
+      'en' => 'Important verses or warnings',
+      'zh' => '重要经文或警告',
+      'ja' => '重要な節または警告',
+      _ => 'Important verses or warnings',
+    };
+  }
+
+  static String _getHighlightColorPurple(String language) {
+    return switch (language) {
+      'id' => 'Ungu',
+      'en' => 'Purple',
+      'zh' => '紫色',
+      'ja' => '紫',
+      _ => 'Purple',
+    };
+  }
+
+  static String _getHighlightColorPurpleDesc(String language) {
+    return switch (language) {
+      'id' => 'Ayat untuk dihafal atau dipelajari',
+      'en' => 'Verses to memorize or study',
+      'zh' => '需要记忆或学习的经文',
+      'ja' => '暗記または学習する節',
+      _ => 'Verses to memorize or study',
+    };
+  }
+
+  static String _getHighlightColorBlue(String language) {
+    return switch (language) {
+      'id' => 'Biru',
+      'en' => 'Blue',
+      'zh' => '蓝色',
+      'ja' => '青',
+      _ => 'Blue',
+    };
+  }
+
+  static String _getHighlightColorBlueDesc(String language) {
+    return switch (language) {
+      'id' => 'Ayat tentang pengetahuan atau hikmah',
+      'en' => 'Verses about knowledge or wisdom',
+      'zh' => '关于知识或智慧的经文',
+      'ja' => '知識や知恵についての節',
+      _ => 'Verses about knowledge or wisdom',
+    };
+  }
+
+  static String _getHighlightColorCyan(String language) {
+    return switch (language) {
+      'id' => 'Cyan',
+      'en' => 'Cyan',
+      'zh' => '青色',
+      'ja' => 'シアン',
+      _ => 'Cyan',
+    };
+  }
+
+  static String _getHighlightColorCyanDesc(String language) {
+    return switch (language) {
+      'id' => 'Ayat tentang ketenangan atau kedamaian',
+      'en' => 'Verses about tranquility or peace',
+      'zh' => '关于宁静或和平的经文',
+      'ja' => '静けさや平和についての節',
+      _ => 'Verses about tranquility or peace',
+    };
+  }
+
+  static String _getHighlightColorGreen(String language) {
+    return switch (language) {
+      'id' => 'Hijau',
+      'en' => 'Green',
+      'zh' => '绿色',
+      'ja' => '緑',
+      _ => 'Green',
+    };
+  }
+
+  static String _getHighlightColorGreenDesc(String language) {
+    return switch (language) {
+      'id' => 'Ayat tentang harapan atau keberhasilan',
+      'en' => 'Verses about hope or success',
+      'zh' => '关于希望或成功的经文',
+      'ja' => '希望や成功についての節',
+      _ => 'Verses about hope or success',
+    };
+  }
+
+  static String _getHighlightColorTeal(String language) {
+    return switch (language) {
+      'id' => 'Teal',
+      'en' => 'Teal',
+      'zh' => '青绿色',
+      'ja' => 'ティール',
+      _ => 'Teal',
+    };
+  }
+
+  static String _getHighlightColorTealDesc(String language) {
+    return switch (language) {
+      'id' => 'Ayat tentang alam atau ciptaan',
+      'en' => 'Verses about nature or creation',
+      'zh' => '关于自然或创造的经文',
+      'ja' => '自然や創造についての節',
+      _ => 'Verses about nature or creation',
+    };
+  }
+
+  static String _getHighlightColorOther(String language) {
+    return switch (language) {
+      'id' => 'Lainnya',
+      'en' => 'Other',
+      'zh' => '其他',
+      'ja' => 'その他',
+      _ => 'Other',
+    };
+  }
+
+  static String _getHighlightColorOtherDesc(String language) {
+    return switch (language) {
+      'id' => 'Kategori khusus Anda',
+      'en' => 'Your custom category',
+      'zh' => '您的自定义类别',
+      'ja' => 'カスタムカテゴリ',
+      _ => 'Your custom category',
+    };
+  }
+
+  static String _getSelected(String language) {
+    return switch (language) {
+      'id' => 'terpilih',
+      'en' => 'selected',
+      'zh' => '已选择',
+      'ja' => '選択済み',
+      _ => 'selected',
     };
   }
 }
