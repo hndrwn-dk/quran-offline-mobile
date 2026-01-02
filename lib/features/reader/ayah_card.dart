@@ -325,7 +325,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     }
     buffer.writeln('QS ${widget.verse.surahId}:${widget.verse.ayahNo}');
     buffer.writeln('');
-    buffer.writeln('https://www.tursinalab.com/products/quranoffline');
+    buffer.writeln('https://www.tursinalabs.com/products/quranoffline');
 
     await Share.share(buffer.toString());
   }

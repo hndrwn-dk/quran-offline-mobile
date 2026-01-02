@@ -495,7 +495,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _openPrivacyLink(BuildContext context) async {
-    final uri = Uri.parse('https://www.tursinalab.com/privacy');
+    final uri = Uri.parse('https://www.tursinalabs.com/privacy');
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(
@@ -523,7 +523,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _openTermsLink(BuildContext context) async {
-    final uri = Uri.parse('https://www.tursinalab.com/terms');
+    final uri = Uri.parse('https://www.tursinalabs.com/terms');
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(
