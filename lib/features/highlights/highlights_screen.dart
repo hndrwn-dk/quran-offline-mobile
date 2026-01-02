@@ -394,7 +394,6 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
   void _showHighlightGuide(BuildContext context, AppSettings settings) {
     final appLanguage = settings.appLanguage;
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     showDialog(
       context: context,

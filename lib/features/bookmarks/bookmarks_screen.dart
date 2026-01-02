@@ -596,7 +596,6 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
   void _showSortFilterDialog(BuildContext context, WidgetRef ref) {
     final settings = ref.read(settingsProvider);
     final appLanguage = settings.appLanguage;
-    final colorScheme = Theme.of(context).colorScheme;
 
     showDialog(
       context: context,
