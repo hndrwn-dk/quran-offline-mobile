@@ -23,7 +23,6 @@ enum BookmarkSortBy { date, surah }
 class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
   final TextEditingController _searchController = TextEditingController();
   bool _selectionMode = false;
-  bool _searchMode = false;
   final Set<String> _selectedKeys = {};
   BookmarkSortBy _sortBy = BookmarkSortBy.date;
 
@@ -424,40 +423,6 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
         ),
       ),
     ],
-    );
-  }
-
-  void _showBookmarkActions(BuildContext context, Bookmark bookmark) {
-    final settings = ref.read(settingsProvider);
-    final appLanguage = settings.appLanguage;
-    
-    showModalBottomSheet(
-      context: context,
-      useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.delete_outline),
-              title: Text(AppLocalizations.getSettingsText('delete', appLanguage)),
-              onTap: () async {
-                Navigator.pop(context);
-                final confirmed = await _confirmDelete(
-                  context,
-                  message: 'Delete this bookmark?',
-                );
-                if (!confirmed) return;
-                await toggleBookmark(ref, bookmark.surahId, bookmark.ayahNo);
-                setState(() {});
-              },
-            ),
-          ],
-        ),
-      ),
     );
   }
 
