@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
-import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
@@ -35,9 +35,9 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   @override
   void initState() {
     super.initState();
-    // For RTL swipe: page 1 = index 603 (last), page 604 = index 0 (first)
-    // So initialPage 1 should be at index 603, initialPage 604 at index 0
-    final initialIndex = 604 - widget.initialPage;
+    // Normal mapping: index 0 = page 1, index 603 = page 604
+    // This allows swipe right-to-left (kanan ke kiri) = next page (like physical mushaf)
+    final initialIndex = widget.initialPage - 1;
     _controller = PageController(initialPage: initialIndex);
   }
 
@@ -49,24 +49,22 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch settings to react to font size changes
     ref.watch(settingsProvider.select((s) => s.mushafFontSize));
     
     return PageView.builder(
       controller: _controller,
-      reverse: true, // RTL swipe: swipe left = next page, swipe right = prev page
+      reverse: false, // Normal direction: swipe right-to-left = next page (like physical mushaf)
       itemCount: 604,
       itemBuilder: (context, index) {
-        // Convert index to page number: index 0 = page 604, index 603 = page 1
-        final pageNo = 604 - index;
+        // Normal mapping: index 0 = page 1, index 603 = page 604
+        final pageNo = index + 1;
         return MushafPage(
           pageNo: pageNo,
           targetSurahId: widget.targetSurahId,
           targetAyahNo: widget.targetAyahNo,
           onComputed: () {
-            // Preload previous page in background (optional optimization)
-            if (pageNo > 1) {
-              MushafLayout.getPageBlocks(context, pageNo - 1);
+            if (pageNo < 604) {
+              MushafLayout.getPageBlocks(context, pageNo + 1);
             }
           },
         );
@@ -95,9 +93,9 @@ class MushafPage extends ConsumerStatefulWidget {
 
 class _MushafPageState extends ConsumerState<MushafPage> {
   late Future<List<MushafAyahBlock>> _blocksFuture;
-  final ItemScrollController _itemScrollController = ItemScrollController();
-  final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
   Timer? _debounceTimer;
+  final ScrollController _scrollController = ScrollController();
+  final Map<String, GlobalKey> _ayahKeys = {};
   bool _hasScrolledToTarget = false;
 
   @override
@@ -112,10 +110,10 @@ class _MushafPageState extends ConsumerState<MushafPage> {
   }
 
   void _setupScrollListener() {
-    _itemPositionsListener.itemPositions.addListener(_onItemPositionsChanged);
+    _scrollController.addListener(_onScrollChanged);
   }
 
-  void _onItemPositionsChanged() {
+  void _onScrollChanged() {
     if (!mounted) return;
     
     _debounceTimer?.cancel();
@@ -128,53 +126,43 @@ class _MushafPageState extends ConsumerState<MushafPage> {
   void _updateLastRead() {
     if (!mounted) return;
     
-    // Get blocks to find visible ayah
     _blocksFuture.then((blocks) {
       if (!mounted || blocks.isEmpty) return;
       
-      // Get current item positions
-      final positions = _itemPositionsListener.itemPositions.value;
-      if (positions.isEmpty) return;
+      // Find the first visible ayah by checking scroll position
+      // This is approximate - for exact tracking, we'd need to measure widget positions
+      final scrollOffset = _scrollController.offset;
       
-      // Find the first visible item (top of viewport)
-      final visiblePositions = positions.where((pos) => pos.itemTrailingEdge > 0 && pos.itemLeadingEdge < 1.0).toList();
-      if (visiblePositions.isEmpty) return;
+      // Simple heuristic: find ayah that should be visible based on scroll
+      // For more accuracy, we'd need to use RenderBox to measure actual positions
+      MushafAyahBlock? visibleBlock;
+      for (final block in blocks) {
+        if (block.surahId != null && block.ayahNo != null) {
+          visibleBlock = block;
+          break; // Use first ayah as approximation
+        }
+      }
       
-      // Sort by itemLeadingEdge to get the one closest to top
-      visiblePositions.sort((a, b) => a.itemLeadingEdge.compareTo(b.itemLeadingEdge));
-      final topVisible = visiblePositions.first;
-      
-      if (topVisible.index < 0 || topVisible.index >= blocks.length) return;
-      
-      final block = blocks[topVisible.index];
-      if (block.surahId != null && block.ayahNo != null) {
+      if (visibleBlock?.surahId != null && visibleBlock?.ayahNo != null) {
         final source = PageSource(widget.pageNo);
         ref.read(lastReadProvider.notifier).saveLastRead(
           source,
-          ayahNo: block.ayahNo,
-          surahId: block.surahId,
+          ayahNo: visibleBlock!.ayahNo,
+          surahId: visibleBlock.surahId,
         );
       }
     });
   }
 
-  void _scrollToTargetAyah(List<MushafAyahBlock> blocks) {
+  void _scrollToTargetAyah() {
     if (_hasScrolledToTarget) return;
     if (widget.targetSurahId == null || widget.targetAyahNo == null) return;
     
-    // Find the index of the target ayah
-    int? targetIndex;
-    for (int i = 0; i < blocks.length; i++) {
-      final block = blocks[i];
-      if (block.surahId == widget.targetSurahId && block.ayahNo == widget.targetAyahNo) {
-        targetIndex = i;
-        break;
-      }
-    }
+    final key = '${widget.targetSurahId}_${widget.targetAyahNo}';
+    final targetKey = _ayahKeys[key];
     
-    if (targetIndex == null) return;
+    if (targetKey?.currentContext == null) return;
     
-    // Wait for initial frame, then scroll to item
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _hasScrolledToTarget) return;
       
@@ -182,21 +170,22 @@ class _MushafPageState extends ConsumerState<MushafPage> {
         if (!mounted || _hasScrolledToTarget) return;
         
         try {
-          _itemScrollController.scrollTo(
-            index: targetIndex!,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-            alignment: 0.15, // Position 15% from top of viewport
-          );
-          
-          // Mark as successful after scroll completes
-          Future.delayed(const Duration(milliseconds: 600), () {
-            if (mounted) {
-              _hasScrolledToTarget = true;
-            }
-          });
+          final context = targetKey!.currentContext;
+          if (context != null) {
+            Scrollable.ensureVisible(
+              context,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+              alignment: 0.15,
+            );
+            
+            Future.delayed(const Duration(milliseconds: 600), () {
+              if (mounted) {
+                _hasScrolledToTarget = true;
+              }
+            });
+          }
         } catch (e) {
-          // If scroll fails, mark as done to prevent infinite retries
           if (mounted) {
             _hasScrolledToTarget = true;
           }
@@ -208,7 +197,8 @@ class _MushafPageState extends ConsumerState<MushafPage> {
   @override
   void dispose() {
     _debounceTimer?.cancel();
-    _itemPositionsListener.itemPositions.removeListener(_onItemPositionsChanged);
+    _scrollController.removeListener(_onScrollChanged);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -217,6 +207,8 @@ class _MushafPageState extends ConsumerState<MushafPage> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pageNo != widget.pageNo) {
       _refreshLines();
+      _hasScrolledToTarget = false;
+      _ayahKeys.clear();
     }
   }
 
@@ -226,7 +218,6 @@ class _MushafPageState extends ConsumerState<MushafPage> {
     final settings = ref.watch(settingsProvider);
     final fontSize = settings.mushafFontSize;
     final appLanguage = settings.appLanguage;
-    // Watch showTajweed to trigger rebuild when toggled
     ref.watch(settingsProvider.select((s) => s.showTajweed));
     final surahsAsync = ref.watch(surahNamesProvider);
     
@@ -252,7 +243,6 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                   );
                 }
 
-                // Get first and last surah names
                 final firstSurahId = surahIds.first;
                 final lastSurahId = surahIds.last;
                 
@@ -276,7 +266,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                   ),
                 );
 
-                // Format surah names with proper diacritics for common surahs
+                // Format surah names with proper diacritics
                 String formatSurahName(String name) {
                   final formattedNames = {
                     'Al-Fatiha': 'Al-Fātiḥah',
@@ -306,7 +296,6 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                 final firstSurahName = formatSurahName(firstSurah.englishName);
                 final lastSurahName = formatSurahName(lastSurah.englishName);
 
-                // Format subtitle: "Surah FirstName - Surah LastName" for multiple, "Surah Name" for single
                 String subtitle;
                 if (surahIds.length == 1) {
                   subtitle = 'Surah $firstSurahName';
@@ -319,7 +308,6 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Line 1: "Mushaf - Page 604" (titleLarge, bold)
                     Text(
                       AppLocalizations.getMushafPageText(widget.pageNo, appLanguage),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -328,17 +316,12 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                           ),
                     ),
                     const SizedBox(height: 2),
-                    // Line 2: "Surah Al-Ikhlas - Surah An Naas" (labelMedium/bodySmall, muted)
                     Text(
                       subtitle,
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                             height: 1.2,
-                          ) ??
-                          Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                                height: 1.2,
-                              ),
+                          ),
                     ),
                   ],
                 );
@@ -371,7 +354,6 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                 backgroundColor: Colors.transparent,
                 builder: (context) => const MushafTextSettingsDialog(),
               ).then((_) {
-                // Refresh lines when dialog closes (font size may have changed)
                 setState(() {
                   _refreshLines();
                 });
@@ -404,7 +386,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
           if (widget.targetSurahId != null && widget.targetAyahNo != null && !_hasScrolledToTarget) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted && !_hasScrolledToTarget) {
-                _scrollToTargetAyah(blocks);
+                _scrollToTargetAyah();
               }
             });
           }
@@ -414,76 +396,27 @@ class _MushafPageState extends ConsumerState<MushafPage> {
             child: Column(
               children: [
                 Expanded(
-                  child: ScrollablePositionedList.builder(
-                    itemScrollController: _itemScrollController,
-                    itemPositionsListener: _itemPositionsListener,
-                    itemCount: blocks.length,
-                    itemBuilder: (context, index) {
-                      final block = blocks[index];
-                        if (block.isSurahHeader) {
-                          // Shadow yang adaptif ke theme dan nyaman untuk mata
-                          final isDark = Theme.of(context).brightness == Brightness.dark;
-                          final shadowColor = isDark
-                              ? colorScheme.primary.withOpacity(0.15)
-                              : colorScheme.primary.withOpacity(0.12);
-                          
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: Directionality(
-                              textDirection: TextDirection.rtl,
-                              child: Text(
-                                block.text,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      fontFamily: 'UthmanicHafsV22',
-                                      fontFamilyFallback: const ['UthmanicHafs'],
-                                      fontSize: fontSize + 4,
-                                      fontWeight: FontWeight.w600,
-                                      height: 1.7,
-                                      color: colorScheme.onSurface,
-                                      letterSpacing: 0.5,
-                                      shadows: [
-                                        Shadow(
-                                          color: shadowColor,
-                                          offset: const Offset(0, 1.5),
-                                          blurRadius: 3,
-                                        ),
-                                      ],
-                                    ),
-                              ),
-                            ),
-                          );
-                        }
-
-                        if (block.isBismillah) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Directionality(
-                              textDirection: TextDirection.rtl,
-                              child: Text(
-                                block.text,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontFamily: 'UthmanicHafsV22',
-                                      fontFamilyFallback: const ['UthmanicHafs'],
-                                      fontSize: fontSize - 2,
-                                      height: 1.7,
-                                      color: colorScheme.onSurface,
-                                    ),
-                              ),
-                            ),
-                          );
-                        }
-
-                        // Default: ayah block with prefix badge
-                        return _AyahRow(
-                          block: block,
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    child: Column(
+                      children: [
+                        _FlowingMushafText(
+                          blocks: blocks,
                           fontSize: fontSize,
                           colorScheme: colorScheme,
-                          pageNo: widget.pageNo,
-                        );
-                    },
-                    padding: const EdgeInsets.only(bottom: 32),
+                          ayahKeys: _ayahKeys,
+                          onAyahKeyCreated: () {
+                            // Trigger scroll after keys are created
+                            if (widget.targetSurahId != null && widget.targetAyahNo != null) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                _scrollToTargetAyah();
+                              });
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
                   ),
                 ),
                 Text(
@@ -501,35 +434,620 @@ class _MushafPageState extends ConsumerState<MushafPage> {
   }
 }
 
-class _AyahRow extends ConsumerStatefulWidget {
-  final MushafAyahBlock block;
+/// Widget untuk menampilkan teks mushaf yang mengalir
+class _FlowingMushafText extends ConsumerWidget {
+  final List<MushafAyahBlock> blocks;
   final double fontSize;
   final ColorScheme colorScheme;
-  final int pageNo;
+  final Map<String, GlobalKey> ayahKeys;
+  final VoidCallback? onAyahKeyCreated;
 
-  const _AyahRow({
-    required this.block,
+  const _FlowingMushafText({
+    required this.blocks,
     required this.fontSize,
     required this.colorScheme,
-    required this.pageNo,
+    required this.ayahKeys,
+    this.onAyahKeyCreated,
+  });
+
+  /// Handle long press on ayah text for bookmarking
+  static Future<void> handleAyahLongPress(BuildContext context, WidgetRef ref, int surahId, int ayahNo) async {
+    await toggleBookmark(ref, surahId, ayahNo);
+    
+    if (context.mounted) {
+      final bookmarked = await isBookmarked(ref, surahId, ayahNo);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            bookmarked 
+              ? 'Ayat $ayahNo di-bookmark'
+              : 'Bookmark ayat $ayahNo dihapus',
+          ),
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+    final showTajweed = settings.showTajweed;
+    
+    final List<Widget> children = [];
+    final List<InlineSpan> currentSpans = [];
+    final List<GestureRecognizer> recognizers = []; // Track recognizers for disposal
+
+    void flushCurrentSpans() {
+      if (currentSpans.isNotEmpty) {
+        children.add(
+          Directionality(
+            textDirection: TextDirection.rtl,
+            child: Text.rich(
+              TextSpan(children: List.from(currentSpans)),
+              textAlign: TextAlign.justify,
+              textDirection: TextDirection.rtl,
+              textWidthBasis: TextWidthBasis.longestLine, // Justifikasi yang lebih baik
+              style: TextStyle(
+                fontFamily: 'UthmanicHafsV22',
+                fontFamilyFallback: const ['UthmanicHafs'],
+                fontSize: fontSize,
+                height: 2.0, // Line height lebih lega (dari 1.6)
+                color: colorScheme.onSurface,
+                letterSpacing: 0.3, // Letter spacing (dari 0.0)
+                wordSpacing: 2.0, // Word spacing untuk breathing room
+              ),
+            ),
+          ),
+        );
+        currentSpans.clear();
+      }
+    }
+
+    for (final block in blocks) {
+      if (block.isSurahHeader) {
+        flushCurrentSpans();
+        
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final shadowColor = isDark
+            ? colorScheme.primary.withOpacity(0.15)
+            : colorScheme.primary.withOpacity(0.12);
+        
+        children.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Directionality(
+              textDirection: TextDirection.rtl,
+              child: Text(
+                block.text,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'UthmanicHafsV22',
+                  fontFamilyFallback: const ['UthmanicHafs'],
+                  fontSize: fontSize + 4,
+                  fontWeight: FontWeight.w600,
+                  height: 1.7,
+                  color: colorScheme.onSurface,
+                  letterSpacing: 0.5,
+                  shadows: [
+                    Shadow(
+                      color: shadowColor,
+                      offset: const Offset(0, 1.5),
+                      blurRadius: 3,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+        continue;
+      }
+
+      if (block.isBismillah) {
+        // Bismillah untuk surah selain 1 harus terpisah (centered), bukan mengalir
+        // Karena Bismillah bukan bagian dari ayat surah tersebut
+        // Hanya Surah 1 (Al-Fatihah) yang Bismillah-nya adalah ayat pertama
+        flushCurrentSpans();
+        
+        children.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Directionality(
+              textDirection: TextDirection.rtl,
+              child: Text(
+                block.text,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'UthmanicHafsV22',
+                  fontFamilyFallback: const ['UthmanicHafs'],
+                  fontSize: fontSize - 2,
+                  height: 1.7,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ),
+        );
+        continue;
+      }
+
+      // Create key for this ayah if it has surahId and ayahNo
+      GlobalKey? ayahKey;
+      if (block.surahId != null && block.ayahNo != null) {
+        final key = '${block.surahId}_${block.ayahNo}';
+        if (!ayahKeys.containsKey(key)) {
+          ayahKey = GlobalKey();
+          ayahKeys[key] = ayahKey;
+        } else {
+          ayahKey = ayahKeys[key];
+        }
+      }
+
+      // Add ayah text with tajweed support if enabled
+      // Add long press recognizer for bookmark
+      LongPressGestureRecognizer? recognizer;
+      if (block.surahId != null && block.ayahNo != null) {
+        recognizer = LongPressGestureRecognizer();
+        recognizers.add(recognizer); // Track for disposal
+        recognizer.onLongPress = () {
+          HapticFeedback.mediumImpact();
+          handleAyahLongPress(context, ref, block.surahId!, block.ayahNo!);
+        };
+      }
+      
+      if (showTajweed && block.tajweed != null && block.tajweed!.isNotEmpty) {
+        // Parse tajweed HTML and add colored spans with recognizer
+        final tajweedSpans = _parseTajweedHtml(
+          context, 
+          block.tajweed!, 
+          fontSize, 
+          colorScheme,
+          recognizer: recognizer,
+        );
+        currentSpans.addAll(tajweedSpans);
+      } else {
+        // Plain text without tajweed with recognizer
+        currentSpans.add(
+          TextSpan(
+            text: block.text,
+            style: TextStyle(
+              fontFamily: 'UthmanicHafsV22',
+              fontFamilyFallback: const ['UthmanicHafs'],
+              fontSize: fontSize,
+              color: colorScheme.onSurface,
+            ),
+            recognizer: recognizer,
+          ),
+        );
+      }
+
+      // Add inline ayah number
+      if (block.ayahNo != null) {
+        currentSpans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            baseline: TextBaseline.alphabetic,
+              child: KeyedSubtree(
+              key: ayahKey,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6), // Naik dari 2 ke 6
+                child: _InlineAyahNumber(
+                  ayahNo: block.ayahNo!,
+                  fontSize: fontSize,
+                  colorScheme: colorScheme,
+                  surahId: block.surahId,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
+      // Add space between ayahs - double space untuk breathing room
+      currentSpans.add(
+        TextSpan(
+          text: '  ', // Double space untuk breathing room
+          style: TextStyle(fontSize: fontSize * 0.5),
+        ),
+      );
+    }
+
+    flushCurrentSpans();
+    
+    // Call callback after keys are created
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      onAyahKeyCreated?.call();
+    });
+
+    // Dispose recognizers when widget is disposed
+    // Note: Recognizers will be disposed automatically when TextSpan is disposed
+    // But we keep the list for reference if needed
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
+    );
+  }
+
+  /// Parse tajweed HTML and return List<TextSpan> with colors
+  List<TextSpan> _parseTajweedHtml(
+    BuildContext context,
+    String tajweedHtml,
+    double fontSize,
+    ColorScheme colorScheme, {
+    GestureRecognizer? recognizer,
+  }) {
+    final spans = <TextSpan>[];
+    String text = tajweedHtml;
+    
+    // Get tajweed color helper
+    Color getTajweedColor(String tajweedClass) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return switch (tajweedClass) {
+        'ikhfa' => isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00897B),
+        'idgham' => isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2),
+        'iqlab' => isDark ? const Color(0xFFBA68C8) : const Color(0xFF7B1FA2),
+        'ghunnah' => isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100),
+        'qalqalah' => isDark ? const Color(0xFFE57373) : const Color(0xFFC62828),
+        'ham_wasl' => colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+        'laam_shamsiyah' => isDark ? const Color(0xFFFFD54F) : const Color(0xFFF57F17),
+        'madda_normal' => isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
+        'madda_permissible' => isDark ? const Color(0xFFA5D6A7) : const Color(0xFF388E3C),
+        'madda_necessary' => isDark ? const Color(0xFF66BB6A) : const Color(0xFF1B5E20),
+        'madda_obligatory' => isDark ? const Color(0xFF4CAF50) : const Color(0xFF0D47A1),
+        'silent' => colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+        _ => colorScheme.onSurface,
+      };
+    }
+    
+    // Pattern to match tajweed tags
+    final tajweedPattern1 = RegExp(
+      r'<tajweed\s+class="([^"]+)"\s*>(.*?)</tajweed>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final tajweedPattern2 = RegExp(
+      r"<tajweed\s+class='([^']+)'\s*>(.*?)</tajweed>",
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final tajweedPattern3 = RegExp(
+      r'<tajweed\s+class=([^>\s]+)\s*>(.*?)</tajweed>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final tajweedPattern4 = RegExp(
+      r'<tajweed\s*>(.*?)</tajweed>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    
+    // Pattern for class tags: <class=value>content</class>
+    final classPattern1 = RegExp(
+      r'<class="([^"]+)"\s*>(.*?)</class>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final classPattern2 = RegExp(
+      r"<class='([^']+)'\s*>(.*?)</class>",
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final classPattern3 = RegExp(
+      r'<class=([^>\s]+)\s*>(.*?)</class>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    
+    // Pattern for span tags: <span class=end>ayah_number</span>
+    final spanPattern1 = RegExp(
+      r'<span\s+class="([^"]+)"\s*>(.*?)</span>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final spanPattern2 = RegExp(
+      r"<span\s+class='([^']+)'\s*>(.*?)</span>",
+      dotAll: true,
+      caseSensitive: false,
+    );
+    final spanPattern3 = RegExp(
+      r'<span\s+class=([^>\s]+)\s*>(.*?)</span>',
+      dotAll: true,
+      caseSensitive: false,
+    );
+    
+    final htmlTagPattern = RegExp(r'<[^>]+>');
+    final allMatches = <_TajweedMatch>[];
+    
+    bool isAlreadyMatched(int start, int end) {
+      return allMatches.any((m) => m.start == start && m.end == end);
+    }
+    
+    // Find all tajweed matches
+    for (final match in tajweedPattern1.allMatches(text)) {
+      allMatches.add(_TajweedMatch(
+        start: match.start,
+        end: match.end,
+        classAttr: match.group(1) ?? '',
+        content: match.group(2) ?? '',
+        isSpan: false,
+      ));
+    }
+    for (final match in tajweedPattern2.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_TajweedMatch(
+          start: match.start,
+          end: match.end,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+          isSpan: false,
+        ));
+      }
+    }
+    for (final match in tajweedPattern3.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_TajweedMatch(
+          start: match.start,
+          end: match.end,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+          isSpan: false,
+        ));
+      }
+    }
+    for (final match in tajweedPattern4.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_TajweedMatch(
+          start: match.start,
+          end: match.end,
+          classAttr: '',
+          content: match.group(1) ?? '',
+          isSpan: false,
+        ));
+      }
+    }
+    
+    // Find class tags
+    for (final match in classPattern1.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_TajweedMatch(
+          start: match.start,
+          end: match.end,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+          isSpan: false,
+        ));
+      }
+    }
+    for (final match in classPattern2.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_TajweedMatch(
+          start: match.start,
+          end: match.end,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+          isSpan: false,
+        ));
+      }
+    }
+    for (final match in classPattern3.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_TajweedMatch(
+          start: match.start,
+          end: match.end,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+          isSpan: false,
+        ));
+      }
+    }
+    
+    // Find span tags (to skip class=end)
+    for (final match in spanPattern1.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_TajweedMatch(
+          start: match.start,
+          end: match.end,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+          isSpan: true,
+        ));
+      }
+    }
+    for (final match in spanPattern2.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_TajweedMatch(
+          start: match.start,
+          end: match.end,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+          isSpan: true,
+        ));
+      }
+    }
+    for (final match in spanPattern3.allMatches(text)) {
+      if (!isAlreadyMatched(match.start, match.end)) {
+        allMatches.add(_TajweedMatch(
+          start: match.start,
+          end: match.end,
+          classAttr: match.group(1) ?? '',
+          content: match.group(2) ?? '',
+          isSpan: true,
+        ));
+      }
+    }
+    
+    // Sort matches by start position
+    allMatches.sort((a, b) => a.start.compareTo(b.start));
+    
+    // Build text spans
+    int lastIndex = 0;
+    for (final match in allMatches) {
+      // Add text before match
+      if (match.start > lastIndex) {
+        var beforeText = text.substring(lastIndex, match.start);
+        beforeText = beforeText.replaceAll(htmlTagPattern, '');
+        beforeText = beforeText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
+        if (beforeText.isNotEmpty) {
+          spans.add(TextSpan(
+            text: beforeText,
+            style: TextStyle(
+              fontFamily: 'UthmanicHafsV22',
+              fontFamilyFallback: const ['UthmanicHafs'],
+              fontSize: fontSize,
+              color: colorScheme.onSurface,
+            ),
+            recognizer: recognizer != null ? recognizer : null,
+          ));
+        }
+      }
+      
+      // Handle span tags - skip class=end (ayah number marker)
+      if (match.isSpan) {
+        final classAttr = match.classAttr.trim();
+        // Skip ayah number marker - we already display it as inline badge
+        if (classAttr == 'end' || classAttr == '"end"' || classAttr == "'end'") {
+          // Do nothing, just skip this match
+          lastIndex = match.end;
+          continue;
+        } else {
+          // Regular span (not end marker) - render it as plain text
+          var content = match.content;
+          content = content.replaceAll(htmlTagPattern, '');
+          content = content.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
+          if (content.isNotEmpty) {
+            spans.add(TextSpan(
+              text: content,
+              style: TextStyle(
+                fontFamily: 'UthmanicHafsV22',
+                fontFamilyFallback: const ['UthmanicHafs'],
+                fontSize: fontSize,
+                color: colorScheme.onSurface,
+              ),
+              recognizer: recognizer != null ? recognizer : null,
+            ));
+          }
+          lastIndex = match.end;
+          continue;
+        }
+      }
+      
+      // Add styled text for tajweed match
+      final tajweedClass = match.classAttr.trim();
+      var content = match.content;
+      content = content.replaceAll(htmlTagPattern, '');
+      content = content.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
+      
+      if (content.isNotEmpty) {
+        final color = getTajweedColor(tajweedClass);
+        spans.add(TextSpan(
+          text: content,
+          style: TextStyle(
+            fontFamily: 'UthmanicHafsV22',
+            fontFamilyFallback: const ['UthmanicHafs'],
+            fontSize: fontSize,
+            color: color,
+          ),
+          recognizer: recognizer != null ? recognizer : null,
+        ));
+      }
+      
+      lastIndex = match.end;
+    }
+    
+    // Add remaining text
+    if (lastIndex < text.length) {
+      var remainingText = text.substring(lastIndex);
+      remainingText = remainingText.replaceAll(htmlTagPattern, '');
+      remainingText = remainingText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
+      if (remainingText.isNotEmpty) {
+        spans.add(TextSpan(
+          text: remainingText,
+          style: TextStyle(
+            fontFamily: 'UthmanicHafsV22',
+            fontFamilyFallback: const ['UthmanicHafs'],
+            fontSize: fontSize,
+            color: colorScheme.onSurface,
+          ),
+          recognizer: recognizer != null ? recognizer : null,
+        ));
+      }
+    }
+    
+    // If no matches found, return plain text
+    if (spans.isEmpty) {
+      var cleanedText = text.replaceAll(htmlTagPattern, '');
+      cleanedText = cleanedText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
+      return [
+        TextSpan(
+          text: cleanedText,
+          style: TextStyle(
+            fontFamily: 'UthmanicHafsV22',
+            fontFamilyFallback: const ['UthmanicHafs'],
+            fontSize: fontSize,
+            color: colorScheme.onSurface,
+          ),
+          recognizer: recognizer != null ? recognizer : null,
+        )
+      ];
+    }
+    
+    return spans;
+  }
+}
+
+class _TajweedMatch {
+  final int start;
+  final int end;
+  final String classAttr;
+  final String content;
+  final bool isSpan;
+
+  _TajweedMatch({
+    required this.start,
+    required this.end,
+    required this.classAttr,
+    required this.content,
+    this.isSpan = false,
+  });
+}
+
+/// Widget untuk nomor ayat inline dengan bookmark support
+class _InlineAyahNumber extends ConsumerStatefulWidget {
+  final int ayahNo;
+  final double fontSize;
+  final ColorScheme colorScheme;
+  final int? surahId;
+
+  const _InlineAyahNumber({
+    required this.ayahNo,
+    required this.fontSize,
+    required this.colorScheme,
+    this.surahId,
   });
 
   @override
-  ConsumerState<_AyahRow> createState() => _AyahRowState();
+  ConsumerState<_InlineAyahNumber> createState() => _InlineAyahNumberState();
 }
 
-class _AyahRowState extends ConsumerState<_AyahRow> {
+class _InlineAyahNumberState extends ConsumerState<_InlineAyahNumber> {
   bool _isBookmarked = false;
   bool _isCheckingBookmark = true;
 
   @override
   void initState() {
     super.initState();
-    _checkBookmark();
+    if (widget.surahId != null) {
+      _checkBookmark();
+    } else {
+      _isCheckingBookmark = false;
+    }
   }
 
   Future<void> _checkBookmark() async {
-    if (widget.block.surahId == null || widget.block.ayahNo == null) {
+    if (widget.surahId == null) {
       setState(() {
         _isCheckingBookmark = false;
       });
@@ -538,8 +1056,8 @@ class _AyahRowState extends ConsumerState<_AyahRow> {
 
     final bookmarked = await isBookmarked(
       ref,
-      widget.block.surahId!,
-      widget.block.ayahNo!,
+      widget.surahId!,
+      widget.ayahNo,
     );
     
     if (mounted) {
@@ -551,12 +1069,12 @@ class _AyahRowState extends ConsumerState<_AyahRow> {
   }
 
   Future<void> _toggleBookmark() async {
-    if (widget.block.surahId == null || widget.block.ayahNo == null) return;
+    if (widget.surahId == null) return;
     
     await toggleBookmark(
       ref,
-      widget.block.surahId!,
-      widget.block.ayahNo!,
+      widget.surahId!,
+      widget.ayahNo,
     );
     
     await _checkBookmark();
@@ -564,116 +1082,46 @@ class _AyahRowState extends ConsumerState<_AyahRow> {
 
   @override
   Widget build(BuildContext context) {
-    final ayahNo = widget.block.ayahNo ?? 0;
-    final badgeSize = 48.0;
-    final settings = ref.watch(settingsProvider);
-    final showTajweed = settings.showTajweed && widget.block.tajweed != null && widget.block.tajweed!.isNotEmpty;
-    final canBookmark = widget.block.surahId != null && widget.block.ayahNo != null;
+    final displayNumber = MushafLayout.toArabicIndicDigits(widget.ayahNo.toString());
     
-    // Listen to bookmark refresh to update when bookmarks change elsewhere
+    // Listen to bookmark refresh
     ref.listen(bookmarkRefreshProvider, (previous, next) {
-      if (previous != next && canBookmark) {
+      if (previous != next && widget.surahId != null) {
         _checkBookmark();
       }
     });
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Directionality(
-        textDirection: TextDirection.rtl,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _AyahBadge(
-                  ayahNo: ayahNo,
-                  size: badgeSize,
-                  colorScheme: widget.colorScheme,
-                ),
-                if (canBookmark) ...[
-                  const SizedBox(height: 4),
-                  IconButton(
-                    icon: Icon(
-                      _isBookmarked ? Icons.bookmark : Icons.bookmark_outline,
-                      size: 18,
-                    ),
-                    color: _isBookmarked 
-                        ? widget.colorScheme.primary 
-                        : widget.colorScheme.onSurfaceVariant,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    tooltip: _isBookmarked ? 'Remove bookmark' : 'Bookmark',
-                    onPressed: _isCheckingBookmark ? null : _toggleBookmark,
-                  ),
-                ],
-              ],
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: showTajweed
-                  ? TajweedText(
-                      tajweedHtml: widget.block.tajweed!,
-                      fontSize: widget.fontSize,
-                      defaultColor: widget.colorScheme.onSurface,
-                      textDirection: TextDirection.rtl,
-                      textAlign: TextAlign.right,
-                      height: 1.8,
-                    )
-                  : Text(
-                      widget.block.text,
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                        fontFamily: 'UthmanicHafsV22',
-                        fontFamilyFallback: const ['UthmanicHafs'],
-                        fontSize: widget.fontSize,
-                        height: 1.8,
-                        color: widget.colorScheme.onSurface,
-                      ),
-                    ),
-            ),
-          ],
+    
+    return GestureDetector(
+      onTap: widget.surahId != null && !_isCheckingBookmark ? _toggleBookmark : null,
+      child: Container(
+        padding: EdgeInsets.all(widget.fontSize * 0.15),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: _isBookmarked
+                ? widget.colorScheme.primary
+                : widget.colorScheme.outline.withOpacity(0.3),
+            width: _isBookmarked ? 2.0 : 1.5,
+          ),
+          color: _isBookmarked
+              ? widget.colorScheme.primary.withOpacity(0.1)
+              : Colors.transparent,
+        ),
+        child: Text(
+          displayNumber,
+          style: TextStyle(
+            fontSize: widget.fontSize * 0.6,
+            fontFamily: 'UthmanicHafsV22',
+            fontFamilyFallback: const ['UthmanicHafs'],
+            color: _isBookmarked
+                ? widget.colorScheme.primary
+                : widget.colorScheme.onSurface,
+            height: 1.0,
+            fontWeight: _isBookmarked ? FontWeight.w700 : FontWeight.w600,
+          ),
         ),
       ),
     );
   }
 }
-
-class _AyahBadge extends StatelessWidget {
-  final int ayahNo;
-  final double size;
-  final ColorScheme colorScheme;
-
-  const _AyahBadge({
-    required this.ayahNo,
-    required this.size,
-    required this.colorScheme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final displayNumber = MushafLayout.toArabicIndicDigits(ayahNo.toString());
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // Simple badge - hanya nomor, tanpa background circle
-    return Text(
-      displayNumber,
-      style: TextStyle(
-        fontSize: size * 0.7, // Font lebih besar
-        height: 1.0,
-        fontFamily: 'UthmanicHafsV22',
-        fontFamilyFallback: const ['UthmanicHafs'],
-        color: isDark
-            ? Colors.white // Putih di dark mode untuk kontras
-            : Colors.black87, // Hitam di light mode
-        fontWeight: FontWeight.w700,
-        letterSpacing: 0.0,
-      ),
-    );
-  }
-}
-
-
 

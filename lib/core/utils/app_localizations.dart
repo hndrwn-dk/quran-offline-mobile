@@ -381,6 +381,17 @@ class AppLocalizations {
       'app_language_subtitle' => _getAppLanguageSubtitle(language),
       'theme_title' => _getThemeTitle(language),
       'theme_subtitle' => _getThemeSubtitle(language),
+      'language_indonesian_desc' => _getLanguageIndonesianDesc(language),
+      'language_english_desc' => _getLanguageEnglishDesc(language),
+      'language_chinese_desc' => _getLanguageChineseDesc(language),
+      'language_japanese_desc' => _getLanguageJapaneseDesc(language),
+      'app_language_indonesian_desc' => _getAppLanguageIndonesianDesc(language),
+      'app_language_english_desc' => _getAppLanguageEnglishDesc(language),
+      'app_language_chinese_desc' => _getAppLanguageChineseDesc(language),
+      'app_language_japanese_desc' => _getAppLanguageJapaneseDesc(language),
+      'theme_system_desc' => _getThemeSystemDesc(language),
+      'theme_light_desc' => _getThemeLightDesc(language),
+      'theme_dark_desc' => _getThemeDarkDesc(language),
       'about_header' => _getAboutHeader(language),
       'support_title' => _getSupportTitle(language),
       'support_subtitle' => _getSupportSubtitle(language),
@@ -595,6 +606,119 @@ class AppLocalizations {
       'zh' => '选择浅色、深色或系统默认。',
       'ja' => 'ライト、ダーク、またはシステムデフォルトを選択。',
       _ => 'Choose Light, Dark, or System default.',
+    };
+  }
+
+  // Language option descriptions
+  static String _getLanguageIndonesianDesc(String language) {
+    return switch (language) {
+      'id' => 'Terjemahan dalam bahasa Indonesia',
+      'en' => 'Translation in Indonesian',
+      'zh' => '印尼语翻译',
+      'ja' => 'インドネシア語の翻訳',
+      _ => 'Translation in Indonesian',
+    };
+  }
+
+  static String _getLanguageEnglishDesc(String language) {
+    return switch (language) {
+      'id' => 'Terjemahan dalam bahasa Inggris',
+      'en' => 'Translation in English',
+      'zh' => '英语翻译',
+      'ja' => '英語の翻訳',
+      _ => 'Translation in English',
+    };
+  }
+
+  static String _getLanguageChineseDesc(String language) {
+    return switch (language) {
+      'id' => 'Terjemahan dalam bahasa Mandarin',
+      'en' => 'Translation in Chinese',
+      'zh' => '中文翻译',
+      'ja' => '中国語の翻訳',
+      _ => 'Translation in Chinese',
+    };
+  }
+
+  static String _getLanguageJapaneseDesc(String language) {
+    return switch (language) {
+      'id' => 'Terjemahan dalam bahasa Jepang',
+      'en' => 'Translation in Japanese',
+      'zh' => '日语翻译',
+      'ja' => '日本語の翻訳',
+      _ => 'Translation in Japanese',
+    };
+  }
+
+  // App language option descriptions (different from translation language)
+  static String _getAppLanguageIndonesianDesc(String language) {
+    return switch (language) {
+      'id' => 'Menu dan antarmuka dalam bahasa Indonesia',
+      'en' => 'Menu and interface in Indonesian',
+      'zh' => '菜单和界面使用印尼语',
+      'ja' => 'メニューとインターフェースはインドネシア語',
+      _ => 'Menu and interface in Indonesian',
+    };
+  }
+
+  static String _getAppLanguageEnglishDesc(String language) {
+    return switch (language) {
+      'id' => 'Menu dan antarmuka dalam bahasa Inggris',
+      'en' => 'Menu and interface in English',
+      'zh' => '菜单和界面使用英语',
+      'ja' => 'メニューとインターフェースは英語',
+      _ => 'Menu and interface in English',
+    };
+  }
+
+  static String _getAppLanguageChineseDesc(String language) {
+    return switch (language) {
+      'id' => 'Menu dan antarmuka dalam bahasa Mandarin',
+      'en' => 'Menu and interface in Chinese',
+      'zh' => '菜单和界面使用中文',
+      'ja' => 'メニューとインターフェースは中国語',
+      _ => 'Menu and interface in Chinese',
+    };
+  }
+
+  static String _getAppLanguageJapaneseDesc(String language) {
+    return switch (language) {
+      'id' => 'Menu dan antarmuka dalam bahasa Jepang',
+      'en' => 'Menu and interface in Japanese',
+      'zh' => '菜单和界面使用日语',
+      'ja' => 'メニューとインターフェースは日本語',
+      _ => 'Menu and interface in Japanese',
+    };
+  }
+
+  // Theme option descriptions
+  static String _getThemeSystemDesc(String language) {
+    return switch (language) {
+      'id' => 'Mengikuti pengaturan tema sistem perangkat',
+      'en' => 'Follow device system theme settings',
+      'zh' => '跟随设备系统主题设置',
+      'ja' => 'デバイスのシステムテーマ設定に従う',
+      _ => 'Follow device system theme settings',
+    };
+  }
+
+  static String _getThemeLightDesc(String language) {
+    return switch (language) {
+      'id' => 'Tema terang untuk penggunaan di siang hari',
+      'en' => 'Light theme for daytime use',
+      'zh' => '浅色主题，适合白天使用',
+      'ja' => '昼間の使用に適したライトテーマ',
+      _ => 'Light theme for daytime use',
+    };
+  }
+
+  static String _getThemeDarkDesc(String language) {
+    return switch (language) {
+      'id' => 'Tema gelap untuk penggunaan di malam hari',
+      'en' => 'Dark theme for nighttime use',
+      'zh' => '深色主题，适合夜间使用',
+      'ja' => '夜間の使用に適したダークテーマ',
+      _ => 'Dark theme for nighttime use',
     };
   }
 

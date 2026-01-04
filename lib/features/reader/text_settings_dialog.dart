@@ -107,13 +107,6 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                 AppLocalizations.getSettingsText('tajweed_rule_ham_wasl_desc', appLanguage),
                 colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
               ),
-              const SizedBox(height: 8),
-              Text(
-                AppLocalizations.getSettingsText('tajweed_guide_closing', appLanguage),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
             ],
           ),
         ),
