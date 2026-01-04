@@ -100,24 +100,30 @@ class MushafLayout {
       if (isNewSurah) {
         lastSurah = v.surahId;
 
-        // Surah header block (centered title)
-        final surahTitle = surahNames[v.surahId] ?? 'سورة';
-        blocks.add(
-          MushafAyahBlock(
-            surahId: v.surahId,
-            text: surahTitle,
-            isSurahHeader: true,
-          ),
-        );
-
-        // Optional Bismillah line (except for Surah 1 & 9)
-        if (v.surahId != 1 && v.surahId != 9) {
+        // Surah header block (centered title) - hanya muncul jika ayat pertama surah ada di halaman ini
+        // Cek apakah ini adalah ayat pertama dari surah (ayahNo == 1)
+        final isFirstAyahOfSurah = v.ayahNo == 1;
+        
+        if (isFirstAyahOfSurah) {
+          final surahTitle = surahNames[v.surahId] ?? 'سورة';
           blocks.add(
-            const MushafAyahBlock(
-              text: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ',
-              isBismillah: true,
+            MushafAyahBlock(
+              surahId: v.surahId,
+              text: surahTitle,
+              isSurahHeader: true,
             ),
           );
+
+          // Optional Bismillah line (except for Surah 1 & 9)
+          // Hanya muncul di awal surah (ayat pertama)
+          if (v.surahId != 1 && v.surahId != 9) {
+            blocks.add(
+              const MushafAyahBlock(
+                text: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ',
+                isBismillah: true,
+              ),
+            );
+          }
         }
       }
 
