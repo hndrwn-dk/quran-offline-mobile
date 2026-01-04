@@ -89,6 +89,10 @@ class SettingsScreen extends ConsumerWidget {
               dividerColor: Colors.transparent,
             ),
             child: ExpansionTile(
+              leading: Icon(
+                Icons.language,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               title: Text(AppLocalizations.getSettingsText('translation_language_title', appLanguage)),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,22 +111,51 @@ class SettingsScreen extends ConsumerWidget {
               ),
               childrenPadding: EdgeInsets.zero,
               children: ['id', 'en', 'zh', 'ja'].map((lang) {
-                return RadioListTile<String>(
+                final descKey = switch (lang) {
+                  'id' => 'language_indonesian_desc',
+                  'en' => 'language_english_desc',
+                  'zh' => 'language_chinese_desc',
+                  'ja' => 'language_japanese_desc',
+                  _ => 'language_indonesian_desc',
+                };
+                return ListTile(
+                  leading: Icon(
+                    _getLanguageIcon(lang),
+                    color: settings.language == lang
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                  ),
                   title: Text(_getLanguageName(lang)),
-                  value: lang,
-                  groupValue: settings.language,
+                  subtitle: Text(
+                    AppLocalizations.getSettingsText(descKey, appLanguage),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
+                  ),
+                  trailing: Radio<String>(
+                    value: lang,
+                    groupValue: settings.language,
+                    onChanged: (value) {
+                      if (value != null) {
+                        ref.read(settingsProvider.notifier).updateLanguage(value);
+                      }
+                    },
+                  ),
                   dense: true,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  onChanged: (value) {
-                    if (value != null) {
-                      ref.read(settingsProvider.notifier).updateLanguage(value);
-                    }
+                  onTap: () {
+                    ref.read(settingsProvider.notifier).updateLanguage(lang);
                   },
                 );
               }).toList(),
             ),
           ),
-          SwitchListTile(
+          ListTile(
+            leading: Icon(
+              Icons.text_fields,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             title: Text(AppLocalizations.getSettingsText('show_transliteration_title', appLanguage)),
             subtitle: Text(
               AppLocalizations.getSettingsText('show_transliteration_subtitle', appLanguage),
@@ -130,38 +163,66 @@ class SettingsScreen extends ConsumerWidget {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-            value: settings.showTransliteration,
-            onChanged: (value) {
-              ref.read(settingsProvider.notifier).updateShowTransliteration(value);
-            },
+            trailing: Switch(
+              value: settings.showTransliteration,
+              onChanged: (value) {
+                ref.read(settingsProvider.notifier).updateShowTransliteration(value);
+              },
+            ),
           ),
-          SwitchListTile(
-            title: Row(
+          Theme(
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent,
+            ),
+            child: ExpansionTile(
+              leading: Icon(
+                Icons.color_lens,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: Text(AppLocalizations.getSettingsText('show_tajweed_title', appLanguage)),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.getSettingsText('show_tajweed_subtitle', appLanguage),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          AppLocalizations.getSettingsText('tajweed_guide_intro', appLanguage),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              trailing: Switch(
+                value: settings.showTajweed,
+                onChanged: (value) {
+                  ref.read(settingsProvider.notifier).updateShowTajweed(value);
+                },
+              ),
+              childrenPadding: const EdgeInsets.fromLTRB(72, 8, 16, 16),
               children: [
-                Expanded(
-                  child: Text(AppLocalizations.getSettingsText('show_tajweed_title', appLanguage)),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.info_outline, size: 20),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  visualDensity: VisualDensity.compact,
-                  color: Theme.of(context).colorScheme.primary,
-                  onPressed: () => _showTajweedGuide(context, ref),
-                  tooltip: 'Tajweed guide',
-                ),
+                _buildTajweedGuideContent(context, ref),
               ],
             ),
-            subtitle: Text(
-              AppLocalizations.getSettingsText('show_tajweed_subtitle', appLanguage),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            value: settings.showTajweed,
-            onChanged: (value) {
-              ref.read(settingsProvider.notifier).updateShowTajweed(value);
-            },
           ),
           const Divider(),
           // App Settings section
@@ -180,6 +241,10 @@ class SettingsScreen extends ConsumerWidget {
               dividerColor: Colors.transparent,
             ),
             child: ExpansionTile(
+              leading: Icon(
+                Icons.language,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               title: Text(AppLocalizations.getSettingsText('app_language_title', appLanguage)),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,37 +263,107 @@ class SettingsScreen extends ConsumerWidget {
               ),
               childrenPadding: EdgeInsets.zero,
               children: ['id', 'en', 'zh', 'ja'].map((lang) {
-                return RadioListTile<String>(
+                final descKey = switch (lang) {
+                  'id' => 'app_language_indonesian_desc',
+                  'en' => 'app_language_english_desc',
+                  'zh' => 'app_language_chinese_desc',
+                  'ja' => 'app_language_japanese_desc',
+                  _ => 'app_language_indonesian_desc',
+                };
+                return ListTile(
+                  leading: Icon(
+                    _getLanguageIcon(lang),
+                    color: settings.appLanguage == lang
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                  ),
                   title: Text(_getLanguageName(lang)),
-                  value: lang,
-                  groupValue: settings.appLanguage,
+                  subtitle: Text(
+                    AppLocalizations.getSettingsText(descKey, appLanguage),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
+                  ),
+                  trailing: Radio<String>(
+                    value: lang,
+                    groupValue: settings.appLanguage,
+                    onChanged: (value) {
+                      if (value != null) {
+                        ref.read(settingsProvider.notifier).updateAppLanguage(value);
+                      }
+                    },
+                  ),
                   dense: true,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  onChanged: (value) {
-                    if (value != null) {
-                      ref.read(settingsProvider.notifier).updateAppLanguage(value);
-                    }
+                  onTap: () {
+                    ref.read(settingsProvider.notifier).updateAppLanguage(lang);
                   },
                 );
               }).toList(),
             ),
           ),
-          ListTile(
-            title: Text(AppLocalizations.getSettingsText('theme_title', appLanguage)),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(_getThemeModeName(settings.themeMode, appLanguage)),
-                Text(
-                  AppLocalizations.getSettingsText('theme_subtitle', appLanguage),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+          Theme(
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent,
             ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showThemeDialog(context, ref),
+            child: ExpansionTile(
+              leading: Icon(
+                Icons.palette,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: Text(AppLocalizations.getSettingsText('theme_title', appLanguage)),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(_getThemeModeName(settings.themeMode, appLanguage)),
+                  Text(
+                    AppLocalizations.getSettingsText('theme_subtitle', appLanguage),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              childrenPadding: EdgeInsets.zero,
+              children: ThemeMode.values.map((mode) {
+                final descKey = switch (mode) {
+                  ThemeMode.system => 'theme_system_desc',
+                  ThemeMode.light => 'theme_light_desc',
+                  ThemeMode.dark => 'theme_dark_desc',
+                };
+                return ListTile(
+                  leading: Icon(
+                    _getThemeModeIcon(mode),
+                    color: settings.themeMode == mode
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                  ),
+                  title: Text(_getThemeModeName(mode, appLanguage)),
+                  subtitle: Text(
+                    AppLocalizations.getSettingsText(descKey, appLanguage),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
+                  ),
+                  trailing: Radio<ThemeMode>(
+                    value: mode,
+                    groupValue: settings.themeMode,
+                    onChanged: (value) {
+                      if (value != null) {
+                        ref.read(settingsProvider.notifier).updateThemeMode(value);
+                      }
+                    },
+                  ),
+                  dense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  onTap: () {
+                    ref.read(settingsProvider.notifier).updateThemeMode(mode);
+                  },
+                );
+              }).toList(),
+            ),
           ),
           const Divider(),
           // About section
@@ -243,6 +378,10 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           ListTile(
+            leading: Icon(
+              Icons.favorite,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             title: Text(AppLocalizations.getSettingsText('support_title', appLanguage)),
             subtitle: Text(AppLocalizations.getSettingsText('support_subtitle', appLanguage)),
             trailing: const Icon(Icons.open_in_new, size: 18),
@@ -250,12 +389,20 @@ class SettingsScreen extends ConsumerWidget {
             onLongPress: () => _showSupportInfo(context, ref),
           ),
           ListTile(
+            leading: Icon(
+              Icons.privacy_tip,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             title: Text(AppLocalizations.getSettingsText('privacy_title', appLanguage)),
             subtitle: Text(AppLocalizations.getSettingsText('privacy_subtitle', appLanguage)),
             trailing: const Icon(Icons.open_in_new, size: 18),
             onTap: () => _openPrivacyLink(context),
           ),
           ListTile(
+            leading: Icon(
+              Icons.description,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             title: Text(AppLocalizations.getSettingsText('terms_title', appLanguage)),
             subtitle: Text(AppLocalizations.getSettingsText('terms_subtitle', appLanguage)),
             trailing: const Icon(Icons.open_in_new, size: 18),
@@ -276,6 +423,11 @@ class SettingsScreen extends ConsumerWidget {
     };
   }
 
+  IconData _getLanguageIcon(String lang) {
+    // Use translate icon for all languages
+    return Icons.translate;
+  }
+
   String _getThemeModeName(ThemeMode mode, String language) {
     return switch (mode) {
       ThemeMode.system => AppLocalizations.getSettingsText('theme_system', language),
@@ -284,34 +436,14 @@ class SettingsScreen extends ConsumerWidget {
     };
   }
 
-
-  void _showThemeDialog(BuildContext context, WidgetRef ref) {
-    final currentMode = ref.read(settingsProvider).themeMode;
-    final appLanguage = ref.read(settingsProvider).appLanguage;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.getSettingsText('select_theme_dialog', appLanguage)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: ThemeMode.values.map((mode) {
-            return RadioListTile<ThemeMode>(
-              title: Text(_getThemeModeName(mode, appLanguage)),
-              value: mode,
-              groupValue: currentMode,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(settingsProvider.notifier).updateThemeMode(value);
-                  Navigator.pop(context);
-                }
-              },
-            );
-          }).toList(),
-        ),
-      ),
-    );
+  IconData _getThemeModeIcon(ThemeMode mode) {
+    return switch (mode) {
+      ThemeMode.light => Icons.light_mode,
+      ThemeMode.dark => Icons.dark_mode,
+      ThemeMode.system => Icons.brightness_auto,
+    };
   }
+
 
   Future<void> _openSupportLink(BuildContext context) async {
     final uri = Uri.parse('https://buymeacoffee.com/hendrawan');
@@ -360,90 +492,63 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showTajweedGuide(BuildContext context, WidgetRef ref) {
+  Widget _buildTajweedGuideContent(BuildContext context, WidgetRef ref) {
     final appLanguage = ref.read(settingsProvider).appLanguage;
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.getSettingsText('tajweed_guide_title', appLanguage)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.getSettingsText('tajweed_guide_intro', appLanguage),
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 16),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_ikhfa', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_ikhfa_desc', appLanguage),
-                isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00897B),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_idgham', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_idgham_desc', appLanguage),
-                isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_iqlab', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_iqlab_desc', appLanguage),
-                isDark ? const Color(0xFFBA68C8) : const Color(0xFF7B1FA2),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_ghunnah', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_ghunnah_desc', appLanguage),
-                isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_qalqalah', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_qalqalah_desc', appLanguage),
-                isDark ? const Color(0xFFE57373) : const Color(0xFFC62828),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_laam_shamsiyah', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_laam_shamsiyah_desc', appLanguage),
-                isDark ? const Color(0xFFFFD54F) : const Color(0xFFF57F17),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_madd', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_madd_desc', appLanguage),
-                isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_ham_wasl', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_ham_wasl_desc', appLanguage),
-                colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                AppLocalizations.getSettingsText('tajweed_guide_closing', appLanguage),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildTajweedRuleItem(
+          context,
+          AppLocalizations.getSettingsText('tajweed_rule_ikhfa', appLanguage),
+          AppLocalizations.getSettingsText('tajweed_rule_ikhfa_desc', appLanguage),
+          isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00897B),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.getSettingsText('tajweed_guide_got_it', appLanguage)),
-          ),
-        ],
-      ),
+        _buildTajweedRuleItem(
+          context,
+          AppLocalizations.getSettingsText('tajweed_rule_idgham', appLanguage),
+          AppLocalizations.getSettingsText('tajweed_rule_idgham_desc', appLanguage),
+          isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2),
+        ),
+        _buildTajweedRuleItem(
+          context,
+          AppLocalizations.getSettingsText('tajweed_rule_iqlab', appLanguage),
+          AppLocalizations.getSettingsText('tajweed_rule_iqlab_desc', appLanguage),
+          isDark ? const Color(0xFFBA68C8) : const Color(0xFF7B1FA2),
+        ),
+        _buildTajweedRuleItem(
+          context,
+          AppLocalizations.getSettingsText('tajweed_rule_ghunnah', appLanguage),
+          AppLocalizations.getSettingsText('tajweed_rule_ghunnah_desc', appLanguage),
+          isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100),
+        ),
+        _buildTajweedRuleItem(
+          context,
+          AppLocalizations.getSettingsText('tajweed_rule_qalqalah', appLanguage),
+          AppLocalizations.getSettingsText('tajweed_rule_qalqalah_desc', appLanguage),
+          isDark ? const Color(0xFFE57373) : const Color(0xFFC62828),
+        ),
+        _buildTajweedRuleItem(
+          context,
+          AppLocalizations.getSettingsText('tajweed_rule_laam_shamsiyah', appLanguage),
+          AppLocalizations.getSettingsText('tajweed_rule_laam_shamsiyah_desc', appLanguage),
+          isDark ? const Color(0xFFFFD54F) : const Color(0xFFF57F17),
+        ),
+        _buildTajweedRuleItem(
+          context,
+          AppLocalizations.getSettingsText('tajweed_rule_madd', appLanguage),
+          AppLocalizations.getSettingsText('tajweed_rule_madd_desc', appLanguage),
+          isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
+        ),
+        _buildTajweedRuleItem(
+          context,
+          AppLocalizations.getSettingsText('tajweed_rule_ham_wasl', appLanguage),
+          AppLocalizations.getSettingsText('tajweed_rule_ham_wasl_desc', appLanguage),
+          colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+        ),
+      ],
     );
   }
 
