@@ -475,6 +475,17 @@ class AppLocalizations {
       'filter_all' => _getFilterAll(language),
       'filter_folder' => _getFilterFolder(language),
       'filter_tag' => _getFilterTag(language),
+      // Text Settings Dialog
+      'text_settings_title' => _getTextSettingsTitle(language),
+      'text_settings_arabic_size' => _getTextSettingsArabicSize(language),
+      'text_settings_translation_size' => _getTextSettingsTranslationSize(language),
+      'text_settings_size_label' => _getTextSettingsSizeLabel(language),
+      'text_settings_tajweed_subtitle' => _getTextSettingsTajweedSubtitle(language),
+      'apply' => _getApply(language),
+      'language_name_indonesian' => _getLanguageNameIndonesian(language),
+      'language_name_english' => _getLanguageNameEnglish(language),
+      'language_name_chinese' => _getLanguageNameChinese(language),
+      'language_name_japanese' => _getLanguageNameJapanese(language),
       _ => key,
     };
   }
@@ -1237,6 +1248,107 @@ class AppLocalizations {
       'zh' => '标签',
       'ja' => 'タグ',
       _ => 'Tag',
+    };
+  }
+
+  // Text Settings Dialog Localizations
+  static String _getTextSettingsTitle(String language) {
+    return switch (language) {
+      'id' => 'Pengaturan Teks',
+      'en' => 'Text Settings',
+      'zh' => '文本设置',
+      'ja' => 'テキスト設定',
+      _ => 'Text Settings',
+    };
+  }
+
+  static String _getTextSettingsArabicSize(String language) {
+    return switch (language) {
+      'id' => 'Ukuran Huruf Arab',
+      'en' => 'Arabic Font Size',
+      'zh' => '阿拉伯文字体大小',
+      'ja' => 'アラビア文字フォントサイズ',
+      _ => 'Arabic Font Size',
+    };
+  }
+
+  static String _getTextSettingsTranslationSize(String language) {
+    return switch (language) {
+      'id' => 'Ukuran Huruf Terjemahan',
+      'en' => 'Translation Font Size',
+      'zh' => '翻译字体大小',
+      'ja' => '翻訳フォントサイズ',
+      _ => 'Translation Font Size',
+    };
+  }
+
+  static String _getTextSettingsSizeLabel(String language) {
+    return switch (language) {
+      'id' => 'Ukuran',
+      'en' => 'Size',
+      'zh' => '大小',
+      'ja' => 'サイズ',
+      _ => 'Size',
+    };
+  }
+
+  static String _getTextSettingsTajweedSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Aturan tajweed berwarna untuk pelafalan yang benar',
+      'en' => 'Color-coded tajweed rules for proper recitation',
+      'zh' => '彩色编码的泰吉威德规则，用于正确诵读',
+      'ja' => '正しい朗読のための色分けされたタジウィード規則',
+      _ => 'Color-coded tajweed rules for proper recitation',
+    };
+  }
+
+  static String _getApply(String language) {
+    return switch (language) {
+      'id' => 'Terapkan',
+      'en' => 'Apply',
+      'zh' => '应用',
+      'ja' => '適用',
+      _ => 'Apply',
+    };
+  }
+
+  static String _getLanguageNameIndonesian(String language) {
+    return switch (language) {
+      'id' => 'Bahasa Indonesia',
+      'en' => 'Indonesian',
+      'zh' => '印度尼西亚语',
+      'ja' => 'インドネシア語',
+      _ => 'Indonesian',
+    };
+  }
+
+  static String _getLanguageNameEnglish(String language) {
+    return switch (language) {
+      'id' => 'Bahasa Inggris',
+      'en' => 'English',
+      'zh' => '英语',
+      'ja' => '英語',
+      _ => 'English',
+    };
+  }
+
+  static String _getLanguageNameChinese(String language) {
+    return switch (language) {
+      'id' => 'Bahasa Mandarin',
+      'en' => 'Chinese',
+      'zh' => '中文',
+      'ja' => '中国語',
+      _ => 'Chinese',
+    };
+  }
+
+  static String _getLanguageNameJapanese(String language) {
+    return switch (language) {
+      'id' => 'Bahasa Jepang',
+      'en' => 'Japanese',
+      'zh' => '日语',
+      'ja' => '日本語',
+      _ => 'Japanese',
     };
   }
 

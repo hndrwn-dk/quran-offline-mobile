@@ -30,12 +30,12 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
     _currentLanguage = settings.language;
   }
 
-  String _getLanguageName(String lang) {
+  String _getLanguageName(String lang, String appLanguage) {
     return switch (lang) {
-      'id' => 'Indonesian',
-      'en' => 'English',
-      'zh' => 'Chinese',
-      'ja' => 'Japanese',
+      'id' => AppLocalizations.getSettingsText('language_name_indonesian', appLanguage),
+      'en' => AppLocalizations.getSettingsText('language_name_english', appLanguage),
+      'zh' => AppLocalizations.getSettingsText('language_name_chinese', appLanguage),
+      'ja' => AppLocalizations.getSettingsText('language_name_japanese', appLanguage),
       _ => lang,
     };
   }
@@ -172,6 +172,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final settings = ref.watch(settingsProvider);
+    final appLanguage = settings.appLanguage;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
@@ -198,7 +199,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
           ),
           // Title
           Text(
-            'Text Settings',
+            AppLocalizations.getSettingsText('text_settings_title', appLanguage),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w600,
               color: colorScheme.onSurface,
@@ -207,7 +208,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
           const SizedBox(height: 24),
           // Arabic Font Size Slider
           Text(
-            'Arabic Size',
+            AppLocalizations.getSettingsText('text_settings_arabic_size', appLanguage),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: colorScheme.onSurface,
             ),
@@ -246,7 +247,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
             child: Text(
-              'Size: ${_currentArabicSize.toInt()}',
+              '${AppLocalizations.getSettingsText('text_settings_size_label', appLanguage)}: ${_currentArabicSize.toInt()}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -254,7 +255,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
           ),
           // Translation Font Size Slider
           Text(
-            'Translation Size',
+            AppLocalizations.getSettingsText('text_settings_translation_size', appLanguage),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: colorScheme.onSurface,
             ),
@@ -293,7 +294,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
             child: Text(
-              'Size: ${_currentTranslationSize.toInt()}',
+              '${AppLocalizations.getSettingsText('text_settings_size_label', appLanguage)}: ${_currentTranslationSize.toInt()}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -312,13 +313,13 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
               ),
               child: ExpansionTile(
                 title: Text(
-                  'Translation Language',
+                  AppLocalizations.getSettingsText('translation_language_title', appLanguage),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: colorScheme.onSurface,
                   ),
                 ),
                 subtitle: Text(
-                  _getLanguageName(_currentLanguage),
+                  _getLanguageName(_currentLanguage, appLanguage),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -326,7 +327,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                 childrenPadding: EdgeInsets.zero,
                 children: ['id', 'en', 'zh', 'ja'].map((lang) {
                   return RadioListTile<String>(
-                    title: Text(_getLanguageName(lang)),
+                    title: Text(_getLanguageName(lang, appLanguage)),
                     value: lang,
                     groupValue: _currentLanguage,
                     dense: true,
@@ -353,7 +354,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
             ),
             child: SwitchListTile(
               title: Text(
-                'Show Transliteration',
+                AppLocalizations.getSettingsText('show_transliteration_title', appLanguage),
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: colorScheme.onSurface,
                 ),
@@ -377,7 +378,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
               title: Row(
                 children: [
                   Text(
-                    'Show Tajweed',
+                    AppLocalizations.getSettingsText('show_tajweed_title', appLanguage),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: colorScheme.onSurface,
                     ),
@@ -390,12 +391,12 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                     visualDensity: VisualDensity.compact,
                     color: colorScheme.primary,
                     onPressed: () => _showTajweedGuide(context, colorScheme),
-                    tooltip: 'Tajweed guide',
+                    tooltip: AppLocalizations.getSettingsText('tajweed_guide_title', appLanguage),
                   ),
                 ],
               ),
               subtitle: Text(
-                'Color-coded tajweed rules for proper recitation',
+                AppLocalizations.getSettingsText('text_settings_tajweed_subtitle', appLanguage),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
@@ -496,7 +497,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                   Navigator.of(context).pop();
                 }
               },
-              child: const Text('Apply'),
+              child: Text(AppLocalizations.getSettingsText('apply', appLanguage)),
             ),
           ),
         ],

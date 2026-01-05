@@ -119,7 +119,7 @@ class SurahListView extends ConsumerWidget {
                               textDirection: TextDirection.rtl,
                               child: Text(
                                 surah.arabicName,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                   fontFamily: 'UthmanicHafsV22',
                                   fontFamilyFallback: const ['UthmanicHafs'],
                                   color: colorScheme.onSurface,
@@ -132,7 +132,7 @@ class SurahListView extends ConsumerWidget {
                             const SizedBox(height: 4),
                             Text(
                               '$ayahCount Ayahs',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                               ),
                             ),

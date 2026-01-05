@@ -97,6 +97,9 @@ class _MushafPageState extends ConsumerState<MushafPage> {
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _ayahKeys = {};
   bool _hasScrolledToTarget = false;
+  double _swipeStartY = 0.0;
+  double _swipeStartX = 0.0;
+  bool _isSwipingDown = false;
 
   @override
   void didChangeDependencies() {
@@ -221,12 +224,58 @@ class _MushafPageState extends ConsumerState<MushafPage> {
     ref.watch(settingsProvider.select((s) => s.showTajweed));
     final surahsAsync = ref.watch(surahNamesProvider);
     
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        toolbarHeight: 54,
-        centerTitle: false,
-        titleSpacing: 16,
+    return GestureDetector(
+      onVerticalDragStart: (details) {
+        // Only detect swipe down from top area (AppBar region)
+        if (details.globalPosition.dy < 100) {
+          _swipeStartY = details.globalPosition.dy;
+          _swipeStartX = details.globalPosition.dx;
+          _isSwipingDown = false;
+        }
+      },
+      onVerticalDragUpdate: (details) {
+        if (_swipeStartY > 0) {
+          final deltaY = details.globalPosition.dy - _swipeStartY;
+          final deltaX = details.globalPosition.dx - _swipeStartX;
+          // Detect downward swipe (positive deltaY) and ensure vertical movement is greater than horizontal
+          if (deltaY > 20 && deltaY.abs() > deltaX.abs() * 1.5) {
+            _isSwipingDown = true;
+          }
+        }
+      },
+      onVerticalDragEnd: (details) {
+        if (_isSwipingDown && _swipeStartY > 0) {
+          final deltaY = details.velocity.pixelsPerSecond.dy;
+          final deltaX = details.velocity.pixelsPerSecond.dx;
+          const swipeThreshold = 300.0;
+          
+          // Swipe down gesture detected - ensure vertical velocity is greater than horizontal
+          if (deltaY > swipeThreshold && deltaY.abs() > deltaX.abs()) {
+            HapticFeedback.lightImpact();
+            if (Navigator.canPop(context)) {
+              Navigator.of(context).pop();
+            }
+          }
+        }
+        _swipeStartY = 0.0;
+        _swipeStartX = 0.0;
+        _isSwipingDown = false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: Navigator.canPop(context)
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  tooltip: 'Back',
+                )
+              : null,
+          automaticallyImplyLeading: false,
+          toolbarHeight: 54,
+          centerTitle: false,
+          titleSpacing: 16,
         title: FutureBuilder<List<int>>(
           future: MushafLayout.getSurahIdsForPage(widget.pageNo),
           builder: (context, surahIdsSnapshot) {
@@ -429,6 +478,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
             ),
           );
         },
+      ),
       ),
     );
   }
