@@ -184,7 +184,7 @@ class PageListView extends ConsumerWidget {
                                       textDirection: TextDirection.rtl,
                                       child: Text(
                                         surahInfo.arabicName,
-                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                           fontFamily: 'UthmanicHafsV22',
                                           fontFamilyFallback: const ['UthmanicHafs'],
                                           color: colorScheme.onSurface,

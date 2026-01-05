@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 
 class MushafTextSettingsDialog extends ConsumerStatefulWidget {
   const MushafTextSettingsDialog({super.key});
@@ -23,6 +24,7 @@ class _MushafTextSettingsDialogState extends ConsumerState<MushafTextSettingsDia
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final settings = ref.watch(settingsProvider);
+    final appLanguage = settings.appLanguage;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
@@ -48,7 +50,7 @@ class _MushafTextSettingsDialogState extends ConsumerState<MushafTextSettingsDia
           ),
           // Title
           Text(
-            'Text Settings',
+            AppLocalizations.getSettingsText('text_settings_title', appLanguage),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w600,
               color: colorScheme.onSurface,
@@ -57,7 +59,7 @@ class _MushafTextSettingsDialogState extends ConsumerState<MushafTextSettingsDia
           const SizedBox(height: 24),
           // Arabic Size Slider
           Text(
-            'Arabic Size',
+            AppLocalizations.getSettingsText('text_settings_arabic_size', appLanguage),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: colorScheme.onSurface,
             ),
@@ -96,7 +98,7 @@ class _MushafTextSettingsDialogState extends ConsumerState<MushafTextSettingsDia
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
             child: Text(
-              'Size: ${_currentSize.toInt()}',
+              '${AppLocalizations.getSettingsText('text_settings_size_label', appLanguage)}: ${_currentSize.toInt()}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -138,7 +140,7 @@ class _MushafTextSettingsDialogState extends ConsumerState<MushafTextSettingsDia
                   Navigator.of(context).pop();
                 }
               },
-              child: const Text('Apply'),
+              child: Text(AppLocalizations.getSettingsText('apply', appLanguage)),
             ),
           ),
         ],
