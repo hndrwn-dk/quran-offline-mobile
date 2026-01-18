@@ -27,7 +27,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
   bool _hasScrolledToTarget = false;
-  ReaderSource? _lastSource = null;
   double _swipeStartX = 0.0;
   double _swipeStartY = 0.0;
   bool _isSwiping = false;
@@ -232,18 +231,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     });
   }
 
-  String _getTitle(ReaderSource? source, List<SurahInfo>? surahs) {
-    if (source == null) return 'Reader';
-    return switch (source) {
-      SurahSource(:final surahId) => surahs
-              ?.firstWhere((s) => s.id == surahId, orElse: () => SurahInfo(id: surahId, arabicName: '', englishName: 'Surah $surahId', englishMeaning: ''))
-              .englishName ??
-          'Surah $surahId',
-      JuzSource(:final juzNo) => 'Juz $juzNo',
-      PageSource(:final pageNo) => 'Page $pageNo',
-    };
-  }
-
   /// Build premium 2-line editorial AppBar for Juz reading
   PreferredSizeWidget _buildJuzAppBar(
     BuildContext context,
@@ -429,7 +416,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         ref.read(lastReadProvider.notifier).saveLastRead(next);
         setState(() {
           _hasScrolledToTarget = false;
-          _lastSource = next;
         });
         // Optionally reset scroll position
         try {

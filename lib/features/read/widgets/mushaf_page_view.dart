@@ -10,7 +10,6 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
-import 'package:quran_offline/core/widgets/tajweed_text.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
 
 class MushafPageView extends ConsumerStatefulWidget {
@@ -134,8 +133,6 @@ class _MushafPageState extends ConsumerState<MushafPage> {
       
       // Find the first visible ayah by checking scroll position
       // This is approximate - for exact tracking, we'd need to measure widget positions
-      final scrollOffset = _scrollController.offset;
-      
       // Simple heuristic: find ayah that should be visible based on scroll
       // For more accuracy, we'd need to use RenderBox to measure actual positions
       MushafAyahBlock? visibleBlock;
