@@ -123,6 +123,13 @@ class AppDatabase extends _$AppDatabase {
         .get();
   }
 
+  Future<List<Verse>> getVersesBySurahInJuz(int surahId, int juzNo) {
+    return (select(verses)
+          ..where((v) => v.surahId.equals(surahId) & v.juz.equals(juzNo))
+          ..orderBy([(v) => OrderingTerm(expression: v.ayahNo)]))
+        .get();
+  }
+
   Future<List<int>> getSurahIdsInJuz(int juzNo) async {
     final verses = await getVersesByJuz(juzNo);
     final surahIds = verses.map((v) => v.surahId).toSet().toList();

@@ -4,10 +4,10 @@ import 'package:quran_offline/core/models/reader_source.dart';
 
 /// Model for last read position
 class LastReadPosition {
-  final String type; // 'surah', 'juz', or 'page'
+  final String type; // 'surah', 'juz', 'page', or 'surah_in_juz'
   final int id; // surahId, juzNo, or pageNo
   final int? ayahNo; // For surah/juz: ayahNo, for page: ayahNo (with surahId)
-  final int? surahId; // For page: surahId of the ayah, null for surah/juz
+  final int? surahId; // For page: surahId of the ayah, for surah_in_juz: juzNo, null for surah/juz
   final DateTime timestamp;
 
   LastReadPosition({
@@ -42,6 +42,7 @@ class LastReadPosition {
       'surah' => SurahSource(id, targetAyahNo: ayahNo),
       'juz' => JuzSource(id),
       'page' => PageSource(id),
+      'surah_in_juz' => SurahInJuzSource(surahId ?? id, id), // surahId stores juzNo, id stores surahId
       _ => throw ArgumentError('Unknown type: $type'),
     };
   }
@@ -101,6 +102,13 @@ class LastReadNotifier extends StateNotifier<LastReadPosition?> {
           id: pageNo,
           ayahNo: ayahNo,
           surahId: surahId, // Needed for page to identify which surah
+          timestamp: DateTime.now(),
+        ),
+      SurahInJuzSource(:final juzNo, :final surahId) => LastReadPosition(
+          type: 'surah_in_juz',
+          id: surahId,
+          ayahNo: ayahNo,
+          surahId: juzNo, // Store juzNo in surahId field for SurahInJuzSource
           timestamp: DateTime.now(),
         ),
     };

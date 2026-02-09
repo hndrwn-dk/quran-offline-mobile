@@ -121,9 +121,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     versesAsync.whenData((verses) {
       if (!mounted || verses.isEmpty) return;
       
-      // For SurahSource, check if we have a header (index 0)
+      // For SurahSource and SurahInJuzSource, check if we have a header (index 0)
       // For JuzSource, no header, so itemIndex directly maps to verseIndex
-      final isSurahSource = source is SurahSource;
+      final isSurahSource = source is SurahSource || source is SurahInJuzSource;
       final hasHeader = isSurahSource && itemIndex > 0;
       final verseIndex = hasHeader ? itemIndex - 1 : itemIndex;
       
@@ -134,6 +134,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         if (source is SurahSource && currentSource is SurahSource && currentSource.surahId == source.surahId) {
           ref.read(lastReadProvider.notifier).saveLastRead(currentSource, ayahNo: visibleAyah);
         } else if (source is JuzSource && currentSource is JuzSource && currentSource.juzNo == source.juzNo) {
+          ref.read(lastReadProvider.notifier).saveLastRead(currentSource, ayahNo: visibleAyah);
+        } else if (source is SurahInJuzSource && currentSource is SurahInJuzSource && 
+                   currentSource.juzNo == source.juzNo && currentSource.surahId == source.surahId) {
           ref.read(lastReadProvider.notifier).saveLastRead(currentSource, ayahNo: visibleAyah);
         }
       }
@@ -151,6 +154,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   
   /// Navigate to next/previous surah, juz, or page based on swipe direction
   void _handleSwipeNavigation(ReaderSource currentSource, bool isNext) {
+    if (currentSource is SurahInJuzSource) {
+      _handleSurahInJuzNavigation(currentSource, isNext);
+      return;
+    }
+    
     final newSource = switch (currentSource) {
       SurahSource(:final surahId) => () {
         final nextSurahId = isNext ? surahId + 1 : surahId - 1;
@@ -173,9 +181,52 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         }
         return null;
       }(),
+      _ => null,
     };
     
     if (newSource != null) {
+      ref.read(readerSourceProvider.notifier).state = newSource;
+      ref.read(targetAyahProvider.notifier).state = null;
+    }
+  }
+  
+  /// Handle navigation for SurahInJuzSource (async operation)
+  void _handleSurahInJuzNavigation(SurahInJuzSource source, bool isNext) async {
+    final db = ref.read(databaseProvider);
+    final juzSurahs = await db.getSurahIdsInJuz(source.juzNo);
+    
+    if (juzSurahs.isEmpty) return;
+    
+    final currentIndex = juzSurahs.indexOf(source.surahId);
+    if (currentIndex == -1) return;
+    
+    ReaderSource? newSource;
+    
+    if (isNext) {
+      // Next Surah in same Juz
+      if (currentIndex < juzSurahs.length - 1) {
+        newSource = SurahInJuzSource(source.juzNo, juzSurahs[currentIndex + 1]);
+      } else if (source.juzNo < 30) {
+        // Last Surah in Juz, go to next Juz
+        final nextJuzSurahs = await db.getSurahIdsInJuz(source.juzNo + 1);
+        if (nextJuzSurahs.isNotEmpty) {
+          newSource = SurahInJuzSource(source.juzNo + 1, nextJuzSurahs.first);
+        }
+      }
+    } else {
+      // Previous Surah in same Juz
+      if (currentIndex > 0) {
+        newSource = SurahInJuzSource(source.juzNo, juzSurahs[currentIndex - 1]);
+      } else if (source.juzNo > 1) {
+        // First Surah in Juz, go to previous Juz
+        final prevJuzSurahs = await db.getSurahIdsInJuz(source.juzNo - 1);
+        if (prevJuzSurahs.isNotEmpty) {
+          newSource = SurahInJuzSource(source.juzNo - 1, prevJuzSurahs.last);
+        }
+      }
+    }
+    
+    if (newSource != null && mounted) {
       ref.read(readerSourceProvider.notifier).state = newSource;
       ref.read(targetAyahProvider.notifier).state = null;
     }
@@ -403,6 +454,106 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 
+  /// Build AppBar for SurahInJuzSource showing Surah name and Juz number
+  PreferredSizeWidget _buildSurahInJuzAppBar(
+    BuildContext context,
+    WidgetRef ref,
+    int juzNo,
+    int surahId,
+  ) {
+    final surahsAsync = ref.watch(surahNamesProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AppBar(
+      leading: Navigator.canPop(context) ? const BackButton() : null,
+      automaticallyImplyLeading: false,
+      toolbarHeight: 54,
+      centerTitle: false,
+      titleSpacing: 16,
+      title: surahsAsync.when(
+        data: (surahs) {
+          final surah = surahs.firstWhere(
+            (s) => s.id == surahId,
+            orElse: () => SurahInfo(
+              id: surahId,
+              arabicName: '',
+              englishName: 'Surah $surahId',
+              englishMeaning: '',
+            ),
+          );
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Line 1: Surah name (titleLarge, bold)
+              Text(
+                surah.englishName,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
+              ),
+              const SizedBox(height: 2),
+              // Line 2: "Juz X" (labelMedium/bodySmall, muted)
+              Text(
+                'Juz $juzNo',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      height: 1.2,
+                    ) ??
+                    Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          height: 1.2,
+                        ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          );
+        },
+        loading: () => Text(
+          'Surah $surahId',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        error: (_, __) => Text(
+          'Surah $surahId',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.text_fields),
+          tooltip: 'Text settings',
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const TextSettingsDialog(),
+            );
+          },
+        ),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Divider(
+          height: 1,
+          thickness: 1,
+          color: Theme.of(context)
+              .colorScheme
+              .outlineVariant
+              .withOpacity(0.3),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final source = ref.watch(readerSourceProvider);
@@ -459,6 +610,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         ? null
         : switch (source) {
             JuzSource(:final juzNo) => _buildJuzAppBar(context, ref, juzNo),
+            SurahInJuzSource(:final juzNo, :final surahId) => _buildSurahInJuzAppBar(context, ref, juzNo, surahId),
             PageSource(:final pageNo) => AppBar(
                 leading: Navigator.canPop(context) ? const BackButton() : null,
                 automaticallyImplyLeading: false,
@@ -575,7 +727,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 child: surahsAsync.when(
                 data: (surahs) {
                   final settings = ref.watch(settingsProvider);
-                  final isSurahSource = source is SurahSource;
+                  final isSurahSource = source is SurahSource || source is SurahInJuzSource;
                   
                   // Calculate verse count for current surah (when reading by surah)
                   final currentSurahId = isSurahSource && verses.isNotEmpty ? verses[0].surahId : null;
@@ -625,7 +777,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                       final prevSurah = verseIndex > 0 ? verses[verseIndex - 1].surahId : null;
                       final showSurahDivider = prevSurah != null && prevSurah != verse.surahId;
                       final isFirstAyah = verse.ayahNo == 1;
-                      // For Surah mode we already inject a header at index 0; avoid double header.
+                      // For Surah mode and SurahInJuz mode we already inject a header at index 0; avoid double header.
                       final showSurahHeader = !isSurahSource && (verseIndex == 0 || showSurahDivider);
 
                       final surahInfo = surahs.firstWhere(
@@ -758,7 +910,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 },
                 loading: () {
                   final settings = ref.watch(settingsProvider);
-                  final isSurahSource = source is SurahSource;
+                  final isSurahSource = source is SurahSource || source is SurahInJuzSource;
                   
                   return ScrollablePositionedList.builder(
                     itemScrollController: _itemScrollController,
@@ -922,7 +1074,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 },
                 error: (_, __) {
                   final settings = ref.watch(settingsProvider);
-                  final isSurahSource = source is SurahSource;
+                  final isSurahSource = source is SurahSource || source is SurahInJuzSource;
                   
                   return ScrollablePositionedList.builder(
                     itemScrollController: _itemScrollController,
