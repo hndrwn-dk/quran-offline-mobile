@@ -6,6 +6,7 @@ class AppSettings {
   final String language; // For translation
   final String appLanguage; // For UI/menu
   final bool showTransliteration;
+  final bool showTranslation;
   final bool showTajweed;
   final double arabicFontSize;
   final double translationFontSize;
@@ -16,6 +17,7 @@ class AppSettings {
     this.language = 'en',
     this.appLanguage = 'en',
     this.showTransliteration = false,
+    this.showTranslation = true, // Default to true since translations are currently always shown
     this.showTajweed = false,
     this.arabicFontSize = 30.0,
     this.translationFontSize = 16.0,
@@ -27,6 +29,7 @@ class AppSettings {
     String? language,
     String? appLanguage,
     bool? showTransliteration,
+    bool? showTranslation,
     bool? showTajweed,
     double? arabicFontSize,
     double? translationFontSize,
@@ -37,6 +40,7 @@ class AppSettings {
       language: language ?? this.language,
       appLanguage: appLanguage ?? this.appLanguage,
       showTransliteration: showTransliteration ?? this.showTransliteration,
+      showTranslation: showTranslation ?? this.showTranslation,
       showTajweed: showTajweed ?? this.showTajweed,
       arabicFontSize: arabicFontSize ?? this.arabicFontSize,
       translationFontSize: translationFontSize ?? this.translationFontSize,
@@ -50,6 +54,7 @@ class AppSettings {
       'language': language,
       'appLanguage': appLanguage,
       'showTransliteration': showTransliteration,
+      'showTranslation': showTranslation,
       'showTajweed': showTajweed,
       'arabicFontSize': arabicFontSize,
       'translationFontSize': translationFontSize,
@@ -64,6 +69,7 @@ class AppSettings {
       language: language,
       appLanguage: json['appLanguage'] as String? ?? language, // Default to language for backward compatibility
       showTransliteration: json['showTransliteration'] as bool? ?? false,
+      showTranslation: json['showTranslation'] as bool? ?? true, // Default to true for backward compatibility
       showTajweed: json['showTajweed'] as bool? ?? false,
       arabicFontSize: (json['arabicFontSize'] as num?)?.toDouble() ?? 30.0,
       translationFontSize: (json['translationFontSize'] as num?)?.toDouble() ?? 16.0,
@@ -86,6 +92,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final language = prefs.getString('language') ?? 'en';
     final appLanguage = prefs.getString('appLanguage') ?? language; // Default to language for backward compatibility
     final showTransliteration = prefs.getBool('showTransliteration') ?? false;
+    final showTranslation = prefs.getBool('showTranslation') ?? true; // Default to true for backward compatibility
     final showTajweed = prefs.getBool('showTajweed') ?? false;
     final arabicFontSize = prefs.getDouble('arabicFontSize') ?? 30.0;
     final translationFontSize = prefs.getDouble('translationFontSize') ?? 16.0;
@@ -100,6 +107,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       language: language,
       appLanguage: appLanguage,
       showTransliteration: showTransliteration,
+      showTranslation: showTranslation,
       showTajweed: showTajweed,
       arabicFontSize: arabicFontSize,
       translationFontSize: translationFontSize,
@@ -124,6 +132,12 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('showTransliteration', show);
     state = state.copyWith(showTransliteration: show);
+  }
+
+  Future<void> updateShowTranslation(bool show) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('showTranslation', show);
+    state = state.copyWith(showTranslation: show);
   }
 
   Future<void> updateShowTajweed(bool show) async {

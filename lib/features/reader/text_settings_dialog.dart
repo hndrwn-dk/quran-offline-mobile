@@ -16,6 +16,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
   double _currentArabicSize = 24.0;
   double _currentTranslationSize = 16.0;
   bool _showTransliteration = false;
+  bool _showTranslation = true;
   bool _showTajweed = false;
   String _currentLanguage = 'en';
 
@@ -26,6 +27,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
     _currentArabicSize = settings.arabicFontSize;
     _currentTranslationSize = settings.translationFontSize;
     _showTransliteration = settings.showTransliteration;
+    _showTranslation = settings.showTranslation;
     _showTajweed = settings.showTajweed;
     _currentLanguage = settings.language;
   }
@@ -367,6 +369,29 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
               },
             ),
           ),
+          // Translation Toggle
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceVariant.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SwitchListTile(
+              title: Text(
+                AppLocalizations.getSettingsText('show_translation_title', appLanguage),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              value: _showTranslation,
+              onChanged: (value) {
+                setState(() {
+                  _showTranslation = value;
+                });
+              },
+            ),
+          ),
           // Tajweed Toggle
           Container(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -455,15 +480,17 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 12),
-                Text(
-                  Bismillah.getTranslation(_currentLanguage),
-                  style: TextStyle(
-                    fontSize: _currentTranslationSize,
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.5,
+                if (_showTranslation) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    Bismillah.getTranslation(_currentLanguage),
+                    style: TextStyle(
+                      fontSize: _currentTranslationSize,
+                      color: colorScheme.onSurfaceVariant,
+                      height: 1.5,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -484,6 +511,10 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                 // Update Transliteration
                 if (_showTransliteration != settings.showTransliteration) {
                   await ref.read(settingsProvider.notifier).updateShowTransliteration(_showTransliteration);
+                }
+                // Update Translation
+                if (_showTranslation != settings.showTranslation) {
+                  await ref.read(settingsProvider.notifier).updateShowTranslation(_showTranslation);
                 }
                 // Update Tajweed
                 if (_showTajweed != settings.showTajweed) {

@@ -198,7 +198,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                 ),
               ),
             ],
-            if (translation != null) ...[
+            if (settings.showTranslation && translation != null) ...[
               const SizedBox(height: 8),
               SelectableText(
                 translation,
