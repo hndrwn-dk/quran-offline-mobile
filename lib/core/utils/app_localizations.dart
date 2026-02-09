@@ -1733,5 +1733,27 @@ class AppLocalizations {
       _ => 'selected',
     };
   }
+
+  /// Get localized text for share header "Allah Subhanahu Wa Ta'ala berfirman:"
+  static String getShareHeader(String language) {
+    return switch (language) {
+      'id' => 'Allah Subhanahu Wa Ta\'ala berfirman:',
+      'en' => 'Allah Subhanahu Wa Ta\'ala says:',
+      'zh' => '真主说：',
+      'ja' => 'アッラーは仰せられました：',
+      _ => 'Allah Subhanahu Wa Ta\'ala says:',
+    };
+  }
+
+  /// Get localized text for "Ayah" in reference format
+  static String getAyahLabel(String language) {
+    return switch (language) {
+      'id' => 'Ayat',
+      'en' => 'Ayah',
+      'zh' => '节',
+      'ja' => '節',
+      _ => 'Ayah',
+    };
+  }
 }
 
