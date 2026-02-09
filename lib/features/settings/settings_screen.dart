@@ -170,6 +170,25 @@ class SettingsScreen extends ConsumerWidget {
               },
             ),
           ),
+          ListTile(
+            leading: Icon(
+              Icons.translate,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: Text(AppLocalizations.getSettingsText('show_translation_title', appLanguage)),
+            subtitle: Text(
+              AppLocalizations.getSettingsText('show_translation_subtitle', appLanguage),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: Switch(
+              value: settings.showTranslation,
+              onChanged: (value) {
+                ref.read(settingsProvider.notifier).updateShowTranslation(value);
+              },
+            ),
+          ),
           Theme(
             data: Theme.of(context).copyWith(
               dividerColor: Colors.transparent,

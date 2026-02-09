@@ -374,6 +374,8 @@ class AppLocalizations {
       'translation_language_subtitle' => _getTranslationLanguageSubtitle(language),
       'show_transliteration_title' => _getShowTransliterationTitle(language),
       'show_transliteration_subtitle' => _getShowTransliterationSubtitle(language),
+      'show_translation_title' => _getShowTranslationTitle(language),
+      'show_translation_subtitle' => _getShowTranslationSubtitle(language),
       'show_tajweed_title' => _getShowTajweedTitle(language),
       'show_tajweed_subtitle' => _getShowTajweedSubtitle(language),
       'app_settings_header' => _getAppSettingsHeader(language),
@@ -547,6 +549,26 @@ class AppLocalizations {
       'zh' => '在阿拉伯经文下方显示拉丁音译。',
       'ja' => 'アラビア語の節の下にラテン音訳を表示。',
       _ => 'Show Latin transliteration under Arabic verses.',
+    };
+  }
+
+  static String _getShowTranslationTitle(String language) {
+    return switch (language) {
+      'id' => 'Tampilkan Terjemahan',
+      'en' => 'Show Translation',
+      'zh' => '显示翻译',
+      'ja' => '翻訳を表示',
+      _ => 'Show Translation',
+    };
+  }
+
+  static String _getShowTranslationSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Tampilkan terjemahan untuk setiap ayat',
+      'en' => 'Show translation for each verse',
+      'zh' => '显示每节经文的翻译',
+      'ja' => '各節の翻訳を表示',
+      _ => 'Show translation for each verse',
     };
   }
 
