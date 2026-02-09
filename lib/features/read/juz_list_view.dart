@@ -119,99 +119,113 @@ class JuzListView extends ConsumerWidget {
                               final ayahCount = juzSurahs.surahAyahCounts[surahId] ?? 0;
                               final isLast = index == juzSurahs.surahIds.length - 1;
 
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                decoration: BoxDecoration(
-                                  border: isLast
-                                      ? null
-                                      : Border(
-                                          bottom: BorderSide(
-                                            color: colorScheme.outlineVariant.withOpacity(0.1),
-                                            width: 1,
-                                          ),
-                                        ),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Surah number
-                                    Container(
-                                      width: 36,
-                                      height: 36,
-                                      decoration: BoxDecoration(
-                                        color: colorScheme.surfaceVariant,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        '${surahInfo.id}',
-                                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                          color: colorScheme.onSurfaceVariant,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
+                              return InkWell(
+                                onTap: () {
+                                  final source = SurahInJuzSource(juzNo, surahId);
+                                  ref.read(readerSourceProvider.notifier).state = source;
+                                  // Save last read
+                                  ref.read(lastReadProvider.notifier).saveLastRead(source);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const ReaderScreen(),
                                     ),
-                                    const SizedBox(width: 12),
-                                    // English name and meaning
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            surahInfo.englishName,
-                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                              color: colorScheme.onSurface,
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    border: isLast
+                                        ? null
+                                        : Border(
+                                            bottom: BorderSide(
+                                              color: colorScheme.outlineVariant.withOpacity(0.1),
+                                              width: 1,
                                             ),
                                           ),
-                                          Builder(
-                                            builder: (context) {
-                                              final meaning = surahInfo.getMeaning(settings.appLanguage);
-                                              if (meaning.isEmpty) return const SizedBox.shrink();
-                                              return Column(
-                                                children: [
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    meaning,
-                                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                      color: colorScheme.onSurfaceVariant,
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Surah number
+                                      Container(
+                                        width: 36,
+                                        height: 36,
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.surfaceVariant,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          '${surahInfo.id}',
+                                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                            color: colorScheme.onSurfaceVariant,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      // English name and meaning
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              surahInfo.englishName,
+                                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                                color: colorScheme.onSurface,
+                                              ),
+                                            ),
+                                            Builder(
+                                              builder: (context) {
+                                                final meaning = surahInfo.getMeaning(settings.appLanguage);
+                                                if (meaning.isEmpty) return const SizedBox.shrink();
+                                                return Column(
+                                                  children: [
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      meaning,
+                                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                        color: colorScheme.onSurfaceVariant,
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
-                                              );
-                                            },
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      // Arabic name and ayah count
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          Directionality(
+                                            textDirection: TextDirection.rtl,
+                                            child: Text(
+                                              surahInfo.arabicName,
+                                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                                fontFamily: 'UthmanicHafsV22',
+                                                fontFamilyFallback: const ['UthmanicHafs'],
+                                                color: colorScheme.onSurface,
+                                                height: 1.4,
+                                              ),
+                                              textDirection: TextDirection.rtl,
+                                              textAlign: TextAlign.right,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '$ayahCount Ayahs',
+                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                              color: colorScheme.onSurfaceVariant,
+                                            ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    // Arabic name and ayah count
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        Directionality(
-                                          textDirection: TextDirection.rtl,
-                                          child: Text(
-                                            surahInfo.arabicName,
-                                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                              fontFamily: 'UthmanicHafsV22',
-                                              fontFamilyFallback: const ['UthmanicHafs'],
-                                              color: colorScheme.onSurface,
-                                              height: 1.4,
-                                            ),
-                                            textDirection: TextDirection.rtl,
-                                            textAlign: TextAlign.right,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '$ayahCount Ayahs',
-                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                            color: colorScheme.onSurfaceVariant,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               );
                             }).toList(),

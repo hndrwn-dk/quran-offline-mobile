@@ -19,6 +19,8 @@ final readerVersesProvider = FutureProvider.family<List<Verse>, ReaderSource>((r
       return await db.getVersesByJuz(juzNo);
     case PageSource(:final pageNo):
       return await db.getVersesByPage(pageNo);
+    case SurahInJuzSource(:final juzNo, :final surahId):
+      return await db.getVersesBySurahInJuz(surahId, juzNo);
   }
 });
 
