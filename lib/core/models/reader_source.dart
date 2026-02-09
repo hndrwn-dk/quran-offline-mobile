@@ -18,3 +18,9 @@ class PageSource extends ReaderSource {
   const PageSource(this.pageNo);
 }
 
+class SurahInJuzSource extends ReaderSource {
+  final int juzNo;
+  final int surahId;
+  const SurahInJuzSource(this.juzNo, this.surahId);
+}
+
