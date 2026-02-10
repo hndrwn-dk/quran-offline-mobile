@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 /// Widget to render tajweed text with color coding
 /// Parses HTML tajweed tags and applies appropriate colors
 ///
-/// To avoid Flutter's Arabic diacritic rendering issue (diacritics mis-positioned
-/// when split across TextSpans), we merge any leading combining characters
-/// from each span into the previous span so no span starts with a diacritic.
+/// BACKUP: Pre-1.0.0+7 version (before Arabic diacritic merge fix).
+/// To revert the tajweed rendering fix: copy this file over lib/core/widgets/tajweed_text.dart
 class TajweedText extends StatelessWidget {
   final String tajweedHtml;
   final double fontSize;
@@ -28,7 +27,7 @@ class TajweedText extends StatelessWidget {
   Color getTajweedColor(String tajweedClass, BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     // Tajweed color mapping based on standard tajweed rules
     return switch (tajweedClass) {
       // Ikhfa (concealment) - Teal/Green
@@ -57,65 +56,9 @@ class TajweedText extends StatelessWidget {
     };
   }
 
-  /// Returns true if [codePoint] is an Arabic combining mark (harakah, madda, etc.)
-  /// that must stay with the previous base character for correct layout.
-  static bool _isArabicCombining(int codePoint) {
-    // Arabic tatweel (kashida) - often part of madda sequence like ـٰ
-    if (codePoint == 0x0640) return true;
-    // Arabic combining marks: Fathatan, Dammatan, Kasratan, Fatha, Damma, Kasra, Shadda, Sukun (U+064B–U+0652)
-    if (codePoint >= 0x064B && codePoint <= 0x0652) return true;
-    // Arabic madda, hamza above, hamza below (U+0653–U+0655)
-    if (codePoint >= 0x0653 && codePoint <= 0x0655) return true;
-    // Arabic letter superscript alif (used in madda)
-    if (codePoint == 0x0670) return true;
-    return false;
-  }
-
-  /// Returns the leading substring of [s] that consists only of Arabic combining characters.
-  static String _leadingCombining(String s) {
-    if (s.isEmpty) return '';
-    final runes = s.runes.toList();
-    int i = 0;
-    while (i < runes.length && _isArabicCombining(runes[i])) {
-      i++;
-    }
-    if (i == 0) return '';
-    return String.fromCharCodes(runes.sublist(0, i));
-  }
-
-  /// Merges leading combining characters from each span into the previous span
-  /// so that Flutter never lays out a diacritic in a separate span (fixes overlap/missing harakat).
-  static List<TextSpan> _mergeLeadingCombiningIntoPrevious(List<TextSpan> spans) {
-    if (spans.length <= 1) return spans;
-    final result = <TextSpan>[];
-    for (int i = 0; i < spans.length; i++) {
-      final span = spans[i];
-      final text = span.text ?? '';
-      if (text.isEmpty) continue;
-      final leading = _leadingCombining(text);
-      if (leading.isNotEmpty && result.isNotEmpty) {
-        // Prepend leading diacritics to the last span so they stay with the previous base character
-        final last = result.removeLast();
-        final newLastText = (last.text ?? '') + leading;
-        result.add(TextSpan(
-          text: newLastText,
-          style: last.style,
-        ));
-        final rest = text.substring(leading.length);
-        if (rest.isNotEmpty) {
-          result.add(TextSpan(text: rest, style: span.style));
-        }
-      } else {
-        result.add(span);
-      }
-    }
-    return result;
-  }
-
   @override
   Widget build(BuildContext context) {
-    List<TextSpan> spans = _parseTajweedHtml(context);
-    spans = _mergeLeadingCombiningIntoPrevious(spans);
+    final spans = _parseTajweedHtml(context);
 
     return SelectableText.rich(
       TextSpan(children: spans),
@@ -134,7 +77,7 @@ class TajweedText extends StatelessWidget {
   List<TextSpan> _parseTajweedHtml(BuildContext context) {
     final spans = <TextSpan>[];
     String text = tajweedHtml;
-    
+
     // Pattern to match tajweed tags: <tajweed class=class_name>content</tajweed>
     // Handle both quoted and unquoted class attributes
     // Pattern 1: <tajweed class="value">content</tajweed>
@@ -161,7 +104,7 @@ class TajweedText extends StatelessWidget {
       dotAll: true,
       caseSensitive: false,
     );
-    
+
     // Pattern for span tags: <span class=end>ayah_number</span>
     final spanPattern1 = RegExp(
       r'<span\s+class="([^"]+)"\s*>(.*?)</span>',
@@ -178,7 +121,7 @@ class TajweedText extends StatelessWidget {
       dotAll: true,
       caseSensitive: false,
     );
-    
+
     // Pattern for alternative format: <class=value>content</class>
     final classPattern1 = RegExp(
       r'<class="([^"]+)"\s*>(.*?)</class>',
@@ -195,20 +138,20 @@ class TajweedText extends StatelessWidget {
       dotAll: true,
       caseSensitive: false,
     );
-    
+
     // Pattern to remove any remaining HTML tags that weren't matched
     final htmlTagPattern = RegExp(r'<[^>]+>');
-    
+
     int lastIndex = 0;
-    
+
     // Find all matches
     final allMatches = <_Match>[];
-    
+
     // Helper function to check if a match is already in allMatches
     bool isAlreadyMatched(int start, int end) {
       return allMatches.any((m) => m.start == start && m.end == end);
     }
-    
+
     // Find tajweed tags (try all four patterns)
     for (final match in tajweedPattern1.allMatches(text)) {
       allMatches.add(_Match(
@@ -247,12 +190,12 @@ class TajweedText extends StatelessWidget {
           start: match.start,
           end: match.end,
           type: _MatchType.tajweed,
-          classAttr: '', // No class attribute
+          classAttr: '',
           content: match.group(1) ?? '',
         ));
       }
     }
-    
+
     // Find span tags (try all three patterns)
     for (final match in spanPattern1.allMatches(text)) {
       if (!isAlreadyMatched(match.start, match.end)) {
@@ -287,7 +230,7 @@ class TajweedText extends StatelessWidget {
         ));
       }
     }
-    
+
     // Find class tags (alternative format: <class=value>content</class>)
     for (final match in classPattern1.allMatches(text)) {
       if (!isAlreadyMatched(match.start, match.end)) {
@@ -322,19 +265,16 @@ class TajweedText extends StatelessWidget {
         ));
       }
     }
-    
+
     // Sort matches by start position
     allMatches.sort((a, b) => a.start.compareTo(b.start));
-    
+
     // Build text spans
     for (final match in allMatches) {
       // Add text before match (remove any HTML tags from it)
       if (match.start > lastIndex) {
         var beforeText = text.substring(lastIndex, match.start);
-        // Remove any HTML tags that weren't matched
-        // Also remove incomplete tags like <tajweed, <class=, etc.
         beforeText = beforeText.replaceAll(htmlTagPattern, '');
-        // Remove incomplete tags that don't have closing >
         beforeText = beforeText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
         beforeText = beforeText.replaceAll(RegExp(r'<tajweed[^>]*', caseSensitive: false), '');
         beforeText = beforeText.replaceAll(RegExp(r'<class=[^>]*', caseSensitive: false), '');
@@ -342,15 +282,14 @@ class TajweedText extends StatelessWidget {
           spans.add(TextSpan(text: beforeText));
         }
       }
-      
+
       // Add styled text for match
       if (match.type == _MatchType.tajweed) {
         final tajweedClass = match.classAttr.trim();
-        // Clean content from any remaining HTML tags
         var content = match.content;
         content = content.replaceAll(htmlTagPattern, '');
         content = content.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
-        
+
         if (content.isNotEmpty) {
           final color = getTajweedColor(tajweedClass, context);
           spans.add(TextSpan(
@@ -359,14 +298,10 @@ class TajweedText extends StatelessWidget {
           ));
         }
       } else if (match.type == _MatchType.span) {
-        // Check if this is the end marker: <span class=end>...</span>
         final classAttr = match.classAttr.trim();
-        // Match exactly "end" (with or without quotes)
         if (classAttr == 'end' || classAttr == '"end"' || classAttr == "'end'") {
-          // Skip ayah number marker - we already display it as a badge
-          // Do nothing, just skip this match
+          // Skip ayah number marker
         } else {
-          // Regular span (not end marker) - render it
           var content = match.content;
           content = content.replaceAll(htmlTagPattern, '');
           if (content.isNotEmpty) {
@@ -374,16 +309,14 @@ class TajweedText extends StatelessWidget {
           }
         }
       }
-      
+
       lastIndex = match.end;
     }
-    
-    // Add remaining text (remove any HTML tags from it)
+
+    // Add remaining text
     if (lastIndex < text.length) {
       var remainingText = text.substring(lastIndex);
-      // Remove any HTML tags that weren't matched
       remainingText = remainingText.replaceAll(htmlTagPattern, '');
-      // Remove incomplete tags
       remainingText = remainingText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
       remainingText = remainingText.replaceAll(RegExp(r'<tajweed[^>]*', caseSensitive: false), '');
       remainingText = remainingText.replaceAll(RegExp(r'<class=[^>]*', caseSensitive: false), '');
@@ -391,7 +324,7 @@ class TajweedText extends StatelessWidget {
         spans.add(TextSpan(text: remainingText));
       }
     }
-    
+
     // If no matches found, remove all HTML tags and return plain text
     if (spans.isEmpty) {
       var cleanedText = text.replaceAll(htmlTagPattern, '');
@@ -400,7 +333,7 @@ class TajweedText extends StatelessWidget {
       cleanedText = cleanedText.replaceAll(RegExp(r'<class=[^>]*', caseSensitive: false), '');
       return [TextSpan(text: cleanedText)];
     }
-    
+
     return spans;
   }
 }
@@ -425,4 +358,3 @@ class _Match {
     required this.content,
   });
 }
-
