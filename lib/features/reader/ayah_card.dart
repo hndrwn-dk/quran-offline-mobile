@@ -381,16 +381,19 @@ class _AyahCardState extends ConsumerState<AyahCard> {
         }
       } else {
         // Fallback to text-only sharing if image rendering fails
+        // Prepend Arabic text to the existing buffer (which already has header, transliteration, translation, reference, link)
         final fallbackBuffer = StringBuffer();
         fallbackBuffer.writeln(AppLocalizations.getShareHeader(settings.appLanguage));
         fallbackBuffer.writeln('');
-        fallbackBuffer.writeln(widget.verse.arabic);
+        fallbackBuffer.writeln(widget.verse.arabic); // Add Arabic text
         fallbackBuffer.writeln('');
-        if (widget.verse.translit != null && widget.verse.translit!.isNotEmpty) {
-          fallbackBuffer.writeln(widget.verse.translit);
-          fallbackBuffer.writeln('');
+        // Append the rest from buffer (transliteration, translation, reference, link)
+        // Skip the header line and empty line from buffer
+        final bufferLines = buffer.toString().split('\n');
+        // Start from index 2 to skip header and empty line
+        for (int i = 2; i < bufferLines.length; i++) {
+          fallbackBuffer.writeln(bufferLines[i]);
         }
-        fallbackBuffer.write(buffer.toString());
         await Share.share(fallbackBuffer.toString());
       }
     } catch (e) {
