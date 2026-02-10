@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 /// Widget to render tajweed text with color coding
 /// Parses HTML tajweed tags and applies appropriate colors
+///
+/// To avoid Flutter's Arabic diacritic rendering issue (diacritics mis-positioned
+/// when split across TextSpans), we merge any leading combining characters
+/// from each span into the previous span so no span starts with a diacritic.
 class TajweedText extends StatelessWidget {
   final String tajweedHtml;
   final double fontSize;
@@ -53,10 +57,66 @@ class TajweedText extends StatelessWidget {
     };
   }
 
+  /// Returns true if [codePoint] is an Arabic combining mark (harakah, madda, etc.)
+  /// that must stay with the previous base character for correct layout.
+  static bool _isArabicCombining(int codePoint) {
+    // Arabic tatweel (kashida) - often part of madda sequence like ـٰ
+    if (codePoint == 0x0640) return true;
+    // Arabic combining marks: Fathatan, Dammatan, Kasratan, Fatha, Damma, Kasra, Shadda, Sukun (U+064B–U+0652)
+    if (codePoint >= 0x064B && codePoint <= 0x0652) return true;
+    // Arabic madda, hamza above, hamza below (U+0653–U+0655)
+    if (codePoint >= 0x0653 && codePoint <= 0x0655) return true;
+    // Arabic letter superscript alif (used in madda)
+    if (codePoint == 0x0670) return true;
+    return false;
+  }
+
+  /// Returns the leading substring of [s] that consists only of Arabic combining characters.
+  static String _leadingCombining(String s) {
+    if (s.isEmpty) return '';
+    final runes = s.runes.toList();
+    int i = 0;
+    while (i < runes.length && _isArabicCombining(runes[i])) {
+      i++;
+    }
+    if (i == 0) return '';
+    return String.fromCharCodes(runes.sublist(0, i));
+  }
+
+  /// Merges leading combining characters from each span into the previous span
+  /// so that Flutter never lays out a diacritic in a separate span (fixes overlap/missing harakat).
+  static List<TextSpan> _mergeLeadingCombiningIntoPrevious(List<TextSpan> spans) {
+    if (spans.length <= 1) return spans;
+    final result = <TextSpan>[];
+    for (int i = 0; i < spans.length; i++) {
+      final span = spans[i];
+      final text = span.text ?? '';
+      if (text.isEmpty) continue;
+      final leading = _leadingCombining(text);
+      if (leading.isNotEmpty && result.isNotEmpty) {
+        // Prepend leading diacritics to the last span so they stay with the previous base character
+        final last = result.removeLast();
+        final newLastText = (last.text ?? '') + leading;
+        result.add(TextSpan(
+          text: newLastText,
+          style: last.style,
+        ));
+        final rest = text.substring(leading.length);
+        if (rest.isNotEmpty) {
+          result.add(TextSpan(text: rest, style: span.style));
+        }
+      } else {
+        result.add(span);
+      }
+    }
+    return result;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final spans = _parseTajweedHtml(context);
-    
+    List<TextSpan> spans = _parseTajweedHtml(context);
+    spans = _mergeLeadingCombiningIntoPrevious(spans);
+
     return SelectableText.rich(
       TextSpan(children: spans),
       textDirection: textDirection,
