@@ -13,6 +13,12 @@ class TajweedText extends StatelessWidget {
   final TextDirection textDirection;
   final TextAlign textAlign;
   final double height;
+  
+  /// Optional: If true, replace problematic Arabic characters with regular alif as fallback:
+  /// - U+0671 (ARABIC LETTER ALEF WASLA) -> U+0627 (regular alif)
+  /// - U+0672 (ARABIC LETTER ALEF WITH WAVY HAMZA BELOW) -> U+0627 (regular alif)
+  /// This is a workaround if the font doesn't support these characters. Default: false.
+  final bool replaceWaslaWithAlif;
 
   const TajweedText({
     super.key,
@@ -22,7 +28,62 @@ class TajweedText extends StatelessWidget {
     this.textDirection = TextDirection.rtl,
     this.textAlign = TextAlign.right,
     this.height = 1.7,
+    this.replaceWaslaWithAlif = false,
   });
+  
+  /// Normalizes Arabic text for display so characters not supported by the font
+  /// (U+0671 Alef Wasla, U+0672 Alef with Wavy Hamza Below) are replaced with
+  /// regular alif (U+0627). Use this when rendering plain Arabic without tajweed
+  /// to avoid white/black circle (tofu) rendering.
+  static String normalizeArabicForDisplay(String arabic) {
+    return arabic
+        .replaceAll('\u0671', '\u0627') // Alef Wasla
+        .replaceAll('\u0672', '\u0627'); // Alef with Wavy Hamza Below (maddla)
+  }
+
+  /// Strips all HTML tags from tajweed string and normalizes for display.
+  /// Use this when tajweed is OFF so we show the same character stream as when
+  /// tajweed is ON (from JSON "tj"), just without colors — avoids circles from
+  /// font missing glyphs and keeps one source of truth.
+  static String plainArabicFromTajweedHtml(String tajweedHtml) {
+    final stripped = tajweedHtml.replaceAll(RegExp(r'<[^>]+>'), '').replaceAll('&nbsp;', ' ').trim();
+    return normalizeArabicForDisplay(stripped);
+  }
+
+  /// TextStyle for plain Arabic (no tajweed) so rendering matches and avoids tofu.
+  /// Use with [normalizeArabicForDisplay] when showing verse.arabic with tajweed off.
+  static TextStyle arabicDisplayStyle({
+    required double fontSize,
+    required Color color,
+    double height = 1.7,
+  }) {
+    return TextStyle(
+      fontSize: fontSize,
+      fontFamily: 'KFGQPCUthmanic',
+      fontFamilyFallback: const ['UthmanicHafsV22', 'UthmanicHafs', 'ScheherazadeNew'],
+      height: height,
+      color: color,
+      locale: const Locale('ar'),
+    );
+  }
+
+  /// Creates a consistent TextStyle for Quran Arabic text with proper font family and locale
+  /// This ensures all TextSpans use the same font configuration to prevent missing glyphs (black circles/tofu)
+  TextStyle quranArabicStyle({
+    double? fontSize,
+    Color? color,
+    double? height,
+  }) {
+    return TextStyle(
+      fontSize: fontSize ?? this.fontSize,
+      fontFamily: 'KFGQPCUthmanic', // Primary font: KFGQPC Uthmanic Script HAFS Regular
+      fontFamilyFallback: const ['UthmanicHafsV22', 'UthmanicHafs', 'ScheherazadeNew'],
+      height: height ?? this.height,
+      color: color ?? defaultColor,
+      // Explicitly set locale for proper Arabic shaping
+      locale: const Locale('ar'),
+    );
+  }
 
   /// Get color for tajweed class
   Color getTajweedColor(String tajweedClass, BuildContext context) {
@@ -33,14 +94,19 @@ class TajweedText extends StatelessWidget {
     return switch (tajweedClass) {
       // Ikhfa (concealment) - Teal/Green
       'ikhfa' => isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00897B),
+      'ikhafa_shafawi' => isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00897B), // Ikhfa with shafawi - same as ikhfa
       // Idgham (merging) - Blue
       'idgham' => isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2),
+      'idgham_ghunnah' => defaultColor, // Idgham with ghunnah - Default (white/black) - treated as regular text like mad asli/harakat
+      'idgham_shafawi' => isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2), // Idgham with shafawi - Blue (idgham color)
+      'idgham_wo_ghunnah' => isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2), // Idgham without ghunnah - Blue (idgham color)
       // Iqlab (conversion) - Purple
       'iqlab' => isDark ? const Color(0xFFBA68C8) : const Color(0xFF7B1FA2),
       // Ghunnah (nasalization) - Orange
       'ghunnah' => isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100),
       // Qalqalah (echo) - Red
       'qalqalah' => isDark ? const Color(0xFFE57373) : const Color(0xFFC62828),
+      'qalaqah' => isDark ? const Color(0xFFE57373) : const Color(0xFFC62828), // Alternative spelling - same as qalqalah
       // Ham wasl (connecting hamza) - Gray
       'ham_wasl' => colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
       // Laam shamsiyah (solar lam) - Yellow
@@ -52,7 +118,8 @@ class TajweedText extends StatelessWidget {
       'madda_obligatory' => isDark ? const Color(0xFF4CAF50) : const Color(0xFF0D47A1),
       // Silent letters - Light gray
       'silent' => colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-      // Default - use default color
+      'slnt' => colorScheme.onSurfaceVariant.withValues(alpha: 0.4), // Abbreviated form
+      // Default - use default color (white/black based on theme)
       _ => defaultColor,
     };
   }
@@ -68,6 +135,9 @@ class TajweedText extends StatelessWidget {
     if (codePoint >= 0x0653 && codePoint <= 0x0655) return true;
     // Arabic letter superscript alif (used in madda)
     if (codePoint == 0x0670) return true;
+    // Note: U+0671 (Alef Wasla) and U+0672 (Alef with Wavy Hamza Below) are base characters,
+    // not combining marks, so they don't need to be merged with previous spans.
+    // However, they may not be supported by all fonts and may render as black circles.
     return false;
   }
 
@@ -85,7 +155,10 @@ class TajweedText extends StatelessWidget {
 
   /// Merges leading combining characters from each span into the previous span
   /// so that Flutter never lays out a diacritic in a separate span (fixes overlap/missing harakat).
-  static List<TextSpan> _mergeLeadingCombiningIntoPrevious(List<TextSpan> spans) {
+  /// 
+  /// IMPORTANT: Preserves the style from the previous span to ensure font consistency.
+  /// If the previous span has no style, we ensure the merged span gets proper font styling.
+  List<TextSpan> _mergeLeadingCombiningIntoPrevious(List<TextSpan> spans) {
     if (spans.length <= 1) return spans;
     final result = <TextSpan>[];
     for (int i = 0; i < spans.length; i++) {
@@ -97,13 +170,17 @@ class TajweedText extends StatelessWidget {
         // Prepend leading diacritics to the last span so they stay with the previous base character
         final last = result.removeLast();
         final newLastText = (last.text ?? '') + leading;
+        // Preserve the style from the previous span, or use default if none exists
+        final preservedStyle = last.style ?? quranArabicStyle();
         result.add(TextSpan(
           text: newLastText,
-          style: last.style,
+          style: preservedStyle,
         ));
         final rest = text.substring(leading.length);
         if (rest.isNotEmpty) {
-          result.add(TextSpan(text: rest, style: span.style));
+          // Preserve the style from the current span, or use default if none exists
+          final restStyle = span.style ?? quranArabicStyle();
+          result.add(TextSpan(text: rest, style: restStyle));
         }
       } else {
         result.add(span);
@@ -114,26 +191,36 @@ class TajweedText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<TextSpan> spans = _parseTajweedHtml(context);
+    // Apply wasla/maddla fallback if enabled
+    String processedHtml = tajweedHtml;
+    if (replaceWaslaWithAlif) {
+      // Replace problematic Arabic characters with regular alif as fallback:
+      // - U+0671 (ARABIC LETTER ALEF WASLA) -> U+0627 (regular alif)
+      // - U+0672 (ARABIC LETTER ALEF WITH WAVY HAMZA BELOW) -> U+0627 (regular alif)
+      // This is a workaround if the font doesn't support these characters
+      processedHtml = processedHtml.replaceAll('\u0671', '\u0627'); // Alef Wasla
+      processedHtml = processedHtml.replaceAll('\u0672', '\u0627'); // Alef with Wavy Hamza Below (maddla)
+    }
+    
+    List<TextSpan> spans = _parseTajweedHtml(context, processedHtml);
     spans = _mergeLeadingCombiningIntoPrevious(spans);
 
-    return SelectableText.rich(
-      TextSpan(children: spans),
-      textDirection: textDirection,
-      textAlign: textAlign,
-      style: TextStyle(
-        fontSize: fontSize,
-        fontFamily: 'UthmanicHafsV22',
-        fontFamilyFallback: const ['UthmanicHafs'],
-        height: height,
-        color: defaultColor,
+    // Wrap with Localizations.override to set Arabic locale for proper text shaping
+    return Localizations.override(
+      context: context,
+      locale: const Locale('ar'),
+      child: SelectableText.rich(
+        TextSpan(children: spans),
+        textDirection: textDirection,
+        textAlign: textAlign,
+        style: quranArabicStyle(),
       ),
     );
   }
 
-  List<TextSpan> _parseTajweedHtml(BuildContext context) {
+  List<TextSpan> _parseTajweedHtml(BuildContext context, [String? htmlText]) {
     final spans = <TextSpan>[];
-    String text = tajweedHtml;
+    String text = htmlText ?? tajweedHtml;
     
     // Pattern to match tajweed tags: <tajweed class=class_name>content</tajweed>
     // Handle both quoted and unquoted class attributes
@@ -339,7 +426,10 @@ class TajweedText extends StatelessWidget {
         beforeText = beforeText.replaceAll(RegExp(r'<tajweed[^>]*', caseSensitive: false), '');
         beforeText = beforeText.replaceAll(RegExp(r'<class=[^>]*', caseSensitive: false), '');
         if (beforeText.isNotEmpty) {
-          spans.add(TextSpan(text: beforeText));
+          spans.add(TextSpan(
+            text: beforeText,
+            style: quranArabicStyle(),
+          ));
         }
       }
       
@@ -352,11 +442,34 @@ class TajweedText extends StatelessWidget {
         content = content.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
         
         if (content.isNotEmpty) {
-          final color = getTajweedColor(tajweedClass, context);
-          spans.add(TextSpan(
-            text: content,
-            style: TextStyle(color: color),
-          ));
+          // Some tajweed classes should be rendered as plain text (no color)
+          // because they're just regular harakat/diacritics (mad asli, waṣlah, silent), not actual tajweed rules
+          // These should appear as white/default text, not colored circles or black circles
+          final classesToRenderAsPlainText = {
+            'idgham_ghunnah', // Just harakat/diacritics, not a tajweed rule - should be white/default
+            'madda_normal', // Mad asli (natural elongation) - regular harakat, should be white/default, not green/black circle
+            'madda_obligatory', // Madd wajib - regular harakat, should be white/default, not black circle
+            'madda_permissible', // Madd jaiz - regular harakat, should be white/default
+            'madda_necessary', // Madd lazim - regular harakat, should be white/default
+            'ham_wasl', // Waṣlah (connecting hamza) - regular harakat sign, should be white/default, not black circle
+            'slnt', // Silent letters - regular harakat, should be white/default, not black circle
+            'silent', // Silent letters (alternative) - regular harakat, should be white/default, not black circle
+          };
+          
+          if (classesToRenderAsPlainText.contains(tajweedClass)) {
+            // Render as plain text (default color) - these are just harakat/mad asli/waṣlah/silent, not tajweed rules
+            // No colored circle (green/black) should appear - just regular text with default color
+            spans.add(TextSpan(
+              text: content,
+              style: quranArabicStyle(),
+            ));
+          } else {
+            final color = getTajweedColor(tajweedClass, context);
+            spans.add(TextSpan(
+              text: content,
+              style: quranArabicStyle(color: color),
+            ));
+          }
         }
       } else if (match.type == _MatchType.span) {
         // Check if this is the end marker: <span class=end>...</span>
@@ -370,7 +483,10 @@ class TajweedText extends StatelessWidget {
           var content = match.content;
           content = content.replaceAll(htmlTagPattern, '');
           if (content.isNotEmpty) {
-            spans.add(TextSpan(text: content));
+            spans.add(TextSpan(
+              text: content,
+              style: quranArabicStyle(),
+            ));
           }
         }
       }
@@ -388,7 +504,10 @@ class TajweedText extends StatelessWidget {
       remainingText = remainingText.replaceAll(RegExp(r'<tajweed[^>]*', caseSensitive: false), '');
       remainingText = remainingText.replaceAll(RegExp(r'<class=[^>]*', caseSensitive: false), '');
       if (remainingText.isNotEmpty) {
-        spans.add(TextSpan(text: remainingText));
+        spans.add(TextSpan(
+          text: remainingText,
+          style: quranArabicStyle(),
+        ));
       }
     }
     
@@ -398,7 +517,10 @@ class TajweedText extends StatelessWidget {
       cleanedText = cleanedText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
       cleanedText = cleanedText.replaceAll(RegExp(r'<tajweed[^>]*', caseSensitive: false), '');
       cleanedText = cleanedText.replaceAll(RegExp(r'<class=[^>]*', caseSensitive: false), '');
-      return [TextSpan(text: cleanedText)];
+      return [TextSpan(
+        text: cleanedText,
+        style: quranArabicStyle(),
+      )];
     }
     
     return spans;
