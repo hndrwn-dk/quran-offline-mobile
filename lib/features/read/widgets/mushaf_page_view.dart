@@ -10,6 +10,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
+import 'package:quran_offline/core/widgets/tajweed_text.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
 
 class MushafPageView extends ConsumerStatefulWidget {
@@ -35,7 +36,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   void initState() {
     super.initState();
     // Normal mapping: index 0 = page 1, index 603 = page 604
-    // This allows swipe right-to-left (kanan ke kiri) = next page (like physical mushaf)
+    // With reverse: true, swipe right-to-left = next page (index increases)
     final initialIndex = widget.initialPage - 1;
     _controller = PageController(initialPage: initialIndex);
   }
@@ -52,10 +53,11 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     
     return PageView.builder(
       controller: _controller,
-      reverse: false, // Normal direction: swipe right-to-left = next page (like physical mushaf)
+      reverse: true, // RTL direction: swipe right-to-left = next page (index increases)
       itemCount: 604,
       itemBuilder: (context, index) {
         // Normal mapping: index 0 = page 1, index 603 = page 604
+        // With reverse: true, index 0 starts on the right, index 603 on the left
         final pageNo = index + 1;
         return MushafPage(
           pageNo: pageNo,
@@ -540,10 +542,10 @@ class _FlowingMushafText extends ConsumerWidget {
                 fontFamily: 'UthmanicHafsV22',
                 fontFamilyFallback: const ['UthmanicHafs'],
                 fontSize: fontSize,
-                height: 2.0, // Line height lebih lega (dari 1.6)
+                height: 1.6, // Line height lebih compact (seperti mushaf fisik)
                 color: colorScheme.onSurface,
-                letterSpacing: 0.3, // Letter spacing (dari 0.0)
-                wordSpacing: 2.0, // Word spacing untuk breathing room
+                letterSpacing: 0.0, // No letter spacing untuk compact display
+                wordSpacing: 0.0, // No word spacing untuk compact display
               ),
             ),
           ),
@@ -679,7 +681,7 @@ class _FlowingMushafText extends ConsumerWidget {
               child: KeyedSubtree(
               key: ayahKey,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6), // Naik dari 2 ke 6
+                padding: const EdgeInsets.symmetric(horizontal: 3), // Compact spacing untuk ayah number
                 child: _InlineAyahNumber(
                   ayahNo: block.ayahNo!,
                   fontSize: fontSize,
@@ -692,11 +694,11 @@ class _FlowingMushafText extends ConsumerWidget {
         );
       }
 
-      // Add space between ayahs - double space untuk breathing room
+      // Add minimal space between ayahs - compact spacing untuk seperti mushaf fisik
       currentSpans.add(
         TextSpan(
-          text: '  ', // Double space untuk breathing room
-          style: TextStyle(fontSize: fontSize * 0.5),
+          text: ' ', // Single space untuk compact spacing
+          style: TextStyle(fontSize: fontSize * 0.2), // Reduced dari 0.3 untuk lebih compact
         ),
       );
     }
@@ -718,7 +720,8 @@ class _FlowingMushafText extends ConsumerWidget {
     );
   }
 
-  /// Parse tajweed HTML and return List<TextSpan> with colors
+  /// Parse tajweed HTML and return List<TextSpan> with colors.
+  /// Input is normalized so problematic Unicode does not render as circle (all surahs).
   List<TextSpan> _parseTajweedHtml(
     BuildContext context,
     String tajweedHtml,
@@ -727,7 +730,7 @@ class _FlowingMushafText extends ConsumerWidget {
     GestureRecognizer? recognizer,
   }) {
     final spans = <TextSpan>[];
-    String text = tajweedHtml;
+    String text = TajweedText.normalizeArabicForDisplay(tajweedHtml);
     
     // Get tajweed color helper
     Color getTajweedColor(String tajweedClass) {
@@ -1141,7 +1144,7 @@ class _InlineAyahNumberState extends ConsumerState<_InlineAyahNumber> {
     return GestureDetector(
       onTap: widget.surahId != null && !_isCheckingBookmark ? _toggleBookmark : null,
       child: Container(
-        padding: EdgeInsets.all(widget.fontSize * 0.15),
+        padding: EdgeInsets.all(widget.fontSize * 0.2), // Increased padding untuk font size 1.0
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
@@ -1157,7 +1160,7 @@ class _InlineAyahNumberState extends ConsumerState<_InlineAyahNumber> {
         child: Text(
           displayNumber,
           style: TextStyle(
-            fontSize: widget.fontSize * 0.6,
+            fontSize: widget.fontSize * 1.0, // Same size as main text untuk visibility maksimal
             fontFamily: 'UthmanicHafsV22',
             fontFamilyFallback: const ['UthmanicHafs'],
             color: _isBookmarked
