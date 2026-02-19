@@ -171,18 +171,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                   alignment: Alignment.centerRight,
                   child: settings.showTajweed
                       ? _buildTajweedText(settings, colorScheme)
-                      : SelectableText(
-                          widget.verse.arabic,
-                          style: TextStyle(
-                            fontSize: settings.arabicFontSize * 1.15,
-                            fontFamily: 'UthmanicHafsV22',
-                            fontFamilyFallback: const ['UthmanicHafs'],
-                            height: 1.7,
-                            color: colorScheme.onSurface,
-                          ),
-                          textDirection: TextDirection.rtl,
-                          textAlign: TextAlign.right,
-                        ),
+                      : _buildPlainArabicText(settings, colorScheme),
                 ),
               ),
             ),
@@ -293,23 +282,37 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     );
   }
 
+  /// Renders plain Arabic (tajweed off). Uses the same source as tajweed ON when
+  /// available: strip tags from verse.tajweed and normalize, so ٱ/ٲ never become circles.
+  Widget _buildPlainArabicText(AppSettings settings, ColorScheme colorScheme) {
+    final String textToShow;
+    if (widget.verse.tajweed != null && widget.verse.tajweed!.isNotEmpty) {
+      textToShow = TajweedText.plainArabicFromTajweedHtml(widget.verse.tajweed!);
+    } else {
+      textToShow = TajweedText.normalizeArabicForDisplay(widget.verse.arabic);
+    }
+    return Localizations.override(
+      context: context,
+      locale: const Locale('ar'),
+      child: SelectableText(
+        textToShow,
+        style: TajweedText.arabicDisplayStyle(
+          fontSize: settings.arabicFontSize * 1.15,
+          color: colorScheme.onSurface,
+          height: 1.7,
+        ),
+        textDirection: TextDirection.rtl,
+        textAlign: TextAlign.right,
+      ),
+    );
+  }
+
   Widget _buildTajweedText(AppSettings settings, ColorScheme colorScheme) {
     final tajweedHtml = widget.verse.tajweed;
     
     if (tajweedHtml == null || tajweedHtml.isEmpty) {
-      // Fallback to regular text if tajweed not available
-      return SelectableText(
-        widget.verse.arabic,
-        style: TextStyle(
-          fontSize: settings.arabicFontSize * 1.15,
-          fontFamily: 'UthmanicHafsV22',
-          fontFamilyFallback: const ['UthmanicHafs'],
-          height: 1.7,
-          color: colorScheme.onSurface,
-        ),
-        textDirection: TextDirection.rtl,
-        textAlign: TextAlign.right,
-      );
+      // Fallback to plain Arabic with same normalization when no tajweed data
+      return _buildPlainArabicText(settings, colorScheme);
     }
     
     return TajweedText(
@@ -319,6 +322,8 @@ class _AyahCardState extends ConsumerState<AyahCard> {
       textDirection: TextDirection.rtl,
       textAlign: TextAlign.right,
       height: 1.7,
+      // Enable fallback for problematic characters (U+0671, U+0672) that may not be supported by font
+      replaceWaslaWithAlif: true,
     );
   }
 
