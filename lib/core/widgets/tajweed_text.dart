@@ -14,11 +14,11 @@ class TajweedText extends StatelessWidget {
   final TextAlign textAlign;
   final double height;
   
-  /// Optional: If true, replace problematic Arabic characters with regular alif as fallback:
-  /// - U+0671 (ARABIC LETTER ALEF WASLA) -> U+0627 (regular alif)
-  /// - U+0672 (ARABIC LETTER ALEF WITH WAVY HAMZA BELOW) -> U+0627 (regular alif)
-  /// This is a workaround if the font doesn't support these characters. Default: false.
+  /// Optional: If true, replace problematic Arabic characters with regular alif as fallback.
   final bool replaceWaslaWithAlif;
+
+  /// When true (light theme), use UthmanicHafsV22 as primary font so lam/lam-alif render correctly on light background.
+  final bool isLightTheme;
 
   const TajweedText({
     super.key,
@@ -29,16 +29,24 @@ class TajweedText extends StatelessWidget {
     this.textAlign = TextAlign.right,
     this.height = 1.7,
     this.replaceWaslaWithAlif = false,
+    this.isLightTheme = false,
   });
   
-  /// Normalizes Arabic text for display so characters not supported by the font
-  /// (U+0671 Alef Wasla, U+0672 Alef with Wavy Hamza Below) are replaced with
-  /// regular alif (U+0627). Use this when rendering plain Arabic without tajweed
-  /// to avoid white/black circle (tofu) rendering.
+  /// Normalizes Arabic text for display only (font rendering). See docs/QURAN_TEXT_INTEGRITY.md:
+  /// principle: Al-Quran — jangan menambahkan atau menghilangkan.
+  /// - Unify equivalent forms only: U+06DF → U+06E0 so أَنَا۠ displays consistently (no removal).
+  /// - Replace/remove only for display when font has no glyph (tofu) or char is redundant with UI.
   static String normalizeArabicForDisplay(String arabic) {
     return arabic
         .replaceAll('\u0671', '\u0627') // Alef Wasla
-        .replaceAll('\u0672', '\u0627'); // Alef with Wavy Hamza Below (maddla)
+        .replaceAll('\u0672', '\u0627') // Alef with Wavy Hamza Below (maddla)
+        .replaceAll('\u065F', '') // Arabic Wavy Hamza Below - renders as circle, no glyph in font
+        .replaceAll('\u0670', '') // ARABIC LETTER SUPERSCRIPT ALEF - renders as circle
+        .replaceAll('\u06A0', '') // Arabic letter that can render as circle in some fonts
+        .replaceAll('\u06DD', '') // ARABIC END OF AYAH - ayah number shown separately in UI
+        .replaceAll('\u06D9', '') // ARABIC SMALL HIGH LAM ALEF (waqf) - often renders as circle
+        .replaceAll('\u06DA', '') // ARABIC SMALL HIGH JEEM - often renders as circle
+        .replaceAll('\u06DF', '\u06E0'); // Unify small high rounded → U+06E0 so أَنَا۠ displays (kept, not removed)
   }
 
   /// Strips all HTML tags from tajweed string and normalizes for display.
@@ -52,23 +60,25 @@ class TajweedText extends StatelessWidget {
 
   /// TextStyle for plain Arabic (no tajweed) so rendering matches and avoids tofu.
   /// Use with [normalizeArabicForDisplay] when showing verse.arabic with tajweed off.
+  /// Uses UthmanicHafsV22 as primary so lam/lam-alif render correctly in both light and dark theme.
   static TextStyle arabicDisplayStyle({
     required double fontSize,
     required Color color,
     double height = 1.7,
+    bool isLightTheme = false,
   }) {
     return TextStyle(
       fontSize: fontSize,
-      fontFamily: 'KFGQPCUthmanic',
-      fontFamilyFallback: const ['UthmanicHafsV22', 'UthmanicHafs', 'ScheherazadeNew'],
+      fontFamily: 'UthmanicHafsV22',
+      fontFamilyFallback: const ['UthmanicHafs', 'KFGQPCUthmanic', 'ScheherazadeNew'],
       height: height,
       color: color,
       locale: const Locale('ar'),
     );
   }
 
-  /// Creates a consistent TextStyle for Quran Arabic text with proper font family and locale
-  /// This ensures all TextSpans use the same font configuration to prevent missing glyphs (black circles/tofu)
+  /// Creates a consistent TextStyle for Quran Arabic text with proper font family and locale.
+  /// Uses UthmanicHafsV22 so lam/lam-alif render correctly in both light and dark theme.
   TextStyle quranArabicStyle({
     double? fontSize,
     Color? color,
@@ -76,11 +86,10 @@ class TajweedText extends StatelessWidget {
   }) {
     return TextStyle(
       fontSize: fontSize ?? this.fontSize,
-      fontFamily: 'KFGQPCUthmanic', // Primary font: KFGQPC Uthmanic Script HAFS Regular
-      fontFamilyFallback: const ['UthmanicHafsV22', 'UthmanicHafs', 'ScheherazadeNew'],
+      fontFamily: 'UthmanicHafsV22',
+      fontFamilyFallback: const ['UthmanicHafs', 'KFGQPCUthmanic', 'ScheherazadeNew'],
       height: height ?? this.height,
       color: color ?? defaultColor,
-      // Explicitly set locale for proper Arabic shaping
       locale: const Locale('ar'),
     );
   }
@@ -194,14 +203,11 @@ class TajweedText extends StatelessWidget {
     // Apply wasla/maddla fallback if enabled
     String processedHtml = tajweedHtml;
     if (replaceWaslaWithAlif) {
-      // Replace problematic Arabic characters with regular alif as fallback:
-      // - U+0671 (ARABIC LETTER ALEF WASLA) -> U+0627 (regular alif)
-      // - U+0672 (ARABIC LETTER ALEF WITH WAVY HAMZA BELOW) -> U+0627 (regular alif)
-      // This is a workaround if the font doesn't support these characters
-      processedHtml = processedHtml.replaceAll('\u0671', '\u0627'); // Alef Wasla
-      processedHtml = processedHtml.replaceAll('\u0672', '\u0627'); // Alef with Wavy Hamza Below (maddla)
+      processedHtml = processedHtml.replaceAll('\u0671', '\u0627').replaceAll('\u0672', '\u0627');
     }
-    
+    // Normalize so U+065F, U+06A0 etc. don't render as circle (e.g. 6:56, 6:44)
+    processedHtml = normalizeArabicForDisplay(processedHtml);
+
     List<TextSpan> spans = _parseTajweedHtml(context, processedHtml);
     spans = _mergeLeadingCombiningIntoPrevious(spans);
 
