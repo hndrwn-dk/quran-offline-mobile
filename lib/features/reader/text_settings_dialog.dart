@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/utils/bismillah.dart';
-import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
 class TextSettingsDialog extends ConsumerStatefulWidget {
   const TextSettingsDialog({super.key});
@@ -392,7 +390,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
               },
             ),
           ),
-          // Tajweed Toggle
+          // Tajweed Toggle (no subtitle to keep option compact)
           Container(
             padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
@@ -420,78 +418,12 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                   ),
                 ],
               ),
-              subtitle: Text(
-                AppLocalizations.getSettingsText('text_settings_tajweed_subtitle', appLanguage),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
               value: _showTajweed,
               onChanged: (value) {
                 setState(() {
                   _showTajweed = value;
                 });
               },
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Preview
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: _showTajweed
-                      ? TajweedText(
-                          tajweedHtml: 'بِسْمِ <tajweed class=ham_wasl>ٱ</tajweed>للَّهِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّح<tajweed class=madda_permissible>ِي</tajweed>مِ',
-                          fontSize: _currentArabicSize,
-                          defaultColor: colorScheme.onSurface,
-                          textDirection: TextDirection.rtl,
-                          textAlign: TextAlign.right,
-                          height: 1.7,
-                        )
-                      : Text(
-                          'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ',
-                          style: TextStyle(
-                            fontSize: _currentArabicSize,
-                            fontFamily: 'UthmanicHafsV22',
-                            fontFamilyFallback: const ['UthmanicHafs'],
-                            height: 1.7,
-                            color: colorScheme.onSurface,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                ),
-                if (_showTransliteration) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    'Bismillahirrahmanirrahim',
-                    style: TextStyle(
-                      fontSize: _currentTranslationSize * 0.85,
-                      fontStyle: FontStyle.italic,
-                      color: colorScheme.onSurfaceVariant,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-                if (_showTranslation) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    Bismillah.getTranslation(_currentLanguage),
-                    style: TextStyle(
-                      fontSize: _currentTranslationSize,
-                      color: colorScheme.onSurfaceVariant,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ],
             ),
           ),
           const SizedBox(height: 24),
