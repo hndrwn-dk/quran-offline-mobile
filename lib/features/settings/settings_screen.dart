@@ -1,8 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:quran_offline/core/constants/app_version.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/utils/transliteration_formatter.dart';
+
+String _transliterationSubtitle(AppSettings settings, String appLanguage) {
+  if (settings.useTajweedTransliteration) {
+    return AppLocalizations.getSettingsText('transliteration_source_tajweed', appLanguage);
+  }
+  final styleLabel = settings.transliterationStyle == TransliterationStyle.readable
+      ? AppLocalizations.getSettingsText('transliteration_style_readable', appLanguage)
+      : AppLocalizations.getSettingsText('transliteration_style_raw', appLanguage);
+  final source = AppLocalizations.getSettingsText('transliteration_source_original', appLanguage);
+  return '$source \u2013 $styleLabel';
+}
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -168,6 +181,68 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (value) {
                 ref.read(settingsProvider.notifier).updateShowTransliteration(value);
               },
+            ),
+          ),
+          Theme(
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent,
+            ),
+            child: ExpansionTile(
+              leading: Icon(
+                Icons.record_voice_over,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: Text(AppLocalizations.getSettingsText('transliteration_choice_title', appLanguage)),
+              subtitle: Text(
+                _transliterationSubtitle(settings, appLanguage),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              childrenPadding: EdgeInsets.zero,
+              children: [
+                RadioListTile<bool>(
+                  title: Text(AppLocalizations.getSettingsText('transliteration_source_tajweed', appLanguage)),
+                  value: true,
+                  groupValue: settings.useTajweedTransliteration,
+                  onChanged: (v) {
+                    if (v != null) ref.read(settingsProvider.notifier).updateUseTajweedTransliteration(v);
+                  },
+                ),
+                RadioListTile<bool>(
+                  title: Text(AppLocalizations.getSettingsText('transliteration_source_original', appLanguage)),
+                  value: false,
+                  groupValue: settings.useTajweedTransliteration,
+                  onChanged: (v) {
+                    if (v != null) ref.read(settingsProvider.notifier).updateUseTajweedTransliteration(v);
+                  },
+                ),
+                if (!settings.useTajweedTransliteration) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 24.0),
+                    child: Column(
+                      children: [
+                        RadioListTile<TransliterationStyle>(
+                          title: Text(AppLocalizations.getSettingsText('transliteration_style_readable', appLanguage)),
+                          value: TransliterationStyle.readable,
+                          groupValue: settings.transliterationStyle,
+                          onChanged: (v) {
+                            if (v != null) ref.read(settingsProvider.notifier).updateTransliterationStyle(v);
+                          },
+                        ),
+                        RadioListTile<TransliterationStyle>(
+                          title: Text(AppLocalizations.getSettingsText('transliteration_style_original', appLanguage)),
+                          value: TransliterationStyle.original,
+                          groupValue: settings.transliterationStyle,
+                          onChanged: (v) {
+                            if (v != null) ref.read(settingsProvider.notifier).updateTransliterationStyle(v);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           ListTile(
@@ -395,6 +470,14 @@ class SettingsScreen extends ConsumerWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.info_outline,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: Text(AppLocalizations.getSettingsText('version_title', appLanguage)),
+            subtitle: Text(AppVersion.display),
           ),
           ListTile(
             leading: Icon(

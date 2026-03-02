@@ -395,6 +395,7 @@ class AppLocalizations {
       'theme_light_desc' => _getThemeLightDesc(language),
       'theme_dark_desc' => _getThemeDarkDesc(language),
       'about_header' => _getAboutHeader(language),
+      'version_title' => _getVersionTitle(language),
       'support_title' => _getSupportTitle(language),
       'support_subtitle' => _getSupportSubtitle(language),
       'privacy_title' => _getPrivacyTitle(language),
@@ -484,6 +485,14 @@ class AppLocalizations {
       'text_settings_size_label' => _getTextSettingsSizeLabel(language),
       'text_settings_tajweed_subtitle' => _getTextSettingsTajweedSubtitle(language),
       'apply' => _getApply(language),
+      'transliteration_style_title' => _getTransliterationStyleTitle(language),
+      'transliteration_style_original' => _getTransliterationStyleOriginal(language),
+      'transliteration_style_readable' => _getTransliterationStyleReadable(language),
+      'transliteration_source_title' => _getTransliterationSourceTitle(language),
+      'transliteration_source_tajweed' => _getTransliterationSourceTajweed(language),
+      'transliteration_source_original' => _getTransliterationSourceOriginal(language),
+      'transliteration_choice_title' => _getTransliterationChoiceTitle(language),
+      'transliteration_style_raw' => _getTransliterationStyleRaw(language),
       'language_name_indonesian' => _getLanguageNameIndonesian(language),
       'language_name_english' => _getLanguageNameEnglish(language),
       'language_name_chinese' => _getLanguageNameChinese(language),
@@ -762,6 +771,16 @@ class AppLocalizations {
       'zh' => '关于',
       'ja' => 'について',
       _ => 'About',
+    };
+  }
+
+  static String _getVersionTitle(String language) {
+    return switch (language) {
+      'id' => 'Versi aplikasi',
+      'en' => 'Version',
+      'zh' => '版本',
+      'ja' => 'バージョン',
+      _ => 'Version',
     };
   }
 
@@ -1334,6 +1353,86 @@ class AppLocalizations {
     };
   }
 
+  static String _getTransliterationStyleTitle(String language) {
+    return switch (language) {
+      'id' => 'Gaya transliterasi',
+      'en' => 'Transliteration style',
+      'zh' => '音译样式',
+      'ja' => '音訳スタイル',
+      _ => 'Transliteration style',
+    };
+  }
+
+  static String _getTransliterationStyleOriginal(String language) {
+    return switch (language) {
+      'id' => 'Asli (Quran.com)',
+      'en' => 'Original (Quran.com)',
+      'zh' => '原始 (Quran.com)',
+      'ja' => 'オリジナル (Quran.com)',
+      _ => 'Original (Quran.com)',
+    };
+  }
+
+  static String _getTransliterationStyleReadable(String language) {
+    return switch (language) {
+      'id' => 'Mudah dibaca (Disarankan)',
+      'en' => 'Readable (Recommended)',
+      'zh' => '易读（推荐）',
+      'ja' => '読みやすい（推奨）',
+      _ => 'Readable (Recommended)',
+    };
+  }
+
+  static String _getTransliterationStyleRaw(String language) {
+    return switch (language) {
+      'id' => 'Persis (teks asli)',
+      'en' => 'Raw (exact text)',
+      'zh' => '原始文本',
+      'ja' => 'そのまま',
+      _ => 'Raw (exact text)',
+    };
+  }
+
+  static String _getTransliterationSourceTitle(String language) {
+    return switch (language) {
+      'id' => 'Sumber transliterasi',
+      'en' => 'Transliteration source',
+      'zh' => '音译来源',
+      'ja' => '音訳ソース',
+      _ => 'Transliteration source',
+    };
+  }
+
+  static String _getTransliterationSourceTajweed(String language) {
+    return switch (language) {
+      'id' => 'Tajwid (pelafalan, disarankan)',
+      'en' => 'Tajweed (pronunciation, recommended)',
+      'zh' => '塔吉维德（发音，推荐）',
+      'ja' => 'タジウィード（発音、推奨）',
+      _ => 'Tajweed (pronunciation, recommended)',
+    };
+  }
+
+  static String _getTransliterationSourceOriginal(String language) {
+    return switch (language) {
+      'id' => 'Asli (Quran.com)',
+      'en' => 'Original (Quran.com)',
+      'zh' => '原始 (Quran.com)',
+      'ja' => 'オリジナル (Quran.com)',
+      _ => 'Original (Quran.com)',
+    };
+  }
+
+  static String _getTransliterationChoiceTitle(String language) {
+    return switch (language) {
+      'id' => 'Transliterasi',
+      'en' => 'Transliteration',
+      'zh' => '音译',
+      'ja' => '音訳',
+      _ => 'Transliteration',
+    };
+  }
+
   static String _getLanguageNameIndonesian(String language) {
     return switch (language) {
       'id' => 'Bahasa Indonesia',
@@ -1775,6 +1874,17 @@ class AppLocalizations {
       'zh' => '节',
       'ja' => '節',
       _ => 'Ayah',
+    };
+  }
+
+  /// Get localized label for "Meaning" (ayah translation heading)
+  static String getMeaningLabel(String language) {
+    return switch (language) {
+      'id' => 'Arti',
+      'en' => 'Meaning',
+      'zh' => '含义',
+      'ja' => '意味',
+      _ => 'Meaning',
     };
   }
 }

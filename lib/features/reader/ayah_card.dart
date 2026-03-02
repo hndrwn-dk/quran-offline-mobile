@@ -13,6 +13,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
+import 'package:quran_offline/core/utils/transliteration_formatter.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 import 'package:quran_offline/features/reader/widgets/highlight_color_picker.dart';
 import 'package:quran_offline/features/reader/widgets/note_editor_dialog.dart';
@@ -56,6 +57,21 @@ class _AyahCardState extends ConsumerState<AyahCard> {
       _ => widget.verse.trId,
     };
     return rawTranslation != null ? TranslationCleaner.clean(rawTranslation) : null;
+  }
+
+  String _getDisplayTransliteration(AppSettings settings) {
+    if (settings.useTajweedTransliteration) {
+      final tj = widget.verse.translitTj;
+      if (tj != null && tj.trim().isNotEmpty) return tj.trim();
+      final tl = widget.verse.translit;
+      if (tl != null && tl.trim().isNotEmpty) return tl.trim();
+      return '';
+    }
+    return TransliterationFormatter.displayTransliteration(
+      tlRaw: widget.verse.translit,
+      style: settings.transliterationStyle,
+      tajweedHtml: widget.verse.tajweed,
+    );
   }
 
   @override
@@ -175,17 +191,19 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                 ),
               ),
             ),
-            if (settings.showTransliteration && widget.verse.translit != null) ...[
-              const SizedBox(height: 8),
-              SelectableText(
-                widget.verse.translit!,
-                style: TextStyle(
+            if (settings.showTransliteration) ...[
+              if (_getDisplayTransliteration(settings).isNotEmpty) ...[
+                const SizedBox(height: 8),
+                SelectableText(
+                  _getDisplayTransliteration(settings),
+                  style: TextStyle(
                   fontSize: settings.translationFontSize * 0.85,
                   fontStyle: FontStyle.italic,
                   color: colorScheme.onSurfaceVariant,
                   height: 1.4,
                 ),
               ),
+            ],
             ],
             if (settings.showTranslation && translation != null) ...[
               const SizedBox(height: 8),
@@ -291,6 +309,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     } else {
       textToShow = TajweedText.normalizeArabicForDisplay(widget.verse.arabic);
     }
+    final isLightTheme = Theme.of(context).brightness == Brightness.light;
     return Localizations.override(
       context: context,
       locale: const Locale('ar'),
@@ -300,6 +319,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
           fontSize: settings.arabicFontSize * 1.15,
           color: colorScheme.onSurface,
           height: 1.7,
+          isLightTheme: isLightTheme,
         ),
         textDirection: TextDirection.rtl,
         textAlign: TextAlign.right,
@@ -315,6 +335,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
       return _buildPlainArabicText(settings, colorScheme);
     }
     
+    final isLightTheme = Theme.of(context).brightness == Brightness.light;
     return TajweedText(
       tajweedHtml: tajweedHtml,
       fontSize: settings.arabicFontSize * 1.15,
@@ -322,8 +343,8 @@ class _AyahCardState extends ConsumerState<AyahCard> {
       textDirection: TextDirection.rtl,
       textAlign: TextAlign.right,
       height: 1.7,
-      // Enable fallback for problematic characters (U+0671, U+0672) that may not be supported by font
       replaceWaslaWithAlif: true,
+      isLightTheme: isLightTheme,
     );
   }
 
@@ -352,9 +373,10 @@ class _AyahCardState extends ConsumerState<AyahCard> {
       buffer.writeln('');
       
       // Arabic text will be included as image
-      // Transliteration (if available)
-      if (widget.verse.translit != null && widget.verse.translit!.isNotEmpty) {
-        buffer.writeln(widget.verse.translit);
+      // Transliteration (if available); respect tajweed vs original source
+      final translitToShare = _getDisplayTransliteration(settings);
+      if (translitToShare.isNotEmpty) {
+        buffer.writeln(translitToShare);
         buffer.writeln('');
       }
       
@@ -419,8 +441,9 @@ class _AyahCardState extends ConsumerState<AyahCard> {
         buffer.writeln('');
         buffer.writeln(widget.verse.arabic);
         buffer.writeln('');
-        if (widget.verse.translit != null && widget.verse.translit!.isNotEmpty) {
-          buffer.writeln(widget.verse.translit);
+        final translitFallback = _getDisplayTransliteration(settings);
+        if (translitFallback.isNotEmpty) {
+          buffer.writeln(translitFallback);
           buffer.writeln('');
         }
         if (translation != null) {
@@ -454,12 +477,12 @@ class _AyahCardState extends ConsumerState<AyahCard> {
       // Get the Arabic text (remove HTML tags if tajweed is enabled)
       String arabicText = widget.verse.arabic;
       if (settings.showTajweed && widget.verse.tajweed != null && widget.verse.tajweed!.isNotEmpty) {
-        // For sharing, use plain text without tajweed HTML tags
         arabicText = widget.verse.tajweed!
             .replaceAll(RegExp(r'<[^>]*>'), '')
             .replaceAll('&nbsp;', ' ')
             .trim();
       }
+      arabicText = TajweedText.normalizeArabicForDisplay(arabicText);
 
       // Create a widget with Arabic text using UthmanicHafsV22 font
       // This ensures Flutter's font system properly loads the font
