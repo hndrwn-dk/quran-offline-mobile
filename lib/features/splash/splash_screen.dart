@@ -4,6 +4,7 @@ import 'package:quran_offline/core/database/importer.dart';
 import 'package:quran_offline/core/providers/import_progress_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
+import 'package:quran_offline/features/onboarding/language_selection_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -63,10 +64,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             _isInitialized = true;
           });
           ref.read(importProgressProvider.notifier).state = null;
-          // Navigate to HomeScreen, removing SplashScreen from stack
+          // First launch: show language selection; otherwise go to home (upgraders with existing appLanguage skip picker)
           if (mounted) {
+            await LanguageSelectionScreen.migrateLegacyIfNeeded();
+            if (!context.mounted) return;
+            final done = await LanguageSelectionScreen.hasCompletedSelection();
+            if (!context.mounted) return;
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HomeScreen()),
+              MaterialPageRoute(
+                builder: (_) => done
+                    ? const HomeScreen()
+                    : const LanguageSelectionScreen(),
+              ),
             );
           }
         }
@@ -77,9 +86,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           _isInitialized = true;
         });
         ref.read(importProgressProvider.notifier).state = null;
-        // Navigate to HomeScreen even on error
+        // On error still check language selection for consistency
+        await LanguageSelectionScreen.migrateLegacyIfNeeded();
+        if (!mounted) return;
+        final done = await LanguageSelectionScreen.hasCompletedSelection();
+        if (!mounted) return;
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(
+            builder: (_) => done
+                ? const HomeScreen()
+                : const LanguageSelectionScreen(),
+          ),
         );
       }
     }

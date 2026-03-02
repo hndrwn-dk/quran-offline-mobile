@@ -1365,11 +1365,11 @@ class AppLocalizations {
 
   static String _getTransliterationStyleOriginal(String language) {
     return switch (language) {
-      'id' => 'Asli (Quran.com)',
-      'en' => 'Original (Quran.com)',
-      'zh' => '原始 (Quran.com)',
-      'ja' => 'オリジナル (Quran.com)',
-      _ => 'Original (Quran.com)',
+      'id' => 'Tanpa tajwid',
+      'en' => 'Without tajweed',
+      'zh' => '无泰吉威德',
+      'ja' => 'タジウィードなし',
+      _ => 'Without tajweed',
     };
   }
 
@@ -1413,13 +1413,14 @@ class AppLocalizations {
     };
   }
 
+  /// Transliteration without tajweed (scripted text-by-text, no pronunciation adjustment).
   static String _getTransliterationSourceOriginal(String language) {
     return switch (language) {
-      'id' => 'Asli (Quran.com)',
-      'en' => 'Original (Quran.com)',
-      'zh' => '原始 (Quran.com)',
-      'ja' => 'オリジナル (Quran.com)',
-      _ => 'Original (Quran.com)',
+      'id' => 'Tanpa tajwid',
+      'en' => 'Without tajweed',
+      'zh' => '无泰吉威德',
+      'ja' => 'タジウィードなし',
+      _ => 'Without tajweed',
     };
   }
 
@@ -1877,14 +1878,14 @@ class AppLocalizations {
     };
   }
 
-  /// Get localized label for "Meaning" (ayah translation heading)
+  /// Get localized label for verse translation heading (sheet / ayah card)
   static String getMeaningLabel(String language) {
     return switch (language) {
-      'id' => 'Arti',
-      'en' => 'Meaning',
-      'zh' => '含义',
-      'ja' => '意味',
-      _ => 'Meaning',
+      'id' => 'Terjemahan',
+      'en' => 'Translation',
+      'zh' => '翻译',
+      'ja' => '翻訳',
+      _ => 'Translation',
     };
   }
 }
