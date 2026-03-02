@@ -17,7 +17,8 @@
       "page": 604,
       "ruku": 557
     },
-    "tj": "قُلْ أَعُوذُ بِرَبِّ <tajweed class=ham_wasl>ٱ</tajweed>لْفَلَ<tajweed class=qalaqah>ق</tajweed>ِ <span class=end>١</span>"
+    "tj": "قُلْ أَعُوذُ بِرَبِّ <tajweed class=ham_wasl>ٱ</tajweed>لْفَلَ<tajweed class=qalaqah>ق</tajweed>ِ <span class=end>١</span>",
+    "tl_tj": "qul a'uwdhu birabbi lfalaq"
   },
   {
     "s": 113,
@@ -37,7 +38,8 @@
       "page": 604,
       "ruku": 557
     },
-    "tj": "مِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ مَا خَلَ<tajweed class=qalaqah>ق</tajweed>َ <span class=end>٢</span>"
+    "tj": "مِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ مَا خَلَ<tajweed class=qalaqah>ق</tajweed>َ <span class=end>٢</span>",
+    "tl_tj": "minn sharrin ma khalaq"
   },
   {
     "s": 113,
@@ -57,7 +59,8 @@
       "page": 604,
       "ruku": 557
     },
-    "tj": "وَمِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ غَاسِقٍ إِذَا وَقَ<tajweed class=qalaqah>ب</tajweed>َ <span class=end>٣</span>"
+    "tj": "وَمِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ غَاسِقٍ إِذَا وَقَ<tajweed class=qalaqah>ب</tajweed>َ <span class=end>٣</span>",
+    "tl_tj": "waminn sharrin ghasiqin idha waqab"
   },
   {
     "s": 113,
@@ -77,7 +80,8 @@
       "page": 604,
       "ruku": 557
     },
-    "tj": "وَمِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed><tajweed class=ghunnah>نّ</tajweed>َفَّ<tajweed class=madda_normal>ـٰ</tajweed>ثَ<tajweed class=madda_normal>ـٰ</tajweed>تِ فِى <tajweed class=ham_wasl>ٱ</tajweed>لْعُقَ<tajweed class=qalaqah>د</tajweed>ِ <span class=end>٤</span>"
+    "tj": "وَمِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed><tajweed class=ghunnah>نّ</tajweed>َفَّ<tajweed class=madda_normal>ـٰ</tajweed>ثَ<tajweed class=madda_normal>ـٰ</tajweed>تِ فِى <tajweed class=ham_wasl>ٱ</tajweed>لْعُقَ<tajweed class=qalaqah>د</tajweed>ِ <span class=end>٤</span>",
+    "tl_tj": "waminn sharrin nnnaffathati fiy l'uqad"
   },
   {
     "s": 113,
@@ -97,6 +101,7 @@
       "page": 604,
       "ruku": 557
     },
-    "tj": "وَمِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ حَاسِدٍ إِذَا حَسَ<tajweed class=qalaqah>د</tajweed>َ <span class=end>٥</span>"
+    "tj": "وَمِ<tajweed class=ikhafa>ن ش</tajweed>َرِّ حَاسِدٍ إِذَا حَسَ<tajweed class=qalaqah>د</tajweed>َ <span class=end>٥</span>",
+    "tl_tj": "waminn sharrin hasidin idha hasad"
   }
 ]

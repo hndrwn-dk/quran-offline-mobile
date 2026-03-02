@@ -14,6 +14,8 @@ class VerseModel {
   final String? tj;
   @JsonKey(name: 'tl')
   final String? tl;
+  @JsonKey(name: 'tl_tj')
+  final String? tlTj;
   @JsonKey(name: 'tr')
   final Map<String, String>? tr;
   @JsonKey(name: 'm')
@@ -25,6 +27,7 @@ class VerseModel {
     required this.ar,
     this.tj,
     this.tl,
+    this.tlTj,
     this.tr,
     this.m,
   });
@@ -34,6 +37,7 @@ class VerseModel {
   String get arabic => ar;
   String? get tajweed => tj;
   String? get translit => tl;
+  String? get translitTj => tlTj;
   Map<String, String>? get translations => tr;
   VerseMetadata? get metadata => m;
 

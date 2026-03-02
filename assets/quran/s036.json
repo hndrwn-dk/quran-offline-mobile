@@ -17,7 +17,8 @@
       "page": 440,
       "ruku": 383
     },
-    "tj": "ي<tajweed class=madda_necessary>سٓ</tajweed> <span class=end>١</span>"
+    "tj": "ي<tajweed class=madda_necessary>سٓ</tajweed> <span class=end>١</span>",
+    "tl_tj": "ya sin"
   },
   {
     "s": 36,
@@ -37,7 +38,8 @@
       "page": 440,
       "ruku": 383
     },
-    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>لْقُرْءَانِ <tajweed class=ham_wasl>ٱ</tajweed>لْحَك<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>٢</span>"
+    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>لْقُرْءَانِ <tajweed class=ham_wasl>ٱ</tajweed>لْحَك<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>٢</span>",
+    "tl_tj": "walqurani lhakiym"
   },
   {
     "s": 36,
@@ -57,7 +59,8 @@
       "page": 440,
       "ruku": 383
     },
-    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed>َكَ لَمِنَ <tajweed class=ham_wasl>ٱ</tajweed>لْمُرْسَل<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٣</span>"
+    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed>َكَ لَمِنَ <tajweed class=ham_wasl>ٱ</tajweed>لْمُرْسَل<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٣</span>",
+    "tl_tj": "innnaka lamina lmursaliyn"
   },
   {
     "s": 36,
@@ -77,7 +80,8 @@
       "page": 440,
       "ruku": 383
     },
-    "tj": "عَلَىٰ صِر<tajweed class=madda_normal>َٲ</tajweed><tajweed class=idgham_ghunnah>طٍ م</tajweed>ُّسْتَق<tajweed class=madda_permissible>ِي</tajweed>مٍ <span class=end>٤</span>"
+    "tj": "عَلَىٰ صِر<tajweed class=madda_normal>َٲ</tajweed><tajweed class=idgham_ghunnah>طٍ م</tajweed>ُّسْتَق<tajweed class=madda_permissible>ِي</tajweed>مٍ <span class=end>٤</span>",
+    "tl_tj": "'ala siratin mmnustaqiym"
   },
   {
     "s": 36,
@@ -97,7 +101,8 @@
       "page": 440,
       "ruku": 383
     },
-    "tj": "تَ<tajweed class=ikhafa>نز</tajweed>ِيلَ <tajweed class=ham_wasl>ٱ</tajweed>لْعَزِيزِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّح<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>٥</span>"
+    "tj": "تَ<tajweed class=ikhafa>نز</tajweed>ِيلَ <tajweed class=ham_wasl>ٱ</tajweed>لْعَزِيزِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّح<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>٥</span>",
+    "tl_tj": "tanziylan l'aziyzi rrahiym"
   },
   {
     "s": 36,
@@ -117,7 +122,8 @@
       "page": 440,
       "ruku": 383
     },
-    "tj": "لِتُ<tajweed class=ikhafa>نذ</tajweed>ِرَ قَوْ<tajweed class=idgham_ghunnah>مًا م</tajweed>ّ<tajweed class=madda_obligatory>َآ</tajweed> أُ<tajweed class=ikhafa>نذ</tajweed>ِرَ ءَاب<tajweed class=madda_obligatory>َا</tajweed>ٓؤُهُمْ فَهُمْ غَ<tajweed class=madda_normal>ـٰ</tajweed>فِل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦</span>"
+    "tj": "لِتُ<tajweed class=ikhafa>نذ</tajweed>ِرَ قَوْ<tajweed class=idgham_ghunnah>مًا م</tajweed>ّ<tajweed class=madda_obligatory>َآ</tajweed> أُ<tajweed class=ikhafa>نذ</tajweed>ِرَ ءَاب<tajweed class=madda_obligatory>َا</tajweed>ٓؤُهُمْ فَهُمْ غَ<tajweed class=madda_normal>ـٰ</tajweed>فِل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦</span>",
+    "tl_tj": "litundhiran qawman mmna undhiran abauhum fahum ghafiluwn"
   },
   {
     "s": 36,
@@ -137,7 +143,8 @@
       "page": 440,
       "ruku": 383
     },
-    "tj": "لَقَ<tajweed class=qalaqah>دْ</tajweed> حَقَّ <tajweed class=ham_wasl>ٱ</tajweed>لْقَوْلُ عَلَ<tajweed class=madda_obligatory>ىٰٓ</tajweed> أَكْثَرِهِمْ فَهُمْ لَا يُؤْمِن<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧</span>"
+    "tj": "لَقَ<tajweed class=qalaqah>دْ</tajweed> حَقَّ <tajweed class=ham_wasl>ٱ</tajweed>لْقَوْلُ عَلَ<tajweed class=madda_obligatory>ىٰٓ</tajweed> أَكْثَرِهِمْ فَهُمْ لَا يُؤْمِن<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧</span>",
+    "tl_tj": "laqad haqqa lqawlu 'ala aktharihim fahum la yuminuwn"
   },
   {
     "s": 36,
@@ -157,7 +164,8 @@
       "page": 440,
       "ruku": 383
     },
-    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed>َا جَعَلْنَا ف<tajweed class=madda_obligatory>ِىٓ</tajweed> أَعْنَ<tajweed class=madda_normal>ـٰ</tajweed>قِهِمْ أَغْلَ<tajweed class=madda_normal>ـٰ</tajweed>ل<tajweed class=ikhafa>اً ف</tajweed>َهِىَ إِلَى <tajweed class=ham_wasl>ٱ</tajweed>لْأَذْقَانِ فَه<tajweed class=idgham_shafawi>ُم م</tajweed>ُّ<tajweed class=qalaqah>قْ</tajweed>مَح<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٨</span>"
+    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed>َا جَعَلْنَا ف<tajweed class=madda_obligatory>ِىٓ</tajweed> أَعْنَ<tajweed class=madda_normal>ـٰ</tajweed>قِهِمْ أَغْلَ<tajweed class=madda_normal>ـٰ</tajweed>ل<tajweed class=ikhafa>اً ف</tajweed>َهِىَ إِلَى <tajweed class=ham_wasl>ٱ</tajweed>لْأَذْقَانِ فَه<tajweed class=idgham_shafawi>ُم م</tajweed>ُّ<tajweed class=qalaqah>قْ</tajweed>مَح<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٨</span>",
+    "tl_tj": "innna ja'alna fiy a'naqihim aghlalann fahiya ila ladhqani fahum mmnuqmahuwn"
   },
   {
     "s": 36,
@@ -177,7 +185,8 @@
       "page": 440,
       "ruku": 383
     },
-    "tj": "وَجَعَلْنَا م<tajweed class=iqlab>ِنۢ ب</tajweed>َيْنِ أَيْدِيهِمْ سَد<tajweed class=idgham_ghunnah>ًّا و</tajweed>َمِنْ خَلْفِهِمْ سَد<tajweed class=ikhafa>ًّا ف</tajweed>َأَغْشَيْنَ<tajweed class=madda_normal>ـٰ</tajweed>هُمْ فَهُمْ لَا يُ<tajweed class=qalaqah>بْ</tajweed>صِر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٩</span>"
+    "tj": "وَجَعَلْنَا م<tajweed class=iqlab>ِنۢ ب</tajweed>َيْنِ أَيْدِيهِمْ سَد<tajweed class=idgham_ghunnah>ًّا و</tajweed>َمِنْ خَلْفِهِمْ سَد<tajweed class=ikhafa>ًّا ف</tajweed>َأَغْشَيْنَ<tajweed class=madda_normal>ـٰ</tajweed>هُمْ فَهُمْ لَا يُ<tajweed class=qalaqah>بْ</tajweed>صِر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٩</span>",
+    "tl_tj": "waja'alna mimn baymin aydiyhim saddawn waminn khalfihim saddann faaghshaynahum fahum la yubsiruwn"
   },
   {
     "s": 36,
@@ -197,7 +206,8 @@
       "page": 440,
       "ruku": 383
     },
-    "tj": "وَسَو<tajweed class=madda_obligatory>َا</tajweed>ٓءٌ عَلَيْهِمْ ءَأَ<tajweed class=ikhafa>نذ</tajweed>َرْتَهُمْ أَمْ لَمْ تُ<tajweed class=ikhafa>نذ</tajweed>ِرْهُمْ لَا يُؤْمِن<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>١٠</span>"
+    "tj": "وَسَو<tajweed class=madda_obligatory>َا</tajweed>ٓءٌ عَلَيْهِمْ ءَأَ<tajweed class=ikhafa>نذ</tajweed>َرْتَهُمْ أَمْ لَمْ تُ<tajweed class=ikhafa>نذ</tajweed>ِرْهُمْ لَا يُؤْمِن<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>١٠</span>",
+    "tl_tj": "wasawaun 'alayhim aandhartahumn am lam tundhirhumn la yuminuwn"
   },
   {
     "s": 36,
@@ -217,7 +227,8 @@
       "page": 440,
       "ruku": 383
     },
-    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed>َمَا تُ<tajweed class=ikhafa>نذ</tajweed>ِرُ مَنِ <tajweed class=ham_wasl>ٱ</tajweed>تَّبَعَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>ذِّكْرَ وَخَشِىَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نَ بِ<tajweed class=ham_wasl>ٱ</tajweed>لْغَيْبِۖ فَبَشِّرْهُ بِمَغْفِرَ<tajweed class=idgham_ghunnah>ةٍ و</tajweed>َأَ<tajweed class=qalaqah>جْ</tajweed><tajweed class=ikhafa>رٍ ك</tajweed>َر<tajweed class=madda_permissible>ِي</tajweed>مٍ <span class=end>١١</span>"
+    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed>َمَا تُ<tajweed class=ikhafa>نذ</tajweed>ِرُ مَنِ <tajweed class=ham_wasl>ٱ</tajweed>تَّبَعَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>ذِّكْرَ وَخَشِىَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نَ بِ<tajweed class=ham_wasl>ٱ</tajweed>لْغَيْبِۖ فَبَشِّرْهُ بِمَغْفِرَ<tajweed class=idgham_ghunnah>ةٍ و</tajweed>َأَ<tajweed class=qalaqah>جْ</tajweed><tajweed class=ikhafa>رٍ ك</tajweed>َر<tajweed class=madda_permissible>ِي</tajweed>مٍ <span class=end>١١</span>",
+    "tl_tj": "innnama tundhirun mani ttaba'a dhdhikra wakhashiya rrahmana bilghaybi fabashshirhu bimaghfiratiwn waajrinn kariym"
   },
   {
     "s": 36,
@@ -237,7 +248,8 @@
       "page": 440,
       "ruku": 383
     },
-    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed>َا نَحْنُ نُحْىِ <tajweed class=ham_wasl>ٱ</tajweed>لْمَوْتَىٰ وَنَكْتُبُ مَا قَدَّمُو<tajweed class=slnt>اْ</tajweed> وَءَاثَ<tajweed class=madda_normal>ـٰ</tajweed>رَهُمْۚ وَكُلَّ شَىْءٍ أَحْصَيْنَ<tajweed class=madda_normal>ـٰ</tajweed>هُ ف<tajweed class=madda_obligatory>ِىٓ</tajweed> إِمَا<tajweed class=idgham_ghunnah>مٍ م</tajweed>ُّب<tajweed class=madda_permissible>ِي</tajweed>نٍ <span class=end>١٢</span>"
+    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed>َا نَحْنُ نُحْىِ <tajweed class=ham_wasl>ٱ</tajweed>لْمَوْتَىٰ وَنَكْتُبُ مَا قَدَّمُو<tajweed class=slnt>اْ</tajweed> وَءَاثَ<tajweed class=madda_normal>ـٰ</tajweed>رَهُمْۚ وَكُلَّ شَىْءٍ أَحْصَيْنَ<tajweed class=madda_normal>ـٰ</tajweed>هُ ف<tajweed class=madda_obligatory>ِىٓ</tajweed> إِمَا<tajweed class=idgham_ghunnah>مٍ م</tajweed>ُّب<tajweed class=madda_permissible>ِي</tajweed>نٍ <span class=end>١٢</span>",
+    "tl_tj": "innna nahnu nuhai lmawta wanaktubu ma qaddamuw waatharahum wakulla shain ahsaynahu fiy imamin mmnubiyn"
   },
   {
     "s": 36,
@@ -257,7 +269,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>ضْرِ<tajweed class=qalaqah>بْ</tajweed> لَه<tajweed class=idgham_shafawi>ُم م</tajweed>َّثَلاً أَصْحَ<tajweed class=madda_normal>ـٰ</tajweed>بَ <tajweed class=ham_wasl>ٱ</tajweed>لْقَرْيَةِ إِذْ ج<tajweed class=madda_obligatory>َا</tajweed>ٓءَهَا <tajweed class=ham_wasl>ٱ</tajweed>لْمُرْسَل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>١٣</span>"
+    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>ضْرِ<tajweed class=qalaqah>بْ</tajweed> لَه<tajweed class=idgham_shafawi>ُم م</tajweed>َّثَلاً أَصْحَ<tajweed class=madda_normal>ـٰ</tajweed>بَ <tajweed class=ham_wasl>ٱ</tajweed>لْقَرْيَةِ إِذْ ج<tajweed class=madda_obligatory>َا</tajweed>ٓءَهَا <tajweed class=ham_wasl>ٱ</tajweed>لْمُرْسَل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>١٣</span>",
+    "tl_tj": "wadrib lahum mmnathalan ashaba lqaryati idh jaaha lmursaluwn"
   },
   {
     "s": 36,
@@ -277,7 +290,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "إِذْ أَرْسَلْن<tajweed class=madda_obligatory>َآ</tajweed> إِلَيْهِمُ <tajweed class=ham_wasl>ٱ</tajweed>ثْنَيْنِ فَكَذَّبُوهُمَا فَعَزَّزْنَا بِثَالِ<tajweed class=ikhafa>ثٍ ف</tajweed>َقَال<tajweed class=madda_obligatory>ُوٓ</tajweed><tajweed class=slnt>اْ</tajweed> إِ<tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_obligatory>َآ</tajweed> إِلَيْك<tajweed class=idgham_shafawi>ُم م</tajweed>ُّرْسَل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>١٤</span>"
+    "tj": "إِذْ أَرْسَلْن<tajweed class=madda_obligatory>َآ</tajweed> إِلَيْهِمُ <tajweed class=ham_wasl>ٱ</tajweed>ثْنَيْنِ فَكَذَّبُوهُمَا فَعَزَّزْنَا بِثَالِ<tajweed class=ikhafa>ثٍ ف</tajweed>َقَال<tajweed class=madda_obligatory>ُوٓ</tajweed><tajweed class=slnt>اْ</tajweed> إِ<tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_obligatory>َآ</tajweed> إِلَيْك<tajweed class=idgham_shafawi>ُم م</tajweed>ُّرْسَل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>١٤</span>",
+    "tl_tj": "idh arsalna ilayhimu thnayni fakadhdhabuwhuma fa'azzazna bithalithinn faqaluwan innna ilaykum mmnursaluwn"
   },
   {
     "s": 36,
@@ -297,7 +311,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "قَالُو<tajweed class=slnt>اْ</tajweed> م<tajweed class=madda_obligatory>َآ</tajweed> أَ<tajweed class=ikhafa>نت</tajweed>ُمْ إِلَّا بَشَ<tajweed class=idgham_ghunnah>رٌ م</tajweed>ِّثْلُنَا وَم<tajweed class=madda_obligatory>َآ</tajweed> أَ<tajweed class=ikhafa>نز</tajweed>َلَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نُ مِ<tajweed class=ikhafa>ن ش</tajweed>َىْءٍ إِنْ أَ<tajweed class=ikhafa>نت</tajweed>ُمْ إِلَّا تَكْذِب<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>١٥</span>"
+    "tj": "قَالُو<tajweed class=slnt>اْ</tajweed> م<tajweed class=madda_obligatory>َآ</tajweed> أَ<tajweed class=ikhafa>نت</tajweed>ُمْ إِلَّا بَشَ<tajweed class=idgham_ghunnah>رٌ م</tajweed>ِّثْلُنَا وَم<tajweed class=madda_obligatory>َآ</tajweed> أَ<tajweed class=ikhafa>نز</tajweed>َلَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نُ مِ<tajweed class=ikhafa>ن ش</tajweed>َىْءٍ إِنْ أَ<tajweed class=ikhafa>نت</tajweed>ُمْ إِلَّا تَكْذِب<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>١٥</span>",
+    "tl_tj": "qaluw ma antumn illa basharun mmnithluna wama anzalan rrahmanu minn shain in antumn illa takdhibuwn"
   },
   {
     "s": 36,
@@ -317,7 +332,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "قَالُو<tajweed class=slnt>اْ</tajweed> رَبُّنَا يَعْلَمُ إِ<tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_obligatory>َآ</tajweed> إِلَيْكُمْ لَمُرْسَل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>١٦</span>"
+    "tj": "قَالُو<tajweed class=slnt>اْ</tajweed> رَبُّنَا يَعْلَمُ إِ<tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_obligatory>َآ</tajweed> إِلَيْكُمْ لَمُرْسَل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>١٦</span>",
+    "tl_tj": "qaluw rabbuna ya'lamu innna ilaykum lamursaluwn"
   },
   {
     "s": 36,
@@ -337,7 +353,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "وَمَا عَلَيْن<tajweed class=madda_obligatory>َآ</tajweed> إِلَّا <tajweed class=ham_wasl>ٱ</tajweed>لْبَلَ<tajweed class=madda_normal>ـٰ</tajweed>غُ <tajweed class=ham_wasl>ٱ</tajweed>لْمُب<tajweed class=madda_permissible>ِي</tajweed>نُ <span class=end>١٧</span>"
+    "tj": "وَمَا عَلَيْن<tajweed class=madda_obligatory>َآ</tajweed> إِلَّا <tajweed class=ham_wasl>ٱ</tajweed>لْبَلَ<tajweed class=madda_normal>ـٰ</tajweed>غُ <tajweed class=ham_wasl>ٱ</tajweed>لْمُب<tajweed class=madda_permissible>ِي</tajweed>نُ <span class=end>١٧</span>",
+    "tl_tj": "wama 'alayna illa lbalaghu lmubiyn"
   },
   {
     "s": 36,
@@ -357,7 +374,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "قَال<tajweed class=madda_obligatory>ُوٓ</tajweed><tajweed class=slnt>اْ</tajweed> إِ<tajweed class=ghunnah>نّ</tajweed>َا تَطَيَّرْنَا بِكُمْۖ لَئ<tajweed class=idgham_wo_ghunnah>ِن ل</tajweed>َّمْ تَ<tajweed class=ikhafa>نت</tajweed>َهُو<tajweed class=slnt>اْ</tajweed> لَنَرْجُمَ<tajweed class=ghunnah>نّ</tajweed>َكُمْ وَلَيَمَسَّ<tajweed class=ghunnah>نّ</tajweed>َك<tajweed class=idgham_shafawi>ُم م</tajweed>ِّ<tajweed class=ghunnah>نّ</tajweed>َا عَذَابٌ أَل<tajweed class=madda_permissible>ِي</tajweed>مٌ <span class=end>١٨</span>"
+    "tj": "قَال<tajweed class=madda_obligatory>ُوٓ</tajweed><tajweed class=slnt>اْ</tajweed> إِ<tajweed class=ghunnah>نّ</tajweed>َا تَطَيَّرْنَا بِكُمْۖ لَئ<tajweed class=idgham_wo_ghunnah>ِن ل</tajweed>َّمْ تَ<tajweed class=ikhafa>نت</tajweed>َهُو<tajweed class=slnt>اْ</tajweed> لَنَرْجُمَ<tajweed class=ghunnah>نّ</tajweed>َكُمْ وَلَيَمَسَّ<tajweed class=ghunnah>نّ</tajweed>َك<tajweed class=idgham_shafawi>ُم م</tajweed>ِّ<tajweed class=ghunnah>نّ</tajweed>َا عَذَابٌ أَل<tajweed class=madda_permissible>ِي</tajweed>مٌ <span class=end>١٨</span>",
+    "tl_tj": "qaluwa innna tatayyarna bikum lai llamn tantahuwn lanarjumannnakum walayamassannnakum mmninnna 'adhabun aliym"
   },
   {
     "s": 36,
@@ -377,7 +395,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "قَالُو<tajweed class=slnt>اْ</tajweed> طَ<tajweed class=madda_obligatory>ـٰٓ</tajweed>ئِرُك<tajweed class=idgham_shafawi>ُم م</tajweed>َّعَكُمْۚ أَئِ<tajweed class=ikhafa>ن ذ</tajweed>ُكِّرْت<tajweed class=ikhafa_shafawi>ُمۚ ب</tajweed>َلْ أَ<tajweed class=ikhafa>نت</tajweed>ُمْ قَوْ<tajweed class=idgham_ghunnah>مٌ م</tajweed>ُّسْرِف<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>١٩</span>"
+    "tj": "قَالُو<tajweed class=slnt>اْ</tajweed> طَ<tajweed class=madda_obligatory>ـٰٓ</tajweed>ئِرُك<tajweed class=idgham_shafawi>ُم م</tajweed>َّعَكُمْۚ أَئِ<tajweed class=ikhafa>ن ذ</tajweed>ُكِّرْت<tajweed class=ikhafa_shafawi>ُمۚ ب</tajweed>َلْ أَ<tajweed class=ikhafa>نت</tajweed>ُمْ قَوْ<tajweed class=idgham_ghunnah>مٌ م</tajweed>ُّسْرِف<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>١٩</span>",
+    "tl_tj": "qaluw tairukum mmna'akum ainn dhukkirtumn baln antum qawmun mmnusrifuwn"
   },
   {
     "s": 36,
@@ -397,7 +416,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "وَج<tajweed class=madda_obligatory>َا</tajweed>ٓءَ مِنْ أَ<tajweed class=qalaqah>قْ</tajweed>صَا <tajweed class=ham_wasl>ٱ</tajweed>لْمَدِينَةِ رَجُ<tajweed class=idgham_ghunnah>لٌ ي</tajweed>َسْعَىٰ قَالَ يَ<tajweed class=madda_normal>ـٰ</tajweed>قَوْمِ <tajweed class=ham_wasl>ٱ</tajweed>تَّبِعُو<tajweed class=slnt>اْ</tajweed> <tajweed class=ham_wasl>ٱ</tajweed>لْمُرْسَل<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٢٠</span>"
+    "tj": "وَج<tajweed class=madda_obligatory>َا</tajweed>ٓءَ مِنْ أَ<tajweed class=qalaqah>قْ</tajweed>صَا <tajweed class=ham_wasl>ٱ</tajweed>لْمَدِينَةِ رَجُ<tajweed class=idgham_ghunnah>لٌ ي</tajweed>َسْعَىٰ قَالَ يَ<tajweed class=madda_normal>ـٰ</tajweed>قَوْمِ <tajweed class=ham_wasl>ٱ</tajweed>تَّبِعُو<tajweed class=slnt>اْ</tajweed> <tajweed class=ham_wasl>ٱ</tajweed>لْمُرْسَل<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٢٠</span>",
+    "tl_tj": "wajaa min aqsa lmadiynati rajuluyn yas'an qala yaqawmi ttabi'uw lmursaliyn"
   },
   {
     "s": 36,
@@ -417,7 +437,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "ٱتَّبِعُو<tajweed class=slnt>اْ</tajweed> م<tajweed class=idgham_wo_ghunnah>َن ل</tajweed>َّا يَسْــَٔلُكُمْ أَ<tajweed class=qalaqah>جْ</tajweed><tajweed class=idgham_ghunnah>رًا و</tajweed>َه<tajweed class=idgham_shafawi>ُم م</tajweed>ُّهْتَد<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٢١</span>"
+    "tj": "ٱتَّبِعُو<tajweed class=slnt>اْ</tajweed> م<tajweed class=idgham_wo_ghunnah>َن ل</tajweed>َّا يَسْــَٔلُكُمْ أَ<tajweed class=qalaqah>جْ</tajweed><tajweed class=idgham_ghunnah>رًا و</tajweed>َه<tajweed class=idgham_shafawi>ُم م</tajweed>ُّهْتَد<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٢١</span>",
+    "tl_tj": "ittabi'uw ma llan yasalukum ajrawn wahumn mmnuhtaduwn"
   },
   {
     "s": 36,
@@ -437,7 +458,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "وَمَا لِىَ ل<tajweed class=madda_obligatory>َآ</tajweed> أَعْبُدُ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِى فَطَرَنِى وَإِلَيْهِ تُرْجَع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٢٢</span>"
+    "tj": "وَمَا لِىَ ل<tajweed class=madda_obligatory>َآ</tajweed> أَعْبُدُ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِى فَطَرَنِى وَإِلَيْهِ تُرْجَع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٢٢</span>",
+    "tl_tj": "wama liya la a'budu lladhiy fataraniy wailayhi turja'uwn"
   },
   {
     "s": 36,
@@ -457,7 +479,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "ءَأَتَّخِذُ مِ<tajweed class=ikhafa>ن د</tajweed>ُونِه<tajweed class=madda_obligatory>ِۦٓ</tajweed> ءَالِهَةً إ<tajweed class=idgham_ghunnah>ِن ي</tajweed>ُرِ<tajweed class=qalaqah>دْ</tajweed>نِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نُ بِضُ<tajweed class=idgham_wo_ghunnah>رٍّ ل</tajweed>َّا تُغْنِ عَ<tajweed class=ghunnah>نّ</tajweed>ِى شَفَ<tajweed class=madda_normal>ـٰ</tajweed>عَتُهُمْ شَيْـ<tajweed class=idgham_ghunnah>ـًٔا و</tajweed>َلَا يُ<tajweed class=ikhafa>نق</tajweed>ِذ<tajweed class=madda_permissible>ُو</tajweed>نِ <span class=end>٢٣</span>"
+    "tj": "ءَأَتَّخِذُ مِ<tajweed class=ikhafa>ن د</tajweed>ُونِه<tajweed class=madda_obligatory>ِۦٓ</tajweed> ءَالِهَةً إ<tajweed class=idgham_ghunnah>ِن ي</tajweed>ُرِ<tajweed class=qalaqah>دْ</tajweed>نِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نُ بِضُ<tajweed class=idgham_wo_ghunnah>رٍّ ل</tajweed>َّا تُغْنِ عَ<tajweed class=ghunnah>نّ</tajweed>ِى شَفَ<tajweed class=madda_normal>ـٰ</tajweed>عَتُهُمْ شَيْـ<tajweed class=idgham_ghunnah>ـًٔا و</tajweed>َلَا يُ<tajweed class=ikhafa>نق</tajweed>ِذ<tajweed class=madda_permissible>ُو</tajweed>نِ <span class=end>٢٣</span>",
+    "tl_tj": "aattakhidhu minn duwnihiin alihatan iyn yuridnin rrahmanu bidurri llan tughni 'annniy shafa'atuhum shayawn walan yunqidhuwn"
   },
   {
     "s": 36,
@@ -477,7 +500,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_obligatory>ِىٓ</tajweed> إِ<tajweed class=idgham_wo_ghunnah>ذًا ل</tajweed>َّفِى ضَلَ<tajweed class=madda_normal>ـٰ</tajweed><tajweed class=idgham_ghunnah>لٍ م</tajweed>ُّب<tajweed class=madda_permissible>ِي</tajweed>نٍ <span class=end>٢٤</span>"
+    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_obligatory>ِىٓ</tajweed> إِ<tajweed class=idgham_wo_ghunnah>ذًا ل</tajweed>َّفِى ضَلَ<tajweed class=madda_normal>ـٰ</tajweed><tajweed class=idgham_ghunnah>لٍ م</tajweed>ُّب<tajweed class=madda_permissible>ِي</tajweed>نٍ <span class=end>٢٤</span>",
+    "tl_tj": "innniy idha llafiyn dalalin mmnubiyn"
   },
   {
     "s": 36,
@@ -497,7 +521,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_obligatory>ِىٓ</tajweed> ءَامَ<tajweed class=ikhafa>نت</tajweed>ُ بِرَبِّكُمْ فَ<tajweed class=ham_wasl>ٱ</tajweed>سْمَع<tajweed class=madda_permissible>ُو</tajweed>نِ <span class=end>٢٥</span>"
+    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed><tajweed class=madda_obligatory>ِىٓ</tajweed> ءَامَ<tajweed class=ikhafa>نت</tajweed>ُ بِرَبِّكُمْ فَ<tajweed class=ham_wasl>ٱ</tajweed>سْمَع<tajweed class=madda_permissible>ُو</tajweed>نِ <span class=end>٢٥</span>",
+    "tl_tj": "innniy amantun birabbikum fasma'uwn"
   },
   {
     "s": 36,
@@ -517,7 +542,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "قِيلَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=qalaqah>دْ</tajweed>خُلِ <tajweed class=ham_wasl>ٱ</tajweed>لْجَ<tajweed class=ghunnah>نّ</tajweed>َةَۖ قَالَ يَ<tajweed class=madda_normal>ـٰ</tajweed>لَيْتَ قَوْمِى يَعْلَم<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٢٦</span>"
+    "tj": "قِيلَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=qalaqah>دْ</tajweed>خُلِ <tajweed class=ham_wasl>ٱ</tajweed>لْجَ<tajweed class=ghunnah>نّ</tajweed>َةَۖ قَالَ يَ<tajweed class=madda_normal>ـٰ</tajweed>لَيْتَ قَوْمِى يَعْلَم<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٢٦</span>",
+    "tl_tj": "qiyla dkhuli ljannnata qala yalayta qawmiy ya'lamuwn"
   },
   {
     "s": 36,
@@ -537,7 +563,8 @@
       "page": 441,
       "ruku": 384
     },
-    "tj": "بِمَا غَفَرَ لِى رَبِّى وَجَعَلَنِى مِنَ <tajweed class=ham_wasl>ٱ</tajweed>لْمُكْرَم<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٢٧</span>"
+    "tj": "بِمَا غَفَرَ لِى رَبِّى وَجَعَلَنِى مِنَ <tajweed class=ham_wasl>ٱ</tajweed>لْمُكْرَم<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٢٧</span>",
+    "tl_tj": "bima ghafara liy rabbiy waja'alaniy mina lmukramiyn"
   },
   {
     "s": 36,
@@ -557,7 +584,8 @@
       "page": 442,
       "ruku": 384
     },
-    "tj": "۞ وَم<tajweed class=madda_obligatory>َآ</tajweed> أَ<tajweed class=ikhafa>نز</tajweed>َلْنَا عَلَىٰ قَوْمِه<tajweed class=madda_normal>ِۦ</tajweed> م<tajweed class=iqlab>ِنۢ ب</tajweed>َعْدِه<tajweed class=madda_normal>ِۦ</tajweed> مِ<tajweed class=ikhafa>ن ج</tajweed>ُن<tajweed class=idgham_ghunnah>دٍ م</tajweed>ِّنَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>سَّم<tajweed class=madda_obligatory>َا</tajweed>ٓءِ وَمَا كُ<tajweed class=ghunnah>نّ</tajweed>َا مُ<tajweed class=ikhafa>نز</tajweed>ِل<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٢٨</span>"
+    "tj": "۞ وَم<tajweed class=madda_obligatory>َآ</tajweed> أَ<tajweed class=ikhafa>نز</tajweed>َلْنَا عَلَىٰ قَوْمِه<tajweed class=madda_normal>ِۦ</tajweed> م<tajweed class=iqlab>ِنۢ ب</tajweed>َعْدِه<tajweed class=madda_normal>ِۦ</tajweed> مِ<tajweed class=ikhafa>ن ج</tajweed>ُن<tajweed class=idgham_ghunnah>دٍ م</tajweed>ِّنَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>سَّم<tajweed class=madda_obligatory>َا</tajweed>ٓءِ وَمَا كُ<tajweed class=ghunnah>نّ</tajweed>َا مُ<tajweed class=ikhafa>نز</tajweed>ِل<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٢٨</span>",
+    "tl_tj": "wama anzalnan 'ala qawmihii mimn ba'dihii minn jundin mmnina ssamai wama kunnna munziliyn"
   },
   {
     "s": 36,
@@ -577,7 +605,8 @@
       "page": 442,
       "ruku": 384
     },
-    "tj": "إِ<tajweed class=ikhafa>ن ك</tajweed>َانَتْ إِلَّا صَيْحَ<tajweed class=idgham_ghunnah>ةً و</tajweed><tajweed class=madda_normal>َٲ</tajweed>حِدَ<tajweed class=ikhafa>ةً ف</tajweed>َإِذَا هُمْ خَ<tajweed class=madda_normal>ـٰ</tajweed>مِد<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٢٩</span>"
+    "tj": "إِ<tajweed class=ikhafa>ن ك</tajweed>َانَتْ إِلَّا صَيْحَ<tajweed class=idgham_ghunnah>ةً و</tajweed><tajweed class=madda_normal>َٲ</tajweed>حِدَ<tajweed class=ikhafa>ةً ف</tajweed>َإِذَا هُمْ خَ<tajweed class=madda_normal>ـٰ</tajweed>مِد<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٢٩</span>",
+    "tl_tj": "inn kanatn illa sayhatawn wahidatann faidha hum khamiduwn"
   },
   {
     "s": 36,
@@ -597,7 +626,8 @@
       "page": 442,
       "ruku": 384
     },
-    "tj": "يَ<tajweed class=madda_normal>ـٰ</tajweed>حَسْرَةً عَلَى <tajweed class=ham_wasl>ٱ</tajweed>لْعِبَادِ‌ۚ مَا يَأْتِيه<tajweed class=idgham_shafawi>ِم م</tajweed>ّ<tajweed class=idgham_wo_ghunnah>ِن ر</tajweed>َّسُولٍ إِلَّا كَانُو<tajweed class=slnt>اْ</tajweed> بِه<tajweed class=madda_normal>ِۦ</tajweed> يَسْتَهْزِء<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣٠</span>"
+    "tj": "يَ<tajweed class=madda_normal>ـٰ</tajweed>حَسْرَةً عَلَى <tajweed class=ham_wasl>ٱ</tajweed>لْعِبَادِ‌ۚ مَا يَأْتِيه<tajweed class=idgham_shafawi>ِم م</tajweed>ّ<tajweed class=idgham_wo_ghunnah>ِن ر</tajweed>َّسُولٍ إِلَّا كَانُو<tajweed class=slnt>اْ</tajweed> بِه<tajweed class=madda_normal>ِۦ</tajweed> يَسْتَهْزِء<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣٠</span>",
+    "tl_tj": "yahasratan 'ala l'ibadi ma yatiyhim mmni rrasuwlin illa kanuw bihii yastahziuwn"
   },
   {
     "s": 36,
@@ -617,7 +647,8 @@
       "page": 442,
       "ruku": 384
     },
-    "tj": "أَلَمْ يَرَوْ<tajweed class=slnt>اْ</tajweed> كَمْ أَهْلَكْنَا قَ<tajweed class=qalaqah>بْ</tajweed>لَه<tajweed class=idgham_shafawi>ُم م</tajweed>ِّنَ <tajweed class=ham_wasl>ٱ</tajweed>لْقُرُونِ أَ<tajweed class=ghunnah>نّ</tajweed>َهُمْ إِلَيْهِمْ لَا يَرْجِع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣١</span>"
+    "tj": "أَلَمْ يَرَوْ<tajweed class=slnt>اْ</tajweed> كَمْ أَهْلَكْنَا قَ<tajweed class=qalaqah>بْ</tajweed>لَه<tajweed class=idgham_shafawi>ُم م</tajweed>ِّنَ <tajweed class=ham_wasl>ٱ</tajweed>لْقُرُونِ أَ<tajweed class=ghunnah>نّ</tajweed>َهُمْ إِلَيْهِمْ لَا يَرْجِع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣١</span>",
+    "tl_tj": "alam yarawa kam ahlakna qablahum mmnina lquruwni annnahum ilayhim la yarji'uwn"
   },
   {
     "s": 36,
@@ -637,7 +668,8 @@
       "page": 442,
       "ruku": 384
     },
-    "tj": "وَإِ<tajweed class=ikhafa>ن ك</tajweed>ُ<tajweed class=idgham_wo_ghunnah>لٌّ ل</tajweed>َّ<tajweed class=ghunnah>مّ</tajweed>َا جَمِي<tajweed class=idgham_wo_ghunnah>عٌ ل</tajweed>َّدَيْنَا مُحْضَر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣٢</span>"
+    "tj": "وَإِ<tajweed class=ikhafa>ن ك</tajweed>ُ<tajweed class=idgham_wo_ghunnah>لٌّ ل</tajweed>َّ<tajweed class=ghunnah>مّ</tajweed>َا جَمِي<tajweed class=idgham_wo_ghunnah>عٌ ل</tajweed>َّدَيْنَا مُحْضَر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣٢</span>",
+    "tl_tj": "wainn kullu llammna jamiy'u lladaynan muhdaruwn"
   },
   {
     "s": 36,
@@ -657,7 +689,8 @@
       "page": 442,
       "ruku": 385
     },
-    "tj": "وَءَايَ<tajweed class=idgham_wo_ghunnah>ةٌ ل</tajweed>َّهُمُ <tajweed class=ham_wasl>ٱ</tajweed>لْأَرْضُ <tajweed class=ham_wasl>ٱ</tajweed>لْمَيْتَةُ أَحْيَيْنَ<tajweed class=madda_normal>ـٰ</tajweed>هَا وَأَخْرَ<tajweed class=qalaqah>جْ</tajweed>نَا مِنْهَا حَب<tajweed class=ikhafa>ًّا ف</tajweed>َمِنْهُ يَأْكُل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣٣</span>"
+    "tj": "وَءَايَ<tajweed class=idgham_wo_ghunnah>ةٌ ل</tajweed>َّهُمُ <tajweed class=ham_wasl>ٱ</tajweed>لْأَرْضُ <tajweed class=ham_wasl>ٱ</tajweed>لْمَيْتَةُ أَحْيَيْنَ<tajweed class=madda_normal>ـٰ</tajweed>هَا وَأَخْرَ<tajweed class=qalaqah>جْ</tajweed>نَا مِنْهَا حَب<tajweed class=ikhafa>ًّا ف</tajweed>َمِنْهُ يَأْكُل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣٣</span>",
+    "tl_tj": "waayatu llahumun lardu lmaytatu ahyaynaha waakhrajna minha habbann faminhu yakuluwn"
   },
   {
     "s": 36,
@@ -677,7 +710,8 @@
       "page": 442,
       "ruku": 385
     },
-    "tj": "وَجَعَلْنَا فِيهَا جَ<tajweed class=ghunnah>نّ</tajweed>َ<tajweed class=madda_normal>ـٰ</tajweed><tajweed class=idgham_ghunnah>تٍ م</tajweed>ّ<tajweed class=idgham_ghunnah>ِن ن</tajweed>َّخِي<tajweed class=idgham_ghunnah>لٍ و</tajweed>َأَعْنَ<tajweed class=madda_normal>ـٰ</tajweed><tajweed class=idgham_ghunnah>بٍ و</tajweed>َفَجَّرْنَا فِيهَا مِنَ <tajweed class=ham_wasl>ٱ</tajweed>لْعُي<tajweed class=madda_permissible>ُو</tajweed>نِ <span class=end>٣٤</span>"
+    "tj": "وَجَعَلْنَا فِيهَا جَ<tajweed class=ghunnah>نّ</tajweed>َ<tajweed class=madda_normal>ـٰ</tajweed><tajweed class=idgham_ghunnah>تٍ م</tajweed>ّ<tajweed class=idgham_ghunnah>ِن ن</tajweed>َّخِي<tajweed class=idgham_ghunnah>لٍ و</tajweed>َأَعْنَ<tajweed class=madda_normal>ـٰ</tajweed><tajweed class=idgham_ghunnah>بٍ و</tajweed>َفَجَّرْنَا فِيهَا مِنَ <tajweed class=ham_wasl>ٱ</tajweed>لْعُي<tajweed class=madda_permissible>ُو</tajweed>نِ <span class=end>٣٤</span>",
+    "tl_tj": "waja'alna fiyha jannnati mmni nnnakhiyliw waa'nabiwn wafajjarna fiyha mina l'uyuwn"
   },
   {
     "s": 36,
@@ -697,7 +731,8 @@
       "page": 442,
       "ruku": 385
     },
-    "tj": "لِيَأْكُلُو<tajweed class=slnt>اْ</tajweed> مِ<tajweed class=ikhafa>ن ث</tajweed>َمَرِه<tajweed class=madda_normal>ِۦ</tajweed> وَمَا عَمِلَتْهُ أَيْدِيهِمْ‌ۖ أَفَلَا يَشْكُر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣٥</span>"
+    "tj": "لِيَأْكُلُو<tajweed class=slnt>اْ</tajweed> مِ<tajweed class=ikhafa>ن ث</tajweed>َمَرِه<tajweed class=madda_normal>ِۦ</tajweed> وَمَا عَمِلَتْهُ أَيْدِيهِمْ‌ۖ أَفَلَا يَشْكُر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣٥</span>",
+    "tl_tj": "liyakuluw minn thamarihiin wama 'amilathu aydiyhim afala yashkuruwn"
   },
   {
     "s": 36,
@@ -717,7 +752,8 @@
       "page": 442,
       "ruku": 385
     },
-    "tj": "سُ<tajweed class=qalaqah>بْ</tajweed>حَ<tajweed class=madda_normal>ـٰ</tajweed>نَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِى خَلَقَ <tajweed class=ham_wasl>ٱ</tajweed>لْأَزْو<tajweed class=madda_normal>َٲ</tajweed>جَ كُلَّهَا مِ<tajweed class=ghunnah>مّ</tajweed>َا تُ<tajweed class=iqlab>نۢب</tajweed>ِتُ <tajweed class=ham_wasl>ٱ</tajweed>لْأَرْضُ وَمِنْ أَ<tajweed class=ikhafa>نف</tajweed>ُسِهِمْ وَمِ<tajweed class=ghunnah>مّ</tajweed>َا لَا يَعْلَم<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣٦</span>"
+    "tj": "سُ<tajweed class=qalaqah>بْ</tajweed>حَ<tajweed class=madda_normal>ـٰ</tajweed>نَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِى خَلَقَ <tajweed class=ham_wasl>ٱ</tajweed>لْأَزْو<tajweed class=madda_normal>َٲ</tajweed>جَ كُلَّهَا مِ<tajweed class=ghunnah>مّ</tajweed>َا تُ<tajweed class=iqlab>نۢب</tajweed>ِتُ <tajweed class=ham_wasl>ٱ</tajweed>لْأَرْضُ وَمِنْ أَ<tajweed class=ikhafa>نف</tajweed>ُسِهِمْ وَمِ<tajweed class=ghunnah>مّ</tajweed>َا لَا يَعْلَم<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣٦</span>",
+    "tl_tj": "subhana lladhiy khalaqa lazwaja kullaha mimmna tumbitun lardu wamin anfusihimn wamimmna la ya'lamuwn"
   },
   {
     "s": 36,
@@ -737,7 +773,8 @@
       "page": 442,
       "ruku": 385
     },
-    "tj": "وَءَايَ<tajweed class=idgham_wo_ghunnah>ةٌ ل</tajweed>َّهُمُ <tajweed class=ham_wasl>ٱ</tajweed>لَّيْلُ نَسْلَخُ مِنْهُ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed><tajweed class=ghunnah>نّ</tajweed>َهَارَ فَإِذَا ه<tajweed class=idgham_shafawi>ُم م</tajweed>ُّظْلِم<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣٧</span>"
+    "tj": "وَءَايَ<tajweed class=idgham_wo_ghunnah>ةٌ ل</tajweed>َّهُمُ <tajweed class=ham_wasl>ٱ</tajweed>لَّيْلُ نَسْلَخُ مِنْهُ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed><tajweed class=ghunnah>نّ</tajweed>َهَارَ فَإِذَا ه<tajweed class=idgham_shafawi>ُم م</tajweed>ُّظْلِم<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٣٧</span>",
+    "tl_tj": "waayatu llahumun llaylu naslakhu minhu nnnahara faidha hum mmnuzlimuwn"
   },
   {
     "s": 36,
@@ -757,7 +794,8 @@
       "page": 442,
       "ruku": 385
     },
-    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>شَّمْسُ تَ<tajweed class=qalaqah>جْ</tajweed>رِى لِمُسْتَقَ<tajweed class=idgham_wo_ghunnah>رٍّ ل</tajweed>َّهَا‌ۚ ذ<tajweed class=madda_normal>َٲ</tajweed>لِكَ تَ<tajweed class=qalaqah>قْ</tajweed>دِيرُ <tajweed class=ham_wasl>ٱ</tajweed>لْعَزِيزِ <tajweed class=ham_wasl>ٱ</tajweed>لْعَل<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>٣٨</span>"
+    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>شَّمْسُ تَ<tajweed class=qalaqah>جْ</tajweed>رِى لِمُسْتَقَ<tajweed class=idgham_wo_ghunnah>رٍّ ل</tajweed>َّهَا‌ۚ ذ<tajweed class=madda_normal>َٲ</tajweed>لِكَ تَ<tajweed class=qalaqah>قْ</tajweed>دِيرُ <tajweed class=ham_wasl>ٱ</tajweed>لْعَزِيزِ <tajweed class=ham_wasl>ٱ</tajweed>لْعَل<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>٣٨</span>",
+    "tl_tj": "washshamsu tajriy limustaqarri llahan dhalika taqdiyru l'aziyzi l'aliym"
   },
   {
     "s": 36,
@@ -777,7 +815,8 @@
       "page": 442,
       "ruku": 385
     },
-    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>لْقَمَرَ قَدَّرْنَ<tajweed class=madda_normal>ـٰ</tajweed>هُ مَنَازِلَ حَتَّىٰ عَادَ كَ<tajweed class=ham_wasl>ٱ</tajweed>لْعُرْجُونِ <tajweed class=ham_wasl>ٱ</tajweed>لْقَد<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>٣٩</span>"
+    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>لْقَمَرَ قَدَّرْنَ<tajweed class=madda_normal>ـٰ</tajweed>هُ مَنَازِلَ حَتَّىٰ عَادَ كَ<tajweed class=ham_wasl>ٱ</tajweed>لْعُرْجُونِ <tajweed class=ham_wasl>ٱ</tajweed>لْقَد<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>٣٩</span>",
+    "tl_tj": "walqamara qaddarnahu manazila hatta 'ada kal'urjuwni lqadiym"
   },
   {
     "s": 36,
@@ -797,7 +836,8 @@
       "page": 442,
       "ruku": 385
     },
-    "tj": "لَا <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>شَّمْسُ يَ<tajweed class=iqlab>نۢب</tajweed>َغِى لَه<tajweed class=madda_obligatory>َآ</tajweed> أَ<tajweed class=ikhafa>ن ت</tajweed>ُ<tajweed class=qalaqah>دْ</tajweed>رِكَ <tajweed class=ham_wasl>ٱ</tajweed>لْقَمَرَ وَلَا <tajweed class=ham_wasl>ٱ</tajweed>لَّيْلُ سَابِقُ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed><tajweed class=ghunnah>نّ</tajweed>َهَارِ‌ۚ وَكُ<tajweed class=ikhafa>لٌّ ف</tajweed>ِى فَلَ<tajweed class=idgham_ghunnah>كٍ ي</tajweed>َسْبَح<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٤٠</span>"
+    "tj": "لَا <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>شَّمْسُ يَ<tajweed class=iqlab>نۢب</tajweed>َغِى لَه<tajweed class=madda_obligatory>َآ</tajweed> أَ<tajweed class=ikhafa>ن ت</tajweed>ُ<tajweed class=qalaqah>دْ</tajweed>رِكَ <tajweed class=ham_wasl>ٱ</tajweed>لْقَمَرَ وَلَا <tajweed class=ham_wasl>ٱ</tajweed>لَّيْلُ سَابِقُ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed><tajweed class=ghunnah>نّ</tajweed>َهَارِ‌ۚ وَكُ<tajweed class=ikhafa>لٌّ ف</tajweed>ِى فَلَ<tajweed class=idgham_ghunnah>كٍ ي</tajweed>َسْبَح<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٤٠</span>",
+    "tl_tj": "la shshamsu yambaghiyn laha ann tudrikan lqamara wala llaylu sabiqu nnnahari wakullunn fiy falakiyn yasbahuwn"
   },
   {
     "s": 36,
@@ -817,7 +857,8 @@
       "page": 443,
       "ruku": 385
     },
-    "tj": "وَءَايَ<tajweed class=idgham_wo_ghunnah>ةٌ ل</tajweed>َّهُمْ أَ<tajweed class=ghunnah>نّ</tajweed>َا حَمَلْنَا ذُرِّيَّتَهُمْ فِى <tajweed class=ham_wasl>ٱ</tajweed>لْفُلْكِ <tajweed class=ham_wasl>ٱ</tajweed>لْمَشْح<tajweed class=madda_permissible>ُو</tajweed>نِ <span class=end>٤١</span>"
+    "tj": "وَءَايَ<tajweed class=idgham_wo_ghunnah>ةٌ ل</tajweed>َّهُمْ أَ<tajweed class=ghunnah>نّ</tajweed>َا حَمَلْنَا ذُرِّيَّتَهُمْ فِى <tajweed class=ham_wasl>ٱ</tajweed>لْفُلْكِ <tajweed class=ham_wasl>ٱ</tajweed>لْمَشْح<tajweed class=madda_permissible>ُو</tajweed>نِ <span class=end>٤١</span>",
+    "tl_tj": "waayatu llahumn annna hamalna dhurriyyatahum fiy lfulki lmashhuwn"
   },
   {
     "s": 36,
@@ -837,7 +878,8 @@
       "page": 443,
       "ruku": 385
     },
-    "tj": "وَخَلَ<tajweed class=qalaqah>قْ</tajweed>نَا لَه<tajweed class=idgham_shafawi>ُم م</tajweed>ّ<tajweed class=idgham_ghunnah>ِن م</tajweed>ِّثْلِه<tajweed class=madda_normal>ِۦ</tajweed> مَا يَرْكَب<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٤٢</span>"
+    "tj": "وَخَلَ<tajweed class=qalaqah>قْ</tajweed>نَا لَه<tajweed class=idgham_shafawi>ُم م</tajweed>ّ<tajweed class=idgham_ghunnah>ِن م</tajweed>ِّثْلِه<tajweed class=madda_normal>ِۦ</tajweed> مَا يَرْكَب<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٤٢</span>",
+    "tl_tj": "wakhalaqna lahum mmni mmnithlihii ma yarkabuwn"
   },
   {
     "s": 36,
@@ -857,7 +899,8 @@
       "page": 443,
       "ruku": 385
     },
-    "tj": "وَإ<tajweed class=idgham_ghunnah>ِن ن</tajweed>َّشَأْ نُغْرِ<tajweed class=qalaqah>قْ</tajweed>هُمْ فَلَا صَرِيخَ لَهُمْ وَلَا هُمْ يُ<tajweed class=ikhafa>نق</tajweed>َذ<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٤٣</span>"
+    "tj": "وَإ<tajweed class=idgham_ghunnah>ِن ن</tajweed>َّشَأْ نُغْرِ<tajweed class=qalaqah>قْ</tajweed>هُمْ فَلَا صَرِيخَ لَهُمْ وَلَا هُمْ يُ<tajweed class=ikhafa>نق</tajweed>َذ<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٤٣</span>",
+    "tl_tj": "wain nnnasha nughriqhum fala sariykha lahum wala hum yunqadhuwn"
   },
   {
     "s": 36,
@@ -877,7 +920,8 @@
       "page": 443,
       "ruku": 385
     },
-    "tj": "إِلَّا رَحْمَ<tajweed class=idgham_ghunnah>ةً م</tajweed>ِّ<tajweed class=ghunnah>نّ</tajweed>َا وَمَتَ<tajweed class=madda_normal>ـٰ</tajweed>عًا إِلَىٰ ح<tajweed class=madda_permissible>ِي</tajweed>نٍ <span class=end>٤٤</span>"
+    "tj": "إِلَّا رَحْمَ<tajweed class=idgham_ghunnah>ةً م</tajweed>ِّ<tajweed class=ghunnah>نّ</tajweed>َا وَمَتَ<tajweed class=madda_normal>ـٰ</tajweed>عًا إِلَىٰ ح<tajweed class=madda_permissible>ِي</tajweed>نٍ <span class=end>٤٤</span>",
+    "tl_tj": "illa rahmatan mmninnna wamata'an ila hiyn"
   },
   {
     "s": 36,
@@ -897,7 +941,8 @@
       "page": 443,
       "ruku": 385
     },
-    "tj": "وَإِذَا قِيلَ لَهُمُ <tajweed class=ham_wasl>ٱ</tajweed>تَّقُو<tajweed class=slnt>اْ</tajweed> مَا بَيْنَ أَيْدِيكُمْ وَمَا خَلْفَكُمْ لَعَلَّكُمْ تُرْحَم<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٤٥</span>"
+    "tj": "وَإِذَا قِيلَ لَهُمُ <tajweed class=ham_wasl>ٱ</tajweed>تَّقُو<tajweed class=slnt>اْ</tajweed> مَا بَيْنَ أَيْدِيكُمْ وَمَا خَلْفَكُمْ لَعَلَّكُمْ تُرْحَم<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٤٥</span>",
+    "tl_tj": "waidha qiyla lahumu ttaquw ma bayna aydiykum wama khalfakum la'allakum turhamuwn"
   },
   {
     "s": 36,
@@ -917,7 +962,8 @@
       "page": 443,
       "ruku": 385
     },
-    "tj": "وَمَا تَأْتِيه<tajweed class=idgham_shafawi>ِم م</tajweed>ِّنْ ءَايَ<tajweed class=idgham_ghunnah>ةٍ م</tajweed>ِّنْ ءَايَ<tajweed class=madda_normal>ـٰ</tajweed>تِ رَبِّهِمْ إِلَّا كَانُو<tajweed class=slnt>اْ</tajweed> عَنْهَا مُعْرِض<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٤٦</span>"
+    "tj": "وَمَا تَأْتِيه<tajweed class=idgham_shafawi>ِم م</tajweed>ِّنْ ءَايَ<tajweed class=idgham_ghunnah>ةٍ م</tajweed>ِّنْ ءَايَ<tajweed class=madda_normal>ـٰ</tajweed>تِ رَبِّهِمْ إِلَّا كَانُو<tajweed class=slnt>اْ</tajweed> عَنْهَا مُعْرِض<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٤٦</span>",
+    "tl_tj": "wama tatiyhim mmnin ayatin mmnin ayati rabbihim illa kanuw 'anha mu'ridiyn"
   },
   {
     "s": 36,
@@ -937,7 +983,8 @@
       "page": 443,
       "ruku": 385
     },
-    "tj": "وَإِذَا قِيلَ لَهُمْ أَ<tajweed class=ikhafa>نف</tajweed>ِقُو<tajweed class=slnt>اْ</tajweed> مِ<tajweed class=ghunnah>مّ</tajweed>َا رَزَقَكُمُ <tajweed class=ham_wasl>ٱ</tajweed>للَّهُ قَالَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِينَ كَفَرُو<tajweed class=slnt>اْ</tajweed> لِلَّذِينَ ءَامَن<tajweed class=madda_obligatory>ُوٓ</tajweed><tajweed class=slnt>اْ</tajweed> أَنُ<tajweed class=qalaqah>طْ</tajweed>عِمُ م<tajweed class=idgham_wo_ghunnah>َن ل</tajweed>َّوْ يَش<tajweed class=madda_obligatory>َا</tajweed>ٓءُ <tajweed class=ham_wasl>ٱ</tajweed>للَّهُ أَ<tajweed class=qalaqah>طْ</tajweed>عَمَهُ<tajweed class=madda_obligatory>ۥٓ</tajweed> إِنْ أَ<tajweed class=ikhafa>نت</tajweed>ُمْ إِلَّا فِى ضَلَ<tajweed class=madda_normal>ـٰ</tajweed><tajweed class=idgham_ghunnah>لٍ م</tajweed>ُّب<tajweed class=madda_permissible>ِي</tajweed>نٍ <span class=end>٤٧</span>"
+    "tj": "وَإِذَا قِيلَ لَهُمْ أَ<tajweed class=ikhafa>نف</tajweed>ِقُو<tajweed class=slnt>اْ</tajweed> مِ<tajweed class=ghunnah>مّ</tajweed>َا رَزَقَكُمُ <tajweed class=ham_wasl>ٱ</tajweed>للَّهُ قَالَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِينَ كَفَرُو<tajweed class=slnt>اْ</tajweed> لِلَّذِينَ ءَامَن<tajweed class=madda_obligatory>ُوٓ</tajweed><tajweed class=slnt>اْ</tajweed> أَنُ<tajweed class=qalaqah>طْ</tajweed>عِمُ م<tajweed class=idgham_wo_ghunnah>َن ل</tajweed>َّوْ يَش<tajweed class=madda_obligatory>َا</tajweed>ٓءُ <tajweed class=ham_wasl>ٱ</tajweed>للَّهُ أَ<tajweed class=qalaqah>طْ</tajweed>عَمَهُ<tajweed class=madda_obligatory>ۥٓ</tajweed> إِنْ أَ<tajweed class=ikhafa>نت</tajweed>ُمْ إِلَّا فِى ضَلَ<tajweed class=madda_normal>ـٰ</tajweed><tajweed class=idgham_ghunnah>لٍ م</tajweed>ُّب<tajweed class=madda_permissible>ِي</tajweed>نٍ <span class=end>٤٧</span>",
+    "tl_tj": "waidha qiyla lahum anfiquwn mimmna razaqakumu llahu qala lladhiyna kafaruw lilladhiyna amanuwa anut'imu ma llawn yashau llahu at'amahuu in antumn illa fiy dalalin mmnubiyn"
   },
   {
     "s": 36,
@@ -957,7 +1004,8 @@
       "page": 443,
       "ruku": 385
     },
-    "tj": "وَيَقُولُونَ مَتَىٰ هَ<tajweed class=madda_normal>ـٰ</tajweed>ذَا <tajweed class=ham_wasl>ٱ</tajweed>لْوَعْدُ إِ<tajweed class=ikhafa>ن ك</tajweed>ُ<tajweed class=ikhafa>نت</tajweed>ُمْ صَ<tajweed class=madda_normal>ـٰ</tajweed>دِق<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٤٨</span>"
+    "tj": "وَيَقُولُونَ مَتَىٰ هَ<tajweed class=madda_normal>ـٰ</tajweed>ذَا <tajweed class=ham_wasl>ٱ</tajweed>لْوَعْدُ إِ<tajweed class=ikhafa>ن ك</tajweed>ُ<tajweed class=ikhafa>نت</tajweed>ُمْ صَ<tajweed class=madda_normal>ـٰ</tajweed>دِق<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٤٨</span>",
+    "tl_tj": "wayaquwluwna mata hadha lwa'du inn kuntumn sadiqiyn"
   },
   {
     "s": 36,
@@ -977,7 +1025,8 @@
       "page": 443,
       "ruku": 385
     },
-    "tj": "مَا يَ<tajweed class=ikhafa>نظ</tajweed>ُرُونَ إِلَّا صَيْحَ<tajweed class=idgham_ghunnah>ةً و</tajweed><tajweed class=madda_normal>َٲ</tajweed>حِدَ<tajweed class=ikhafa>ةً ت</tajweed>َأْخُذُهُمْ وَهُمْ يَخِصِّم<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٤٩</span>"
+    "tj": "مَا يَ<tajweed class=ikhafa>نظ</tajweed>ُرُونَ إِلَّا صَيْحَ<tajweed class=idgham_ghunnah>ةً و</tajweed><tajweed class=madda_normal>َٲ</tajweed>حِدَ<tajweed class=ikhafa>ةً ت</tajweed>َأْخُذُهُمْ وَهُمْ يَخِصِّم<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٤٩</span>",
+    "tl_tj": "ma yanzuruwnan illa sayhatawn wahidatann takhudhuhum wahum yakhissimuwn"
   },
   {
     "s": 36,
@@ -997,7 +1046,8 @@
       "page": 443,
       "ruku": 385
     },
-    "tj": "فَلَا يَسْتَطِيعُونَ تَوْصِيَ<tajweed class=idgham_ghunnah>ةً و</tajweed>َل<tajweed class=madda_obligatory>َآ</tajweed> إِلَ<tajweed class=madda_obligatory>ىٰٓ</tajweed> أَهْلِهِمْ يَرْجِع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٠</span>"
+    "tj": "فَلَا يَسْتَطِيعُونَ تَوْصِيَ<tajweed class=idgham_ghunnah>ةً و</tajweed>َل<tajweed class=madda_obligatory>َآ</tajweed> إِلَ<tajweed class=madda_obligatory>ىٰٓ</tajweed> أَهْلِهِمْ يَرْجِع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٠</span>",
+    "tl_tj": "fala yastatiy'uwna tawsiyatawn walan ila ahlihim yarji'uwn"
   },
   {
     "s": 36,
@@ -1017,7 +1067,8 @@
       "page": 443,
       "ruku": 386
     },
-    "tj": "وَنُفِخَ فِى <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>صُّورِ فَإِذَا ه<tajweed class=idgham_shafawi>ُم م</tajweed>ِّنَ <tajweed class=ham_wasl>ٱ</tajweed>لْأَ<tajweed class=qalaqah>جْ</tajweed>دَاثِ إِلَىٰ رَبِّهِمْ يَ<tajweed class=ikhafa>نس</tajweed>ِل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥١</span>"
+    "tj": "وَنُفِخَ فِى <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>صُّورِ فَإِذَا ه<tajweed class=idgham_shafawi>ُم م</tajweed>ِّنَ <tajweed class=ham_wasl>ٱ</tajweed>لْأَ<tajweed class=qalaqah>جْ</tajweed>دَاثِ إِلَىٰ رَبِّهِمْ يَ<tajweed class=ikhafa>نس</tajweed>ِل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥١</span>",
+    "tl_tj": "wanufikha fiy ssuwri faidha hum mmnina lajdathi ila rabbihim yansiluwn"
   },
   {
     "s": 36,
@@ -1037,7 +1088,8 @@
       "page": 443,
       "ruku": 386
     },
-    "tj": "قَالُو<tajweed class=slnt>اْ</tajweed> يَ<tajweed class=madda_normal>ـٰ</tajweed>وَيْلَنَا م<tajweed class=iqlab>َنۢ ب</tajweed>َعَثَنَا م<tajweed class=idgham_ghunnah>ِن م</tajweed>َّرْقَدِنَاۜ‌ۗ هَ<tajweed class=madda_normal>ـٰ</tajweed>ذَا مَا وَعَدَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نُ وَصَدَقَ <tajweed class=ham_wasl>ٱ</tajweed>لْمُرْسَل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٢</span>"
+    "tj": "قَالُو<tajweed class=slnt>اْ</tajweed> يَ<tajweed class=madda_normal>ـٰ</tajweed>وَيْلَنَا م<tajweed class=iqlab>َنۢ ب</tajweed>َعَثَنَا م<tajweed class=idgham_ghunnah>ِن م</tajweed>َّرْقَدِنَاۜ‌ۗ هَ<tajweed class=madda_normal>ـٰ</tajweed>ذَا مَا وَعَدَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نُ وَصَدَقَ <tajweed class=ham_wasl>ٱ</tajweed>لْمُرْسَل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٢</span>",
+    "tl_tj": "qaluw yawaylana mamn ba'athana min mmnarqadina hadha ma wa'ada rrahmanu wasadaqa lmursaluwn"
   },
   {
     "s": 36,
@@ -1057,7 +1109,8 @@
       "page": 443,
       "ruku": 386
     },
-    "tj": "إِ<tajweed class=ikhafa>ن ك</tajweed>َانَتْ إِلَّا صَيْحَ<tajweed class=idgham_ghunnah>ةً و</tajweed><tajweed class=madda_normal>َٲ</tajweed>حِدَ<tajweed class=ikhafa>ةً ف</tajweed>َإِذَا هُمْ جَمِي<tajweed class=idgham_wo_ghunnah>عٌ ل</tajweed>َّدَيْنَا مُحْضَر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٣</span>"
+    "tj": "إِ<tajweed class=ikhafa>ن ك</tajweed>َانَتْ إِلَّا صَيْحَ<tajweed class=idgham_ghunnah>ةً و</tajweed><tajweed class=madda_normal>َٲ</tajweed>حِدَ<tajweed class=ikhafa>ةً ف</tajweed>َإِذَا هُمْ جَمِي<tajweed class=idgham_wo_ghunnah>عٌ ل</tajweed>َّدَيْنَا مُحْضَر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٣</span>",
+    "tl_tj": "inn kanatn illa sayhatawn wahidatann faidha hum jamiy'u lladayna muhdaruwn"
   },
   {
     "s": 36,
@@ -1077,7 +1130,8 @@
       "page": 443,
       "ruku": 386
     },
-    "tj": "فَ<tajweed class=ham_wasl>ٱ</tajweed>لْيَوْمَ لَا تُظْلَمُ نَفْ<tajweed class=ikhafa>سٌ ش</tajweed>َيْـ<tajweed class=idgham_ghunnah>ـًٔا و</tajweed>َلَا تُ<tajweed class=qalaqah>جْ</tajweed>زَوْنَ إِلَّا مَا كُ<tajweed class=ikhafa>نت</tajweed>ُمْ تَعْمَل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٤</span>"
+    "tj": "فَ<tajweed class=ham_wasl>ٱ</tajweed>لْيَوْمَ لَا تُظْلَمُ نَفْ<tajweed class=ikhafa>سٌ ش</tajweed>َيْـ<tajweed class=idgham_ghunnah>ـًٔا و</tajweed>َلَا تُ<tajweed class=qalaqah>جْ</tajweed>زَوْنَ إِلَّا مَا كُ<tajweed class=ikhafa>نت</tajweed>ُمْ تَعْمَل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٤</span>",
+    "tl_tj": "falyawma la tuzlamu nafsunn shayawn wala tujzawna illa ma kuntumn ta'maluwn"
   },
   {
     "s": 36,
@@ -1097,7 +1151,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed>َ أَصْحَ<tajweed class=madda_normal>ـٰ</tajweed>بَ <tajweed class=ham_wasl>ٱ</tajweed>لْجَ<tajweed class=ghunnah>نّ</tajweed>َةِ <tajweed class=ham_wasl>ٱ</tajweed>لْيَوْمَ فِى شُغُ<tajweed class=ikhafa>لٍ ف</tajweed>َ<tajweed class=madda_normal>ـٰ</tajweed>كِه<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٥</span>"
+    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed>َ أَصْحَ<tajweed class=madda_normal>ـٰ</tajweed>بَ <tajweed class=ham_wasl>ٱ</tajweed>لْجَ<tajweed class=ghunnah>نّ</tajweed>َةِ <tajweed class=ham_wasl>ٱ</tajweed>لْيَوْمَ فِى شُغُ<tajweed class=ikhafa>لٍ ف</tajweed>َ<tajweed class=madda_normal>ـٰ</tajweed>كِه<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٥</span>",
+    "tl_tj": "innna ashaba ljannnati lyawma fiy shughulinn fakihuwn"
   },
   {
     "s": 36,
@@ -1117,7 +1172,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "هُمْ وَأَزْو<tajweed class=madda_normal>َٲ</tajweed>جُهُمْ فِى ظِلَ<tajweed class=madda_normal>ـٰ</tajweed>لٍ عَلَى <tajweed class=ham_wasl>ٱ</tajweed>لْأَر<tajweed class=madda_obligatory>َا</tajweed>ٓئِكِ مُتَّكِــٔ<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٦</span>"
+    "tj": "هُمْ وَأَزْو<tajweed class=madda_normal>َٲ</tajweed>جُهُمْ فِى ظِلَ<tajweed class=madda_normal>ـٰ</tajweed>لٍ عَلَى <tajweed class=ham_wasl>ٱ</tajweed>لْأَر<tajweed class=madda_obligatory>َا</tajweed>ٓئِكِ مُتَّكِــٔ<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٦</span>",
+    "tl_tj": "hum waazwajuhum fiy zilalin 'ala laraiki muttakiuwn"
   },
   {
     "s": 36,
@@ -1137,7 +1193,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "لَهُمْ فِيهَا فَ<tajweed class=madda_normal>ـٰ</tajweed>كِهَ<tajweed class=idgham_ghunnah>ةٌ و</tajweed>َلَه<tajweed class=idgham_shafawi>ُم م</tajweed>َّا يَدَّع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٧</span>"
+    "tj": "لَهُمْ فِيهَا فَ<tajweed class=madda_normal>ـٰ</tajweed>كِهَ<tajweed class=idgham_ghunnah>ةٌ و</tajweed>َلَه<tajweed class=idgham_shafawi>ُم م</tajweed>َّا يَدَّع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٧</span>",
+    "tl_tj": "lahum fiyha fakihatuwn walahum mmna yadda'uwn"
   },
   {
     "s": 36,
@@ -1157,7 +1214,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "سَلَ<tajweed class=madda_normal>ـٰ</tajweed><tajweed class=ikhafa>مٌ ق</tajweed>َوْل<tajweed class=idgham_ghunnah>اً م</tajweed>ّ<tajweed class=idgham_wo_ghunnah>ِن ر</tajweed>َّ<tajweed class=idgham_wo_ghunnah>بٍّ ر</tajweed>َّح<tajweed class=madda_permissible>ِي</tajweed>مٍ <span class=end>٥٨</span>"
+    "tj": "سَلَ<tajweed class=madda_normal>ـٰ</tajweed><tajweed class=ikhafa>مٌ ق</tajweed>َوْل<tajweed class=idgham_ghunnah>اً م</tajweed>ّ<tajweed class=idgham_wo_ghunnah>ِن ر</tajweed>َّ<tajweed class=idgham_wo_ghunnah>بٍّ ر</tajweed>َّح<tajweed class=madda_permissible>ِي</tajweed>مٍ <span class=end>٥٨</span>",
+    "tl_tj": "salamunn qawlan mmni rrabbi rrahiym"
   },
   {
     "s": 36,
@@ -1177,7 +1235,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>مْتَ<tajweed class=madda_normal>ـٰ</tajweed>زُو<tajweed class=slnt>اْ</tajweed> <tajweed class=ham_wasl>ٱ</tajweed>لْيَوْمَ أَيُّهَا <tajweed class=ham_wasl>ٱ</tajweed>لْمُ<tajweed class=qalaqah>جْ</tajweed>رِم<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٩</span>"
+    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>مْتَ<tajweed class=madda_normal>ـٰ</tajweed>زُو<tajweed class=slnt>اْ</tajweed> <tajweed class=ham_wasl>ٱ</tajweed>لْيَوْمَ أَيُّهَا <tajweed class=ham_wasl>ٱ</tajweed>لْمُ<tajweed class=qalaqah>جْ</tajweed>رِم<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٥٩</span>",
+    "tl_tj": "wamtazuw lyawma ayyuha lmujrimuwn"
   },
   {
     "s": 36,
@@ -1197,7 +1256,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "۞ أَلَمْ أَعْهَ<tajweed class=qalaqah>دْ</tajweed> إِلَيْكُمْ يَ<tajweed class=madda_normal>ـٰ</tajweed>بَن<tajweed class=madda_obligatory>ِىٓ</tajweed> ءَادَمَ أ<tajweed class=idgham_wo_ghunnah>َن ل</tajweed>َّا تَعْبُدُو<tajweed class=slnt>اْ</tajweed> <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>شَّيْطَ<tajweed class=madda_normal>ـٰ</tajweed>نَ‌ۖ إِ<tajweed class=ghunnah>نّ</tajweed>َهُ<tajweed class=madda_normal>ۥ</tajweed> لَكُمْ عَدُ<tajweed class=idgham_ghunnah>وٌّ م</tajweed>ُّب<tajweed class=madda_permissible>ِي</tajweed>نٌ <span class=end>٦٠</span>"
+    "tj": "۞ أَلَمْ أَعْهَ<tajweed class=qalaqah>دْ</tajweed> إِلَيْكُمْ يَ<tajweed class=madda_normal>ـٰ</tajweed>بَن<tajweed class=madda_obligatory>ِىٓ</tajweed> ءَادَمَ أ<tajweed class=idgham_wo_ghunnah>َن ل</tajweed>َّا تَعْبُدُو<tajweed class=slnt>اْ</tajweed> <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>شَّيْطَ<tajweed class=madda_normal>ـٰ</tajweed>نَ‌ۖ إِ<tajweed class=ghunnah>نّ</tajweed>َهُ<tajweed class=madda_normal>ۥ</tajweed> لَكُمْ عَدُ<tajweed class=idgham_ghunnah>وٌّ م</tajweed>ُّب<tajweed class=madda_permissible>ِي</tajweed>نٌ <span class=end>٦٠</span>",
+    "tl_tj": "alam a'had ilaykum yabaniy adama a lla ta'buduw shshaytanan n innnahuu lakum 'aduwwunn mmnubiyn"
   },
   {
     "s": 36,
@@ -1217,7 +1277,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "وَأَنِ <tajweed class=ham_wasl>ٱ</tajweed>عْبُدُونِى‌ۚ هَ<tajweed class=madda_normal>ـٰ</tajweed>ذَا صِر<tajweed class=madda_normal>َٲ</tajweed><tajweed class=idgham_ghunnah>طٌ م</tajweed>ُّسْتَق<tajweed class=madda_permissible>ِي</tajweed>مٌ <span class=end>٦١</span>"
+    "tj": "وَأَنِ <tajweed class=ham_wasl>ٱ</tajweed>عْبُدُونِى‌ۚ هَ<tajweed class=madda_normal>ـٰ</tajweed>ذَا صِر<tajweed class=madda_normal>َٲ</tajweed><tajweed class=idgham_ghunnah>طٌ م</tajweed>ُّسْتَق<tajweed class=madda_permissible>ِي</tajweed>مٌ <span class=end>٦١</span>",
+    "tl_tj": "waani 'buduwniy hadha siratun mmnustaqiym"
   },
   {
     "s": 36,
@@ -1237,7 +1298,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "وَلَقَ<tajweed class=qalaqah>دْ</tajweed> أَضَلَّ مِ<tajweed class=ikhafa>نك</tajweed>ُمْ جِبِل<tajweed class=ikhafa>اًّ ك</tajweed>َثِيرًا‌ۖ أَفَلَمْ تَكُونُو<tajweed class=slnt>اْ</tajweed> تَعْقِل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٢</span>"
+    "tj": "وَلَقَ<tajweed class=qalaqah>دْ</tajweed> أَضَلَّ مِ<tajweed class=ikhafa>نك</tajweed>ُمْ جِبِل<tajweed class=ikhafa>اًّ ك</tajweed>َثِيرًا‌ۖ أَفَلَمْ تَكُونُو<tajweed class=slnt>اْ</tajweed> تَعْقِل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٢</span>",
+    "tl_tj": "walaqad adalla minkumn jibillann kathiyrann afalam takuwnuw ta'qiluwn"
   },
   {
     "s": 36,
@@ -1257,7 +1319,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "هَ<tajweed class=madda_normal>ـٰ</tajweed>ذِه<tajweed class=madda_normal>ِۦ</tajweed> جَهَ<tajweed class=ghunnah>نّ</tajweed>َمُ <tajweed class=ham_wasl>ٱ</tajweed>لَّتِى كُ<tajweed class=ikhafa>نت</tajweed>ُمْ تُوعَد<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٣</span>"
+    "tj": "هَ<tajweed class=madda_normal>ـٰ</tajweed>ذِه<tajweed class=madda_normal>ِۦ</tajweed> جَهَ<tajweed class=ghunnah>نّ</tajweed>َمُ <tajweed class=ham_wasl>ٱ</tajweed>لَّتِى كُ<tajweed class=ikhafa>نت</tajweed>ُمْ تُوعَد<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٣</span>",
+    "tl_tj": "hadhihii jahannnamu llatiy kuntumn tuw'aduwn"
   },
   {
     "s": 36,
@@ -1277,7 +1340,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "ٱصْلَوْهَا <tajweed class=ham_wasl>ٱ</tajweed>لْيَوْمَ بِمَا كُ<tajweed class=ikhafa>نت</tajweed>ُمْ تَكْفُر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٤</span>"
+    "tj": "ٱصْلَوْهَا <tajweed class=ham_wasl>ٱ</tajweed>لْيَوْمَ بِمَا كُ<tajweed class=ikhafa>نت</tajweed>ُمْ تَكْفُر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٤</span>",
+    "tl_tj": "islawha lyawma bima kuntumn takfuruwn"
   },
   {
     "s": 36,
@@ -1297,7 +1361,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "ٱلْيَوْمَ نَخْتِمُ عَلَ<tajweed class=madda_obligatory>ىٰٓ</tajweed> أَفْو<tajweed class=madda_normal>َٲ</tajweed>هِهِمْ وَتُكَلِّمُن<tajweed class=madda_obligatory>َآ</tajweed> أَيْدِيهِمْ وَتَشْهَدُ أَرْجُلُه<tajweed class=ikhafa_shafawi>ُم ب</tajweed>ِمَا كَانُو<tajweed class=slnt>اْ</tajweed> يَكْسِب<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٥</span>"
+    "tj": "ٱلْيَوْمَ نَخْتِمُ عَلَ<tajweed class=madda_obligatory>ىٰٓ</tajweed> أَفْو<tajweed class=madda_normal>َٲ</tajweed>هِهِمْ وَتُكَلِّمُن<tajweed class=madda_obligatory>َآ</tajweed> أَيْدِيهِمْ وَتَشْهَدُ أَرْجُلُه<tajweed class=ikhafa_shafawi>ُم ب</tajweed>ِمَا كَانُو<tajweed class=slnt>اْ</tajweed> يَكْسِب<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٥</span>",
+    "tl_tj": "alyawma nakhtimu 'ala afwahihim watukallimuna aydiyhim watashhadu arjuluhumn biman kanuw yaksibuwn"
   },
   {
     "s": 36,
@@ -1317,7 +1382,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "وَلَوْ نَش<tajweed class=madda_obligatory>َا</tajweed>ٓءُ لَطَمَسْنَا عَلَ<tajweed class=madda_obligatory>ىٰٓ</tajweed> أَعْيُنِهِمْ فَ<tajweed class=ham_wasl>ٱ</tajweed>سْتَبَقُو<tajweed class=slnt>اْ</tajweed> <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>صِّر<tajweed class=madda_normal>َٲ</tajweed>طَ فَأَ<tajweed class=ghunnah>نّ</tajweed>َىٰ يُ<tajweed class=qalaqah>بْ</tajweed>صِر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٦</span>"
+    "tj": "وَلَوْ نَش<tajweed class=madda_obligatory>َا</tajweed>ٓءُ لَطَمَسْنَا عَلَ<tajweed class=madda_obligatory>ىٰٓ</tajweed> أَعْيُنِهِمْ فَ<tajweed class=ham_wasl>ٱ</tajweed>سْتَبَقُو<tajweed class=slnt>اْ</tajweed> <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>صِّر<tajweed class=madda_normal>َٲ</tajweed>طَ فَأَ<tajweed class=ghunnah>نّ</tajweed>َىٰ يُ<tajweed class=qalaqah>بْ</tajweed>صِر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٦</span>",
+    "tl_tj": "walaw nashau latamasna 'ala a'yunihim fastabaquw ssirata faannna yubsiruwn"
   },
   {
     "s": 36,
@@ -1337,7 +1403,8 @@
       "page": 444,
       "ruku": 386
     },
-    "tj": "وَلَوْ نَش<tajweed class=madda_obligatory>َا</tajweed>ٓءُ لَمَسَخْنَ<tajweed class=madda_normal>ـٰ</tajweed>هُمْ عَلَىٰ مَكَانَتِهِمْ فَمَا <tajweed class=ham_wasl>ٱ</tajweed>سْتَطَ<tajweed class=madda_normal>ـٰ</tajweed>عُو<tajweed class=slnt>اْ</tajweed> مُضِي<tajweed class=idgham_ghunnah>ًّا و</tajweed>َلَا يَرْجِع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٧</span>"
+    "tj": "وَلَوْ نَش<tajweed class=madda_obligatory>َا</tajweed>ٓءُ لَمَسَخْنَ<tajweed class=madda_normal>ـٰ</tajweed>هُمْ عَلَىٰ مَكَانَتِهِمْ فَمَا <tajweed class=ham_wasl>ٱ</tajweed>سْتَطَ<tajweed class=madda_normal>ـٰ</tajweed>عُو<tajweed class=slnt>اْ</tajweed> مُضِي<tajweed class=idgham_ghunnah>ًّا و</tajweed>َلَا يَرْجِع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٧</span>",
+    "tl_tj": "walaw nashau lamasakhnahum 'ala makanatihim fama stata'uw mudiyyawn wala yarji'uwn"
   },
   {
     "s": 36,
@@ -1357,7 +1424,8 @@
       "page": 444,
       "ruku": 387
     },
-    "tj": "وَم<tajweed class=idgham_ghunnah>َن ن</tajweed>ُّعَ<tajweed class=ghunnah>مّ</tajweed>ِرْهُ نُنَكِّسْهُ فِى <tajweed class=ham_wasl>ٱ</tajweed>لْخَلْقِ‌ۖ أَفَلَا يَعْقِل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٨</span>"
+    "tj": "وَم<tajweed class=idgham_ghunnah>َن ن</tajweed>ُّعَ<tajweed class=ghunnah>مّ</tajweed>ِرْهُ نُنَكِّسْهُ فِى <tajweed class=ham_wasl>ٱ</tajweed>لْخَلْقِ‌ۖ أَفَلَا يَعْقِل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٦٨</span>",
+    "tl_tj": "waman nnnu'ammnirhu nunakkishu fiy lkhalqi afala ya'qiluwn"
   },
   {
     "s": 36,
@@ -1377,7 +1445,8 @@
       "page": 444,
       "ruku": 387
     },
-    "tj": "وَمَا عَلَّمْنَ<tajweed class=madda_normal>ـٰ</tajweed>هُ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>شِّعْرَ وَمَا يَ<tajweed class=iqlab>نۢب</tajweed>َغِى لَهُ<tajweed class=madda_obligatory>ۥٓ‌ۚ</tajweed> إِنْ هُوَ إِلَّا ذِكْ<tajweed class=idgham_ghunnah>رٌ و</tajweed>َقُرْءَا<tajweed class=idgham_ghunnah>نٌ م</tajweed>ُّب<tajweed class=madda_permissible>ِي</tajweed>نٌ <span class=end>٦٩</span>"
+    "tj": "وَمَا عَلَّمْنَ<tajweed class=madda_normal>ـٰ</tajweed>هُ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>شِّعْرَ وَمَا يَ<tajweed class=iqlab>نۢب</tajweed>َغِى لَهُ<tajweed class=madda_obligatory>ۥٓ‌ۚ</tajweed> إِنْ هُوَ إِلَّا ذِكْ<tajweed class=idgham_ghunnah>رٌ و</tajweed>َقُرْءَا<tajweed class=idgham_ghunnah>نٌ م</tajweed>ُّب<tajweed class=madda_permissible>ِي</tajweed>نٌ <span class=end>٦٩</span>",
+    "tl_tj": "wama 'allamnahu shshi'ra wama yambaghiyn lahuu in huwa illa dhikruwn waquranun mmnubiyn"
   },
   {
     "s": 36,
@@ -1397,7 +1466,8 @@
       "page": 444,
       "ruku": 387
     },
-    "tj": "لِّيُ<tajweed class=ikhafa>نذ</tajweed>ِرَ مَ<tajweed class=ikhafa>ن ك</tajweed>َانَ حَي<tajweed class=idgham_ghunnah>ًّا و</tajweed>َيَحِقَّ <tajweed class=ham_wasl>ٱ</tajweed>لْقَوْلُ عَلَى <tajweed class=ham_wasl>ٱ</tajweed>لْكَ<tajweed class=madda_normal>ـٰ</tajweed>فِر<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٧٠</span>"
+    "tj": "لِّيُ<tajweed class=ikhafa>نذ</tajweed>ِرَ مَ<tajweed class=ikhafa>ن ك</tajweed>َانَ حَي<tajweed class=idgham_ghunnah>ًّا و</tajweed>َيَحِقَّ <tajweed class=ham_wasl>ٱ</tajweed>لْقَوْلُ عَلَى <tajweed class=ham_wasl>ٱ</tajweed>لْكَ<tajweed class=madda_normal>ـٰ</tajweed>فِر<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٧٠</span>",
+    "tl_tj": "lliyundhiran mann kanan hayyawn wayahiqqan lqawlu 'ala lkafiriyn"
   },
   {
     "s": 36,
@@ -1417,7 +1487,8 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "أَوَلَمْ يَرَوْ<tajweed class=slnt>اْ</tajweed> أَ<tajweed class=ghunnah>نّ</tajweed>َا خَلَ<tajweed class=qalaqah>قْ</tajweed>نَا لَه<tajweed class=idgham_shafawi>ُم م</tajweed>ِّ<tajweed class=ghunnah>مّ</tajweed>َا عَمِلَتْ أَيْدِين<tajweed class=madda_obligatory>َآ</tajweed> أَنْعَ<tajweed class=madda_normal>ـٰ</tajweed><tajweed class=ikhafa>مًا ف</tajweed>َهُمْ لَهَا مَ<tajweed class=madda_normal>ـٰ</tajweed>لِك<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧١</span>"
+    "tj": "أَوَلَمْ يَرَوْ<tajweed class=slnt>اْ</tajweed> أَ<tajweed class=ghunnah>نّ</tajweed>َا خَلَ<tajweed class=qalaqah>قْ</tajweed>نَا لَه<tajweed class=idgham_shafawi>ُم م</tajweed>ِّ<tajweed class=ghunnah>مّ</tajweed>َا عَمِلَتْ أَيْدِين<tajweed class=madda_obligatory>َآ</tajweed> أَنْعَ<tajweed class=madda_normal>ـٰ</tajweed><tajweed class=ikhafa>مًا ف</tajweed>َهُمْ لَهَا مَ<tajweed class=madda_normal>ـٰ</tajweed>لِك<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧١</span>",
+    "tl_tj": "awalam yarawa annna khalaqna lahum mmnimmna 'amilat aydiyna an'amann fahum laha malikuwn"
   },
   {
     "s": 36,
@@ -1437,7 +1508,8 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "وَذَلَّلْنَ<tajweed class=madda_normal>ـٰ</tajweed>هَا لَهُمْ فَمِنْهَا رَكُوبُهُمْ وَمِنْهَا يَأْكُل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧٢</span>"
+    "tj": "وَذَلَّلْنَ<tajweed class=madda_normal>ـٰ</tajweed>هَا لَهُمْ فَمِنْهَا رَكُوبُهُمْ وَمِنْهَا يَأْكُل<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧٢</span>",
+    "tl_tj": "wadhallalnaha lahum faminha rakuwbuhum waminha yakuluwn"
   },
   {
     "s": 36,
@@ -1457,7 +1529,8 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "وَلَهُمْ فِيهَا مَنَ<tajweed class=madda_normal>ـٰ</tajweed>فِعُ وَمَشَارِبُ‌ۖ أَفَلَا يَشْكُر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧٣</span>"
+    "tj": "وَلَهُمْ فِيهَا مَنَ<tajweed class=madda_normal>ـٰ</tajweed>فِعُ وَمَشَارِبُ‌ۖ أَفَلَا يَشْكُر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧٣</span>",
+    "tl_tj": "walahum fiyha manafi'u wamasharibu afala yashkuruwn"
   },
   {
     "s": 36,
@@ -1477,7 +1550,8 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>تَّخَذُو<tajweed class=slnt>اْ</tajweed> مِ<tajweed class=ikhafa>ن د</tajweed>ُونِ <tajweed class=ham_wasl>ٱ</tajweed>للَّهِ ءَالِهَ<tajweed class=idgham_wo_ghunnah>ةً ل</tajweed>َّعَلَّهُمْ يُ<tajweed class=ikhafa>نص</tajweed>َر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧٤</span>"
+    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>تَّخَذُو<tajweed class=slnt>اْ</tajweed> مِ<tajweed class=ikhafa>ن د</tajweed>ُونِ <tajweed class=ham_wasl>ٱ</tajweed>للَّهِ ءَالِهَ<tajweed class=idgham_wo_ghunnah>ةً ل</tajweed>َّعَلَّهُمْ يُ<tajweed class=ikhafa>نص</tajweed>َر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧٤</span>",
+    "tl_tj": "wattakhadhuw minn duwnin llahi alihata lla'allahumn yunsaruwn"
   },
   {
     "s": 36,
@@ -1497,7 +1571,8 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "لَا يَسْتَطِيعُونَ نَصْرَهُمْ وَهُمْ لَهُمْ جُن<tajweed class=idgham_ghunnah>دٌ م</tajweed>ُّحْضَر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧٥</span>"
+    "tj": "لَا يَسْتَطِيعُونَ نَصْرَهُمْ وَهُمْ لَهُمْ جُن<tajweed class=idgham_ghunnah>دٌ م</tajweed>ُّحْضَر<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧٥</span>",
+    "tl_tj": "la yastatiy'uwna nasrahum wahum lahum jundun mmnuhdaruwn"
   },
   {
     "s": 36,
@@ -1517,7 +1592,8 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "فَلَا يَحْزُ<tajweed class=ikhafa>نك</tajweed>َ قَوْلُهُمْ‌ۘ إِ<tajweed class=ghunnah>نّ</tajweed>َا نَعْلَمُ مَا يُسِرُّونَ وَمَا يُعْلِن<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧٦</span>"
+    "tj": "فَلَا يَحْزُ<tajweed class=ikhafa>نك</tajweed>َ قَوْلُهُمْ‌ۘ إِ<tajweed class=ghunnah>نّ</tajweed>َا نَعْلَمُ مَا يُسِرُّونَ وَمَا يُعْلِن<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٧٦</span>",
+    "tl_tj": "fala yahzunkan qawluhum innna na'lamu ma yusirruwna wama yu'linuwn"
   },
   {
     "s": 36,
@@ -1537,7 +1613,8 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "أَوَلَمْ يَرَ <tajweed class=ham_wasl>ٱ</tajweed>لْإِ<tajweed class=ikhafa>نس</tajweed>َ<tajweed class=madda_normal>ـٰ</tajweed>نُ أَ<tajweed class=ghunnah>نّ</tajweed>َا خَلَ<tajweed class=qalaqah>قْ</tajweed>نَ<tajweed class=madda_normal>ـٰ</tajweed>هُ م<tajweed class=idgham_ghunnah>ِن ن</tajweed>ُّ<tajweed class=qalaqah>طْ</tajweed>فَ<tajweed class=ikhafa>ةٍ ف</tajweed>َإِذَا هُوَ خَصِي<tajweed class=idgham_ghunnah>مٌ م</tajweed>ُّب<tajweed class=madda_permissible>ِي</tajweed>نٌ <span class=end>٧٧</span>"
+    "tj": "أَوَلَمْ يَرَ <tajweed class=ham_wasl>ٱ</tajweed>لْإِ<tajweed class=ikhafa>نس</tajweed>َ<tajweed class=madda_normal>ـٰ</tajweed>نُ أَ<tajweed class=ghunnah>نّ</tajweed>َا خَلَ<tajweed class=qalaqah>قْ</tajweed>نَ<tajweed class=madda_normal>ـٰ</tajweed>هُ م<tajweed class=idgham_ghunnah>ِن ن</tajweed>ُّ<tajweed class=qalaqah>طْ</tajweed>فَ<tajweed class=ikhafa>ةٍ ف</tajweed>َإِذَا هُوَ خَصِي<tajweed class=idgham_ghunnah>مٌ م</tajweed>ُّب<tajweed class=madda_permissible>ِي</tajweed>نٌ <span class=end>٧٧</span>",
+    "tl_tj": "awalam yara linsanun annna khalaqnahu min nnnutfatin faidha huwa khasiymun mmnubiyn"
   },
   {
     "s": 36,
@@ -1557,7 +1634,8 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "وَضَرَبَ لَنَا مَثَل<tajweed class=idgham_ghunnah>اً و</tajweed>َنَسِىَ خَلْقَهُ<tajweed class=madda_normal>ۥ</tajweed>‌ۖ قَالَ م<tajweed class=idgham_ghunnah>َن ي</tajweed>ُحْىِ <tajweed class=ham_wasl>ٱ</tajweed>لْعِظَ<tajweed class=madda_normal>ـٰ</tajweed>مَ وَهِىَ رَم<tajweed class=madda_permissible>ِي</tajweed>مٌ <span class=end>٧٨</span>"
+    "tj": "وَضَرَبَ لَنَا مَثَل<tajweed class=idgham_ghunnah>اً و</tajweed>َنَسِىَ خَلْقَهُ<tajweed class=madda_normal>ۥ</tajweed>‌ۖ قَالَ م<tajweed class=idgham_ghunnah>َن ي</tajweed>ُحْىِ <tajweed class=ham_wasl>ٱ</tajweed>لْعِظَ<tajweed class=madda_normal>ـٰ</tajweed>مَ وَهِىَ رَم<tajweed class=madda_permissible>ِي</tajweed>مٌ <span class=end>٧٨</span>",
+    "tl_tj": "wadaraba lana mathalawn wanasiyan khalqahuu qala mayn yuhai l'izama wahiya ramiym"
   },
   {
     "s": 36,
@@ -1577,7 +1655,8 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "قُلْ يُحْيِيهَا <tajweed class=ham_wasl>ٱ</tajweed>لَّذ<tajweed class=madda_obligatory>ِىٓ</tajweed> أَ<tajweed class=ikhafa>نش</tajweed>َأَه<tajweed class=madda_obligatory>َآ</tajweed> أَوَّلَ مَرَّ<tajweed class=idgham_ghunnah>ةٍ‌ۖ و</tajweed>َهُوَ بِكُلِّ خَلْقٍ عَل<tajweed class=madda_permissible>ِي</tajweed>مٌ <span class=end>٧٩</span>"
+    "tj": "قُلْ يُحْيِيهَا <tajweed class=ham_wasl>ٱ</tajweed>لَّذ<tajweed class=madda_obligatory>ِىٓ</tajweed> أَ<tajweed class=ikhafa>نش</tajweed>َأَه<tajweed class=madda_obligatory>َآ</tajweed> أَوَّلَ مَرَّ<tajweed class=idgham_ghunnah>ةٍ‌ۖ و</tajweed>َهُوَ بِكُلِّ خَلْقٍ عَل<tajweed class=madda_permissible>ِي</tajweed>مٌ <span class=end>٧٩</span>",
+    "tl_tj": "qul yuhyiyha lladhiy anshaahan awwala marratinn n wahuwa bikulli khalqin 'aliym"
   },
   {
     "s": 36,
@@ -1597,7 +1676,8 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "ٱلَّذِى جَعَلَ لَك<tajweed class=idgham_shafawi>ُم م</tajweed>ِّنَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>شَّجَرِ <tajweed class=ham_wasl>ٱ</tajweed>لْأَخْضَرِ نَا<tajweed class=ikhafa>رًا ف</tajweed>َإِذ<tajweed class=madda_obligatory>َآ</tajweed> أَ<tajweed class=ikhafa>نت</tajweed><tajweed class=idgham_shafawi>ُم م</tajweed>ِّنْهُ تُوقِد<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٨٠</span>"
+    "tj": "ٱلَّذِى جَعَلَ لَك<tajweed class=idgham_shafawi>ُم م</tajweed>ِّنَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>شَّجَرِ <tajweed class=ham_wasl>ٱ</tajweed>لْأَخْضَرِ نَا<tajweed class=ikhafa>رًا ف</tajweed>َإِذ<tajweed class=madda_obligatory>َآ</tajweed> أَ<tajweed class=ikhafa>نت</tajweed><tajweed class=idgham_shafawi>ُم م</tajweed>ِّنْهُ تُوقِد<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٨٠</span>",
+    "tl_tj": "alladhiy ja'ala lakum mmnina shshajari lakhdari narann faidhan antumn mmninhu tuwqiduwn"
   },
   {
     "s": 36,
@@ -1617,7 +1697,8 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "أَوَلَيْسَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِى خَلَقَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>سَّمَ<tajweed class=madda_normal>ـٰ</tajweed>و<tajweed class=madda_normal>َٲ</tajweed>تِ وَ<tajweed class=ham_wasl>ٱ</tajweed>لْأَرْضَ بِقَ<tajweed class=madda_normal>ـٰ</tajweed>دِرٍ عَلَ<tajweed class=madda_obligatory>ىٰٓ</tajweed> أ<tajweed class=idgham_ghunnah>َن ي</tajweed>َخْلُقَ مِثْلَه<tajweed class=ikhafa_shafawi>ُم‌ۚ ب</tajweed>َلَىٰ وَهُوَ <tajweed class=ham_wasl>ٱ</tajweed>لْخَلَّ<tajweed class=madda_normal>ـٰ</tajweed>قُ <tajweed class=ham_wasl>ٱ</tajweed>لْعَل<tajweed class=madda_permissible>ِي</tajweed>مُ <span class=end>٨١</span>"
+    "tj": "أَوَلَيْسَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِى خَلَقَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>سَّمَ<tajweed class=madda_normal>ـٰ</tajweed>و<tajweed class=madda_normal>َٲ</tajweed>تِ وَ<tajweed class=ham_wasl>ٱ</tajweed>لْأَرْضَ بِقَ<tajweed class=madda_normal>ـٰ</tajweed>دِرٍ عَلَ<tajweed class=madda_obligatory>ىٰٓ</tajweed> أ<tajweed class=idgham_ghunnah>َن ي</tajweed>َخْلُقَ مِثْلَه<tajweed class=ikhafa_shafawi>ُم‌ۚ ب</tajweed>َلَىٰ وَهُوَ <tajweed class=ham_wasl>ٱ</tajweed>لْخَلَّ<tajweed class=madda_normal>ـٰ</tajweed>قُ <tajweed class=ham_wasl>ٱ</tajweed>لْعَل<tajweed class=madda_permissible>ِي</tajweed>مُ <span class=end>٨١</span>",
+    "tl_tj": "awalaysa lladhiy khalaqa ssamawati walarda biqadirin 'ala ayn yakhluqa mithlahumn bala wahuwa lkhallaqu l'aliym"
   },
   {
     "s": 36,
@@ -1637,7 +1718,8 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed>َم<tajweed class=madda_obligatory>َآ</tajweed> أَمْرُهُ<tajweed class=madda_obligatory>ۥٓ</tajweed> إِذ<tajweed class=madda_obligatory>َآ</tajweed> أَرَادَ شَيْــًٔا أ<tajweed class=idgham_ghunnah>َن ي</tajweed>َقُولَ لَهُ<tajweed class=madda_normal>ۥ</tajweed> كُ<tajweed class=ikhafa>ن ف</tajweed>َيَك<tajweed class=madda_permissible>ُو</tajweed>نُ <span class=end>٨٢</span>"
+    "tj": "إِ<tajweed class=ghunnah>نّ</tajweed>َم<tajweed class=madda_obligatory>َآ</tajweed> أَمْرُهُ<tajweed class=madda_obligatory>ۥٓ</tajweed> إِذ<tajweed class=madda_obligatory>َآ</tajweed> أَرَادَ شَيْــًٔا أ<tajweed class=idgham_ghunnah>َن ي</tajweed>َقُولَ لَهُ<tajweed class=madda_normal>ۥ</tajweed> كُ<tajweed class=ikhafa>ن ف</tajweed>َيَك<tajweed class=madda_permissible>ُو</tajweed>نُ <span class=end>٨٢</span>",
+    "tl_tj": "innnama amruhuu idha arada shayan ayn yaquwlan lahuu kunn fayakuwn"
   },
   {
     "s": 36,
@@ -1657,6 +1739,7 @@
       "page": 445,
       "ruku": 387
     },
-    "tj": "فَسُ<tajweed class=qalaqah>بْ</tajweed>حَ<tajweed class=madda_normal>ـٰ</tajweed>نَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِى بِيَدِه<tajweed class=madda_normal>ِۦ</tajweed> مَلَكُوتُ كُلِّ ش<tajweed class=idgham_ghunnah>َىْءٍ و</tajweed>َإِلَيْهِ تُرْجَع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٨٣</span>"
+    "tj": "فَسُ<tajweed class=qalaqah>بْ</tajweed>حَ<tajweed class=madda_normal>ـٰ</tajweed>نَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِى بِيَدِه<tajweed class=madda_normal>ِۦ</tajweed> مَلَكُوتُ كُلِّ ش<tajweed class=idgham_ghunnah>َىْءٍ و</tajweed>َإِلَيْهِ تُرْجَع<tajweed class=madda_permissible>ُو</tajweed>نَ <span class=end>٨٣</span>",
+    "tl_tj": "fasubhana lladhiy biyadihii malakuwtu kulli shaiwn wailayhi turja'uwn"
   }
 ]

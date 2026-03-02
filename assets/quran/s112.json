@@ -17,7 +17,8 @@
       "page": 604,
       "ruku": 556
     },
-    "tj": "قُلْ هُوَ <tajweed class=ham_wasl>ٱ</tajweed>للَّهُ أَحَ<tajweed class=qalaqah>د</tajweed>ٌ <span class=end>١</span>"
+    "tj": "قُلْ هُوَ <tajweed class=ham_wasl>ٱ</tajweed>للَّهُ أَحَ<tajweed class=qalaqah>د</tajweed>ٌ <span class=end>١</span>",
+    "tl_tj": "qul huwa llahu ahad"
   },
   {
     "s": 112,
@@ -37,7 +38,8 @@
       "page": 604,
       "ruku": 556
     },
-    "tj": "ٱللَّهُ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>صَّمَ<tajweed class=qalaqah>د</tajweed>ُ <span class=end>٢</span>"
+    "tj": "ٱللَّهُ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>صَّمَ<tajweed class=qalaqah>د</tajweed>ُ <span class=end>٢</span>",
+    "tl_tj": "allahu ssamad"
   },
   {
     "s": 112,
@@ -57,7 +59,8 @@
       "page": 604,
       "ruku": 556
     },
-    "tj": "لَمْ يَلِ<tajweed class=qalaqah>دْ</tajweed> وَلَمْ يُولَ<tajweed class=qalaqah>دْ</tajweed> <span class=end>٣</span>"
+    "tj": "لَمْ يَلِ<tajweed class=qalaqah>دْ</tajweed> وَلَمْ يُولَ<tajweed class=qalaqah>دْ</tajweed> <span class=end>٣</span>",
+    "tl_tj": "lam yalid walam yuwlad"
   },
   {
     "s": 112,
@@ -77,6 +80,7 @@
       "page": 604,
       "ruku": 556
     },
-    "tj": "وَلَمْ يَك<tajweed class=idgham_wo_ghunnah>ُن ل</tajweed>َّهُ<tajweed class=madda_normal>ۥ</tajweed> كُفُوًا أَحَ<tajweed class=qalaqah>د</tajweed>ُۢ <span class=end>٤</span>"
+    "tj": "وَلَمْ يَك<tajweed class=idgham_wo_ghunnah>ُن ل</tajweed>َّهُ<tajweed class=madda_normal>ۥ</tajweed> كُفُوًا أَحَ<tajweed class=qalaqah>د</tajweed>ُۢ <span class=end>٤</span>",
+    "tl_tj": "walam yaku llahuun kufuwan ahad"
   }
 ]
