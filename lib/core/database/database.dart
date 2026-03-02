@@ -14,6 +14,7 @@ class Verses extends Table {
   TextColumn get arabic => text()();
   TextColumn get tajweed => text().nullable()();
   TextColumn get translit => text().nullable()();
+  TextColumn get translitTj => text().nullable()();
   TextColumn get trEn => text().nullable()();
   TextColumn get trId => text().nullable()();
   TextColumn get trZh => text().nullable()();
@@ -62,7 +63,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -94,6 +95,9 @@ class AppDatabase extends _$AppDatabase {
           await customStatement('CREATE INDEX IF NOT EXISTS idx_highlights_surah_ayah ON highlights(surah_id, ayah_no)');
           await customStatement('CREATE INDEX IF NOT EXISTS idx_bookmarks_folder ON bookmarks(folder)');
           await customStatement('CREATE INDEX IF NOT EXISTS idx_bookmarks_tag ON bookmarks(tag)');
+        }
+        if (from < 4) {
+          await m.addColumn(verses, verses.translitTj);
         }
       },
     );

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
 /// Page range definition from `index_pages.json`.
 class PageRange {
@@ -127,14 +128,16 @@ class MushafLayout {
         }
       }
 
-      // One ayah = one visual block.
-      // Do NOT split or measure at word level.
+      // One ayah = one visual block. Normalize so problematic Unicode (e.g. U+065F, U+06A0)
+      // does not render as circle/tofu across all surahs.
       blocks.add(
         MushafAyahBlock(
           surahId: v.surahId,
           ayahNo: v.ayahNo,
-          text: v.arabic,
-          tajweed: v.tajweed,
+          text: TajweedText.normalizeArabicForDisplay(v.arabic),
+          tajweed: v.tajweed != null && v.tajweed!.isNotEmpty
+              ? TajweedText.normalizeArabicForDisplay(v.tajweed!)
+              : null,
         ),
       );
     }

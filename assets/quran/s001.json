@@ -17,7 +17,8 @@
       "page": 1,
       "ruku": 1
     },
-    "tj": "بِسْمِ <tajweed class=ham_wasl>ٱ</tajweed>للَّهِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّح<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>١</span>"
+    "tj": "بِسْمِ <tajweed class=ham_wasl>ٱ</tajweed>للَّهِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّح<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>١</span>",
+    "tl_tj": "bismi llahi rrahmani rrahiym"
   },
   {
     "s": 1,
@@ -37,7 +38,8 @@
       "page": 1,
       "ruku": 1
     },
-    "tj": "ٱلْحَمْدُ لِلَّهِ رَبِّ <tajweed class=ham_wasl>ٱ</tajweed>لْعَ<tajweed class=madda_normal>ـٰ</tajweed>لَم<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٢</span>"
+    "tj": "ٱلْحَمْدُ لِلَّهِ رَبِّ <tajweed class=ham_wasl>ٱ</tajweed>لْعَ<tajweed class=madda_normal>ـٰ</tajweed>لَم<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٢</span>",
+    "tl_tj": "alhamdu lillahi rabbi l'alamiyn"
   },
   {
     "s": 1,
@@ -57,7 +59,8 @@
       "page": 1,
       "ruku": 1
     },
-    "tj": "ٱ<tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّح<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>٣</span>"
+    "tj": "ٱ<tajweed class=laam_shamsiyah>ل</tajweed>رَّحْمَ<tajweed class=madda_normal>ـٰ</tajweed>نِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>رَّح<tajweed class=madda_permissible>ِي</tajweed>مِ <span class=end>٣</span>",
+    "tl_tj": "arrahmani rrahiym"
   },
   {
     "s": 1,
@@ -77,7 +80,8 @@
       "page": 1,
       "ruku": 1
     },
-    "tj": "مَ<tajweed class=madda_normal>ـٰ</tajweed>لِكِ يَوْمِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>دّ<tajweed class=madda_permissible>ِي</tajweed>نِ <span class=end>٤</span>"
+    "tj": "مَ<tajweed class=madda_normal>ـٰ</tajweed>لِكِ يَوْمِ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>دّ<tajweed class=madda_permissible>ِي</tajweed>نِ <span class=end>٤</span>",
+    "tl_tj": "maliki yawmi ddiyn"
   },
   {
     "s": 1,
@@ -97,7 +101,8 @@
       "page": 1,
       "ruku": 1
     },
-    "tj": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَع<tajweed class=madda_permissible>ِي</tajweed>نُ <span class=end>٥</span>"
+    "tj": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَع<tajweed class=madda_permissible>ِي</tajweed>نُ <span class=end>٥</span>",
+    "tl_tj": "iyyaka na'budu waiyyaka nasta'iyn"
   },
   {
     "s": 1,
@@ -117,7 +122,8 @@
       "page": 1,
       "ruku": 1
     },
-    "tj": "ٱهْدِنَا <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>صِّر<tajweed class=madda_normal>َٲ</tajweed>طَ <tajweed class=ham_wasl>ٱ</tajweed>لْمُسْتَق<tajweed class=madda_permissible>ِي</tajweed>مَ <span class=end>٦</span>"
+    "tj": "ٱهْدِنَا <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>صِّر<tajweed class=madda_normal>َٲ</tajweed>طَ <tajweed class=ham_wasl>ٱ</tajweed>لْمُسْتَق<tajweed class=madda_permissible>ِي</tajweed>مَ <span class=end>٦</span>",
+    "tl_tj": "ihdina ssirata lmustaqiym"
   },
   {
     "s": 1,
@@ -137,6 +143,7 @@
       "page": 1,
       "ruku": 1
     },
-    "tj": "صِر<tajweed class=madda_normal>َٲ</tajweed>طَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ <tajweed class=ham_wasl>ٱ</tajweed>لْمَغْضُوبِ عَلَيْهِمْ وَلَا <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>ضّ<tajweed class=madda_necessary>َا</tajweed>ٓلّ<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٧</span>"
+    "tj": "صِر<tajweed class=madda_normal>َٲ</tajweed>طَ <tajweed class=ham_wasl>ٱ</tajweed>لَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ <tajweed class=ham_wasl>ٱ</tajweed>لْمَغْضُوبِ عَلَيْهِمْ وَلَا <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>ضّ<tajweed class=madda_necessary>َا</tajweed>ٓلّ<tajweed class=madda_permissible>ِي</tajweed>نَ <span class=end>٧</span>",
+    "tl_tj": "sirata lladhiyna an'amta 'alayhim ghayri lmaghduwbi 'alayhim wala ddalliyn"
   }
 ]

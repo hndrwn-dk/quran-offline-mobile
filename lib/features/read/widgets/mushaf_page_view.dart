@@ -3,13 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
+import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
+import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
 
@@ -31,6 +35,8 @@ class MushafPageView extends ConsumerStatefulWidget {
 
 class _MushafPageViewState extends ConsumerState<MushafPageView> {
   late PageController _controller;
+  int? _selectedSurahId;
+  int? _selectedAyahNo;
 
   @override
   void initState() {
@@ -45,6 +51,14 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onAyahSelected(int surahId, int ayahNo) {
+    setState(() {
+      _selectedSurahId = surahId;
+      _selectedAyahNo = ayahNo;
+    });
+    _FlowingMushafText.showAyahSheet(context, ref, surahId, ayahNo);
   }
 
   @override
@@ -63,6 +77,9 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
           pageNo: pageNo,
           targetSurahId: widget.targetSurahId,
           targetAyahNo: widget.targetAyahNo,
+          selectedSurahId: _selectedSurahId,
+          selectedAyahNo: _selectedAyahNo,
+          onAyahSelected: _onAyahSelected,
           onComputed: () {
             if (pageNo < 604) {
               MushafLayout.getPageBlocks(context, pageNo + 1);
@@ -78,6 +95,9 @@ class MushafPage extends ConsumerStatefulWidget {
   final int pageNo;
   final int? targetSurahId;
   final int? targetAyahNo;
+  final int? selectedSurahId;
+  final int? selectedAyahNo;
+  final void Function(int surahId, int ayahNo)? onAyahSelected;
   final VoidCallback? onComputed;
 
   const MushafPage({
@@ -85,6 +105,9 @@ class MushafPage extends ConsumerStatefulWidget {
     required this.pageNo,
     this.targetSurahId,
     this.targetAyahNo,
+    this.selectedSurahId,
+    this.selectedAyahNo,
+    this.onAyahSelected,
     this.onComputed,
   });
 
@@ -453,6 +476,9 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                           fontSize: fontSize,
                           colorScheme: colorScheme,
                           ayahKeys: _ayahKeys,
+                          selectedSurahId: widget.selectedSurahId,
+                          selectedAyahNo: widget.selectedAyahNo,
+                          onAyahTap: widget.onAyahSelected,
                           onAyahKeyCreated: () {
                             // Trigger scroll after keys are created
                             if (widget.targetSurahId != null && widget.targetAyahNo != null) {
@@ -489,6 +515,9 @@ class _FlowingMushafText extends ConsumerWidget {
   final double fontSize;
   final ColorScheme colorScheme;
   final Map<String, GlobalKey> ayahKeys;
+  final int? selectedSurahId;
+  final int? selectedAyahNo;
+  final void Function(int surahId, int ayahNo)? onAyahTap;
   final VoidCallback? onAyahKeyCreated;
 
   const _FlowingMushafText({
@@ -496,27 +525,29 @@ class _FlowingMushafText extends ConsumerWidget {
     required this.fontSize,
     required this.colorScheme,
     required this.ayahKeys,
+    this.selectedSurahId,
+    this.selectedAyahNo,
+    this.onAyahTap,
     this.onAyahKeyCreated,
   });
 
-  /// Handle long press on ayah text for bookmarking
-  static Future<void> handleAyahLongPress(BuildContext context, WidgetRef ref, int surahId, int ayahNo) async {
-    await toggleBookmark(ref, surahId, ayahNo);
-    
-    if (context.mounted) {
-      final bookmarked = await isBookmarked(ref, surahId, ayahNo);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            bookmarked 
-              ? 'Ayat $ayahNo di-bookmark'
-              : 'Bookmark ayat $ayahNo dihapus',
-          ),
-          duration: const Duration(seconds: 1),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+  /// Open bottom sheet for ayah: translation (Meaning) + Share, Bookmark, Copy (Nusuk-style)
+  static void showAyahSheet(BuildContext context, WidgetRef ref, int surahId, int ayahNo) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (ctx) => _MushafAyahSheet(
+        surahId: surahId,
+        ayahNo: ayahNo,
+        ref: ref,
+      ),
+    );
+  }
+
+  /// Handle long press on ayah text: open ayah sheet (Nusuk-style)
+  static void handleAyahLongPress(BuildContext context, WidgetRef ref, int surahId, int ayahNo) {
+    showAyahSheet(context, ref, surahId, ayahNo);
   }
 
   @override
@@ -635,14 +666,20 @@ class _FlowingMushafText extends ConsumerWidget {
       }
 
       // Add ayah text with tajweed support if enabled
-      // Add long press recognizer for bookmark
-      LongPressGestureRecognizer? recognizer;
+      // Tap on ayah: highlight (stabilo) + open Nusuk-style sheet
+      final isSelected = selectedSurahId != null && selectedAyahNo != null &&
+          block.surahId == selectedSurahId && block.ayahNo == selectedAyahNo;
+      final selectionHighlight = isSelected
+          ? colorScheme.primary.withValues(alpha: 0.22)
+          : null;
+
+      TapGestureRecognizer? recognizer;
       if (block.surahId != null && block.ayahNo != null) {
-        recognizer = LongPressGestureRecognizer();
-        recognizers.add(recognizer); // Track for disposal
-        recognizer.onLongPress = () {
-          HapticFeedback.mediumImpact();
-          handleAyahLongPress(context, ref, block.surahId!, block.ayahNo!);
+        recognizer = TapGestureRecognizer();
+        recognizers.add(recognizer);
+        recognizer.onTap = () {
+          HapticFeedback.selectionClick();
+          onAyahTap?.call(block.surahId!, block.ayahNo!);
         };
       }
       
@@ -654,6 +691,7 @@ class _FlowingMushafText extends ConsumerWidget {
           fontSize, 
           colorScheme,
           recognizer: recognizer,
+          selectionHighlight: selectionHighlight,
         );
         currentSpans.addAll(tajweedSpans);
       } else {
@@ -666,6 +704,7 @@ class _FlowingMushafText extends ConsumerWidget {
               fontFamilyFallback: const ['UthmanicHafs'],
               fontSize: fontSize,
               color: colorScheme.onSurface,
+              backgroundColor: selectionHighlight,
             ),
             recognizer: recognizer,
           ),
@@ -728,6 +767,7 @@ class _FlowingMushafText extends ConsumerWidget {
     double fontSize,
     ColorScheme colorScheme, {
     GestureRecognizer? recognizer,
+    Color? selectionHighlight,
   }) {
     final spans = <TextSpan>[];
     String text = TajweedText.normalizeArabicForDisplay(tajweedHtml);
@@ -948,6 +988,7 @@ class _FlowingMushafText extends ConsumerWidget {
               fontFamilyFallback: const ['UthmanicHafs'],
               fontSize: fontSize,
               color: colorScheme.onSurface,
+              backgroundColor: selectionHighlight,
             ),
             recognizer: recognizer != null ? recognizer : null,
           ));
@@ -975,6 +1016,7 @@ class _FlowingMushafText extends ConsumerWidget {
                 fontFamilyFallback: const ['UthmanicHafs'],
                 fontSize: fontSize,
                 color: colorScheme.onSurface,
+                backgroundColor: selectionHighlight,
               ),
               recognizer: recognizer != null ? recognizer : null,
             ));
@@ -999,6 +1041,7 @@ class _FlowingMushafText extends ConsumerWidget {
             fontFamilyFallback: const ['UthmanicHafs'],
             fontSize: fontSize,
             color: color,
+            backgroundColor: selectionHighlight,
           ),
           recognizer: recognizer != null ? recognizer : null,
         ));
@@ -1020,6 +1063,7 @@ class _FlowingMushafText extends ConsumerWidget {
             fontFamilyFallback: const ['UthmanicHafs'],
             fontSize: fontSize,
             color: colorScheme.onSurface,
+            backgroundColor: selectionHighlight,
           ),
           recognizer: recognizer != null ? recognizer : null,
         ));
@@ -1038,6 +1082,7 @@ class _FlowingMushafText extends ConsumerWidget {
             fontFamilyFallback: const ['UthmanicHafs'],
             fontSize: fontSize,
             color: colorScheme.onSurface,
+            backgroundColor: selectionHighlight,
           ),
           recognizer: recognizer != null ? recognizer : null,
         )
@@ -1171,6 +1216,229 @@ class _InlineAyahNumberState extends ConsumerState<_InlineAyahNumber> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Nusuk-style bottom sheet: Meaning (translation) + Share, Bookmark, Copy
+class _MushafAyahSheet extends ConsumerStatefulWidget {
+  final int surahId;
+  final int ayahNo;
+  final WidgetRef ref;
+
+  const _MushafAyahSheet({
+    required this.surahId,
+    required this.ayahNo,
+    required this.ref,
+  });
+
+  @override
+  ConsumerState<_MushafAyahSheet> createState() => _MushafAyahSheetState();
+}
+
+class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
+  bool? _bookmarked;
+  bool _bookmarkLoadStarted = false;
+
+  Future<void> _loadBookmark() async {
+    final b = await isBookmarked(ref, widget.surahId, widget.ayahNo);
+    if (mounted) setState(() => _bookmarked = b);
+  }
+
+  static String? _getTranslation(Verse verse, String lang) {
+    final raw = switch (lang) {
+      'en' => verse.trEn,
+      'id' => verse.trId,
+      'zh' => verse.trZh,
+      'ja' => verse.trJa,
+      _ => verse.trId,
+    };
+    return raw != null ? TranslationCleaner.clean(raw) : null;
+  }
+
+  Future<void> _shareVerse(Verse verse, AppSettings settings) async {
+    final translation = _getTranslation(verse, settings.language);
+    final surahs = ref.read(surahNamesProvider).valueOrNull;
+    final surahName = surahs != null
+        ? surahs.firstWhere(
+            (s) => s.id == verse.surahId,
+            orElse: () => surahs.first,
+          ).englishName
+        : 'Surah ${verse.surahId}';
+    final buffer = StringBuffer();
+    buffer.writeln(AppLocalizations.getShareHeader(settings.appLanguage));
+    buffer.writeln('');
+    buffer.writeln(verse.arabic);
+    buffer.writeln('');
+    final translit = settings.useTajweedTransliteration
+        ? (verse.translitTj ?? verse.translit ?? '')
+        : (verse.translit ?? '');
+    if (translit.trim().isNotEmpty) {
+      buffer.writeln(translit.trim());
+      buffer.writeln('');
+    }
+    if (translation != null) {
+      buffer.writeln('"$translation"');
+      buffer.writeln('');
+    }
+    buffer.writeln('(QS. $surahName ${verse.surahId}: ${AppLocalizations.getAyahLabel(settings.appLanguage)} ${verse.ayahNo})');
+    buffer.writeln('');
+    buffer.writeln('https://www.tursinalabs.com/products/quranoffline');
+    await Share.share(buffer.toString());
+  }
+
+  Future<void> _copyVerse(Verse verse, AppSettings settings) async {
+    final translation = _getTranslation(verse, settings.language);
+    final surahs = ref.read(surahNamesProvider).valueOrNull;
+    final surahName = surahs != null
+        ? surahs.firstWhere(
+            (s) => s.id == verse.surahId,
+            orElse: () => surahs.first,
+          ).englishName
+        : 'Surah ${verse.surahId}';
+    final buffer = StringBuffer();
+    buffer.writeln(verse.arabic);
+    buffer.writeln('');
+    if (translation != null) buffer.writeln(translation);
+    buffer.writeln('');
+    buffer.writeln('QS. $surahName ${verse.surahId}:${verse.ayahNo}');
+    await Clipboard.setData(ClipboardData(text: buffer.toString()));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Copied to clipboard'),
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = ref.watch(settingsProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final db = ref.read(databaseProvider);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.45,
+      minChildSize: 0.25,
+      maxChildSize: 0.7,
+      expand: false,
+      builder: (context, scrollController) {
+        return FutureBuilder<Verse?>(
+          future: db.getVerse(widget.surahId, widget.ayahNo),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || snapshot.data == null) {
+              return Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(
+                  child: snapshot.connectionState == ConnectionState.waiting
+                      ? const CircularProgressIndicator()
+                      : const Text('Verse not found'),
+                ),
+              );
+            }
+            final verse = snapshot.data!;
+            if (!_bookmarkLoadStarted) {
+              _bookmarkLoadStarted = true;
+              _loadBookmark();
+            }
+
+            final translation = _getTranslation(verse, settings.language);
+
+            return SingleChildScrollView(
+              controller: scrollController,
+              padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: colorScheme.outline.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton.filled(
+                        onPressed: () => _shareVerse(verse, settings),
+                        icon: const Icon(Icons.share_outlined, size: 22),
+                        style: IconButton.styleFrom(
+                          backgroundColor: colorScheme.primaryContainer,
+                          foregroundColor: colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton.filled(
+                        onPressed: () async {
+                          await toggleBookmark(ref, widget.surahId, widget.ayahNo);
+                          await _loadBookmark();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(_bookmarked == true
+                                    ? 'Ayat ${widget.ayahNo} di-bookmark'
+                                    : 'Bookmark ayat ${widget.ayahNo} dihapus'),
+                                duration: const Duration(seconds: 1),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        },
+                        icon: Icon(
+                          _bookmarked == true ? Icons.bookmark : Icons.bookmark_outline,
+                          size: 22,
+                        ),
+                        style: IconButton.styleFrom(
+                          backgroundColor: _bookmarked == true
+                              ? colorScheme.primary
+                              : colorScheme.primaryContainer,
+                          foregroundColor: _bookmarked == true
+                              ? colorScheme.onPrimary
+                              : colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton.filled(
+                        onPressed: () => _copyVerse(verse, settings),
+                        icon: const Icon(Icons.copy_rounded, size: 22),
+                        style: IconButton.styleFrom(
+                          backgroundColor: colorScheme.primaryContainer,
+                          foregroundColor: colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.getMeaningLabel(settings.appLanguage),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    translation ?? '—',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.onSurface,
+                          height: 1.5,
+                        ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

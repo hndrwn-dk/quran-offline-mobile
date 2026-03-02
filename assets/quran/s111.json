@@ -17,7 +17,8 @@
       "page": 603,
       "ruku": 555
     },
-    "tj": "تَبَّتْ يَد<tajweed class=madda_obligatory>َآ</tajweed> أَبِى لَهَ<tajweed class=idgham_ghunnah>بٍ و</tajweed>َتَ<tajweed class=qalaqah>ب</tajweed>َّ <span class=end>١</span>"
+    "tj": "تَبَّتْ يَد<tajweed class=madda_obligatory>َآ</tajweed> أَبِى لَهَ<tajweed class=idgham_ghunnah>بٍ و</tajweed>َتَ<tajweed class=qalaqah>ب</tajweed>َّ <span class=end>١</span>",
+    "tl_tj": "tabbat yada abiy lahabiwn watabb"
   },
   {
     "s": 111,
@@ -37,7 +38,8 @@
       "page": 603,
       "ruku": 555
     },
-    "tj": "م<tajweed class=madda_obligatory>َآ</tajweed> أَغْنَىٰ عَنْهُ مَالُهُ<tajweed class=madda_normal>ۥ</tajweed> وَمَا كَسَ<tajweed class=qalaqah>ب</tajweed>َ <span class=end>٢</span>"
+    "tj": "م<tajweed class=madda_obligatory>َآ</tajweed> أَغْنَىٰ عَنْهُ مَالُهُ<tajweed class=madda_normal>ۥ</tajweed> وَمَا كَسَ<tajweed class=qalaqah>ب</tajweed>َ <span class=end>٢</span>",
+    "tl_tj": "ma aghna 'anhu maluhuu wama kasab"
   },
   {
     "s": 111,
@@ -57,7 +59,8 @@
       "page": 603,
       "ruku": 555
     },
-    "tj": "سَيَصْلَىٰ نَا<tajweed class=ikhafa>رًا ذ</tajweed>َاتَ لَهَ<tajweed class=qalaqah>ب</tajweed>ٍ <span class=end>٣</span>"
+    "tj": "سَيَصْلَىٰ نَا<tajweed class=ikhafa>رًا ذ</tajweed>َاتَ لَهَ<tajweed class=qalaqah>ب</tajweed>ٍ <span class=end>٣</span>",
+    "tl_tj": "sayasla narann dhatan lahab"
   },
   {
     "s": 111,
@@ -77,7 +80,8 @@
       "page": 603,
       "ruku": 555
     },
-    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>مْرَأَتُهُ<tajweed class=madda_normal>ۥ</tajweed> حَ<tajweed class=ghunnah>مّ</tajweed>َالَةَ <tajweed class=ham_wasl>ٱ</tajweed>لْحَطَ<tajweed class=qalaqah>ب</tajweed>ِ <span class=end>٤</span>"
+    "tj": "وَ<tajweed class=ham_wasl>ٱ</tajweed>مْرَأَتُهُ<tajweed class=madda_normal>ۥ</tajweed> حَ<tajweed class=ghunnah>مّ</tajweed>َالَةَ <tajweed class=ham_wasl>ٱ</tajweed>لْحَطَ<tajweed class=qalaqah>ب</tajweed>ِ <span class=end>٤</span>",
+    "tl_tj": "wamraatuhuu hammnalata lhatab"
   },
   {
     "s": 111,
@@ -97,6 +101,7 @@
       "page": 603,
       "ruku": 555
     },
-    "tj": "فِى جِيدِهَا حَ<tajweed class=qalaqah>بْ</tajweed><tajweed class=idgham_ghunnah>لٌ م</tajweed>ّ<tajweed class=idgham_ghunnah>ِن م</tajweed>َّسَ<tajweed class=qalaqah>د</tajweed>ِۭ <span class=end>٥</span>"
+    "tj": "فِى جِيدِهَا حَ<tajweed class=qalaqah>بْ</tajweed><tajweed class=idgham_ghunnah>لٌ م</tajweed>ّ<tajweed class=idgham_ghunnah>ِن م</tajweed>َّسَ<tajweed class=qalaqah>د</tajweed>ِۭ <span class=end>٥</span>",
+    "tl_tj": "fiy jiydiha hablun mmni mmnasad"
   }
 ]
