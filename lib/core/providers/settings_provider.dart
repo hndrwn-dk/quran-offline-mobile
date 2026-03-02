@@ -19,9 +19,9 @@ class AppSettings {
   AppSettings({
     this.language = 'en',
     this.appLanguage = 'en',
-    this.showTransliteration = false,
+    this.showTransliteration = true,
     this.showTranslation = true, // Default to true since translations are currently always shown
-    this.showTajweed = false,
+    this.showTajweed = true,
     this.transliterationStyle = TransliterationStyle.readable,
     this.useTajweedTransliteration = true,
     this.arabicFontSize = 30.0,
@@ -84,9 +84,9 @@ class AppSettings {
     return AppSettings(
       language: language,
       appLanguage: json['appLanguage'] as String? ?? language, // Default to language for backward compatibility
-      showTransliteration: json['showTransliteration'] as bool? ?? false,
+      showTransliteration: json['showTransliteration'] as bool? ?? true,
       showTranslation: json['showTranslation'] as bool? ?? true, // Default to true for backward compatibility
-      showTajweed: json['showTajweed'] as bool? ?? false,
+      showTajweed: json['showTajweed'] as bool? ?? true,
       transliterationStyle: transliterationStyle,
       useTajweedTransliteration: useTajweedTransliteration,
       arabicFontSize: (json['arabicFontSize'] as num?)?.toDouble() ?? 30.0,
@@ -109,9 +109,9 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final prefs = await SharedPreferences.getInstance();
     final language = prefs.getString('language') ?? 'en';
     final appLanguage = prefs.getString('appLanguage') ?? language; // Default to language for backward compatibility
-    final showTransliteration = prefs.getBool('showTransliteration') ?? false;
+    final showTransliteration = prefs.getBool('showTransliteration') ?? true;
     final showTranslation = prefs.getBool('showTranslation') ?? true; // Default to true for backward compatibility
-    final showTajweed = prefs.getBool('showTajweed') ?? false;
+    final showTajweed = prefs.getBool('showTajweed') ?? true;
     final arabicFontSize = prefs.getDouble('arabicFontSize') ?? 30.0;
     final translationFontSize = prefs.getDouble('translationFontSize') ?? 16.0;
     final mushafFontSize = prefs.getDouble('mushafFontSize') ?? 30.0;
