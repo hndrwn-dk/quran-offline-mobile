@@ -9,14 +9,71 @@ import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 
-class SearchScreen extends ConsumerWidget {
+/// Type filter for search results (UI-only; applied to provider list).
+const List<String> _typeFilterKeys = ['all', 'surah', 'juz', 'page', 'ayat', 'terjemahan'];
+
+class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends ConsumerState<SearchScreen> {
+  String _selectedTypeFilter = 'all';
+
+  /// Filter provider results by selected type. Ayat = verse with "QS " title; Terjemahan = verse without.
+  List<SearchResult> _filterResults(List<SearchResult> results, String filter) {
+    if (filter == 'all') return results;
+    switch (filter) {
+      case 'surah':
+        return results.where((r) => r.type == 'surah').toList();
+      case 'juz':
+        return results.where((r) => r.type == 'juz').toList();
+      case 'page':
+        return results.where((r) => r.type == 'page').toList();
+      case 'ayat':
+        return results.where((r) => r.type == 'verse' && r.title.startsWith('QS ')).toList();
+      case 'terjemahan':
+        return results.where((r) => r.type == 'verse' && !r.title.startsWith('QS ')).toList();
+      default:
+        return results;
+    }
+  }
+
+  /// Bold-only highlight: first match only; case-insensitive for text, exact for numbers.
+  List<TextSpan> buildHighlightedSpans(String text, String query, TextStyle normal, TextStyle highlight) {
+    if (query.isEmpty) return [TextSpan(text: text, style: normal)];
+    final q = query.trim();
+    if (q.isEmpty) return [TextSpan(text: text, style: normal)];
+    final isNumeric = int.tryParse(q) != null;
+    int start;
+    if (isNumeric) {
+      start = text.indexOf(q);
+    } else {
+      start = text.toLowerCase().indexOf(q.toLowerCase());
+    }
+    if (start == -1) return [TextSpan(text: text, style: normal)];
+    final end = start + q.length;
+    return [
+      if (start > 0) TextSpan(text: text.substring(0, start), style: normal),
+      TextSpan(text: text.substring(start, end), style: highlight),
+      if (end < text.length) TextSpan(text: text.substring(end), style: normal),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final query = ref.watch(searchQueryProvider);
     final resultsAsync = ref.watch(enhancedSearchResultsProvider);
     final settings = ref.watch(settingsProvider);
+
+    // When user changes the search query, reset type filter to "All" so new results (e.g. terjemahan for "sabar") are visible.
+    ref.listen<String>(searchQueryProvider, (prev, next) {
+      if (prev != next && _selectedTypeFilter != 'all') {
+        setState(() => _selectedTypeFilter = 'all');
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -207,7 +264,9 @@ class SearchScreen extends ConsumerWidget {
                   );
                 }
 
-                if (results.isEmpty) {
+                final filtered = _filterResults(results, _selectedTypeFilter);
+
+                if (filtered.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -229,84 +288,184 @@ class SearchScreen extends ConsumerWidget {
                   );
                 }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  itemCount: results.length,
-                  itemBuilder: (context, index) {
-                    final result = results[index];
-                    IconData icon;
-                    Color? iconColor;
+                final colorScheme = Theme.of(context).colorScheme;
+                final textTheme = Theme.of(context).textTheme;
+                final appLanguage = settings.appLanguage;
 
-                    switch (result.type) {
-                      case 'surah':
-                        icon = Icons.book;
-                        iconColor = Colors.blue;
-                        break;
-                      case 'juz':
-                        icon = Icons.format_list_numbered;
-                        iconColor = Colors.green;
-                        break;
-                      case 'page':
-                        icon = Icons.pages;
-                        iconColor = Colors.orange;
-                        break;
-                      default:
-                        icon = Icons.text_fields;
-                        iconColor = null;
-                    }
-
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: iconColor?.withOpacity(0.1),
-                          child: Icon(icon, color: iconColor),
-                        ),
-                        title: Text(
-                          result.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: result.subtitle != null
-                            ? Text(
-                                result.subtitle!,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              )
-                            : null,
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {
-                          // For page results, navigate to Mushaf mode
-                          if (result.type == 'page' && result.source is PageSource) {
-                            final pageSource = result.source as PageSource;
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MushafPageView(
-                                  initialPage: pageSource.pageNo,
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Type filter chips row (pill style, 8px gap)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(_typeFilterKeys.length, (i) {
+                            final key = _typeFilterKeys[i];
+                            final label = key == 'all'
+                                ? AppLocalizations.getSettingsText('filter_all', appLanguage)
+                                : key == 'ayat'
+                                    ? AppLocalizations.getSearchText('verse_label', appLanguage)
+                                    : key == 'terjemahan'
+                                        ? AppLocalizations.getSearchText('translation_label', appLanguage)
+                                        : AppLocalizations.getMenuText(key, appLanguage);
+                            final isSelected = _selectedTypeFilter == key;
+                            return Padding(
+                              padding: EdgeInsets.only(right: i < _typeFilterKeys.length - 1 ? 8 : 0),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => setState(() => _selectedTypeFilter = key),
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? colorScheme.primary : colorScheme.surface,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: isSelected ? Colors.transparent : colorScheme.outline.withOpacity(0.12),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      label,
+                                      style: textTheme.labelLarge?.copyWith(
+                                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             );
-                          } else {
-                            // For surah, juz, and verse results, use ReaderScreen
-                            ref.read(readerSourceProvider.notifier).state = result.source;
-                            // Set target ayah if source is SurahSource with targetAyahNo
-                            if (result.source is SurahSource) {
-                              final surahSource = result.source as SurahSource;
-                              ref.read(targetAyahProvider.notifier).state = surahSource.targetAyahNo;
-                            } else {
-                              ref.read(targetAyahProvider.notifier).state = null;
-                            }
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ReaderScreen(),
-                              ),
-                            );
+                          }),
+                        ),
+                      ),
+                    ),
+                    // Result count header
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 12, 16, 4),
+                      child: Text(
+                        '${AppLocalizations.getSearchText('results_heading', appLanguage)} • ${filtered.length}',
+                        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final result = filtered[index];
+                          IconData icon;
+                          Color? iconColor;
+
+                          switch (result.type) {
+                            case 'surah':
+                              icon = Icons.book;
+                              iconColor = Colors.blue;
+                              break;
+                            case 'juz':
+                              icon = Icons.format_list_numbered;
+                              iconColor = Colors.green;
+                              break;
+                            case 'page':
+                              icon = Icons.pages;
+                              iconColor = Colors.orange;
+                              break;
+                            default:
+                              icon = Icons.text_fields;
+                              iconColor = null;
                           }
+
+                          final titleStyle = textTheme.titleMedium ?? const TextStyle();
+                          final subtitleStyle = textTheme.bodySmall ?? const TextStyle();
+                          final highlightStyle = (query.isEmpty ? titleStyle : titleStyle.copyWith(fontWeight: FontWeight.bold));
+                          final subtitleHighlightStyle = (query.isEmpty ? subtitleStyle : subtitleStyle.copyWith(fontWeight: FontWeight.bold));
+
+                          Widget titleWidget = query.isEmpty
+                              ? Text(
+                                  result.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                )
+                              : RichText(
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  text: TextSpan(
+                                    style: titleStyle.copyWith(color: colorScheme.onSurface),
+                                    children: buildHighlightedSpans(
+                                      result.title,
+                                      query,
+                                      titleStyle.copyWith(color: colorScheme.onSurface),
+                                      highlightStyle.copyWith(color: colorScheme.onSurface),
+                                    ),
+                                  ),
+                                );
+                          Widget? subtitleWidget;
+                          if (result.subtitle != null) {
+                            subtitleWidget = query.isEmpty
+                                ? Text(
+                                    result.subtitle!,
+                                    style: subtitleStyle,
+                                  )
+                                : RichText(
+                                    text: TextSpan(
+                                      style: subtitleStyle.copyWith(color: colorScheme.onSurfaceVariant),
+                                      children: buildHighlightedSpans(
+                                        result.subtitle!,
+                                        query,
+                                        subtitleStyle.copyWith(color: colorScheme.onSurfaceVariant),
+                                        subtitleHighlightStyle.copyWith(color: colorScheme.onSurfaceVariant),
+                                      ),
+                                    ),
+                                  );
+                          }
+
+                          return Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: iconColor?.withOpacity(0.1),
+                                child: Icon(icon, color: iconColor),
+                              ),
+                              title: titleWidget,
+                              subtitle: subtitleWidget,
+                              trailing: const Icon(Icons.chevron_right),
+                              onTap: () {
+                                if (result.type == 'page' && result.source is PageSource) {
+                                  final pageSource = result.source as PageSource;
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MushafPageView(
+                                        initialPage: pageSource.pageNo,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ref.read(readerSourceProvider.notifier).state = result.source;
+                                  if (result.source is SurahSource) {
+                                    final surahSource = result.source as SurahSource;
+                                    ref.read(targetAyahProvider.notifier).state = surahSource.targetAyahNo;
+                                  } else {
+                                    ref.read(targetAyahProvider.notifier).state = null;
+                                  }
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const ReaderScreen(),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          );
                         },
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
