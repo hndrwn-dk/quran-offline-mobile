@@ -4,6 +4,7 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 
 class SearchResult {
@@ -22,7 +23,9 @@ class SearchResult {
 
 final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) async {
   final query = ref.watch(searchQueryProvider);
-  
+  final settings = ref.watch(settingsProvider);
+  final appLanguage = settings.appLanguage;
+
   if (query.isEmpty) return [];
 
   await Future.delayed(const Duration(milliseconds: 300));
@@ -34,6 +37,8 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
 
   final results = <SearchResult>[];
   final queryLower = query.toLowerCase().trim();
+  final juzLabel = AppLocalizations.getMenuText('juz', appLanguage);
+  final pageLabel = AppLocalizations.getMenuText('page', appLanguage);
 
   // Search surahs
   final surahsAsync = ref.read(surahNamesProvider);
@@ -60,7 +65,7 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
       if (juzNo != null && juzNo >= 1 && juzNo <= 30) {
         results.add(SearchResult(
           type: 'juz',
-          title: 'Juz $juzNo',
+          title: '$juzLabel $juzNo',
           source: JuzSource(juzNo),
         ));
       }
@@ -70,7 +75,7 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
     if (juzNo != null && juzNo >= 1 && juzNo <= 30) {
       results.add(SearchResult(
         type: 'juz',
-        title: 'Juz $juzNo',
+        title: '$juzLabel $juzNo',
         source: JuzSource(juzNo),
       ));
     }
@@ -84,7 +89,7 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
       if (pageNo != null && pageNo >= 1 && pageNo <= 604) {
         results.add(SearchResult(
           type: 'page',
-          title: 'Page $pageNo',
+          title: '$pageLabel $pageNo',
           source: PageSource(pageNo),
         ));
       }
@@ -94,7 +99,7 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
     if (pageNo != null && pageNo >= 1 && pageNo <= 604) {
       results.add(SearchResult(
         type: 'page',
-        title: 'Page $pageNo',
+        title: '$pageLabel $pageNo',
         source: PageSource(pageNo),
       ));
     }
@@ -143,7 +148,6 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
 
   // Search verses (translation text)
   final db = ref.read(databaseProvider);
-  final settings = ref.read(settingsProvider);
   final lang = settings.language;
   final verseResults = await db.searchVerses(query, lang);
   
