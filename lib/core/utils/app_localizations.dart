@@ -249,7 +249,18 @@ class AppLocalizations {
       'translation_example' => _getTranslationExample(language),
       'translation_label' => _getTranslationLabel(language),
       'no_results' => _getNoResults(language),
+      'results_heading' => _getResultsHeading(language),
       _ => key,
+    };
+  }
+
+  static String _getResultsHeading(String language) {
+    return switch (language) {
+      'id' => 'Hasil',
+      'en' => 'Results',
+      'zh' => '结果',
+      'ja' => '検索結果',
+      _ => 'Results',
     };
   }
 

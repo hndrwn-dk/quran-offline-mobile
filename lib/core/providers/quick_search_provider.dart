@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
+import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 
 class QuickSearchResult {
   final String type; // 'surah', 'juz', 'page'
@@ -20,7 +22,11 @@ final quickSearchQueryProvider = StateProvider<String>((ref) => '');
 
 final quickSearchResultsProvider = FutureProvider<List<QuickSearchResult>>((ref) async {
   final query = ref.watch(quickSearchQueryProvider);
-  
+  final settings = ref.watch(settingsProvider);
+  final appLanguage = settings.appLanguage;
+  final juzLabel = AppLocalizations.getMenuText('juz', appLanguage);
+  final pageLabel = AppLocalizations.getMenuText('page', appLanguage);
+
   if (query.isEmpty) return [];
 
   await Future.delayed(const Duration(milliseconds: 300));
@@ -64,7 +70,7 @@ final quickSearchResultsProvider = FutureProvider<List<QuickSearchResult>>((ref)
   if (juzNo != null && juzNo >= 1 && juzNo <= 30) {
     results.insert(0, QuickSearchResult(
       type: 'juz',
-      title: 'Juz $juzNo',
+      title: '$juzLabel $juzNo',
       source: JuzSource(juzNo),
     ));
   } else if (queryLower.startsWith('juz')) {
@@ -74,29 +80,29 @@ final quickSearchResultsProvider = FutureProvider<List<QuickSearchResult>>((ref)
       if (juz != null && juz >= 1 && juz <= 30) {
         results.insert(0, QuickSearchResult(
           type: 'juz',
-          title: 'Juz $juz',
+          title: '$juzLabel $juz',
           source: JuzSource(juz),
         ));
       }
     }
   }
 
-  // Search Pages (1-604)
+  // Search Pages (1-604) – match "page" or "halaman" (ID)
   final pageNo = int.tryParse(query);
   if (pageNo != null && pageNo >= 1 && pageNo <= 604) {
     results.insert(0, QuickSearchResult(
       type: 'page',
-      title: 'Page $pageNo',
+      title: '$pageLabel $pageNo',
       source: PageSource(pageNo),
     ));
-  } else if (queryLower.startsWith('page')) {
+  } else if (queryLower.startsWith('page') || queryLower.startsWith('halaman')) {
     final pageMatch = RegExp(r'\d+').firstMatch(queryLower);
     if (pageMatch != null) {
       final page = int.tryParse(pageMatch.group(0)!);
       if (page != null && page >= 1 && page <= 604) {
         results.insert(0, QuickSearchResult(
           type: 'page',
-          title: 'Page $page',
+          title: '$pageLabel $page',
           source: PageSource(page),
         ));
       }
