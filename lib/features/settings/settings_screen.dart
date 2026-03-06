@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:quran_offline/core/constants/app_version.dart';
+import 'package:quran_offline/core/providers/package_info_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/transliteration_formatter.dart';
@@ -477,7 +477,11 @@ class SettingsScreen extends ConsumerWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
             title: Text(AppLocalizations.getSettingsText('version_title', appLanguage)),
-            subtitle: Text(AppVersion.display),
+            subtitle: ref.watch(packageInfoProvider).when(
+                  data: (info) => Text('${info.version} (${info.buildNumber})'),
+                  loading: () => const Text('…'),
+                  error: (_, __) => const Text('—'),
+                ),
           ),
           ListTile(
             leading: Icon(

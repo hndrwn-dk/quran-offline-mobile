@@ -152,12 +152,14 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
   final verseResults = await db.searchVerses(query, lang);
   
   for (final verse in verseResults) {
-    final rawTranslation = verse.trId ?? verse.trEn ?? '';
+    final rawTranslation = lang == 'en'
+        ? (verse.trEn ?? verse.trId ?? '')
+        : (verse.trId ?? verse.trEn ?? '');
     results.add(SearchResult(
       type: 'verse',
       title: TranslationCleaner.clean(rawTranslation),
       subtitle: 'QS ${verse.surahId}:${verse.ayahNo}',
-      source: SurahSource(verse.surahId),
+      source: SurahSource(verse.surahId, targetAyahNo: verse.ayahNo),
     ));
   }
 
