@@ -1899,5 +1899,439 @@ class AppLocalizations {
       _ => 'Translation',
     };
   }
+
+  // ===========================================================================
+  // Recitation / Audio downloads
+  // ===========================================================================
+
+  /// Get localized text for simple (non-parameterized) recitation strings.
+  static String getRecitationText(String key, String language) {
+    return switch (key) {
+      'recitation_section' => _recRecitationSection(language),
+      'reciter' => _recReciter(language),
+      'save_recitation_audio' => _recSaveRecitationAudio(language),
+      'recitation_downloads' => _recRecitationDownloads(language),
+      'saved_on_device' => _recSavedOnDevice(language),
+      'not_saved' => _recNotSaved(language),
+      'failed_retry' => _recFailedRetry(language),
+      'cancel' => _getCancel(language),
+      'delete' => _getDelete(language),
+      'save' => _getSave(language),
+      'save_action' => _getSave(language),
+      'save_surah_action' => _recSaveSurahAction(language),
+      'save_all_114' => _recSaveAll114(language),
+      'cancel_save_all' => _recCancelSaveAll(language),
+      'recommended_smooth' => _recRecommendedSmooth(language),
+      'storage_on_phone' => _recStorageOnPhone(language),
+      'storage_phone_desc' => _recStoragePhoneDesc(language),
+      'no_files_saved' => _recNoFilesSaved(language),
+      'delete_all_recitation_q' => _recDeleteAllQuestion(language),
+      'selected_for_playback' => _recSelectedForPlayback(language),
+      'all_surahs_saved' => _recAllSurahsSaved(language),
+      _ => key,
+    };
+  }
+
+  static String _recRecitationSection(String language) {
+    return switch (language) {
+      'id' => 'Tilawah',
+      'en' => 'Recitation',
+      'zh' => '诵读',
+      'ja' => '朗読',
+      _ => 'Recitation',
+    };
+  }
+
+  static String _recReciter(String language) {
+    return switch (language) {
+      'id' => 'Qari',
+      'en' => 'Reciter',
+      'zh' => '诵读者',
+      'ja' => '朗読者',
+      _ => 'Reciter',
+    };
+  }
+
+  static String _recSaveRecitationAudio(String language) {
+    return switch (language) {
+      'id' => 'Simpan audio tilawah',
+      'en' => 'Save recitation audio',
+      'zh' => '保存诵读音频',
+      'ja' => '朗読音声を保存',
+      _ => 'Save recitation audio',
+    };
+  }
+
+  static String _recRecitationDownloads(String language) {
+    return switch (language) {
+      'id' => 'Unduhan Tilawah',
+      'en' => 'Recitation Downloads',
+      'zh' => '诵读下载',
+      'ja' => '朗読のダウンロード',
+      _ => 'Recitation Downloads',
+    };
+  }
+
+  static String _recSavedOnDevice(String language) {
+    return switch (language) {
+      'id' => 'Tersimpan di perangkat',
+      'en' => 'Saved on device',
+      'zh' => '已保存到设备',
+      'ja' => '端末に保存済み',
+      _ => 'Saved on device',
+    };
+  }
+
+  static String _recNotSaved(String language) {
+    return switch (language) {
+      'id' => 'Belum tersimpan',
+      'en' => 'Not saved',
+      'zh' => '未保存',
+      'ja' => '未保存',
+      _ => 'Not saved',
+    };
+  }
+
+  static String _recFailedRetry(String language) {
+    return switch (language) {
+      'id' => 'Gagal - ketuk untuk coba lagi',
+      'en' => 'Failed - tap to retry',
+      'zh' => '失败 - 点按重试',
+      'ja' => '失敗 - タップして再試行',
+      _ => 'Failed - tap to retry',
+    };
+  }
+
+  static String _recSaveSurahAction(String language) {
+    return switch (language) {
+      'id' => 'Simpan surah',
+      'en' => 'Save surah',
+      'zh' => '保存整章',
+      'ja' => '章を保存',
+      _ => 'Save surah',
+    };
+  }
+
+  static String _recSaveAll114(String language) {
+    return switch (language) {
+      'id' => 'Simpan semua 114 surah',
+      'en' => 'Save all 114 surahs',
+      'zh' => '保存全部114章',
+      'ja' => '全114章を保存',
+      _ => 'Save all 114 surahs',
+    };
+  }
+
+  static String _recCancelSaveAll(String language) {
+    return switch (language) {
+      'id' => 'Batalkan simpan semua',
+      'en' => 'Cancel save all',
+      'zh' => '取消全部保存',
+      'ja' => 'すべての保存をキャンセル',
+      _ => 'Cancel save all',
+    };
+  }
+
+  static String _recRecommendedSmooth(String language) {
+    return switch (language) {
+      'id' => 'Disarankan agar pemutaran lancar tanpa indikator memuat.',
+      'en' => 'Recommended for smooth playback with no loading spinners.',
+      'zh' => '建议保存以获得流畅播放，无需加载等待。',
+      'ja' => '読み込み表示なしのスムーズな再生に推奨。',
+      _ => 'Recommended for smooth playback with no loading spinners.',
+    };
+  }
+
+  static String _recStorageOnPhone(String language) {
+    return switch (language) {
+      'id' => 'Penyimpanan di ponsel Anda',
+      'en' => 'Storage on your phone',
+      'zh' => '手机存储',
+      'ja' => '端末のストレージ',
+      _ => 'Storage on your phone',
+    };
+  }
+
+  static String _recStoragePhoneDesc(String language) {
+    return switch (language) {
+      'id' => 'Mengunduh setiap qari memakai lebih banyak ruang. Hapus suara yang tidak Anda perlukan lagi.',
+      'en' => 'Downloading every reciter uses more space. Remove voices you no longer need.',
+      'zh' => '下载每位诵读者会占用更多空间。删除您不再需要的声音。',
+      'ja' => 'すべての朗読者をダウンロードすると容量を多く使います。不要な音声は削除してください。',
+      _ => 'Downloading every reciter uses more space. Remove voices you no longer need.',
+    };
+  }
+
+  static String _recNoFilesSaved(String language) {
+    return switch (language) {
+      'id' => 'Belum ada file tilawah yang tersimpan.',
+      'en' => 'No recitation files saved yet.',
+      'zh' => '尚未保存诵读文件。',
+      'ja' => '保存された朗読ファイルはまだありません。',
+      _ => 'No recitation files saved yet.',
+    };
+  }
+
+  static String _recDeleteAllQuestion(String language) {
+    return switch (language) {
+      'id' => 'Hapus semua audio tilawah?',
+      'en' => 'Delete all recitation audio?',
+      'zh' => '删除所有诵读音频？',
+      'ja' => 'すべての朗読音声を削除しますか？',
+      _ => 'Delete all recitation audio?',
+    };
+  }
+
+  static String _recSelectedForPlayback(String language) {
+    return switch (language) {
+      'id' => 'dipilih untuk pemutaran',
+      'en' => 'selected for playback',
+      'zh' => '已选用于播放',
+      'ja' => '再生用に選択済み',
+      _ => 'selected for playback',
+    };
+  }
+
+  static String _recAllSurahsSaved(String language) {
+    return switch (language) {
+      'id' => 'Semua 114 surah tersimpan di perangkat Anda. Tilawah berfungsi sepenuhnya offline.',
+      'en' => 'All 114 surahs are saved on your device. Recitation works fully offline.',
+      'zh' => '全部114章已保存到您的设备。诵读可完全离线使用。',
+      'ja' => '全114章を端末に保存しました。朗読は完全にオフラインで動作します。',
+      _ => 'All 114 surahs are saved on your device. Recitation works fully offline.',
+    };
+  }
+
+  // --- Parameterized recitation strings -------------------------------------
+
+  static String recAllSavedFor(String name, String language) {
+    return switch (language) {
+      'id' => 'Semua 114 surah tersimpan untuk $name',
+      'en' => 'All 114 surahs saved for $name',
+      'zh' => '已为 $name 保存全部114章',
+      'ja' => '$name の全114章を保存済み',
+      _ => 'All 114 surahs saved for $name',
+    };
+  }
+
+  static String recSavedForReciterShort(
+    int saved,
+    int total,
+    String name,
+    String language,
+  ) {
+    return switch (language) {
+      'id' => '$saved/$total tersimpan untuk $name — setiap qari terpisah',
+      'en' => '$saved/$total saved for $name — each reciter is separate',
+      'zh' => '已为 $name 保存 $saved/$total — 每位诵读者独立',
+      'ja' => '$name に $saved/$total を保存 — 朗読者ごとに別々',
+      _ => '$saved/$total saved for $name — each reciter is separate',
+    };
+  }
+
+  static String recReciterSeparateHeader(String name, String language) {
+    return switch (language) {
+      'id' => 'Setiap qari memiliki audio terpisah di ponsel Anda. Menyimpan di sini hanya berlaku untuk $name. Qari lain tidak ditimpa.',
+      'en' => 'Each reciter has separate audio on your phone. Saving here only applies to $name. Other reciters are not overwritten.',
+      'zh' => '每位诵读者在您的手机上都有独立的音频。在此保存仅适用于 $name。其他诵读者不会被覆盖。',
+      'ja' => '各朗読者は端末に別々の音声を持ちます。ここでの保存は $name のみに適用されます。他の朗読者は上書きされません。',
+      _ => 'Each reciter has separate audio on your phone. Saving here only applies to $name. Other reciters are not overwritten.',
+    };
+  }
+
+  static String recSavedForThisReciter(int saved, int total, String language) {
+    return switch (language) {
+      'id' => 'Tersimpan untuk qari ini: $saved/$total surah',
+      'en' => 'Saved for this reciter: $saved/$total surahs',
+      'zh' => '已为此诵读者保存：$saved/$total 章',
+      'ja' => 'この朗読者の保存済み：$saved/$total 章',
+      _ => 'Saved for this reciter: $saved/$total surahs',
+    };
+  }
+
+  static String recStorageForReciter(String name, String size, String language) {
+    return switch (language) {
+      'id' => 'Penyimpanan untuk $name: $size',
+      'en' => 'Storage for $name: $size',
+      'zh' => '$name 的存储：$size',
+      'ja' => '$name のストレージ：$size',
+      _ => 'Storage for $name: $size',
+    };
+  }
+
+  static String recTotalAllReciters(String size, String language) {
+    return switch (language) {
+      'id' => 'Total semua qari: $size',
+      'en' => 'Total for all reciters: $size',
+      'zh' => '所有诵读者总计：$size',
+      'ja' => '全朗読者の合計：$size',
+      _ => 'Total for all reciters: $size',
+    };
+  }
+
+  static String recOtherRecitersUseSpace(int count, String language) {
+    return switch (language) {
+      'id' => '$count qari lain juga memakai ruang di ponsel Anda. Lihat di bawah untuk mengosongkan penyimpanan.',
+      'en' => '$count other reciter(s) also use space on your phone. See below to free storage.',
+      'zh' => '另有 $count 位诵读者也占用您手机的空间。请见下方以释放存储。',
+      'ja' => '他に $count 人の朗読者も端末の容量を使用しています。空き容量を増やすには下記をご覧ください。',
+      _ => '$count other reciter(s) also use space on your phone. See below to free storage.',
+    };
+  }
+
+  static String recSavingSurah(String surahId, int done, int total, String language) {
+    return switch (language) {
+      'id' => 'Menyimpan surah $surahId ($done/$total)',
+      'en' => 'Saving surah $surahId ($done/$total)',
+      'zh' => '正在保存第 $surahId 章（$done/$total）',
+      'ja' => '章 $surahId を保存中（$done/$total）',
+      _ => 'Saving surah $surahId ($done/$total)',
+    };
+  }
+
+  static String recDeleteAllAudioForReciter(String name, String language) {
+    return switch (language) {
+      'id' => 'Hapus semua audio untuk $name',
+      'en' => 'Delete all audio for $name',
+      'zh' => '删除 $name 的所有音频',
+      'ja' => '$name のすべての音声を削除',
+      _ => 'Delete all audio for $name',
+    };
+  }
+
+  static String recDeleteAllRecitationAudioBtn(String size, String language) {
+    return switch (language) {
+      'id' => 'Hapus semua audio tilawah ($size)',
+      'en' => 'Delete all recitation audio ($size)',
+      'zh' => '删除所有诵读音频（$size）',
+      'ja' => 'すべての朗読音声を削除（$size）',
+      _ => 'Delete all recitation audio ($size)',
+    };
+  }
+
+  static String recSurahsMarkedSaved(int count, String language) {
+    return switch (language) {
+      'id' => '$count surah ditandai tersimpan',
+      'en' => '$count surahs marked saved',
+      'zh' => '$count 章已标记保存',
+      'ja' => '$count 章を保存済みとマーク',
+      _ => '$count surahs marked saved',
+    };
+  }
+
+  static String recDeleteReciterTitle(String name, String language) {
+    return switch (language) {
+      'id' => 'Hapus audio $name?',
+      'en' => 'Delete $name audio?',
+      'zh' => '删除 $name 的音频？',
+      'ja' => '$name の音声を削除しますか？',
+      _ => 'Delete $name audio?',
+    };
+  }
+
+  static String recDeleteReciterMessage(String name, String language) {
+    return switch (language) {
+      'id' => 'Ini menghapus semua file tilawah $name yang tersimpan dari ponsel Anda. Anda dapat menyimpannya lagi nanti.',
+      'en' => 'This removes all saved recitation files for $name from your phone. You can save them again later.',
+      'zh' => '这将从您的手机中删除 $name 所有已保存的诵读文件。您可以稍后重新保存。',
+      'ja' => 'これにより、$name の保存済み朗読ファイルがすべて端末から削除されます。後で再度保存できます。',
+      _ => 'This removes all saved recitation files for $name from your phone. You can save them again later.',
+    };
+  }
+
+  static String recDeleteAllMessage(String size, String language) {
+    return switch (language) {
+      'id' => 'Ini mengosongkan $size dengan menghapus audio tersimpan untuk semua qari. Pemutaran akan memerlukan internet atau unduhan baru.',
+      'en' => 'This frees $size by removing saved audio for every reciter. Playback will need the internet or a new download.',
+      'zh' => '这将通过删除所有诵读者的已保存音频释放 $size。播放将需要联网或重新下载。',
+      'ja' => 'これにより、すべての朗読者の保存済み音声を削除して $size を解放します。再生にはインターネットまたは再ダウンロードが必要になります。',
+      _ => 'This frees $size by removing saved audio for every reciter. Playback will need the internet or a new download.',
+    };
+  }
+
+  static String recDownloadingProgress(int done, int total, String language) {
+    return switch (language) {
+      'id' => 'Mengunduh $done/$total',
+      'en' => 'Downloading $done/$total',
+      'zh' => '正在下载 $done/$total',
+      'ja' => 'ダウンロード中 $done/$total',
+      _ => 'Downloading $done/$total',
+    };
+  }
+
+  static String recError(Object error, String language) {
+    return switch (language) {
+      'id' => 'Kesalahan: $error',
+      'en' => 'Error: $error',
+      'zh' => '错误：$error',
+      'ja' => 'エラー：$error',
+      _ => 'Error: $error',
+    };
+  }
+
+  static String recSurahSaved(
+    String label,
+    int count,
+    int total,
+    String language,
+  ) {
+    return switch (language) {
+      'id' => '$label tersimpan di perangkat Anda ($count/$total surah). Pemutaran kini seketika untuk surah ini.',
+      'en' => '$label saved on your device ($count/$total surahs). Playback is now instant for this surah.',
+      'zh' => '$label 已保存到您的设备（$count/$total 章）。该章现在可即时播放。',
+      'ja' => '$label を端末に保存しました（$count/$total 章）。この章はすぐに再生できます。',
+      _ => '$label saved on your device ($count/$total surahs). Playback is now instant for this surah.',
+    };
+  }
+
+  static String recPreparingLargeWhole(String name, String language) {
+    return switch (language) {
+      'id' => '$name belum tersimpan di perangkat Anda. Putar surah mungkin menampilkan indikator memuat saat ayat diambil dari internet. Simpan seluruh surah untuk pemutaran offline seketika.',
+      'en' => '$name is not saved on your device yet. Play surah may show a loading spinner while verses stream from the internet. Save the full surah for instant offline playback.',
+      'zh' => '$name 尚未保存到您的设备。播放整章时，经文从网络加载可能出现加载指示。保存整章可立即离线播放。',
+      'ja' => '$name はまだ端末に保存されていません。章を再生すると、節がインターネットから読み込まれる間ローディングが表示される場合があります。章全体を保存すると、すぐにオフライン再生できます。',
+      _ => '$name is not saved on your device yet. Play surah may show a loading spinner while verses stream from the internet. Save the full surah for instant offline playback.',
+    };
+  }
+
+  static String recPreparingLarge(String name, String language) {
+    return switch (language) {
+      'id' => '$name belum tersimpan sepenuhnya. Ayat ini mungkin butuh waktu sejenak untuk mulai. Simpan surah untuk pemutaran offline yang lancar.',
+      'en' => '$name is not fully saved. This verse may take a moment to start. Save the surah for smooth offline playback.',
+      'zh' => '$name 尚未完全保存。这节经文可能需要片刻才能开始。保存该章以获得流畅的离线播放。',
+      'ja' => '$name は完全には保存されていません。この節は開始までに少し時間がかかる場合があります。スムーズなオフライン再生のために章を保存してください。',
+      _ => '$name is not fully saved. This verse may take a moment to start. Save the surah for smooth offline playback.',
+    };
+  }
+
+  static String recPreparingSmall(String name, String language) {
+    return switch (language) {
+      'id' => '$name belum tersimpan di perangkat Anda. Simpan untuk pemutaran seketika tanpa menunggu.',
+      'en' => '$name is not saved on your device yet. Save it for instant playback without waiting.',
+      'zh' => '$name 尚未保存到您的设备。保存后可立即播放，无需等待。',
+      'ja' => '$name はまだ端末に保存されていません。待たずにすぐ再生できるよう保存してください。',
+      _ => '$name is not saved on your device yet. Save it for instant playback without waiting.',
+    };
+  }
+
+  static String recStreamingReminder(String label, String language) {
+    return switch (language) {
+      'id' => 'Memutar $label menggunakan internet. Simpan di perangkat Anda untuk pemutaran offline.',
+      'en' => 'Playing $label using the internet. Save it on your device for offline playback.',
+      'zh' => '正在使用网络播放 $label。将其保存到设备以便离线播放。',
+      'ja' => 'インターネットを使用して $label を再生中。オフライン再生のために端末に保存してください。',
+      _ => 'Playing $label using the internet. Save it on your device for offline playback.',
+    };
+  }
+
+  static String recNotSavedOnDevice(String label, String language) {
+    return switch (language) {
+      'id' => '$label belum tersimpan di perangkat Anda. Ketuk Simpan untuk mengunduh surah ini untuk pemutaran offline.',
+      'en' => '$label is not saved on your device. Tap Save to download this surah for offline playback.',
+      'zh' => '$label 尚未保存到您的设备。点按"保存"下载该章以便离线播放。',
+      'ja' => '$label は端末に保存されていません。「保存」をタップしてこの章をダウンロードするとオフライン再生できます。',
+      _ => '$label is not saved on your device. Tap Save to download this surah for offline playback.',
+    };
+  }
 }
 

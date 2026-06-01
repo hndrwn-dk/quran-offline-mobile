@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:quran_offline/core/database/database.dart';
+import 'package:quran_offline/core/audio/playback_actions.dart';
+import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/highlights_provider.dart';
 import 'package:quran_offline/core/providers/notes_provider.dart';
@@ -46,6 +48,30 @@ class _AyahCardState extends ConsumerState<AyahCard> {
         _isBookmarked = bookmarked;
       });
     }
+  }
+
+  void _togglePlay(AudioPlayerState audio) {
+    final notifier = ref.read(audioPlayerProvider.notifier);
+    final isCurrentAyah = audio.surahId == widget.verse.surahId &&
+        audio.ayahNo == widget.verse.ayahNo;
+    if (isCurrentAyah) {
+      notifier.toggle();
+      return;
+    }
+    final surahs = ref.read(surahNamesProvider).valueOrNull;
+    final surahName = surahs
+        ?.firstWhere(
+          (s) => s.id == widget.verse.surahId,
+          orElse: () => surahs.first,
+        )
+        .englishName;
+    PlaybackActions.playAyah(
+      context,
+      ref,
+      widget.verse.surahId,
+      widget.verse.ayahNo,
+      surahName: surahName,
+    );
   }
 
   String? _getTranslation(String lang) {
@@ -89,11 +115,21 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     final hasNote = noteAsync.valueOrNull != null;
     final highlightColor = highlightAsync.valueOrNull?.color;
 
-    return GestureDetector(
-      onLongPress: () => _showAyahActions(context, settings, hasNote, highlightColor),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        decoration: highlightColor != null
+    final audio = ref.watch(audioPlayerProvider);
+    final isCurrentAyah = audio.surahId == widget.verse.surahId &&
+        audio.ayahNo == widget.verse.ayahNo;
+    final isPlayingThis = isCurrentAyah && audio.isPlaying;
+
+    final BoxDecoration? decoration = isCurrentAyah
+        ? BoxDecoration(
+            color: colorScheme.primary.withOpacity(0.10),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: colorScheme.primary.withOpacity(0.4),
+              width: 1,
+            ),
+          )
+        : highlightColor != null
             ? BoxDecoration(
                 color: Color(highlightColor).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(8),
@@ -102,7 +138,13 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                   width: 1,
                 ),
               )
-            : null,
+            : null;
+
+    return GestureDetector(
+      onLongPress: () => _showAyahActions(context, settings, hasNote, highlightColor),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: decoration,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -110,16 +152,45 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '${widget.verse.surahId}:${widget.verse.ayahNo}',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${widget.verse.surahId}:${widget.verse.ayahNo}',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: isCurrentAyah
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
+                        fontWeight: isCurrentAyah ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                    if (isCurrentAyah) ...[
+                      const SizedBox(width: 8),
+                      Icon(
+                        isPlayingThis ? Icons.graphic_eq : Icons.volume_up_outlined,
+                        size: 16,
+                        color: colorScheme.primary,
+                      ),
+                    ],
+                  ],
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    IconButton(
+                      icon: Icon(
+                        isPlayingThis ? Icons.stop_circle_outlined : Icons.play_circle_outline,
+                        size: 20,
+                      ),
+                      color: isCurrentAyah
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant.withOpacity(0.6),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => _togglePlay(audio),
+                    ),
+                    const SizedBox(width: 4),
                     IconButton(
                       icon: Icon(
                         highlightColor != null ? Icons.format_color_fill : Icons.format_color_fill_outlined,

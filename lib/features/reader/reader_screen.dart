@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
+import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/providers/juz_surahs_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
@@ -13,7 +14,9 @@ import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/utils/juz_info.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
 import 'package:quran_offline/features/reader/ayah_card.dart';
+import 'package:quran_offline/features/audio/global_recitation_bar.dart';
 import 'package:quran_offline/features/reader/surah_header_card.dart';
+import 'package:quran_offline/features/reader/widgets/reader_bismillah_block.dart';
 import 'package:quran_offline/features/reader/text_settings_dialog.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
@@ -31,13 +34,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   double _swipeStartY = 0.0;
   bool _isSwiping = false;
   bool _scrollListenerSetup = false;
-  
-  
-  @override
-  void initState() {
-    super.initState();
-  }
-  
+  /// Last ayah we auto-scrolled to (avoids duplicate scrolls).
+  int? _lastFollowedAyah;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -145,9 +144,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   
   @override
   void dispose() {
-    // Cancel debounce timer
     _debounceTimer?.cancel();
-    // Remove listener
     _itemPositionsListener.itemPositions.removeListener(_onItemPositionsChanged);
     super.dispose();
   }
@@ -232,6 +229,51 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     }
   }
   
+  /// Scrolls the list so [ayahNo] of [audioSurahId] stays in view while reciting.
+  void _scrollToPlayingAyah(int ayahNo, int? audioSurahId, ReaderSource? source) {
+    // Bismillah sits above ayah 1 in the list; scroll to ayah 1 to keep it visible.
+    final scrollAyah = ayahNo == Bismillah.audioAyahNo ? 1 : ayahNo;
+    if (!mounted || source == null || audioSurahId == null) return;
+    if (!_itemScrollController.isAttached) return;
+
+    final verses = ref.read(readerVersesProvider(source)).valueOrNull;
+    if (verses == null || verses.isEmpty) return;
+
+    int? verseIndex;
+    for (int i = 0; i < verses.length; i++) {
+      if (verses[i].surahId == audioSurahId && verses[i].ayahNo == scrollAyah) {
+        verseIndex = i;
+        break;
+      }
+    }
+    if (verseIndex == null) return;
+
+    final isSurahSource = source is SurahSource || source is SurahInJuzSource;
+    final itemIndex = isSurahSource ? verseIndex + 1 : verseIndex;
+
+    try {
+      _itemScrollController.scrollTo(
+        index: itemIndex,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+        alignment: 0.25,
+      );
+      _lastFollowedAyah = ayahNo;
+    } catch (_) {}
+  }
+
+  /// Follows the current playback position when the list is ready or ayah changes.
+  void _followPlayingAyah() {
+    final audio = ref.read(audioPlayerProvider);
+    if (!audio.isActive || audio.ayahNo == null || audio.surahId == null) return;
+    if (_lastFollowedAyah == audio.ayahNo) return;
+    _scrollToPlayingAyah(
+      audio.ayahNo!,
+      audio.surahId,
+      ref.read(readerSourceProvider),
+    );
+  }
+
   void _scrollToAyah(List<Verse> verses, int targetAyahNo, bool isSurahSource, bool hasHeader) {
     if (_hasScrolledToTarget) return;
     
@@ -563,12 +605,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     // Listen to source changes reactively (ref.listen automatically handles lifecycle)
     ref.listen<ReaderSource?>(readerSourceProvider, (previous, next) {
       if (previous != next && next != null) {
-        // Save last read (without ayahNo, will be updated when user scrolls)
         ref.read(lastReadProvider.notifier).saveLastRead(next);
         setState(() {
           _hasScrolledToTarget = false;
         });
-        // Optionally reset scroll position
         try {
           _itemScrollController.jumpTo(index: 0);
         } catch (e) {
@@ -583,6 +623,38 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         setState(() {
           _hasScrolledToTarget = false;
         });
+      }
+    });
+
+    ref.listen<ReaderJumpRequest?>(readerJumpRequestProvider, (previous, next) {
+      if (next == null) return;
+      setState(() {
+        _hasScrolledToTarget = false;
+      });
+      ref.read(readerJumpRequestProvider.notifier).state = null;
+    });
+
+    // Follow recitation: scroll to the ayah currently being played.
+    ref.listen<int?>(audioPlayerProvider.select((s) => s.ayahNo), (previous, next) {
+      if (next == null || next == previous) return;
+      _lastFollowedAyah = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final audio = ref.read(audioPlayerProvider);
+        _scrollToPlayingAyah(next, audio.surahId, ref.read(readerSourceProvider));
+      });
+    });
+
+    ref.listen<AudioPlayerState>(audioPlayerProvider, (previous, next) {
+      final wasActive = previous?.isActive ?? false;
+      if (next.isActive && !wasActive) {
+        _lastFollowedAyah = null;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _followPlayingAyah();
+        });
+      }
+      if (!next.isActive) {
+        _lastFollowedAyah = null;
       }
     });
     
@@ -680,6 +752,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
     return Scaffold(
       appBar: appBar,
+      bottomNavigationBar: const GlobalRecitationBar(),
       body: GestureDetector(
         onHorizontalDragStart: (details) {
           _swipeStartX = details.globalPosition.dx;
@@ -703,7 +776,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           // Also ensure horizontal movement is greater than vertical
           const swipeThreshold = 300.0;
           
-          if (deltaX.abs() > swipeThreshold && deltaX.abs() > deltaY.abs() && source != null) {
+          if (deltaX.abs() > swipeThreshold && deltaX.abs() > deltaY.abs()) {
             // Swipe left (negative deltaX) = next
             // Swipe right (positive deltaX) = previous
             final isNext = deltaX < 0;
@@ -726,7 +799,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 width: isLargeScreen ? contentWidth : double.infinity,
                 child: surahsAsync.when(
                 data: (surahs) {
-                  final settings = ref.watch(settingsProvider);
+                  ref.watch(settingsProvider);
                   final isSurahSource = source is SurahSource || source is SurahInJuzSource;
                   
                   // Calculate verse count for current surah (when reading by surah)
@@ -756,7 +829,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                       }
                     });
                   }
-                  
+
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) _followPlayingAyah();
+                  });
+
                   return ScrollablePositionedList.builder(
                     itemScrollController: _itemScrollController,
                     itemPositionsListener: _itemPositionsListener,
@@ -802,82 +879,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                           // Show Bismillah before first ayah of each surah (except Surah 1 and Surah 9)
                           // Note: Surah 1's first ayah IS the Bismillah, so we don't show it separately
                           if (isFirstAyah && Bismillah.shouldShowBismillah(verse.surahId)) ...[
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Opacity(
-                                          opacity: 0,
-                                          child: Text(
-                                            '${verse.surahId}:${verse.ayahNo}',
-                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                        Opacity(
-                                          opacity: 0,
-                                          child: IconButton(
-                                            icon: const Icon(Icons.bookmark_outline, size: 20),
-                                            visualDensity: VisualDensity.compact,
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
-                                            onPressed: () {},
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Directionality(
-                                      textDirection: TextDirection.rtl,
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: SelectableText(
-                                          Bismillah.arabic,
-                                          style: TextStyle(
-                                            fontSize: settings.arabicFontSize * 1.1,
-                                            fontFamily: 'UthmanicHafsV22',
-                                            fontFamilyFallback: const ['UthmanicHafs'],
-                                            height: 1.7,
-                                            color: Theme.of(context).colorScheme.onSurface,
-                                          ),
-                                          textDirection: TextDirection.rtl,
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      ),
-                                    ),
-                                    if (settings.showTransliteration) ...[
-                                      const SizedBox(height: 8),
-                                      SelectableText(
-                                        Bismillah.transliteration,
-                                        style: TextStyle(
-                                          fontSize: settings.translationFontSize * 0.85,
-                                          fontStyle: FontStyle.italic,
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                          height: 1.4,
-                                        ),
-                                      ),
-                                    ],
-                                    const SizedBox(height: 8),
-                                    SelectableText(
-                                      Bismillah.getTranslation(settings.language),
-                                      style: TextStyle(
-                                        fontSize: settings.translationFontSize,
-                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                        height: 1.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                            ReaderBismillahBlock(surahId: verse.surahId),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                               child: Divider(
@@ -909,7 +911,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   );
                 },
                 loading: () {
-                  final settings = ref.watch(settingsProvider);
+                  ref.watch(settingsProvider);
                   final isSurahSource = source is SurahSource || source is SurahInJuzSource;
                   
                   return ScrollablePositionedList.builder(
@@ -966,82 +968,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                             ),
                           ],
                           if (isFirstAyah && Bismillah.shouldShowBismillah(verse.surahId)) ...[
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Opacity(
-                                          opacity: 0,
-                                          child: Text(
-                                            '${verse.surahId}:${verse.ayahNo}',
-                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                        Opacity(
-                                          opacity: 0,
-                                          child: IconButton(
-                                            icon: const Icon(Icons.bookmark_outline, size: 20),
-                                            visualDensity: VisualDensity.compact,
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
-                                            onPressed: () {},
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Directionality(
-                                      textDirection: TextDirection.rtl,
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: SelectableText(
-                                          Bismillah.arabic,
-                                          style: TextStyle(
-                                            fontSize: settings.arabicFontSize * 1.1,
-                                            fontFamily: 'UthmanicHafsV22',
-                                            fontFamilyFallback: const ['UthmanicHafs'],
-                                            height: 1.7,
-                                            color: Theme.of(context).colorScheme.onSurface,
-                                          ),
-                                          textDirection: TextDirection.rtl,
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      ),
-                                    ),
-                                    if (settings.showTransliteration) ...[
-                                      const SizedBox(height: 8),
-                                      SelectableText(
-                                        Bismillah.transliteration,
-                                        style: TextStyle(
-                                          fontSize: settings.translationFontSize * 0.85,
-                                          fontStyle: FontStyle.italic,
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                          height: 1.4,
-                                        ),
-                                      ),
-                                    ],
-                                    const SizedBox(height: 8),
-                                    SelectableText(
-                                      Bismillah.getTranslation(settings.language),
-                                      style: TextStyle(
-                                        fontSize: settings.translationFontSize,
-                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                        height: 1.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                            ReaderBismillahBlock(surahId: verse.surahId),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                               child: Divider(
@@ -1073,7 +1000,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   );
                 },
                 error: (_, __) {
-                  final settings = ref.watch(settingsProvider);
+                  ref.watch(settingsProvider);
                   final isSurahSource = source is SurahSource || source is SurahInJuzSource;
                   
                   return ScrollablePositionedList.builder(
@@ -1130,82 +1057,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                             ),
                           ],
                           if (isFirstAyah && Bismillah.shouldShowBismillah(verse.surahId)) ...[
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Opacity(
-                                          opacity: 0,
-                                          child: Text(
-                                            '${verse.surahId}:${verse.ayahNo}',
-                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                        Opacity(
-                                          opacity: 0,
-                                          child: IconButton(
-                                            icon: const Icon(Icons.bookmark_outline, size: 20),
-                                            visualDensity: VisualDensity.compact,
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
-                                            onPressed: () {},
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Directionality(
-                                      textDirection: TextDirection.rtl,
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: SelectableText(
-                                          Bismillah.arabic,
-                                          style: TextStyle(
-                                            fontSize: settings.arabicFontSize * 1.1,
-                                            fontFamily: 'UthmanicHafsV22',
-                                            fontFamilyFallback: const ['UthmanicHafs'],
-                                            height: 1.7,
-                                            color: Theme.of(context).colorScheme.onSurface,
-                                          ),
-                                          textDirection: TextDirection.rtl,
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      ),
-                                    ),
-                                    if (settings.showTransliteration) ...[
-                                      const SizedBox(height: 8),
-                                      SelectableText(
-                                        Bismillah.transliteration,
-                                        style: TextStyle(
-                                          fontSize: settings.translationFontSize * 0.85,
-                                          fontStyle: FontStyle.italic,
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                          height: 1.4,
-                                        ),
-                                      ),
-                                    ],
-                                    const SizedBox(height: 8),
-                                    SelectableText(
-                                      Bismillah.getTranslation(settings.language),
-                                      style: TextStyle(
-                                        fontSize: settings.translationFontSize,
-                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                        height: 1.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                            ReaderBismillahBlock(surahId: verse.surahId),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                               child: Divider(

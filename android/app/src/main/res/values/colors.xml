@@ -3,5 +3,5 @@
     <!-- Material 3 Surface colors matching Flutter theme -->
     <color name="splash_background_light">#FFFFFF</color>
     <color name="splash_background_dark">#121212</color>
+    <color name="ic_launcher_background">#E8EDE3</color>
 </resources>
-

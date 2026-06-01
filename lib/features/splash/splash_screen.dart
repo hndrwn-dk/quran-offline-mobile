@@ -18,7 +18,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
-  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -60,9 +59,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           await Future.delayed(const Duration(seconds: 1));
         }
         if (mounted) {
-          setState(() {
-            _isInitialized = true;
-          });
           ref.read(importProgressProvider.notifier).state = null;
           // First launch: show language selection; otherwise go to home (upgraders with existing appLanguage skip picker)
           if (mounted) {
@@ -82,9 +78,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isInitialized = true;
-        });
         ref.read(importProgressProvider.notifier).state = null;
         // On error still check language selection for consistency
         await LanguageSelectionScreen.migrateLegacyIfNeeded();
@@ -134,10 +127,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // App icon
                   _buildSplashIcon(120),
                   const SizedBox(height: 32),
-                  // App title
                   Text(
                     'Quran Offline',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -147,7 +138,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
-                  // Subtitle
                   Text(
                     'Read the Quran offline by Surah, Juz, or Page with translation',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -156,7 +146,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  // Only show loading message and progress bar when actually importing
                   if (isInitializing) ...[
                     const SizedBox(height: 48),
                     Text(
