@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/features/reader/widgets/recitation_controls.dart';
 
 class SurahHeaderCard extends StatelessWidget {
   final SurahInfo surahInfo;
@@ -41,7 +42,7 @@ class SurahHeaderCard extends StatelessWidget {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Row untuk sejajarkan Latin dan Arabic name
           Row(
@@ -90,7 +91,6 @@ class SurahHeaderCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          // Meta row: Meccan/Medinan + verse count
           Row(
             children: [
               Container(
@@ -120,6 +120,12 @@ class SurahHeaderCard extends StatelessWidget {
                     ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          SurahRecitationControls(
+            surahId: surahInfo.id,
+            surahName: surahInfo.englishName,
+            verseCount: verseCount,
           ),
         ],
       ),

@@ -4,17 +4,23 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:quran_offline/core/audio/playback_actions.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
+import 'package:quran_offline/core/providers/audio_player_provider.dart';
+import 'package:quran_offline/core/providers/mushaf_navigation_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
+import 'package:quran_offline/features/audio/global_recitation_bar.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_offline_audio_banner.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
 
 class MushafPageView extends ConsumerStatefulWidget {
@@ -37,6 +43,10 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   late PageController _controller;
   int? _selectedSurahId;
   int? _selectedAyahNo;
+  late int _visiblePageNo;
+  int? _scrollToSurahId;
+  int? _scrollToAyahNo;
+  bool _programmaticPageChange = false;
 
   @override
   void initState() {
@@ -44,7 +54,17 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     // Normal mapping: index 0 = page 1, index 603 = page 604
     // With reverse: true, swipe right-to-left = next page (index increases)
     final initialIndex = widget.initialPage - 1;
+    _visiblePageNo = widget.initialPage;
+    _scrollToSurahId = widget.targetSurahId;
+    _scrollToAyahNo = widget.targetAyahNo;
     _controller = PageController(initialPage: initialIndex);
+    // Defer provider writes: initState can run mid-build (e.g. a push triggered
+    // while another widget is building), and writing during build throws.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(mushafSessionActiveProvider.notifier).state = true;
+      ref.read(mushafVisiblePageProvider.notifier).state = _visiblePageNo;
+    });
   }
 
   @override
@@ -53,7 +73,89 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     super.dispose();
   }
 
-  void _onAyahSelected(int surahId, int ayahNo) {
+  Future<void> _goToPage(
+    int pageNo, {
+    required int surahId,
+    int? ayahNo,
+  }) async {
+    if (!mounted) return;
+
+    setState(() {
+      _scrollToSurahId = surahId;
+      _scrollToAyahNo = ayahNo;
+    });
+
+    if (pageNo == _visiblePageNo) return;
+
+    _programmaticPageChange = true;
+    _visiblePageNo = pageNo;
+    ref.read(mushafVisiblePageProvider.notifier).state = pageNo;
+
+    await _controller.animateToPage(
+      pageNo - 1,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  Future<void> _syncPageToRecitation(AudioPlayerState audio) async {
+    if (!audio.isActive || audio.surahId == null || audio.ayahNo == null) {
+      return;
+    }
+
+    final surahId = audio.surahId!;
+    final ayahNo = audio.ayahNo!;
+
+    final onPage = await MushafLayout.pageContainsRecitation(
+      _visiblePageNo,
+      surahId,
+      ayahNo,
+    );
+    if (!mounted || onPage) return;
+
+    final db = ref.read(databaseProvider);
+    final lookupAyah = ayahNo == Bismillah.audioAyahNo ? 1 : ayahNo;
+    final pageNo = await db.getPageForAyah(surahId, lookupAyah);
+    if (!mounted || pageNo == null) return;
+
+    final scrollAyah =
+        audio.isPlayingBismillah ? Bismillah.audioAyahNo : ayahNo;
+    await _goToPage(pageNo, surahId: surahId, ayahNo: scrollAyah);
+  }
+
+  void _onAyahTap(int surahId, int ayahNo) {
+    setState(() {
+      _selectedSurahId = surahId;
+      _selectedAyahNo = ayahNo;
+    });
+    final surahs = ref.read(surahNamesProvider).valueOrNull;
+    String? surahName;
+    if (surahs != null && surahs.isNotEmpty) {
+      surahName = surahs
+          .firstWhere(
+            (s) => s.id == surahId,
+            orElse: () => surahs.first,
+          )
+          .englishName;
+    }
+    PlaybackActions.playMushafAyah(
+      context,
+      ref,
+      surahId,
+      ayahNo,
+      surahName: surahName,
+    );
+  }
+
+  void _onBismillahTap(int surahId) {
+    _onAyahTap(surahId, Bismillah.audioAyahNo);
+  }
+
+  void _onBismillahLongPress(int surahId) {
+    _onAyahLongPress(surahId, Bismillah.audioAyahNo);
+  }
+
+  void _onAyahLongPress(int surahId, int ayahNo) {
     setState(() {
       _selectedSurahId = surahId;
       _selectedAyahNo = ayahNo;
@@ -64,10 +166,63 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   @override
   Widget build(BuildContext context) {
     ref.watch(settingsProvider.select((s) => s.mushafFontSize));
-    
-    return PageView.builder(
+
+    ref.listen<AudioPlayerState>(audioPlayerProvider, (previous, next) {
+      if (!mounted) return;
+      if (!next.isActive) {
+        setState(() {
+          _selectedSurahId = null;
+          _selectedAyahNo = null;
+        });
+        return;
+      }
+      setState(() {
+        _selectedSurahId = next.surahId;
+        _selectedAyahNo =
+            next.isPlayingBismillah ? null : next.ayahNo;
+      });
+
+      final surahChanged = previous?.surahId != next.surahId;
+      final ayahChanged = previous?.ayahNo != next.ayahNo;
+      if (surahChanged || ayahChanged) {
+        _syncPageToRecitation(next);
+      }
+    });
+
+    ref.listen<MushafJumpRequest?>(mushafJumpRequestProvider, (previous, next) {
+      if (!mounted || next == null) return;
+      _goToPage(
+        next.pageNo,
+        surahId: next.surahId,
+        ayahNo: next.ayahNo,
+      );
+    });
+
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          ref.read(mushafVisiblePageProvider.notifier).state = null;
+          ref.read(mushafSessionActiveProvider.notifier).state = false;
+          ref.read(mushafJumpRequestProvider.notifier).state = null;
+        }
+      },
+      child: PageView.builder(
       controller: _controller,
       reverse: true, // RTL direction: swipe right-to-left = next page (index increases)
+      onPageChanged: (index) {
+        _visiblePageNo = index + 1;
+        ref.read(mushafVisiblePageProvider.notifier).state = _visiblePageNo;
+        if (_programmaticPageChange) {
+          _programmaticPageChange = false;
+        } else {
+          setState(() {
+            _scrollToSurahId = null;
+            _scrollToAyahNo = null;
+            _selectedSurahId = null;
+            _selectedAyahNo = null;
+          });
+        }
+      },
       itemCount: 604,
       itemBuilder: (context, index) {
         // Normal mapping: index 0 = page 1, index 603 = page 604
@@ -75,11 +230,14 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
         final pageNo = index + 1;
         return MushafPage(
           pageNo: pageNo,
-          targetSurahId: widget.targetSurahId,
-          targetAyahNo: widget.targetAyahNo,
+          targetSurahId: _scrollToSurahId,
+          targetAyahNo: _scrollToAyahNo,
           selectedSurahId: _selectedSurahId,
           selectedAyahNo: _selectedAyahNo,
-          onAyahSelected: _onAyahSelected,
+          onAyahTap: _onAyahTap,
+          onAyahLongPress: _onAyahLongPress,
+          onBismillahTap: _onBismillahTap,
+          onBismillahLongPress: _onBismillahLongPress,
           onComputed: () {
             if (pageNo < 604) {
               MushafLayout.getPageBlocks(context, pageNo + 1);
@@ -87,6 +245,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
           },
         );
       },
+      ),
     );
   }
 }
@@ -97,7 +256,10 @@ class MushafPage extends ConsumerStatefulWidget {
   final int? targetAyahNo;
   final int? selectedSurahId;
   final int? selectedAyahNo;
-  final void Function(int surahId, int ayahNo)? onAyahSelected;
+  final void Function(int surahId, int ayahNo)? onAyahTap;
+  final void Function(int surahId, int ayahNo)? onAyahLongPress;
+  final void Function(int surahId)? onBismillahTap;
+  final void Function(int surahId)? onBismillahLongPress;
   final VoidCallback? onComputed;
 
   const MushafPage({
@@ -107,7 +269,10 @@ class MushafPage extends ConsumerStatefulWidget {
     this.targetAyahNo,
     this.selectedSurahId,
     this.selectedAyahNo,
-    this.onAyahSelected,
+    this.onAyahTap,
+    this.onAyahLongPress,
+    this.onBismillahTap,
+    this.onBismillahLongPress,
     this.onComputed,
   });
 
@@ -234,6 +399,9 @@ class _MushafPageState extends ConsumerState<MushafPage> {
       _refreshLines();
       _hasScrolledToTarget = false;
       _ayahKeys.clear();
+    } else if (oldWidget.targetSurahId != widget.targetSurahId ||
+        oldWidget.targetAyahNo != widget.targetAyahNo) {
+      _hasScrolledToTarget = false;
     }
   }
 
@@ -462,10 +630,44 @@ class _MushafPageState extends ConsumerState<MushafPage> {
             });
           }
           
+          final audio = ref.watch(audioPlayerProvider);
+
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
             child: Column(
               children: [
+                if (!audio.isActive) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Material(
+                      color: colorScheme.primaryContainer.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.touch_app_outlined,
+                              size: 20,
+                              color: colorScheme.primary,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Tap a verse to play. Long-press for meaning, bookmark, and share.',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onSurface,
+                                      height: 1.35,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  MushafOfflineAudioBanner(pageNo: widget.pageNo),
+                ],
                 Expanded(
                   child: SingleChildScrollView(
                     controller: _scrollController,
@@ -478,7 +680,10 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                           ayahKeys: _ayahKeys,
                           selectedSurahId: widget.selectedSurahId,
                           selectedAyahNo: widget.selectedAyahNo,
-                          onAyahTap: widget.onAyahSelected,
+                          onAyahTap: widget.onAyahTap,
+                          onAyahLongPress: widget.onAyahLongPress,
+                          onBismillahTap: widget.onBismillahTap,
+                          onBismillahLongPress: widget.onBismillahLongPress,
                           onAyahKeyCreated: () {
                             // Trigger scroll after keys are created
                             if (widget.targetSurahId != null && widget.targetAyahNo != null) {
@@ -504,6 +709,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
           );
         },
       ),
+      bottomNavigationBar: const GlobalRecitationBar(),
       ),
     );
   }
@@ -518,6 +724,9 @@ class _FlowingMushafText extends ConsumerWidget {
   final int? selectedSurahId;
   final int? selectedAyahNo;
   final void Function(int surahId, int ayahNo)? onAyahTap;
+  final void Function(int surahId, int ayahNo)? onAyahLongPress;
+  final void Function(int surahId)? onBismillahTap;
+  final void Function(int surahId)? onBismillahLongPress;
   final VoidCallback? onAyahKeyCreated;
 
   const _FlowingMushafText({
@@ -528,6 +737,9 @@ class _FlowingMushafText extends ConsumerWidget {
     this.selectedSurahId,
     this.selectedAyahNo,
     this.onAyahTap,
+    this.onAyahLongPress,
+    this.onBismillahTap,
+    this.onBismillahLongPress,
     this.onAyahKeyCreated,
   });
 
@@ -545,16 +757,12 @@ class _FlowingMushafText extends ConsumerWidget {
     );
   }
 
-  /// Handle long press on ayah text: open ayah sheet (Nusuk-style)
-  static void handleAyahLongPress(BuildContext context, WidgetRef ref, int surahId, int ayahNo) {
-    showAyahSheet(context, ref, surahId, ayahNo);
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     final showTajweed = settings.showTajweed;
-    
+    final audio = ref.watch(audioPlayerProvider);
+
     final List<Widget> children = [];
     final List<InlineSpan> currentSpans = [];
     final List<GestureRecognizer> recognizers = []; // Track recognizers for disposal
@@ -626,26 +834,49 @@ class _FlowingMushafText extends ConsumerWidget {
       }
 
       if (block.isBismillah) {
-        // Bismillah untuk surah selain 1 harus terpisah (centered), bukan mengalir
-        // Karena Bismillah bukan bagian dari ayat surah tersebut
-        // Hanya Surah 1 (Al-Fatihah) yang Bismillah-nya adalah ayat pertama
         flushCurrentSpans();
-        
+
+        final isRecitingBismillah = audio.isPlayingBismillah &&
+            block.surahId != null &&
+            block.surahId == audio.surahId;
+        final bismillahBg = isRecitingBismillah
+            ? colorScheme.primary.withValues(alpha: 0.14)
+            : null;
+
+        GestureRecognizer? bismillahTap;
+        if (block.surahId != null) {
+          bismillahTap = _TapAndLongPressRecognizer(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              onBismillahTap?.call(block.surahId!);
+            },
+            onLongPress: () {
+              HapticFeedback.mediumImpact();
+              onBismillahLongPress?.call(block.surahId!);
+            },
+          );
+          recognizers.add(bismillahTap);
+        }
+
         children.add(
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Directionality(
               textDirection: TextDirection.rtl,
-              child: Text(
-                block.text,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'UthmanicHafsV22',
-                  fontFamilyFallback: const ['UthmanicHafs'],
-                  fontSize: fontSize - 2,
-                  height: 1.7,
-                  color: colorScheme.onSurface,
+              child: Text.rich(
+                TextSpan(
+                  text: block.text,
+                  style: TextStyle(
+                    fontFamily: 'UthmanicHafsV22',
+                    fontFamilyFallback: const ['UthmanicHafs'],
+                    fontSize: fontSize - 2,
+                    height: 1.7,
+                    color: colorScheme.onSurface,
+                    backgroundColor: bismillahBg,
+                  ),
+                  recognizer: bismillahTap,
                 ),
+                textAlign: TextAlign.center,
               ),
             ),
           ),
@@ -665,38 +896,55 @@ class _FlowingMushafText extends ConsumerWidget {
         }
       }
 
-      // Add ayah text with tajweed support if enabled
-      // Tap on ayah: highlight (stabilo) + open Nusuk-style sheet
-      final isSelected = selectedSurahId != null && selectedAyahNo != null &&
-          block.surahId == selectedSurahId && block.ayahNo == selectedAyahNo;
-      final selectionHighlight = isSelected
-          ? colorScheme.primary.withValues(alpha: 0.22)
+      // Tap on ayah: light tint; recitation uses a rounded frame (not per-word boxes).
+      final recitingAyahNo = audio.isPlayingBismillah
+          ? Bismillah.audioAyahNo
+          : audio.ayahNo;
+      final isRecitingAyah = block.isBismillah
+          ? recitingAyahNo == Bismillah.audioAyahNo &&
+              block.surahId != null &&
+              block.surahId == audio.surahId
+          : audio.surahId != null &&
+              block.surahId == audio.surahId &&
+              block.ayahNo != null &&
+              block.ayahNo == recitingAyahNo;
+      final isSelected = audio.isActive &&
+          block.surahId == audio.surahId &&
+          block.ayahNo != null &&
+          block.ayahNo == recitingAyahNo;
+      final recitationHighlight = isRecitingAyah || isSelected
+          ? colorScheme.primary.withValues(alpha: 0.14)
           : null;
 
-      TapGestureRecognizer? recognizer;
+      GestureRecognizer? recognizer;
       if (block.surahId != null && block.ayahNo != null) {
-        recognizer = TapGestureRecognizer();
-        recognizers.add(recognizer);
-        recognizer.onTap = () {
-          HapticFeedback.selectionClick();
-          onAyahTap?.call(block.surahId!, block.ayahNo!);
-        };
-      }
-      
-      if (showTajweed && block.tajweed != null && block.tajweed!.isNotEmpty) {
-        // Parse tajweed HTML and add colored spans with recognizer
-        final tajweedSpans = _parseTajweedHtml(
-          context, 
-          block.tajweed!, 
-          fontSize, 
-          colorScheme,
-          recognizer: recognizer,
-          selectionHighlight: selectionHighlight,
+        recognizer = _TapAndLongPressRecognizer(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onAyahTap?.call(block.surahId!, block.ayahNo!);
+          },
+          onLongPress: () {
+            HapticFeedback.mediumImpact();
+            onAyahLongPress?.call(block.surahId!, block.ayahNo!);
+          },
         );
-        currentSpans.addAll(tajweedSpans);
+        recognizers.add(recognizer);
+      }
+
+      final ayahSpans = <InlineSpan>[];
+      if (showTajweed && block.tajweed != null && block.tajweed!.isNotEmpty) {
+        ayahSpans.addAll(
+          _parseTajweedHtml(
+            context,
+            block.tajweed!,
+            fontSize,
+            colorScheme,
+            recognizer: recognizer,
+            selectionHighlight: recitationHighlight,
+          ),
+        );
       } else {
-        // Plain text without tajweed with recognizer
-        currentSpans.add(
+        ayahSpans.add(
           TextSpan(
             text: block.text,
             style: TextStyle(
@@ -704,28 +952,28 @@ class _FlowingMushafText extends ConsumerWidget {
               fontFamilyFallback: const ['UthmanicHafs'],
               fontSize: fontSize,
               color: colorScheme.onSurface,
-              backgroundColor: selectionHighlight,
+              backgroundColor: recitationHighlight,
             ),
             recognizer: recognizer,
           ),
         );
       }
 
-      // Add inline ayah number
       if (block.ayahNo != null) {
-        currentSpans.add(
+        ayahSpans.add(
           WidgetSpan(
             alignment: PlaceholderAlignment.middle,
             baseline: TextBaseline.alphabetic,
-              child: KeyedSubtree(
+            child: KeyedSubtree(
               key: ayahKey,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 3), // Compact spacing untuk ayah number
+                padding: const EdgeInsets.symmetric(horizontal: 3),
                 child: _InlineAyahNumber(
                   ayahNo: block.ayahNo!,
                   fontSize: fontSize,
                   colorScheme: colorScheme,
                   surahId: block.surahId,
+                  isReciting: isRecitingAyah,
                 ),
               ),
             ),
@@ -733,13 +981,14 @@ class _FlowingMushafText extends ConsumerWidget {
         );
       }
 
-      // Add minimal space between ayahs - compact spacing untuk seperti mushaf fisik
-      currentSpans.add(
+      ayahSpans.add(
         TextSpan(
-          text: ' ', // Single space untuk compact spacing
-          style: TextStyle(fontSize: fontSize * 0.2), // Reduced dari 0.3 untuk lebih compact
+          text: ' ',
+          style: TextStyle(fontSize: fontSize * 0.2),
         ),
       );
+
+      currentSpans.addAll(ayahSpans);
     }
 
     flushCurrentSpans();
@@ -1115,12 +1364,14 @@ class _InlineAyahNumber extends ConsumerStatefulWidget {
   final double fontSize;
   final ColorScheme colorScheme;
   final int? surahId;
+  final bool isReciting;
 
   const _InlineAyahNumber({
     required this.ayahNo,
     required this.fontSize,
     required this.colorScheme,
     this.surahId,
+    this.isReciting = false,
   });
 
   @override
@@ -1186,33 +1437,38 @@ class _InlineAyahNumberState extends ConsumerState<_InlineAyahNumber> {
       }
     });
     
+    final reciting = widget.isReciting;
+    final borderColor = _isBookmarked
+        ? widget.colorScheme.primary
+        : widget.colorScheme.outline.withOpacity(0.3);
+
     return GestureDetector(
       onTap: widget.surahId != null && !_isCheckingBookmark ? _toggleBookmark : null,
       child: Container(
-        padding: EdgeInsets.all(widget.fontSize * 0.2), // Increased padding untuk font size 1.0
+        padding: EdgeInsets.all(widget.fontSize * 0.2),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
-            color: _isBookmarked
-                ? widget.colorScheme.primary
-                : widget.colorScheme.outline.withOpacity(0.3),
+            color: borderColor,
             width: _isBookmarked ? 2.0 : 1.5,
           ),
-          color: _isBookmarked
-              ? widget.colorScheme.primary.withOpacity(0.1)
-              : Colors.transparent,
+          color: reciting
+              ? widget.colorScheme.primary.withValues(alpha: 0.12)
+              : _isBookmarked
+                  ? widget.colorScheme.primary.withOpacity(0.1)
+                  : Colors.transparent,
         ),
         child: Text(
           displayNumber,
           style: TextStyle(
-            fontSize: widget.fontSize * 1.0, // Same size as main text untuk visibility maksimal
+            fontSize: widget.fontSize * 1.0,
             fontFamily: 'UthmanicHafsV22',
             fontFamilyFallback: const ['UthmanicHafs'],
-            color: _isBookmarked
+            color: reciting || _isBookmarked
                 ? widget.colorScheme.primary
                 : widget.colorScheme.onSurface,
             height: 1.0,
-            fontWeight: _isBookmarked ? FontWeight.w700 : FontWeight.w600,
+            fontWeight: reciting || _isBookmarked ? FontWeight.w700 : FontWeight.w600,
           ),
         ),
       ),
@@ -1305,10 +1561,9 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
     await Clipboard.setData(ClipboardData(text: buffer.toString()));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Copied to clipboard'),
-          duration: const Duration(seconds: 1),
-          behavior: SnackBarBehavior.floating,
+        const SnackBar(
+          content: Text('Copied to clipboard'),
+          duration: Duration(seconds: 1),
         ),
       );
     }
@@ -1368,6 +1623,51 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final audio = ref.watch(audioPlayerProvider);
+                          final isCurrent = audio.surahId == widget.surahId &&
+                              audio.ayahNo == widget.ayahNo;
+                          final isPlayingThis = isCurrent && audio.isPlaying;
+                          return IconButton.filled(
+                            onPressed: () {
+                              if (isCurrent) {
+                                final notifier =
+                                    ref.read(audioPlayerProvider.notifier);
+                                if (audio.isPlaying) {
+                                  notifier.stop();
+                                } else {
+                                  notifier.restart();
+                                }
+                              } else {
+                                final surahs = ref.read(surahNamesProvider).valueOrNull;
+                                final surahName = surahs
+                                    ?.firstWhere(
+                                      (s) => s.id == widget.surahId,
+                                      orElse: () => surahs.first,
+                                    )
+                                    .englishName;
+                                PlaybackActions.playMushafAyah(
+                                  context,
+                                  ref,
+                                  widget.surahId,
+                                  widget.ayahNo,
+                                  surahName: surahName,
+                                );
+                              }
+                            },
+                            icon: Icon(
+                              isPlayingThis ? Icons.stop : Icons.play_arrow,
+                              size: 22,
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: colorScheme.primary,
+                              foregroundColor: colorScheme.onPrimary,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 12),
                       IconButton.filled(
                         onPressed: () => _shareVerse(verse, settings),
                         icon: const Icon(Icons.share_outlined, size: 22),
@@ -1388,7 +1688,6 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
                                     ? 'Ayat ${widget.ayahNo} di-bookmark'
                                     : 'Bookmark ayat ${widget.ayahNo} dihapus'),
                                 duration: const Duration(seconds: 1),
-                                behavior: SnackBarBehavior.floating,
                               ),
                             );
                           }
@@ -1440,6 +1739,50 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
         );
       },
     );
+  }
+}
+
+/// Lets a single [TextSpan] respond to BOTH tap and long-press.
+///
+/// A [TextSpan] accepts only one recognizer, so attaching a separate
+/// [TapGestureRecognizer] and [LongPressGestureRecognizer] would drop one of
+/// them (previously the long-press, so long-pressing an ayah just played it).
+/// This forwards each pointer to two internal recognizers that compete in the
+/// gesture arena: a quick release fires [onTap], a held press fires
+/// [onLongPress].
+class _TapAndLongPressRecognizer extends GestureRecognizer {
+  _TapAndLongPressRecognizer({VoidCallback? onTap, VoidCallback? onLongPress}) {
+    _tap = TapGestureRecognizer(debugOwner: this)..onTap = onTap;
+    _longPress = LongPressGestureRecognizer(debugOwner: this)
+      ..onLongPress = onLongPress;
+  }
+
+  late final TapGestureRecognizer _tap;
+  late final LongPressGestureRecognizer _longPress;
+
+  @override
+  void addPointer(PointerDownEvent event) {
+    _tap.addPointer(event);
+    _longPress.addPointer(event);
+  }
+
+  @override
+  String get debugDescription => 'tapAndLongPress';
+
+  @override
+  void acceptGesture(int pointer) {}
+
+  @override
+  void rejectGesture(int pointer) {}
+
+  @override
+  void addAllowedPointer(PointerDownEvent event) {}
+
+  @override
+  void dispose() {
+    _tap.dispose();
+    _longPress.dispose();
+    super.dispose();
   }
 }
 

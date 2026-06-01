@@ -7,6 +7,8 @@ import 'package:quran_offline/features/library/my_library_screen.dart';
 import 'package:quran_offline/features/read/read_screen.dart';
 import 'package:quran_offline/features/search/search_screen.dart';
 import 'package:quran_offline/features/settings/settings_screen.dart';
+import 'package:quran_offline/features/audio/global_recitation_bar.dart';
+import 'package:quran_offline/features/audio/audio_download_notifications.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -17,7 +19,8 @@ class HomeScreen extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final appLanguage = settings.appLanguage;
 
-    return Scaffold(
+    return AudioDownloadNotifications(
+      child: Scaffold(
       body: IndexedStack(
         index: currentIndex,
         children: const [
@@ -27,7 +30,11 @@ class HomeScreen extends ConsumerWidget {
           SettingsScreen(),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const GlobalRecitationBar(padForSystemBottomInset: false),
+          NavigationBar(
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
           ref.read(currentTabProvider.notifier).state = index;
@@ -54,7 +61,10 @@ class HomeScreen extends ConsumerWidget {
             label: AppLocalizations.getMenuText('settings', appLanguage),
           ),
         ],
+          ),
+        ],
       ),
+    ),
     );
   }
 }

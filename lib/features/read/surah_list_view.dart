@@ -5,7 +5,7 @@ import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
-import 'package:quran_offline/features/reader/reader_screen.dart';
+import 'package:quran_offline/features/reader/open_reader_screen.dart';
 
 class SurahListView extends ConsumerWidget {
   const SurahListView({super.key});
@@ -31,12 +31,7 @@ class SurahListView extends ConsumerWidget {
                 ref.read(readerSourceProvider.notifier).state = source;
                 // Save last read (without ayahNo, will be updated when user scrolls)
                 ref.read(lastReadProvider.notifier).saveLastRead(source);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ReaderScreen(),
-                  ),
-                );
+                openReaderScreen(context, ref);
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

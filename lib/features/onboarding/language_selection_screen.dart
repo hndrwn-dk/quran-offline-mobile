@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
 
-/// Configurable app logo path for language screen. Fallback to icon if load fails.
 const String _logoAssetPath = 'assets/icon/splash_icon.png';
 
 const String _prefKeyLanguageDone = 'language_selection_done';
