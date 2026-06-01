@@ -180,7 +180,7 @@ This app:
 
 ## 📝 Version
 
-**Current Version**: 1.0.0 (Build 5)
+**Current Version**: 1.0.1 (Build 15)
 
 ## 📄 License
 

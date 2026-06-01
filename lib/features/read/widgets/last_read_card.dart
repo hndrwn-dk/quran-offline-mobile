@@ -7,7 +7,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
-import 'package:quran_offline/features/reader/reader_screen.dart';
+import 'package:quran_offline/features/reader/open_reader_screen.dart';
 
 class LastReadCard extends ConsumerWidget {
   const LastReadCard({super.key});
@@ -47,12 +47,7 @@ class LastReadCard extends ConsumerWidget {
               final source = SurahSource(lastRead.id, targetAyahNo: lastRead.ayahNo);
               ref.read(readerSourceProvider.notifier).state = source;
               ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ReaderScreen(),
-                ),
-              );
+              openReaderScreen(context, ref);
             };
             break;
           case 'juz':
@@ -67,12 +62,7 @@ class LastReadCard extends ConsumerWidget {
               if (lastRead.ayahNo != null) {
                 ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
               }
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ReaderScreen(),
-                ),
-              );
+              openReaderScreen(context, ref);
             };
             break;
           case 'page':

@@ -1,0 +1,3 @@
+# Build-time only (for build_tajweed_transliteration.py).
+# Install: pip install -r scripts/requirements-build.txt
+quran-phonemizer>=1.0.0

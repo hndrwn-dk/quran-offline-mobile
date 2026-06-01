@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:quran_offline/core/models/reciter.dart';
 import 'package:quran_offline/core/providers/package_info_provider.dart';
+import 'package:quran_offline/core/audio/audio_offline_prompts.dart';
+import 'package:quran_offline/core/providers/audio_download_provider.dart';
+import 'package:quran_offline/core/providers/reciter_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/transliteration_formatter.dart';
+import 'package:quran_offline/features/settings/audio_downloads_screen.dart';
 
 String _transliterationSubtitle(AppSettings settings, String appLanguage) {
   if (settings.useTajweedTransliteration) {
@@ -319,6 +324,55 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const Divider(),
+          // Recitation section
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+            child: Text(
+              AppLocalizations.getRecitationText('recitation_section', appLanguage),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          _buildReciterTile(context, ref),
+          Builder(
+            builder: (context) {
+              final reciter = ref.watch(reciterProvider);
+              final downloads = ref.watch(audioDownloadProvider);
+              final saved = downloads.completed
+                  .where((k) => k.startsWith('${reciter.id}:'))
+                  .length;
+              return ListTile(
+                leading: Icon(
+                  Icons.download_for_offline_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                title: Text(
+                  AppLocalizations.getRecitationText('save_recitation_audio', appLanguage),
+                ),
+                subtitle: Text(
+                  saved >= AudioOfflinePrompts.totalSurahs
+                      ? AppLocalizations.recAllSavedFor(reciter.name, appLanguage)
+                      : AppLocalizations.recSavedForReciterShort(
+                          saved,
+                          AudioOfflinePrompts.totalSurahs,
+                          reciter.name,
+                          appLanguage,
+                        ),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const AudioDownloadsScreen(),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+          const Divider(),
           // App Settings section
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
@@ -515,6 +569,47 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => _openTermsLink(context),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildReciterTile(BuildContext context, WidgetRef ref) {
+    final selected = ref.watch(reciterProvider);
+    final appLanguage = ref.watch(settingsProvider).appLanguage;
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        leading: Icon(
+          Icons.headphones,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        title: Text(AppLocalizations.getRecitationText('reciter', appLanguage)),
+        subtitle: Text(
+          selected.name,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+        childrenPadding: EdgeInsets.zero,
+        children: ReciterCatalog.reciters.map((reciter) {
+          return RadioListTile<String>(
+            value: reciter.id,
+            groupValue: selected.id,
+            onChanged: (value) {
+              if (value != null) {
+                ref.read(reciterProvider.notifier).select(ReciterCatalog.byId(value));
+              }
+            },
+            title: Text(reciter.name),
+            subtitle: Text(
+              '${reciter.arabicName}  -  ${reciter.bitrate} kbps',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+            dense: true,
+          );
+        }).toList(),
       ),
     );
   }

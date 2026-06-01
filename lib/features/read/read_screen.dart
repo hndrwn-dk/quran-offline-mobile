@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/audio/playback_actions.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
+import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
@@ -32,6 +34,9 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
     };
     
     if (newMode != null) {
+      if (newMode == ReadMode.pages) {
+        PlaybackActions.stopIfActive(ref);
+      }
       ref.read(readModeProvider.notifier).state = newMode;
     }
   }
@@ -41,6 +46,16 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
     final readMode = ref.watch(readModeProvider);
     final settings = ref.watch(settingsProvider);
     final isLargeScreen = Responsive.isLargeScreen(context);
+
+    ref.listen<ReadMode>(readModeProvider, (previous, next) {
+      if (next == ReadMode.pages && previous != ReadMode.pages) {
+        PlaybackActions.stopIfActive(ref);
+      }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(readerSplitLayoutProvider.notifier).state = isLargeScreen;
+    });
 
     if (isLargeScreen) {
       return Scaffold(

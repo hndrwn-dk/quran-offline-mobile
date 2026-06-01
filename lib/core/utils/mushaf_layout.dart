@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
 /// Page range definition from `index_pages.json`.
@@ -119,7 +120,8 @@ class MushafLayout {
           // Hanya muncul di awal surah (ayat pertama)
           if (v.surahId != 1 && v.surahId != 9) {
             blocks.add(
-              const MushafAyahBlock(
+              MushafAyahBlock(
+                surahId: v.surahId,
                 text: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ',
                 isBismillah: true,
               ),
@@ -174,6 +176,24 @@ class MushafLayout {
     final ranges = await _pageRanges(pageNo);
     if (ranges.isEmpty) return null;
     return ranges.first.surahId;
+  }
+
+  /// Whether [pageNo] displays the given recitation position (incl. standalone Bismillah).
+  static Future<bool> pageContainsRecitation(
+    int pageNo,
+    int surahId,
+    int ayahNo,
+  ) async {
+    final ranges = await _pageRanges(pageNo);
+    for (final r in ranges) {
+      if (r.surahId != surahId) continue;
+      if (ayahNo == Bismillah.audioAyahNo) {
+        if (r.startAyah == 1) return true;
+        continue;
+      }
+      if (ayahNo >= r.startAyah && ayahNo <= r.endAyah) return true;
+    }
+    return false;
   }
 
   /// Get all unique surah IDs for a given page number, sorted.

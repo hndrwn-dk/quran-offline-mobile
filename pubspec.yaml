@@ -1,7 +1,7 @@
 name: quran_offline
 description: Quran Offline is a simple, fast, and distraction-free Qur’an reading app designed for all ages
 publish_to: 'none'
-version: 1.0.1+14
+version: 1.0.1+15
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -34,6 +34,12 @@ dependencies:
   
   # Scroll to item
   scrollable_positioned_list: ^0.3.8
+
+  # Audio recitation
+  just_audio: ^0.10.5
+  just_audio_background: ^0.0.1-beta.17
+  audio_session: ^0.2.3
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
@@ -72,7 +78,20 @@ flutter_native_splash:
   image: assets/icon/splash_icon.png
   color: "#FFFFFF"
   color_dark: "#121212"
+  android_12:
+    image: assets/icon/splash_icon.png
+    color: "#FFFFFF"
+    color_dark: "#121212"
   android: true
   ios: true
   fullscreen: true
+
+flutter_launcher_icons:
+  ios: true
+  image_path_ios: "assets/icon/app_icon_1024.png"
+  android: true
+  image_path_android: "assets/icon/app_icon_1024.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#E8EDE3"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
 
