@@ -1,0 +1,983 @@
+# -*- coding: utf-8 -*-
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CATALOG = ROOT / "assets" / "duas" / "duas_catalog.json"
+
+UPDATES = {
+    "dunia_akhirat": {
+        "title": {
+            "id": "Mohon kebaikan hidup dan akhirat",
+            "en": "Ask for good in life and the Hereafter",
+            "zh": "祈求今世与后世的福泽",
+            "ja": "現世と来世の善を求める",
+        },
+        "summary": {
+            "id": "Diamalkan saat memohon rezeki, ketenangan hidup, dan keselamatan akhirat.",
+            "en": "Use when asking for provision, peace in life, and safety in the Hereafter.",
+            "zh": "祈求给养、生活安宁与后世平安时使用。",
+            "ja": "糧、生活の平安、来世の安全を求めるときに唱える。",
+        },
+    },
+    "ampun_umat": {
+        "title": {
+            "id": "Setelah lupa atau khilaf",
+            "en": "After forgetting or slipping",
+            "zh": "遗忘或失误之后",
+            "ja": "忘れや誤りのあと",
+        },
+        "summary": {
+            "id": "Doa umat agar tidak dibebani lebih dari kemampuan dan mendapat ampun.",
+            "en": "The community asks not to be overburdened and for forgiveness.",
+            "zh": "求不担不能承受的重负并获得宽恕。",
+            "ja": "耐えられない重荷を負わされず赦しを求める。",
+        },
+    },
+    "mukmin_saksi": {
+        "title": {
+            "id": "Setelah mantap beriman",
+            "en": "When faith feels firm",
+            "zh": "信仰坚定之后",
+            "ja": "信仰が固まったとき",
+        },
+        "summary": {
+            "id": "Memohon dicatat sebagai hamba yang menyaksikan kebenaran.",
+            "en": "Asking to be counted among witnesses to the truth.",
+            "zh": "求被记为见证真理者。",
+            "ja": "真理の証人として記されることを求める。",
+        },
+    },
+    "hati_lurus": {
+        "title": {
+            "id": "Agar hati tidak goyah",
+            "en": "Keep the heart from straying",
+            "zh": "心不离正道",
+            "ja": "心が迷わないように",
+        },
+        "summary": {
+            "id": "Diamalkan rutin, terutama setelah belajar agama atau setelah istighfar.",
+            "en": "Use regularly, especially after learning or seeking forgiveness.",
+            "zh": "常念，尤其在学习或求恕之后。",
+            "ja": "学びや悔い改めの後など、日常の祈りに。",
+        },
+    },
+    "ampun_neraka": {
+        "title": {
+            "id": "Mohon ampun dan jauhi neraka",
+            "en": "Forgiveness and safety from Hell",
+            "zh": "求赦并远离火狱",
+            "ja": "赦しと火獄からの守り",
+        },
+        "summary": {
+            "id": "Setelah berbuat dosa atau saat takut akan azab.",
+            "en": "After sinning or when fearing punishment.",
+            "zh": "犯罪之后或惧怕刑罚时使用。",
+            "ja": "罪の後や懲罰を恐れるときに。",
+        },
+    },
+    "teguh_kaki": {
+        "title": {
+            "id": "Saat diuji dan ditindas",
+            "en": "When tested or oppressed",
+            "zh": "受考验或受压迫时",
+            "ja": "試練や抑圧に遭うとき",
+        },
+        "summary": {
+            "id": "Memohon keteguhan dan pertolongan menghadapi tekanan.",
+            "en": "Asking for steadfastness and help under pressure.",
+            "zh": "求在压力下坚定并获得援助。",
+            "ja": "圧力の中で堅固さと助けを求める。",
+        },
+    },
+    "sabar_perang": {
+        "title": {
+            "id": "Saat ujian berat menimpa",
+            "en": "When a heavy trial hits",
+            "zh": "重大考验来临时",
+            "ja": "大きな試練のとき",
+        },
+        "summary": {
+            "id": "Memohon sabar, langkah teguh, dan pertolongan Allah.",
+            "en": "Asking for patience, firm steps, and Allah's help.",
+            "zh": "求忍耐、稳固与真主的援助。",
+            "ja": "忍耐、足元の安定、アッラーの助けを求める。",
+        },
+    },
+    "iman_abrar": {
+        "title": {
+            "id": "Setelah menguatkan iman",
+            "en": "After strengthening faith",
+            "zh": "坚定信仰之后",
+            "ja": "信仰を強めたあと",
+        },
+        "summary": {
+            "id": "Memohon ampunan dan tidak dihinakan pada hari Kiamat.",
+            "en": "Asking forgiveness and dignity on Judgment Day.",
+            "zh": "求宽恕并在复活日不受辱。",
+            "ja": "赦しと審判の日の尊厳を求める。",
+        },
+    },
+    "tawakkal_hasbi": {
+        "title": {
+            "id": "Saat cemas, tawakal pada Allah",
+            "en": "When anxious, trust Allah",
+            "zh": "焦虑时托靠真主",
+            "ja": "不安なときアッラーに托す",
+        },
+        "summary": {
+            "id": "Cocok saat khawatir rezeki, masa depan, atau orang jahat.",
+            "en": "Helpful when worried about provision, the future, or harm.",
+            "zh": "担忧给养、未来或伤害时使用。",
+            "ja": "糧、将来、害を恐れるときに。",
+        },
+    },
+    "selamat_kaum_zalim": {
+        "title": {
+            "id": "Lindungi dari orang zalim",
+            "en": "Protection from wrongdoers",
+            "zh": "求护免受不义者",
+            "ja": "不義な人から守って",
+        },
+        "summary": {
+            "id": "Saat diganggu, dibohongi, atau dianiaya orang zalim.",
+            "en": "When harmed, deceived, or oppressed by wrongdoers.",
+            "zh": "受不义者伤害、欺骗或压迫时使用。",
+            "ja": "不義な人に害されるときに。",
+        },
+    },
+    "rahmat_petunjuk": {
+        "title": {
+            "id": "Saat bingung pilih jalan",
+            "en": "When unsure which path to take",
+            "zh": "不知如何选择道路时",
+            "ja": "道に迷ったとき",
+        },
+        "summary": {
+            "id": "Sebelum memutuskan pekerjaan, pernikahan, atau pindah rumah.",
+            "en": "Before decisions on work, marriage, or moving.",
+            "zh": "在工作、婚姻或迁居等重大决定前。",
+            "ja": "仕事・結婚・引っ越しなどの決断前に。",
+        },
+    },
+    "tambah_ilmu": {
+        "title": {
+            "id": "Sebelum belajar atau bekerja",
+            "en": "Before studying or working",
+            "zh": "学习或工作之前",
+            "ja": "学ぶ前・働く前に",
+        },
+        "summary": {
+            "id": "Doa singkat agar ilmu dan pekerjaan bermanfaat.",
+            "en": "A short prayer for beneficial knowledge and work.",
+            "zh": "简短祈求有益的知识与工作。",
+            "ja": "有益な知識と仕事を求める短い祈り。",
+        },
+    },
+    "lindung_syaitan": {
+        "title": {
+            "id": "Saat diganggu waswas",
+            "en": "When troubled by whispers",
+            "zh": "受蛊惑干扰时",
+            "ja": "悪魔の囁きに悩むとき",
+        },
+        "summary": {
+            "id": "Diamalkan saat pikiran kotor, takut berlebih, atau malas ibadah.",
+            "en": "Use when thoughts trouble you, fear grows, or worship feels hard.",
+            "zh": "心绪不宁、恐惧加剧或怠于礼拜时使用。",
+            "ja": "心の乱れ、過度な恐れ、礼拝の怠りのときに。",
+        },
+    },
+    "ampun_mu_minin": {
+        "title": {
+            "id": "Setelah bertobat",
+            "en": "After repenting",
+            "zh": "忏悔之后",
+            "ja": "悔い改めのあと",
+        },
+        "summary": {
+            "id": "Memohon ampunan dan rahmat setelah kembali pada Allah.",
+            "en": "Asking forgiveness and mercy after returning to Allah.",
+            "zh": "归向真主之后求恕与慈悯。",
+            "ja": "アッラーに帰った後に赦しと慈悲を求める。",
+        },
+    },
+    "ampun_rahmat_terbaik": {
+        "title": {
+            "id": "Mohon ampun setiap hari",
+            "en": "Daily plea for forgiveness",
+            "zh": "每日求赦",
+            "ja": "日々の赦しを求める",
+        },
+        "summary": {
+            "id": "Cocok di akhir hari atau setelah shalat.",
+            "en": "Suitable at day's end or after prayer.",
+            "zh": "适合在日末或礼拜后念。",
+            "ja": "一日の終わりや礼拝の後に。",
+        },
+    },
+    "jauhi_jahannam": {
+        "title": {
+            "id": "Mohon dijauhkan dari neraka",
+            "en": "Keep me from Hellfire",
+            "zh": "求远离火狱",
+            "ja": "火獄から遠ざけて",
+        },
+        "summary": {
+            "id": "Diamalkan saat takut dosa dan ingin istiqamah.",
+            "en": "Use when fearing sin and wanting steadfastness.",
+            "zh": "惧怕罪过并求坚定时使用。",
+            "ja": "罪を恐れ堅固さを求めるときに。",
+        },
+    },
+    "keluarga_sakinah": {
+        "title": {
+            "id": "Mohon keluarga harmonis",
+            "en": "A peaceful, loving family",
+            "zh": "祈求家庭和睦",
+            "ja": "家族の調和を求める",
+        },
+        "summary": {
+            "id": "Untuk suami-istri yang ingin rumah tangga tenang dan penuh cinta.",
+            "en": "For spouses seeking a calm, loving home.",
+            "zh": "为渴望安宁恩爱家庭的夫妻。",
+            "ja": "穏やかで愛ある家庭を望む夫婦に。",
+        },
+    },
+    "syukur_nikmat": {
+        "title": {
+            "id": "Agar tetap bersyukur",
+            "en": "Stay truly grateful",
+            "zh": "常存感恩之心",
+            "ja": "感謝を続ける",
+        },
+        "summary": {
+            "id": "Setelah rezeki datang atau saat ingin lebih rajin beramal.",
+            "en": "After blessings arrive or when wanting more good deeds.",
+            "zh": "恩典降临或想多做善功时使用。",
+            "ja": "恩恵の後や善行を増やしたいときに。",
+        },
+    },
+    "birr_ortu": {
+        "title": {
+            "id": "Doakan orang tua setiap hari",
+            "en": "Pray for parents daily",
+            "zh": "每日为父母祈祷",
+            "ja": "毎日両親のために祈る",
+        },
+        "summary": {
+            "id": "Diamalkan saat berbakti, merawat, atau mengingat orang tua.",
+            "en": "Use when serving, caring for, or remembering parents.",
+            "zh": "侍奉、照料或思念父母时使用。",
+            "ja": "両親に仕え、世話をし、想うときに。",
+        },
+    },
+    "syukur_tobat": {
+        "title": {
+            "id": "Syukur, tobat, dan doa untuk anak",
+            "en": "Gratitude, repentance, and prayer for children",
+            "zh": "感恩、忏悔并为孩子祈祷",
+            "ja": "感謝と悔い改め、子への祈り",
+        },
+        "summary": {
+            "id": "Cocok bagi orang tua yang ingin keturunan saleh.",
+            "en": "For parents who want righteous children.",
+            "zh": "盼望子女善良的父母适用。",
+            "ja": "正しい子を望む親に。",
+        },
+    },
+    "saudara_mukmin": {
+        "title": {
+            "id": "Mohon ampun untuk sesama Muslim",
+            "en": "Forgive our fellow Muslims",
+            "zh": "为穆斯林同胞求恕",
+            "ja": "ムスリムの仲間への赦し",
+        },
+        "summary": {
+            "id": "Saat ingin memperbaiki hubungan dan menghapus dendam.",
+            "en": "When mending ties and letting go of grudges.",
+            "zh": "修复关系、放下怨恨时使用。",
+            "ja": "関係を修め恨みを手放すときに。",
+        },
+    },
+    "tawakkal_kembali": {
+        "title": {
+            "id": "Tobat dan kembali pada Allah",
+            "en": "Repent and return to Allah",
+            "zh": "忏悔并归向真主",
+            "ja": "悔い改めアッラーに帰る",
+        },
+        "summary": {
+            "id": "Setelah maksiat besar atau saat ingin memulai hidup baru.",
+            "en": "After major sin or when starting anew.",
+            "zh": "大罪之后或想重新开始时使用。",
+            "ja": "大きな罪の後や新たな始まりに。",
+        },
+    },
+    "bukan_fitnah_kafir": {
+        "title": {
+            "id": "Saat hidup di tengah yang ingkar",
+            "en": "Living among those who deny faith",
+            "zh": "生活在不信者之中时",
+            "ja": "不信の中で生きるとき",
+        },
+        "summary": {
+            "id": "Memohon tidak jadi cobaan dan mendapat ampunan.",
+            "en": "Asking not to become a trial and for forgiveness.",
+            "zh": "求不成试炼并获得宽恕。",
+            "ja": "試みにされず赦しを求める。",
+        },
+    },
+    "sempurnakan_nur": {
+        "title": {
+            "id": "Perkuat iman dan minta ampun",
+            "en": "Strengthen faith and seek forgiveness",
+            "zh": "坚定信仰并求恕",
+            "ja": "信仰を強め赦しを求める",
+        },
+        "summary": {
+            "id": "Saat iman turun atau setelah meninggalkan shalat.",
+            "en": "When faith feels weak or after missing prayer.",
+            "zh": "信仰减弱或懈怠礼拜后使用。",
+            "ja": "信仰が弱まったり礼拝を怠ったあとに。",
+        },
+    },
+    "bukan_bersama_zalim": {
+        "title": {
+            "id": "Jangan satukan dengan orang zalim",
+            "en": "Do not group me with wrongdoers",
+            "zh": "不要与不义者同列",
+            "ja": "不義者と共にしないで",
+        },
+        "summary": {
+            "id": "Saat takut ikut-ikutan perbuatan salah lingkungan.",
+            "en": "When fearing peer pressure into wrongdoing.",
+            "zh": "担心随环境作恶时使用。",
+            "ja": "周囲の悪に同調する恐れのときに。",
+        },
+    },
+    "jangan_golongan_zalim": {
+        "title": {
+            "id": "Jauhi menjadi orang zalim",
+            "en": "Keep me from becoming unjust",
+            "zh": "求勿成不义之人",
+            "ja": "不義な者にならないで",
+        },
+        "summary": {
+            "id": "Sebelum marah, balas dendam, atau menyakiti orang.",
+            "en": "Before anger, revenge, or hurting others.",
+            "zh": "在发怒、报复或伤人之前念。",
+            "ja": "怒り、復讐、人を傷つける前に。",
+        },
+    },
+    "doa_malaikat": {
+        "title": {
+            "id": "Mohon ampun untuk seluruh umat",
+            "en": "Forgiveness for all believers",
+            "zh": "为众信士求赦",
+            "ja": "信者全体の赦しを",
+        },
+        "summary": {
+            "id": "Diamalkan saat mendoakan saudara Muslim yang susah.",
+            "en": "Use when praying for struggling Muslims.",
+            "zh": "为困境中的穆斯林同胞祈祷时使用。",
+            "ja": "苦しむムスリムの仲間のために。",
+        },
+    },
+    "adam_taubat": {
+        "title": {
+            "id": "Setelah berbuat salah",
+            "en": "After doing wrong",
+            "zh": "做错事之后",
+            "ja": "過ちのあと",
+        },
+        "summary": {
+            "id": "Teladani Nabi Adam: akui salah dan mohon ampun tulus.",
+            "en": "Follow Prophet Adam: admit fault and ask sincerely.",
+            "zh": "效法阿丹先知：承认过错并诚恳求恕。",
+            "ja": "アダムのように過ちを認め誠実に赦しを求める。",
+        },
+    },
+    "nuh_kapal": {
+        "title": {
+            "id": "Saat mulai perjalanan",
+            "en": "When starting a journey",
+            "zh": "开始出行时",
+            "ja": "旅に出るとき",
+        },
+        "summary": {
+            "id": "Bismillah saat naik kendaraan, berlayar, atau pindah tempat.",
+            "en": "Say Bismillah when boarding transport or moving.",
+            "zh": "乘车、航行或搬迁时念。",
+            "ja": "乗り物や引っ越しの際にビスミッラーを。",
+        },
+    },
+    "nuh_ampun": {
+        "title": {
+            "id": "Saat khawatir berdoa salah",
+            "en": "When unsure how to pray",
+            "zh": "担心祈求不当时",
+            "ja": "祈り方が不安なとき",
+        },
+        "summary": {
+            "id": "Berlindung dari memohon tanpa ilmu, lalu minta ampun.",
+            "en": "Seek refuge from ignorant requests, then ask forgiveness.",
+            "zh": "求护免受无知的祈求，并求宽恕。",
+            "ja": "知らぬまま求めることを避け赦しを求める。",
+        },
+    },
+    "nuh_keluarga": {
+        "title": {
+            "id": "Doa ampun untuk keluarga",
+            "en": "Forgiveness for family",
+            "zh": "为家人求赦",
+            "ja": "家族への赦しの祈り",
+        },
+        "summary": {
+            "id": "Untuk diri, orang tua, tamu, dan semua Muslim.",
+            "en": "For oneself, parents, guests, and all Muslims.",
+            "zh": "为自己、父母、来客及众穆斯林。",
+            "ja": "自身、両親、来客、すべてのムスリムのために。",
+        },
+    },
+    "nuh_selamat": {
+        "title": {
+            "id": "Setelah selamat dari musibah",
+            "en": "After escaping hardship",
+            "zh": "脱离灾难之后",
+            "ja": "災難を逃れたあと",
+        },
+        "summary": {
+            "id": "Ucapkan syukur setelah banjir, kecelakaan, atau ancaman hilang.",
+            "en": "Give thanks after floods, accidents, or threats pass.",
+            "zh": "水灾、事故或威胁过去后感恩。",
+            "ja": "災害や危機を乗り越えたあとの感謝に。",
+        },
+    },
+    "nuh_tempat_berkah": {
+        "title": {
+            "id": "Mencari tempat tinggal berkah",
+            "en": "A blessed place to live",
+            "zh": "求有福的居所",
+            "ja": "祝福ある住まいを",
+        },
+        "summary": {
+            "id": "Saat pindah rumah, mencari kerja, atau hijrah.",
+            "en": "When moving, job hunting, or relocating.",
+            "zh": "搬家、求职或迁徙时使用。",
+            "ja": "引っ越し、就職、ヒジュラのときに。",
+        },
+    },
+    "hud_nasr": {
+        "title": {
+            "id": "Saat kaum menentang kebenaran",
+            "en": "When people reject the truth",
+            "zh": "族人抗拒真理时",
+            "ja": "真理を拒むとき",
+        },
+        "summary": {
+            "id": "Memohon pertolongan menghadapi penolakan dan kezaliman.",
+            "en": "Asking help against rejection and injustice.",
+            "zh": "面对抗拒与不义时求援助。",
+            "ja": "拒絶と不義に対する助けを求める。",
+        },
+    },
+    "ibrahim_hasbunallah": {
+        "title": {
+            "id": "Saat takut rencana jahat",
+            "en": "When fearing evil plots",
+            "zh": "惧怕阴谋陷害时",
+            "ja": "悪しき企みを恐れるとき",
+        },
+        "summary": {
+            "id": "Tenangkan hati: cukup Allah sebagai penolong.",
+            "en": "Calm the heart: Allah alone is enough.",
+            "zh": "安心：真主足为援助。",
+            "ja": "アッラーだけで十分と心を静める。",
+        },
+    },
+    "ibrahim_salat": {
+        "title": {
+            "id": "Agar shalat istiqamah keluarga",
+            "en": "Steadfast prayer for the family",
+            "zh": "全家谨守拜功",
+            "ja": "家族の礼拝を守る",
+        },
+        "summary": {
+            "id": "Diamalkan orang tua agar anak cucu tetap shalat.",
+            "en": "Parents use this so children keep praying.",
+            "zh": "父母祈求子女坚持礼拜。",
+            "ja": "子孫が礼拝を続けるよう親が唱える。",
+        },
+    },
+    "ibrahim_negeri_aman": {
+        "title": {
+            "id": "Mohon negeri aman dan rezeki",
+            "en": "A safe land and provision",
+            "zh": "安宁之地与给养",
+            "ja": "安全な地と糧",
+        },
+        "summary": {
+            "id": "Saat ingin hidup aman dan rezeki halal mencukupi.",
+            "en": "When seeking safety and halal provision.",
+            "zh": "渴望平安生活与合法给养时使用。",
+            "ja": "安全とハラールの糧を望むときに。",
+        },
+    },
+    "ibrahim_amal_diterima": {
+        "title": {
+            "id": "Setelah beribadah, mohon diterima",
+            "en": "After worship, ask acceptance",
+            "zh": "礼拜后求接受",
+            "ja": "礼拝の後、受け入れを",
+        },
+        "summary": {
+            "id": "Setelah haji, umrah, sedekah, atau ibadah besar.",
+            "en": "After hajj, umrah, charity, or major worship.",
+            "zh": "朝觐、副朝、施舍或大功之后。",
+            "ja": "ハッジ、ウムラ、喜捨のあとに。",
+        },
+    },
+    "ibrahim_rasul": {
+        "title": {
+            "id": "Mohon petunjuk agama yang benar",
+            "en": "Guidance to true faith",
+            "zh": "求正教之引导",
+            "ja": "正しい信仰の導き",
+        },
+        "summary": {
+            "id": "Memohon ilmu, hikmah, dan keturunan yang mengikuti sunnah.",
+            "en": "Asking for knowledge, wisdom, and a practicing progeny.",
+            "zh": "求知识、智慧与遵行正教的后裔。",
+            "ja": "知識、英知、スンナに従う子孫を求める。",
+        },
+    },
+    "ibrahim_keturunan": {
+        "title": {
+            "id": "Mohon anak yang saleh",
+            "en": "Righteous children",
+            "zh": "祈求善良子女",
+            "ja": "正しい子を求める",
+        },
+        "summary": {
+            "id": "Bagi yang menanti keturunan atau mendoakan anak.",
+            "en": "For those awaiting or praying for children.",
+            "zh": "盼子或为孩子祈祷时使用。",
+            "ja": "子を望む・子のために祈るときに。",
+        },
+    },
+    "ibrahim_baitullah": {
+        "title": {
+            "id": "Mohon rezeki dan hati yang cenderung baik",
+            "en": "Provision and hearts inclined to good",
+            "zh": "求给养与向善之心",
+            "ja": "糧と善き心を",
+        },
+        "summary": {
+            "id": "Cocok saat berusaha ekonomi dan dakwah di lingkungan.",
+            "en": "When earning a living and calling others to good.",
+            "zh": "谋生并在社区劝善时使用。",
+            "ja": "生計と地域での勧善に。",
+        },
+    },
+    "ibrahim_orangtua": {
+        "title": {
+            "id": "Mohon ampun untuk diri dan orang tua",
+            "en": "Forgive me and my parents",
+            "zh": "为自己与父母求恕",
+            "ja": "自身と両親への赦し",
+        },
+        "summary": {
+            "id": "Diamalkan anak yang masih punya orang tua atau sudah wafat.",
+            "en": "For children with living or deceased parents.",
+            "zh": "父母在世或已离世的孩子适用。",
+            "ja": "両親がいる・亡くなった子が唱える。",
+        },
+    },
+    "ibrahim_hikmah": {
+        "title": {
+            "id": "Mohon ilmu, nama baik, dan surga",
+            "en": "Knowledge, good name, and Paradise",
+            "zh": "求知识、美名与乐园",
+            "ja": "知識と良名と楽園",
+        },
+        "summary": {
+            "id": "Sebelum mengajar, berbicara di depan umum, atau menulis.",
+            "en": "Before teaching, public speaking, or writing.",
+            "zh": "授课、演讲或写作之前。",
+            "ja": "教える・話す・書く前に。",
+        },
+    },
+    "ibrahim_mekah_aman": {
+        "title": {
+            "id": "Mohon kampung halaman aman",
+            "en": "A safe homeland",
+            "zh": "求故乡安宁",
+            "ja": "故郷の安全を",
+        },
+        "summary": {
+            "id": "Jauhi syirik dan minta negeri kelahiran/keluarga aman.",
+            "en": "Avoid shirk and ask safety for home and family land.",
+            "zh": "远离以物配主，为家园求平安。",
+            "ja": "シルクを避け故郷の安全を求める。",
+        },
+    },
+    "lut_keluarga": {
+        "title": {
+            "id": "Lindungi keluarga dari lingkungan buruk",
+            "en": "Protect family from a bad environment",
+            "zh": "护家人远离恶劣环境",
+            "ja": "家族を悪い環境から守る",
+        },
+        "summary": {
+            "id": "Saat khawatir anak atau istri terpengaruh maksiat sekitar.",
+            "en": "When fearing family influenced by surrounding sin.",
+            "zh": "担心家人受周围罪恶影响时使用。",
+            "ja": "家族が周囲の罪に染まるのを恐れるときに。",
+        },
+    },
+    "lut_mufsid": {
+        "title": {
+            "id": "Saat lingkungan penuh kerusakan",
+            "en": "When corruption spreads around you",
+            "zh": "周围充满败坏时",
+            "ja": "周囲が腐敗に満ちるとき",
+        },
+        "summary": {
+            "id": "Memohon pertolongan dari orang yang merusak akhlak dan iman.",
+            "en": "Asking help against those ruining character and faith.",
+            "zh": "求护免受败坏品性与信仰之人。",
+            "ja": "品性と信仰を壊す者からの助けを。",
+        },
+    },
+    "yusuf_penjara": {
+        "title": {
+            "id": "Saat tergoda atau dalam kesulitan",
+            "en": "When tempted or in hardship",
+            "zh": "受诱惑或陷入困境时",
+            "ja": "誘惑や困難のとき",
+        },
+        "summary": {
+            "id": "Berlindung dari godaan dan minta kejujuran hati.",
+            "en": "Seek refuge from temptation and ask for integrity.",
+            "zh": "求护免受诱惑并保持内心正直。",
+            "ja": "誘惑から守られ誠実でありたいときに。",
+        },
+    },
+    "yusuf_khatimah": {
+        "title": {
+            "id": "Mohon husnul khatimah",
+            "en": "A good end in this life",
+            "zh": "求善終",
+            "ja": "善い終わりを",
+        },
+        "summary": {
+            "id": "Diamalkan saat sakit keras atau usia lanjut.",
+            "en": "Use in serious illness or old age.",
+            "zh": "重病或年迈时使用。",
+            "ja": "重病や高齢のときに。",
+        },
+    },
+    "ayyub_kesembuhan": {
+        "title": {
+            "id": "Saat sakit atau tertimpa musibah",
+            "en": "When ill or struck by hardship",
+            "zh": "患病或遭患难时",
+            "ja": "病や災難のとき",
+        },
+        "summary": {
+            "id": "Panggil Allah Yang Maha Penyayang saat tubuh atau hati sakit.",
+            "en": "Call on the Most Merciful when body or heart hurts.",
+            "zh": "身心痛苦时向至慈者祈求。",
+            "ja": "心身の苦しみのとき慈悲深き御方に。",
+        },
+    },
+    "syuaib_keadilan": {
+        "title": {
+            "id": "Saat diperlakukan tidak adil",
+            "en": "When treated unfairly",
+            "zh": "遭受不公对待时",
+            "ja": "不当な扱いを受けるとき",
+        },
+        "summary": {
+            "id": "Serahkan urusan pada Allah yang Maha Adil.",
+            "en": "Leave the matter to the Most Just.",
+            "zh": "将事务交托至公的主。",
+            "ja": "最も公正な御方に委ねる。",
+        },
+    },
+    "musa_lapang_dada": {
+        "title": {
+            "id": "Sebelum bicara di depan umum",
+            "en": "Before speaking in public",
+            "zh": "当众发言之前",
+            "ja": "人前で話す前に",
+        },
+        "summary": {
+            "id": "Presentasi, wawancara kerja, mengajar, atau pidato.",
+            "en": "Presentations, interviews, teaching, or speeches.",
+            "zh": "演讲、面试、授课或致辞前念。",
+            "ja": "発表、面接、授業、スピーチの前に。",
+        },
+    },
+    "musa_ampun_diri": {
+        "title": {
+            "id": "Setelah salah khilaf",
+            "en": "After a personal mistake",
+            "zh": "个人过失之后",
+            "ja": "自分の過ちのあと",
+        },
+        "summary": {
+            "id": "Akui kesalahan dan mohon ampun, jangan menolong orang zalim.",
+            "en": "Admit error, seek forgiveness, avoid aiding wrongdoers.",
+            "zh": "承认错误求恕，不助不义之人。",
+            "ja": "過ちを認め赦しを求め、不義を助けない。",
+        },
+    },
+    "musa_selamat_zalim": {
+        "title": {
+            "id": "Saat lari dari orang zalim",
+            "en": "Fleeing from wrongdoers",
+            "zh": "逃离不义者时",
+            "ja": "不義な者から逃れるとき",
+        },
+        "summary": {
+            "id": "Memohon keselamatan dan petunjuk jalan yang benar.",
+            "en": "Asking safety and the right path ahead.",
+            "zh": "求平安与正路。",
+            "ja": "安全と正しい道を求める。",
+        },
+    },
+    "musa_saudara": {
+        "title": {
+            "id": "Mohon ampun untuk diri dan saudara",
+            "en": "Forgiveness for me and my sibling",
+            "zh": "为自己与兄弟求恕",
+            "ja": "自身と兄弟への赦し",
+        },
+        "summary": {
+            "id": "Saat ada konflik dengan saudara kandung atau sesama Muslim.",
+            "en": "When in conflict with siblings or fellow Muslims.",
+            "zh": "与兄弟姐妹或穆斯林同胞有矛盾时使用。",
+            "ja": "兄弟やムスリムの仲間と争ったときに。",
+        },
+    },
+    "musa_sabar": {
+        "title": {
+            "id": "Saat diuji keras",
+            "en": "When severely tested",
+            "zh": "遭受严峻考验时",
+            "ja": "厳しい試練のとき",
+        },
+        "summary": {
+            "id": "Memohon sabar dan wafat dalam keadaan Islam.",
+            "en": "Asking patience and to die as a Muslim.",
+            "zh": "求忍耐并以穆斯林身份离世。",
+            "ja": "忍耐とムスリムとしての終わりを求める。",
+        },
+    },
+    "musa_nikmat_madyan": {
+        "title": {
+            "id": "Setelah mendapat pertolongan Allah",
+            "en": "After Allah's help arrives",
+            "zh": "获得真主援助之后",
+            "ja": "アッラーの助けのあと",
+        },
+        "summary": {
+            "id": "Ucapkan syukur saat rezeki atau jalan keluar datang.",
+            "en": "Give thanks when provision or a way out comes.",
+            "zh": "给养或出路出现时感恩。",
+            "ja": "糧や出口が与えられたときの感謝に。",
+        },
+    },
+    "sulaiman_hamd": {
+        "title": {
+            "id": "Bersyukur atas nikmat",
+            "en": "Thank Allah for blessings",
+            "zh": "感恩所受恩典",
+            "ja": "恩恵に感謝する",
+        },
+        "summary": {
+            "id": "Setelah dapat rezeki, jabatan, atau karunia lain.",
+            "en": "After provision, position, or other favors.",
+            "zh": "获得给养、职位或其他恩典后。",
+            "ja": "糧、地位、その他の恩恵のあとに。",
+        },
+    },
+    "sulaiman_mulk": {
+        "title": {
+            "id": "Mohon kemampuan yang bermanfaat",
+            "en": "Ability that truly benefits",
+            "zh": "求有益的能力",
+            "ja": "有益な力を求める",
+        },
+        "summary": {
+            "id": "Memohon ampun dan kekuatan untuk berbuat baik, bukan sombong.",
+            "en": "Asking forgiveness and strength to do good, not pride.",
+            "zh": "求恕与行善之力，而非骄傲。",
+            "ja": "赦しと善行の力を、傲慢ではなく求める。",
+        },
+    },
+    "yunus_laa_ilaha": {
+        "title": {
+            "id": "Saat terpuruk dan butuh tobat",
+            "en": "When low and needing repentance",
+            "zh": "低落需忏悔时",
+            "ja": "落ち込み悔い改めを要するとき",
+        },
+        "summary": {
+            "id": "Doa tauhid yang mustajab; diamalkan dalam kesulitan.",
+            "en": "The answered prayer of oneness; use in hardship.",
+            "zh": "著名的认主独一忏悔祷词，患难时念。",
+            "ja": "困難のときに唱える応答の一神の祈り。",
+        },
+    },
+    "zakaria_keturunan": {
+        "title": {
+            "id": "Mohon keturunan soleh",
+            "en": "Righteous offspring",
+            "zh": "祈求善良后代",
+            "ja": "正しい子孫を",
+        },
+        "summary": {
+            "id": "Bagi pasangan yang menanti anak.",
+            "en": "For couples hoping for a child.",
+            "zh": "盼子的夫妻适用。",
+            "ja": "子を望む夫婦に。",
+        },
+    },
+    "zakaria_tidak_sendiri": {
+        "title": {
+            "id": "Mohon keturunan saat belum dikaruniai",
+            "en": "When still without children",
+            "zh": "尚无子女时",
+            "ja": "まだ子がないとき",
+        },
+        "summary": {
+            "id": "Jangan putus asa; mohon dengan sabar seperti Nabi Zakaria.",
+            "en": "Do not despair; ask patiently as Prophet Zakariyya did.",
+            "zh": "勿绝望，如宰凯里雅先知般耐心祈求。",
+            "ja": "ザカリーヤーのように忍耐して求める。",
+        },
+    },
+    "isa_meja_makan": {
+        "title": {
+            "id": "Mohon rezeki dan hari penuh berkah",
+            "en": "Provision and a blessed day",
+            "zh": "求给养与吉庆之日",
+            "ja": "糧と祝福の日を",
+        },
+        "summary": {
+            "id": "Saat butuh rezeki, makan bersama keluarga, atau hari raya.",
+            "en": "When needing provision, family meals, or celebrations.",
+            "zh": "需要给养、家庭聚餐或节日时使用。",
+            "ja": "糧、家族の食事、祝いの日に。",
+        },
+    },
+    "muhammad_hukum": {
+        "title": {
+            "id": "Saat difitnah atau dizalimi",
+            "en": "When slandered or wronged",
+            "zh": "被诽谤或受冤时",
+            "ja": "中傷や不当な扱いのとき",
+        },
+        "summary": {
+            "id": "Serahkan keadilan pada Allah Yang Maha Pengasih.",
+            "en": "Leave justice to the Most Merciful.",
+            "zh": "将公正交托至慈的主。",
+            "ja": "公正を慈悲深き御方に委ねる。",
+        },
+    },
+    "muhammad_mulk": {
+        "title": {
+            "id": "Saat merasa lemah dan butuh Allah",
+            "en": "When weak and needing Allah",
+            "zh": "软弱需仰赖真主时",
+            "ja": "弱くアッラーを必要とするとき",
+        },
+        "summary": {
+            "id": "Ingat bahwa semua kuasa di tangan Allah semata.",
+            "en": "Remember all power belongs to Allah alone.",
+            "zh": "记念一切权柄只在真主手中。",
+            "ja": "すべての力はアッラーのみにあると思い出す。",
+        },
+    },
+    "muhammad_hijrah": {
+        "title": {
+            "id": "Saat pindah rumah atau tempat kerja",
+            "en": "When moving home or workplace",
+            "zh": "搬家或换工作时",
+            "ja": "引っ越しや転職のとき",
+        },
+        "summary": {
+            "id": "Mohon masuk dan keluar yang benar serta pertolongan Allah.",
+            "en": "Ask for rightful coming and going and Allah's help.",
+            "zh": "求出入皆正与真主援助。",
+            "ja": "正しい出入りと助けを求める。",
+        },
+    },
+    "muhammad_tauhid": {
+        "title": {
+            "id": "Mengingat keesaan Allah",
+            "en": "Remember Allah's oneness",
+            "zh": "记念真主独一",
+            "ja": "アッラーの一神を唱える",
+        },
+        "summary": {
+            "id": "Diamalkan pagi-peti atau saat ragu dalam keimanan.",
+            "en": "Use morning and evening or when faith feels shaky.",
+            "zh": "早晚或信仰动摇时念。",
+            "ja": "朝夕や信仰が揺れるときに。",
+        },
+    },
+    "muhammad_perselisihan": {
+        "title": {
+            "id": "Saat ada perselisihan dan adu domba",
+            "en": "When disputes and quarrels arise",
+            "zh": "发生争执纠纷时",
+            "ja": "争いや論争のとき",
+        },
+        "summary": {
+            "id": "Minta Allah yang mengetahui gaib memutuskan dengan adil.",
+            "en": "Ask Allah who knows the unseen to judge fairly.",
+            "zh": "求真主以全知作出公正判决。",
+            "ja": "見えざることを知る御方の公正な裁きを。",
+        },
+    },
+    "muhammad_tasbih_penutup": {
+        "title": {
+            "id": "Penutup ibadah atau majelis",
+            "en": "Closing a prayer or gathering",
+            "zh": "礼拜或聚会结束时",
+            "ja": "礼拝や集まりの結びに",
+        },
+        "summary": {
+            "id": "Ucapkan tasbih, salam untuk rasul, dan hamd kepada Allah.",
+            "en": "Praise, peace on the messengers, and thanks to Allah.",
+            "zh": "赞颂、祝使者平安、感赞众世界的主。",
+            "ja": "讃美、使者への平安、主への感謝で締める。",
+        },
+    },
+}
+
+def main():
+    data = json.loads(CATALOG.read_text(encoding="utf-8"))
+    missing = []
+    for entry in data["entries"]:
+        uid = entry["id"]
+        if uid not in UPDATES:
+            missing.append(uid)
+            continue
+        entry["title"] = UPDATES[uid]["title"]
+        entry["summary"] = UPDATES[uid]["summary"]
+    if missing:
+        raise SystemExit(f"Missing updates for: {missing}")
+    data["version"] = 3
+    CATALOG.write_text(
+        json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    print(f"Updated {len(UPDATES)} entries, catalog version {data['version']}")
+
+if __name__ == "__main__":
+    main()

@@ -15,7 +15,443 @@ class AppLocalizations {
       'notes' => _getNotes(language),
       'highlights' => _getHighlights(language),
       'library' => _getLibrary(language),
+      'dua' => _getDua(language),
       _ => key,
+    };
+  }
+
+  static String getDuaCategoryLabel(String category, String language) {
+    return switch (category) {
+      'daily' => switch (language) {
+          'id' => 'Doa harian',
+          'zh' => '日常祈祷',
+          'ja' => '日々の祈り',
+          _ => 'Daily duas',
+        },
+      'prophet' => switch (language) {
+          'id' => 'Doa para nabi',
+          'zh' => '众先知祈祷',
+          'ja' => '預言者の祈り',
+          _ => 'Prophets\' duas',
+        },
+      'science' => switch (language) {
+          'id' => 'Sains',
+          'zh' => '科学',
+          'ja' => '科学',
+          _ => 'Science',
+        },
+      'life_theme' => switch (language) {
+          'id' => 'Tema hidup',
+          'zh' => '生活主题',
+          'ja' => '生活のテーマ',
+          _ => 'Life themes',
+        },
+      _ => category,
+    };
+  }
+
+  static String getScienceCategoryLabel(String category, String language) {
+    return switch (category) {
+      'cosmos' => switch (language) {
+          'id' => 'Alam semesta',
+          'zh' => '宇宙',
+          'ja' => '宇宙',
+          _ => 'The cosmos',
+        },
+      'biology' => switch (language) {
+          'id' => 'Biologi',
+          'zh' => '生物学',
+          'ja' => '生物学',
+          _ => 'Biology',
+        },
+      'earth' => switch (language) {
+          'id' => 'Bumi & lingkungan',
+          'zh' => '地球与环境',
+          'ja' => '地球と環境',
+          _ => 'Earth & environment',
+        },
+      'physics' => switch (language) {
+          'id' => 'Fisika & materi',
+          'zh' => '物理与物质',
+          'ja' => '物理学と物質',
+          _ => 'Physics & matter',
+        },
+      _ => category,
+    };
+  }
+
+  static String getScienceTopicCount(int count, String language) {
+    return switch (language) {
+      'id' => '$count topik',
+      'zh' => '$count 个主题',
+      'ja' => 'テーマ $count 件',
+      _ => '$count topics',
+    };
+  }
+
+  static String getScienceNoteHeading(String language) {
+    return switch (language) {
+      'id' => 'Catatan ilmiah',
+      'en' => 'Science note',
+      'zh' => '科学说明',
+      'ja' => '科学的注記',
+      _ => 'Science note',
+    };
+  }
+
+  static String getScienceLoadError(String language) {
+    return switch (language) {
+      'id' =>
+        'Katalog sains tidak dapat dimuat. Tutup aplikasi sepenuhnya lalu buka lagi (hot reload tidak memuat asset baru).',
+      'en' =>
+        'Could not load the science catalog. Fully restart the app (hot reload does not bundle new assets).',
+      'zh' => '无法加载科学目录。请完全关闭后重新打开应用（热重载不会加载新资源）。',
+      'ja' => '科学の目録を読み込めませんでした。アプリを完全に終了して再起動してください。',
+      _ => 'Could not load the science catalog. Fully restart the app.',
+    };
+  }
+
+  static String getReflectionCardTitle(String pickSource, String language) {
+    return switch (pickSource) {
+      'weekly' => switch (language) {
+          'id' => 'Renungan minggu ini',
+          'zh' => '本周思考',
+          'ja' => '今週の黙想',
+          _ => 'Reflection this week',
+        },
+      _ => switch (language) {
+          'id' => 'Renungan hari ini',
+          'zh' => '今日思考',
+          'ja' => '今日の黙想',
+          _ => 'Reflection today',
+        },
+    };
+  }
+
+  static String getReflectionBadge(String badgeKey, String language) {
+    return switch (badgeKey) {
+      'friday' => switch (language) {
+          'id' => 'Jumat',
+          'zh' => '主麻',
+          'ja' => '金曜',
+          _ => 'Friday',
+        },
+      'ramadan' => switch (language) {
+          'id' => 'Ramadan',
+          'zh' => '莱麦丹',
+          'ja' => 'ラマダーン',
+          _ => 'Ramadan',
+        },
+      'hijrah' => switch (language) {
+          'id' => 'Awal Hijriah',
+          'zh' => '伊历新年',
+          'ja' => 'ヒジュラ暦',
+          _ => 'Hijri new year',
+        },
+      'morning' => switch (language) {
+          'id' => 'Pagi',
+          'zh' => '早晨',
+          'ja' => '朝',
+          _ => 'Morning',
+        },
+      'evening' => switch (language) {
+          'id' => 'Malam',
+          'zh' => '夜晚',
+          'ja' => '夜',
+          _ => 'Evening',
+        },
+      _ => switch (language) {
+          'id' => 'Minggu ini',
+          'zh' => '本周',
+          'ja' => '今週',
+          _ => 'This week',
+        },
+    };
+  }
+
+  static String getReflectionContextLabel(String language) {
+    return switch (language) {
+      'id' => 'Konteks singkat',
+      'en' => 'Quick context',
+      'zh' => '简要背景',
+      'ja' => '短い文脈',
+      _ => 'Quick context',
+    };
+  }
+
+  static String getReflectionReflectionHeading(String language) {
+    return getThemeReflectionHeading(language);
+  }
+
+  static String getReflectionLoadError(String language) {
+    return switch (language) {
+      'id' => 'Renungan tidak dapat dimuat.',
+      'en' => 'Could not load reflection.',
+      'zh' => '无法加载思考内容。',
+      'ja' => '黙想を読み込めませんでした。',
+      _ => 'Could not load reflection.',
+    };
+  }
+
+  static String getCatalogRetry(String language) {
+    return switch (language) {
+      'id' => 'Coba lagi',
+      'en' => 'Try again',
+      'zh' => '重试',
+      'ja' => '再試行',
+      _ => 'Try again',
+    };
+  }
+
+  static String getScienceEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ada topik dalam kategori ini.',
+      'en' => 'No topics in this category yet.',
+      'zh' => '此类别暂无主题。',
+      'ja' => 'このカテゴリにはまだテーマがありません。',
+      _ => 'No topics in this category yet.',
+    };
+  }
+
+  static String getThemeCategoryLabel(String category, String language) {
+    return switch (category) {
+      'patience' => switch (language) {
+          'id' => 'Sabar & ketenangan',
+          'zh' => '忍耐与安宁',
+          'ja' => '忍耐と心の平安',
+          _ => 'Patience & calm',
+        },
+      'gratitude' => switch (language) {
+          'id' => 'Syukur',
+          'zh' => '感恩',
+          'ja' => '感謝',
+          _ => 'Gratitude',
+        },
+      'provision' => switch (language) {
+          'id' => 'Rezeki & kecukupan',
+          'zh' => '给养与足用',
+          'ja' => '糧と足りる心',
+          _ => 'Provision',
+        },
+      'family' => switch (language) {
+          'id' => 'Keluarga',
+          'zh' => '家庭',
+          'ja' => '家族',
+          _ => 'Family',
+        },
+      'trials' => switch (language) {
+          'id' => 'Ujian & musibah',
+          'zh' => '考验与灾难',
+          'ja' => '試練と災難',
+          _ => 'Trials & hardship',
+        },
+      'hope' => switch (language) {
+          'id' => 'Harapan & tawakal',
+          'zh' => '希望与托靠',
+          'ja' => '希望と托靠',
+          _ => 'Hope & trust',
+        },
+      'character' => switch (language) {
+          'id' => 'Akhlak & diri',
+          'zh' => '品性与内心',
+          'ja' => '品性と心',
+          _ => 'Character & self',
+        },
+      'hereafter' => switch (language) {
+          'id' => 'Akhirat',
+          'zh' => '后世',
+          'ja' => '来世',
+          _ => 'The Hereafter',
+        },
+      _ => category,
+    };
+  }
+
+  static String getThemeTopicCount(int count, String language) {
+    return getScienceTopicCount(count, language);
+  }
+
+  static String getThemeReflectionHeading(String language) {
+    return switch (language) {
+      'id' => 'Cara merenungkan',
+      'en' => 'How to reflect',
+      'zh' => '如何思考',
+      'ja' => '味わい方',
+      _ => 'How to reflect',
+    };
+  }
+
+  static String formatThemeAyahLabel(int ayahCount, String language) {
+    return switch (language) {
+      'id' => '$ayahCount ayat',
+      'zh' => '$ayahCount 节',
+      'ja' => '$ayahCount 節',
+      _ => '$ayahCount verses',
+    };
+  }
+
+  static String getThemeLoadError(String language) {
+    return switch (language) {
+      'id' =>
+        'Katalog tema hidup tidak dapat dimuat. Tutup aplikasi sepenuhnya lalu buka lagi.',
+      'en' =>
+        'Could not load the life themes catalog. Fully restart the app.',
+      'zh' => '无法加载生活主题目录。请完全关闭后重新打开应用。',
+      'ja' => '生活テーマの目録を読み込めませんでした。アプリを完全に終了して再起動してください。',
+      _ => 'Could not load the life themes catalog. Fully restart the app.',
+    };
+  }
+
+  static String getThemeEmpty(String language) {
+    return getScienceEmpty(language);
+  }
+
+  static String getDuaProphetName(String key, String language) {
+    return switch (key) {
+      'adam' => switch (language) {
+          'id' => 'Nabi Adam',
+          'zh' => '先知阿丹',
+          'ja' => 'アダム',
+          _ => 'Prophet Adam',
+        },
+      'nuh' => switch (language) {
+          'id' => 'Nabi Nuh',
+          'zh' => '先知努哈',
+          'ja' => 'ヌーフ',
+          _ => 'Prophet Nuh',
+        },
+      'hud' => switch (language) {
+          'id' => 'Nabi Hud',
+          'zh' => '先知呼德',
+          'ja' => 'フード',
+          _ => 'Prophet Hud',
+        },
+      'ibrahim' => switch (language) {
+          'id' => 'Nabi Ibrahim',
+          'zh' => '先知易卜拉欣',
+          'ja' => 'イブラーヒーム',
+          _ => 'Prophet Ibrahim',
+        },
+      'lut' => switch (language) {
+          'id' => 'Nabi Lut',
+          'zh' => '先知鲁特',
+          'ja' => 'ルート',
+          _ => 'Prophet Lut',
+        },
+      'yusuf' => switch (language) {
+          'id' => 'Nabi Yusuf',
+          'zh' => '先知优素福',
+          'ja' => 'ユースフ',
+          _ => 'Prophet Yusuf',
+        },
+      'ayyub' => switch (language) {
+          'id' => 'Nabi Ayyub',
+          'zh' => '先知艾优卜',
+          'ja' => 'アイユーブ',
+          _ => 'Prophet Ayyub',
+        },
+      'syuaib' => switch (language) {
+          'id' => 'Nabi Syu\'aib',
+          'zh' => '先知舒阿卜',
+          'ja' => 'シュアイブ',
+          _ => 'Prophet Shu\'ayb',
+        },
+      'musa' => switch (language) {
+          'id' => 'Nabi Musa',
+          'zh' => '先知穆萨',
+          'ja' => 'ムーサー',
+          _ => 'Prophet Musa',
+        },
+      'sulaiman' => switch (language) {
+          'id' => 'Nabi Sulaiman',
+          'zh' => '先知苏莱曼',
+          'ja' => 'スライマーン',
+          _ => 'Prophet Sulaiman',
+        },
+      'yunus' => switch (language) {
+          'id' => 'Nabi Yunus',
+          'zh' => '先知优努斯',
+          'ja' => 'ユーヌス',
+          _ => 'Prophet Yunus',
+        },
+      'zakaria' => switch (language) {
+          'id' => 'Nabi Zakaria',
+          'zh' => '先知宰凯里雅',
+          'ja' => 'ザカリーヤー',
+          _ => 'Prophet Zakariyya',
+        },
+      'isa' => switch (language) {
+          'id' => 'Nabi Isa',
+          'zh' => '先知尔萨',
+          'ja' => 'イーサー',
+          _ => 'Prophet Isa',
+        },
+      'muhammad' => switch (language) {
+          'id' => 'Nabi Muhammad',
+          'zh' => '先知穆罕默德',
+          'ja' => 'ムハンマド',
+          _ => 'Prophet Muhammad',
+        },
+      _ => key,
+    };
+  }
+
+  static String getDuaProphetCount(int count, String language) {
+    return switch (language) {
+      'id' => '$count doa',
+      'zh' => '$count 则祈祷',
+      'ja' => '祈り $count 件',
+      _ => '$count prayers',
+    };
+  }
+
+  static String formatDuaAyahRef(int surah, int from, int to, String language) {
+    final range = from == to ? '$from' : '$from-$to';
+    return switch (language) {
+      'id' => 'QS $surah:$range',
+      'zh' => '第$surah章 $range节',
+      'ja' => '第$surah章 $range節',
+      _ => 'Surah $surah:$range',
+    };
+  }
+
+  static String getDuaOpenInReader(String language) {
+    return switch (language) {
+      'id' => 'Buka di Reader',
+      'en' => 'Open in Reader',
+      'zh' => '在阅读器中打开',
+      'ja' => 'リーダーで開く',
+      _ => 'Open in Reader',
+    };
+  }
+
+  static String getDuaLoadError(String language) {
+    return switch (language) {
+      'id' => 'Katalog doa tidak dapat dimuat.',
+      'en' => 'Could not load the dua catalog.',
+      'zh' => '无法加载祈祷目录。',
+      'ja' => '祈りの目録を読み込めませんでした。',
+      _ => 'Could not load the dua catalog.',
+    };
+  }
+
+  static String getDuaEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ada doa dalam kategori ini.',
+      'en' => 'No duas in this category yet.',
+      'zh' => '此类别暂无祈祷。',
+      'ja' => 'このカテゴリにはまだ祈りがありません。',
+      _ => 'No duas in this category yet.',
+    };
+  }
+
+  static String getDuaVerseUnavailable(String language) {
+    return switch (language) {
+      'id' => 'Teks ayat tidak tersedia.',
+      'en' => 'Verse text is unavailable.',
+      'zh' => '节文不可用。',
+      'ja' => '節のテキストを利用できません。',
+      _ => 'Verse text is unavailable.',
     };
   }
 
@@ -94,6 +530,7 @@ class AppLocalizations {
       'highlights_empty' => _getHighlightsEmpty(language),
       'highlights_no_results' => _getHighlightsNoResults(language),
       'library_subtitle' => _getLibrarySubtitle(language),
+      'dua_subtitle' => _getDuaSubtitle(language),
       'library_search_hint' => _getLibrarySearchHint(language),
       'library_no_results' => _getLibraryNoResults(language),
       _ => key,
@@ -1585,6 +2022,16 @@ class AppLocalizations {
     };
   }
 
+  static String _getDuaSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Doa, sains, dan tema hidup',
+      'en' => 'Prayers, science, and life themes',
+      'zh' => '祈祷、科学与生活主题',
+      'ja' => '祈り、科学、生活のテーマ',
+      _ => 'Prayers, science, and life themes',
+    };
+  }
+
   static String _getLibrary(String language) {
     return switch (language) {
       'id' => 'Perpustakaan',
@@ -1592,6 +2039,16 @@ class AppLocalizations {
       'zh' => '我的图书馆',
       'ja' => 'マイライブラリ',
       _ => 'My Library',
+    };
+  }
+
+  static String _getDua(String language) {
+    return switch (language) {
+      'id' => 'Jelajahi',
+      'en' => 'Explore',
+      'zh' => '探索',
+      'ja' => '探求',
+      _ => 'Explore',
     };
   }
 
