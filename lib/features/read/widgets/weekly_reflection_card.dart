@@ -153,6 +153,7 @@ class WeeklyReflectionCard extends ConsumerWidget {
     final entry = pick.entry;
     showExploreDetailSheet(
       context: context,
+      ref: ref,
       lang: lang,
       title: entry.title,
       summary: entry.summary,

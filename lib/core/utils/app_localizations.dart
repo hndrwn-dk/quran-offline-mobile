@@ -49,6 +49,12 @@ class AppLocalizations {
           'ja' => '科学',
           _ => 'Science',
         },
+      'asma' => switch (language) {
+          'id' => 'Asmaul Husna',
+          'zh' => '真主美名',
+          'ja' => 'アッラーの美名',
+          _ => 'Names of Allah',
+        },
       'life_theme' => switch (language) {
           'id' => 'Tema hidup',
           'zh' => '生活主题',
@@ -313,6 +319,49 @@ class AppLocalizations {
 
   static String getThemeEmpty(String language) {
     return getScienceEmpty(language);
+  }
+
+  static String getAsmaReflectionHeading(String language) {
+    return switch (language) {
+      'id' => 'Mengingat nama ini',
+      'en' => 'Remembering this name',
+      'zh' => '记念此名',
+      'ja' => 'この御名を思う',
+      _ => 'Remembering this name',
+    };
+  }
+
+  static String getAsmaLoadError(String language) {
+    return switch (language) {
+      'id' =>
+        'Katalog Asmaul Husna tidak dapat dimuat. Hentikan aplikasi, lalu jalankan ulang dari awal (flutter run). Hot reload tidak memuat berkas baru.',
+      'en' =>
+        'Could not load the Names of Allah catalog. Stop the app and run a full rebuild (flutter run). Hot reload does not bundle new files.',
+      'zh' => '无法加载真主美名目录。请停止应用并完整重新安装（flutter run）。热重载不会打包新文件。',
+      'ja' =>
+        'アッラーの美名の目録を読み込めませんでした。アプリを停止し、完全に再ビルドしてください（flutter run）。ホットリロードでは新しいファイルは含まれません。',
+      _ => 'Could not load the Names of Allah catalog. Stop the app and run a full rebuild (flutter run).',
+    };
+  }
+
+  static String getExploreScrollHint(String language) {
+    return switch (language) {
+      'id' => 'Gulir untuk melihat lebih banyak',
+      'en' => 'Scroll for more',
+      'zh' => '向上滑动查看更多',
+      'ja' => 'スクロールして続きを見る',
+      _ => 'Scroll for more',
+    };
+  }
+
+  static String getAsmaEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ada entri Asmaul Husna.',
+      'en' => 'No Names of Allah entries yet.',
+      'zh' => '尚无真主美名条目。',
+      'ja' => 'アッラーの美名の項目がありません。',
+      _ => 'No Names of Allah entries yet.',
+    };
   }
 
   static String getDuaProphetName(String key, String language) {
@@ -2033,11 +2082,11 @@ class AppLocalizations {
 
   static String _getDuaSubtitle(String language) {
     return switch (language) {
-      'id' => 'Doa, sains, dan tema hidup',
-      'en' => 'Prayers, science, and life themes',
-      'zh' => '祈祷、科学与生活主题',
-      'ja' => '祈り、科学、生活のテーマ',
-      _ => 'Prayers, science, and life themes',
+      'id' => 'Doa, sains, Asmaul Husna, tema hidup',
+      'en' => 'Prayers, science, names of Allah, life themes',
+      'zh' => '祈祷、科学、真主美名、生活主题',
+      'ja' => '祈り、科学、アッラーの美名、生活のテーマ',
+      _ => 'Prayers, science, names of Allah, life themes',
     };
   }
 
