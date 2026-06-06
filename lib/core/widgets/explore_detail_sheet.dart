@@ -19,6 +19,7 @@ void openReaderFromAyahRefs(WidgetRef ref, List<DuaAyahRef> ayahRefs) {
 
 Future<void> showExploreDetailSheet({
   required BuildContext context,
+  required WidgetRef ref,
   required String lang,
   required LocalizedText title,
   required LocalizedText summary,
@@ -26,21 +27,39 @@ Future<void> showExploreDetailSheet({
   required VoidCallback onOpenReader,
   LocalizedText? sectionNote,
   String? sectionHeading,
-}) {
+  String? headerArabic,
+}) async {
+  final db = ref.read(databaseProvider);
+  final preloadedVerses = <String, List<Verse>>{};
+  for (final ayahRef in ayahRefs) {
+    preloadedVerses[ayahRef.rangeKey()] = await db.getVersesByRange(
+      ayahRef.surah,
+      ayahRef.from,
+      ayahRef.to,
+    );
+  }
+  if (!context.mounted) return;
+
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
     builder: (sheetContext) {
-      final maxHeight = MediaQuery.sizeOf(sheetContext).height * 0.88;
-      return ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxHeight),
+      final viewHeight = MediaQuery.sizeOf(sheetContext).height;
+      final maxHeight = viewHeight * 0.88;
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+        ),
         child: ExploreDetailSheet(
+          maxBodyHeight: maxHeight - 88,
           title: title,
           summary: summary,
           sectionNote: sectionNote,
           sectionHeading: sectionHeading,
+          headerArabic: headerArabic,
           ayahRefs: ayahRefs,
+          preloadedVerses: preloadedVerses,
           lang: lang,
           onOpenReader: () {
             Navigator.pop(sheetContext);
@@ -60,8 +79,11 @@ class ExploreDetailSheet extends ConsumerWidget {
     required this.ayahRefs,
     required this.lang,
     required this.onOpenReader,
+    this.maxBodyHeight,
+    this.preloadedVerses = const {},
     this.sectionNote,
     this.sectionHeading,
+    this.headerArabic,
   });
 
   final LocalizedText title;
@@ -69,13 +91,82 @@ class ExploreDetailSheet extends ConsumerWidget {
   final LocalizedText? sectionNote;
   final String? sectionHeading;
   final List<DuaAyahRef> ayahRefs;
+  final Map<String, List<Verse>> preloadedVerses;
   final String lang;
   final VoidCallback onOpenReader;
+  final double? maxBodyHeight;
+  final String? headerArabic;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final surahNames = ref.watch(surahNamesProvider).valueOrNull ?? [];
+
+    final body = SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title.forLanguage(lang),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          if (headerArabic != null) ...[
+            const SizedBox(height: 10),
+            Directionality(
+              textDirection: TextDirection.rtl,
+              child: Text(
+                headerArabic!,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontFamily: 'UthmanicHafsV22',
+                      fontFamilyFallback: const ['UthmanicHafs'],
+                      height: 1.5,
+                    ),
+                textAlign: TextAlign.right,
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Text(
+            summary.forLanguage(lang),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.45,
+                ),
+          ),
+          if (sectionNote != null && sectionHeading != null) ...[
+            const SizedBox(height: 16),
+            Text(
+              sectionHeading!,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.primary,
+                  ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              sectionNote!.forLanguage(lang),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.45,
+                  ),
+            ),
+          ],
+          const SizedBox(height: 20),
+          ...ayahRefs.map(
+            (ayahRef) => ExploreAyahBlock(
+              ayahRef: ayahRef,
+              lang: lang,
+              surahNames: surahNames,
+              verses: preloadedVerses[ayahRef.rangeKey()],
+            ),
+          ),
+        ],
+      ),
+    );
 
     return Material(
       color: colorScheme.surface,
@@ -92,57 +183,13 @@ class ExploreDetailSheet extends ConsumerWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          Flexible(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    title.forLanguage(lang),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    summary.forLanguage(lang),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          height: 1.45,
-                        ),
-                  ),
-                  if (sectionNote != null && sectionHeading != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      sectionHeading!,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.primary,
-                          ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      sectionNote!.forLanguage(lang),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                            height: 1.45,
-                          ),
-                    ),
-                  ],
-                  const SizedBox(height: 20),
-                  ...ayahRefs.map(
-                    (ayahRef) => ExploreAyahBlock(
-                      ayahRef: ayahRef,
-                      lang: lang,
-                      surahNames: surahNames,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          if (maxBodyHeight != null)
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxBodyHeight!),
+              child: body,
+            )
+          else
+            body,
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
             child: SafeArea(
@@ -180,15 +227,16 @@ class ExploreAyahBlock extends ConsumerWidget {
     required this.ayahRef,
     required this.lang,
     required this.surahNames,
+    this.verses,
   });
 
   final DuaAyahRef ayahRef;
   final String lang;
   final List<SurahInfo> surahNames;
+  final List<Verse>? verses;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final db = ref.read(databaseProvider);
     final settings = ref.watch(settingsProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final refLabel = AppLocalizations.formatDuaAyahRef(
@@ -205,89 +253,81 @@ class ExploreAyahBlock extends ConsumerWidget {
       }
     }
 
-    return FutureBuilder<List<Verse>>(
-      future: db.getVersesByRange(ayahRef.surah, ayahRef.from, ayahRef.to),
-      builder: (context, snapshot) {
-        final verses = snapshot.data ?? [];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (surahInfo != null)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '(${surahInfo.getMeaning(lang)})',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                              color: colorScheme.onSurface,
-                            ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Directionality(
-                      textDirection: TextDirection.rtl,
-                      child: Text(
-                        surahInfo.arabicName,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontFamily: 'UthmanicHafsV22',
-                              fontFamilyFallback: const ['UthmanicHafs'],
-                              fontSize: 26,
-                              fontWeight: FontWeight.w600,
-                              height: 1.5,
-                              color: colorScheme.onSurface,
-                            ),
-                      ),
-                    ),
-                  ],
-                )
-              else
-                Text(
-                  'Surah ${ayahRef.surah}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-              const SizedBox(height: 6),
-              Text(
-                refLabel,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.primary,
-                    ),
-              ),
-              const SizedBox(height: 14),
-              if (snapshot.connectionState == ConnectionState.waiting)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: CircularProgressIndicator(),
-                  ),
-                )
-              else if (verses.isEmpty)
-                Text(
-                  AppLocalizations.getDuaVerseUnavailable(lang),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                )
-              else
-                ...verses.map(
-                  (v) => ExploreVersePassage(
-                    verse: v,
-                    settings: settings,
-                    showAyahMarker: verses.length > 1,
-                    translationLang: settings.language,
+    final loadedVerses = verses;
+    if (loadedVerses == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (surahInfo != null)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Expanded(
+                  child: Text(
+                    '(${surahInfo.getMeaning(lang)})',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          color: colorScheme.onSurface,
+                        ),
                   ),
                 ),
-            ],
+                const SizedBox(width: 10),
+                Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: Text(
+                    surahInfo.arabicName,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontFamily: 'UthmanicHafsV22',
+                          fontFamilyFallback: const ['UthmanicHafs'],
+                          fontSize: 26,
+                          fontWeight: FontWeight.w600,
+                          height: 1.5,
+                          color: colorScheme.onSurface,
+                        ),
+                  ),
+                ),
+              ],
+            )
+          else
+            Text(
+              'Surah ${ayahRef.surah}',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          const SizedBox(height: 6),
+          Text(
+            refLabel,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.primary,
+                ),
           ),
-        );
-      },
+          const SizedBox(height: 14),
+          if (loadedVerses.isEmpty)
+            Text(
+              AppLocalizations.getDuaVerseUnavailable(lang),
+              style: Theme.of(context).textTheme.bodyMedium,
+            )
+          else
+            ...loadedVerses.map(
+              (v) => ExploreVersePassage(
+                verse: v,
+                settings: settings,
+                showAyahMarker: loadedVerses.length > 1,
+                translationLang: settings.language,
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

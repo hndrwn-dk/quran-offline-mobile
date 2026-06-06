@@ -10,7 +10,7 @@ void main() {
         expect(AppLocalizations.getMenuText('dua', lang), isNotEmpty);
         expect(AppLocalizations.getSubtitleText('dua_subtitle', lang), isNotEmpty);
 
-        for (final cat in ['daily', 'prophet', 'science', 'life_theme']) {
+        for (final cat in ['daily', 'prophet', 'science', 'asma', 'life_theme']) {
           final label = AppLocalizations.getDuaCategoryLabel(cat, lang);
           expect(label, isNotEmpty, reason: 'category $cat');
           expect(label, isNot(cat), reason: 'untranslated key $cat');
@@ -20,9 +20,12 @@ void main() {
       test('science and theme helpers for $lang', () {
         expect(AppLocalizations.getScienceNoteHeading(lang), isNotEmpty);
         expect(AppLocalizations.getThemeReflectionHeading(lang), isNotEmpty);
+        expect(AppLocalizations.getAsmaReflectionHeading(lang), isNotEmpty);
         expect(AppLocalizations.getScienceLoadError(lang), isNotEmpty);
+        expect(AppLocalizations.getAsmaLoadError(lang), isNotEmpty);
         expect(AppLocalizations.getThemeLoadError(lang), isNotEmpty);
         expect(AppLocalizations.getCatalogRetry(lang), isNotEmpty);
+        expect(AppLocalizations.getExploreScrollHint(lang), isNotEmpty);
         expect(AppLocalizations.getDuaOpenInReader(lang), isNotEmpty);
 
         for (final cat in ['cosmos', 'biology', 'earth', 'physics']) {

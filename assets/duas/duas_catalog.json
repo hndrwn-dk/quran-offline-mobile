@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "entries": [
     {
       "id": "dunia_akhirat",
@@ -242,6 +242,54 @@
       ]
     },
     {
+      "id": "talaq_tawakkal_rezeki",
+      "category": "daily",
+      "sort": 82,
+      "title": {
+        "id": "Mohon jalan keluar dan rezeki",
+        "en": "A way out and unexpected provision",
+        "zh": "求出路与意外给养",
+        "ja": "出口と思わぬ糧を求める"
+      },
+      "summary": {
+        "id": "Diamalkan saat kesulitan rezeki, utang, atau butuh jalan keluar; bertakwa dan bertawakal.",
+        "en": "Use when finances are tight, in debt, or you need a way out—while fearing Allah and relying on Him.",
+        "zh": "经济拮据、负债或困顿求出路时，在敬畏与托靠中念诵。",
+        "ja": "生活が苦しい、借金、行き詰まりのとき—アッラーを畏れ信頼しながら唱える。"
+      },
+      "ayahRefs": [
+        {
+          "surah": 65,
+          "from": 2,
+          "to": 3
+        }
+      ]
+    },
+    {
+      "id": "quran_syifa_hati",
+      "category": "daily",
+      "sort": 84,
+      "title": {
+        "id": "Penyembuh hati dan petunjuk",
+        "en": "Healing for the heart and guidance",
+        "zh": "心病良药与引导",
+        "ja": "心の癒しと導き"
+      },
+      "summary": {
+        "id": "Saat dada sesak, sedih berat, atau butuh pelajaran dan rahmat dari Al-Qur'an.",
+        "en": "When the chest feels heavy, grief is deep, or you need the Qur'an's lesson and mercy.",
+        "zh": "胸闷、忧伤深重，或需要从古兰经获得教诲与慈悯时。",
+        "ja": "胸が重い、深い悲しみ、クルアーンの教えと慈悲が必要なときに。"
+      },
+      "ayahRefs": [
+        {
+          "surah": 10,
+          "from": 57,
+          "to": 57
+        }
+      ]
+    },
+    {
       "id": "rahmat_petunjuk",
       "category": "daily",
       "sort": 90,
@@ -262,6 +310,30 @@
           "surah": 18,
           "from": 10,
           "to": 10
+        }
+      ]
+    },
+    {
+      "id": "taha_pesihir_tobat",
+      "category": "daily",
+      "sort": 92,
+      "title": {
+        "id": "Setelah memilih kebenaran",
+        "en": "After choosing the truth",
+        "zh": "选择真理之后",
+        "ja": "真理を選んだあと"
+      },
+      "summary": {
+        "id": "Doa orang yang baru mantap beriman dan mohon ampun atas kesalahan masa lalu.",
+        "en": "For those who have just chosen faith and ask forgiveness for past wrongs.",
+        "zh": "初信者祈求宽恕过往过失时使用。",
+        "ja": "信仰を選び、過去の過ちの赦しを求めるときに。"
+      },
+      "ayahRefs": [
+        {
+          "surah": 20,
+          "from": 73,
+          "to": 73
         }
       ]
     },
@@ -406,6 +478,30 @@
           "surah": 25,
           "from": 74,
           "to": 74
+        }
+      ]
+    },
+    {
+      "id": "waqiah_ketenangan_akhirat",
+      "category": "daily",
+      "sort": 155,
+      "title": {
+        "id": "Harapan ketenangan dan kenikmatan",
+        "en": "Hope for rest and lasting bliss",
+        "zh": "期盼安宁与福泽",
+        "ja": "安らぎと恩恵を望む"
+      },
+      "summary": {
+        "id": "Diamalkan saat membaca Al-Waqiah atau berharap akhir yang baik dan ketenteraman.",
+        "en": "Use when reading Al-Waqiah or hoping for a good end and lasting peace.",
+        "zh": "诵读瓦齐尔章或期盼善终与安宁时使用。",
+        "ja": "ワーキアを読むとき、または善い結末と平安を望むときに。"
+      },
+      "ayahRefs": [
+        {
+          "surah": 56,
+          "from": 89,
+          "to": 89
         }
       ]
     },
