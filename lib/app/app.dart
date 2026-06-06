@@ -42,6 +42,11 @@ class _QuranOfflineAppState extends ConsumerState<QuranOfflineApp> {
           labelMedium: const TextStyle(fontFamily: 'Roboto'),
           labelSmall: const TextStyle(fontFamily: 'Roboto'),
         ),
+        navigationBarTheme: const NavigationBarThemeData(
+          labelTextStyle: WidgetStatePropertyAll(
+            TextStyle(fontSize: 11, fontFamily: 'Roboto'),
+          ),
+        ),
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
@@ -66,6 +71,11 @@ class _QuranOfflineAppState extends ConsumerState<QuranOfflineApp> {
           labelLarge: const TextStyle(fontFamily: 'Roboto'),
           labelMedium: const TextStyle(fontFamily: 'Roboto'),
           labelSmall: const TextStyle(fontFamily: 'Roboto'),
+        ),
+        navigationBarTheme: const NavigationBarThemeData(
+          labelTextStyle: WidgetStatePropertyAll(
+            TextStyle(fontSize: 11, fontFamily: 'Roboto'),
+          ),
         ),
       ),
       themeMode: settings.themeMode,

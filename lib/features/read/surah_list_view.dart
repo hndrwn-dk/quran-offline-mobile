@@ -8,7 +8,9 @@ import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/features/reader/open_reader_screen.dart';
 
 class SurahListView extends ConsumerWidget {
-  const SurahListView({super.key});
+  const SurahListView({super.key, this.topWidgets = const []});
+
+  final List<Widget> topWidgets;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,14 +20,18 @@ class SurahListView extends ConsumerWidget {
 
     return surahsAsync.when(
       data: (surahs) {
-        return ListView.separated(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          itemCount: surahs.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 8),
-          itemBuilder: (context, index) {
-            final surah = surahs[index];
+        return CustomScrollView(
+          slivers: [
+            for (final widget in topWidgets) SliverToBoxAdapter(child: widget),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              sliver: SliverList.separated(
+                itemCount: surahs.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  final surah = surahs[index];
 
-            return InkWell(
+                  return InkWell(
               onTap: () {
                 final source = SurahSource(surah.id);
                 ref.read(readerSourceProvider.notifier).state = source;
@@ -137,8 +143,11 @@ class SurahListView extends ConsumerWidget {
                   },
                 ),
               ),
-            );
-          },
+                  );
+                },
+              ),
+            ),
+          ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
