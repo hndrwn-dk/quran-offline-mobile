@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/features/dua/dua_screen.dart';
 import 'package:quran_offline/features/library/my_library_screen.dart';
 import 'package:quran_offline/features/read/read_screen.dart';
 import 'package:quran_offline/features/search/search_screen.dart';
@@ -26,6 +27,7 @@ class HomeScreen extends ConsumerWidget {
         children: const [
           ReadScreen(),
           SearchScreen(),
+          DuaScreen(),
           MyLibraryScreen(),
           SettingsScreen(),
         ],
@@ -49,6 +51,11 @@ class HomeScreen extends ConsumerWidget {
             icon: const Icon(Icons.search_outlined),
             selectedIcon: const Icon(Icons.search),
             label: AppLocalizations.getMenuText('search', appLanguage),
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.auto_stories_outlined),
+            selectedIcon: const Icon(Icons.auto_stories),
+            label: AppLocalizations.getMenuText('dua', appLanguage),
           ),
           NavigationDestination(
             icon: const Icon(Icons.library_books_outlined),
