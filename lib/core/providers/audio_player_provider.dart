@@ -54,14 +54,16 @@ class AudioPlayerState {
     bool? isLoading,
     String? surahLabel,
     String? error,
+    bool clearPlaybackContext = false,
     bool clearError = false,
   }) {
     return AudioPlayerState(
-      surahId: surahId ?? this.surahId,
-      ayahNo: ayahNo ?? this.ayahNo,
+      surahId: clearPlaybackContext ? null : (surahId ?? this.surahId),
+      ayahNo: clearPlaybackContext ? null : (ayahNo ?? this.ayahNo),
       isPlaying: isPlaying ?? this.isPlaying,
       isLoading: isLoading ?? this.isLoading,
-      surahLabel: surahLabel ?? this.surahLabel,
+      surahLabel:
+          clearPlaybackContext ? null : (surahLabel ?? this.surahLabel),
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -199,6 +201,7 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
         isPlaying: false,
         error:
             'This surah is not saved on your device yet. Use Save to download it for offline playback.',
+        clearPlaybackContext: true,
       );
       return;
     }
@@ -217,6 +220,7 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
         isLoading: false,
         isPlaying: false,
         error: 'Playback failed: $e',
+        clearPlaybackContext: true,
       );
     }
   }
@@ -286,6 +290,7 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
         isLoading: false,
         isPlaying: false,
         error: 'No audio available',
+        clearPlaybackContext: true,
       );
       return;
     }
@@ -319,6 +324,7 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
           isPlaying: false,
           error:
               'This surah is not saved on your device yet. Use Save to download it for offline playback.',
+          clearPlaybackContext: true,
         );
         return;
       }
@@ -337,6 +343,7 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
           isLoading: false,
           isPlaying: false,
           error: 'Playback failed: $e',
+          clearPlaybackContext: true,
         );
       }
       return;
@@ -359,6 +366,7 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
         error: surahDownloaded
             ? 'No audio available'
             : 'Audio not downloaded. Download this surah in Settings for offline playback.',
+        clearPlaybackContext: true,
       );
       return;
     }
@@ -385,6 +393,7 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
         isLoading: false,
         isPlaying: false,
         error: 'Playback failed: $e',
+        clearPlaybackContext: true,
       );
     }
   }
