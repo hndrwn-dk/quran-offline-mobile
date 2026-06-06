@@ -20,6 +20,15 @@ class AppLocalizations {
     };
   }
 
+  /// Shorter labels for the bottom navigation bar (avoids two-line wrapping).
+  static String getNavMenuText(String key, String language) {
+    return switch (key) {
+      'library' => _getLibraryNav(language),
+      'settings' => _getSettingsNav(language),
+      _ => getMenuText(key, language),
+    };
+  }
+
   static String getDuaCategoryLabel(String category, String language) {
     return switch (category) {
       'daily' => switch (language) {
@@ -2039,6 +2048,26 @@ class AppLocalizations {
       'zh' => '我的图书馆',
       'ja' => 'マイライブラリ',
       _ => 'My Library',
+    };
+  }
+
+  static String _getLibraryNav(String language) {
+    return switch (language) {
+      'id' => 'Koleksi',
+      'en' => 'Library',
+      'zh' => '收藏',
+      'ja' => 'ライブラリ',
+      _ => 'Library',
+    };
+  }
+
+  static String _getSettingsNav(String language) {
+    return switch (language) {
+      'id' => 'Atur',
+      'en' => 'Settings',
+      'zh' => '设置',
+      'ja' => '設定',
+      _ => 'Settings',
     };
   }
 
