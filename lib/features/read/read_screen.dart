@@ -271,69 +271,106 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
           ),
         ),
       ),
-      body: GestureDetector(
-        onHorizontalDragStart: (details) {
-          _swipeStartX = details.globalPosition.dx;
-          _swipeStartY = details.globalPosition.dy;
-          _isSwiping = false;
-        },
-        onHorizontalDragUpdate: (details) {
-          final deltaX = details.globalPosition.dx - _swipeStartX;
-          final deltaY = details.globalPosition.dy - _swipeStartY;
-          // Only consider it a horizontal swipe if horizontal movement is significantly greater than vertical
-          if (deltaX.abs() > 20 && deltaX.abs() > deltaY.abs() * 1.5) {
-            _isSwiping = true;
-          }
-        },
-        onHorizontalDragEnd: (details) {
-          if (!_isSwiping) return;
-          
-          final deltaX = details.velocity.pixelsPerSecond.dx;
-          final deltaY = details.velocity.pixelsPerSecond.dy;
-          // Minimum swipe velocity threshold (pixels per second)
-          // Also ensure horizontal movement is greater than vertical
-          const swipeThreshold = 300.0;
-          
-          if (deltaX.abs() > swipeThreshold && deltaX.abs() > deltaY.abs()) {
-            // Swipe left (negative deltaX) = next mode
-            // Swipe right (positive deltaX) = previous mode
-            final isNext = deltaX < 0;
-            _handleModeNavigation(readMode, isNext);
-          }
-          
-          _isSwiping = false;
-        },
-        child: Column(
-          children: [
-            QuickSearchBar(key: _searchBarKey),
-            Expanded(
-              child: switch (readMode) {
-                ReadMode.surah => Column(
-                    children: [
-                      const WeeklyReflectionCard(),
-                      const LastReadCard(),
-                      const Expanded(child: SurahListView()),
+      body: Column(
+        children: [
+          QuickSearchBar(key: _searchBarKey),
+          Expanded(
+            child: switch (readMode) {
+              ReadMode.surah => _HorizontalSwipeShell(
+                  readMode: readMode,
+                  onSwipe: (isNext) => _handleModeNavigation(readMode, isNext),
+                  child: const SurahListView(
+                    topWidgets: [
+                      WeeklyReflectionCard(),
+                      LastReadCard(),
                     ],
                   ),
-                ReadMode.juz => Column(
-                    children: [
-                      const WeeklyReflectionCard(),
-                      const LastReadCard(),
-                      const Expanded(child: JuzListView()),
-                    ],
-                  ),
-                ReadMode.pages => Column(
-                    children: [
-                      const WeeklyReflectionCard(),
-                      const LastReadCard(),
-                      const Expanded(child: PageListView()),
-                    ],
-                  ),
-              },
-            ),
-          ],
-        ),
+                ),
+              ReadMode.juz => Column(
+                  children: [
+                    const WeeklyReflectionCard(),
+                    const LastReadCard(),
+                    Expanded(
+                      child: _HorizontalSwipeShell(
+                        readMode: readMode,
+                        onSwipe: (isNext) => _handleModeNavigation(readMode, isNext),
+                        child: const JuzListView(),
+                      ),
+                    ),
+                  ],
+                ),
+              ReadMode.pages => Column(
+                  children: [
+                    const WeeklyReflectionCard(),
+                    const LastReadCard(),
+                    Expanded(
+                      child: _HorizontalSwipeShell(
+                        readMode: readMode,
+                        onSwipe: (isNext) => _handleModeNavigation(readMode, isNext),
+                        child: const PageListView(),
+                      ),
+                    ),
+                  ],
+                ),
+            },
+          ),
+        ],
       ),
+    );
+  }
+}
+
+/// Horizontal swipe to change Surah/Juz/Mushaf — scoped to the list only so
+/// reflection/last-read taps are not mistaken for mode swipes.
+class _HorizontalSwipeShell extends StatefulWidget {
+  const _HorizontalSwipeShell({
+    required this.readMode,
+    required this.onSwipe,
+    required this.child,
+  });
+
+  final ReadMode readMode;
+  final ValueChanged<bool> onSwipe;
+  final Widget child;
+
+  @override
+  State<_HorizontalSwipeShell> createState() => _HorizontalSwipeShellState();
+}
+
+class _HorizontalSwipeShellState extends State<_HorizontalSwipeShell> {
+  double _swipeStartX = 0;
+  double _swipeStartY = 0;
+  bool _isSwiping = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onHorizontalDragStart: (details) {
+        _swipeStartX = details.globalPosition.dx;
+        _swipeStartY = details.globalPosition.dy;
+        _isSwiping = false;
+      },
+      onHorizontalDragUpdate: (details) {
+        final deltaX = details.globalPosition.dx - _swipeStartX;
+        final deltaY = details.globalPosition.dy - _swipeStartY;
+        if (deltaX.abs() > 20 && deltaX.abs() > deltaY.abs() * 1.5) {
+          _isSwiping = true;
+        }
+      },
+      onHorizontalDragEnd: (details) {
+        if (!_isSwiping) return;
+
+        final deltaX = details.velocity.pixelsPerSecond.dx;
+        final deltaY = details.velocity.pixelsPerSecond.dy;
+        const swipeThreshold = 300.0;
+
+        if (deltaX.abs() > swipeThreshold && deltaX.abs() > deltaY.abs()) {
+          widget.onSwipe(deltaX < 0);
+        }
+
+        _isSwiping = false;
+      },
+      child: widget.child,
     );
   }
 }

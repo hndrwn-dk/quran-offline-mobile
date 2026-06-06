@@ -38,20 +38,23 @@ class WeeklyReflectionCard extends ConsumerWidget {
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-          child: InkWell(
-            onTap: () => _openDetail(context, ref, pick, lang),
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.secondaryContainer.withOpacity(0.35),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: colorScheme.secondary.withOpacity(0.25),
-                  width: 1,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _openDetail(context, ref, pick, lang),
+              borderRadius: BorderRadius.circular(16),
+              child: Ink(
+                decoration: BoxDecoration(
+                  color: colorScheme.secondaryContainer.withOpacity(0.35),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: colorScheme.secondary.withOpacity(0.25),
+                    width: 1,
+                  ),
                 ),
-              ),
-              child: Column(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
@@ -131,6 +134,8 @@ class WeeklyReflectionCard extends ConsumerWidget {
                         ),
                   ),
                 ],
+                  ),
+                ),
               ),
             ),
           ),

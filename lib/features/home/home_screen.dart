@@ -37,6 +37,7 @@ class HomeScreen extends ConsumerWidget {
         children: [
           const GlobalRecitationBar(padForSystemBottomInset: false),
           NavigationBar(
+        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
           ref.read(currentTabProvider.notifier).state = index;
@@ -45,27 +46,27 @@ class HomeScreen extends ConsumerWidget {
           NavigationDestination(
             icon: const Icon(Icons.book_outlined),
             selectedIcon: const Icon(Icons.book),
-            label: AppLocalizations.getMenuText('read', appLanguage),
+            label: AppLocalizations.getNavMenuText('read', appLanguage),
           ),
           NavigationDestination(
             icon: const Icon(Icons.search_outlined),
             selectedIcon: const Icon(Icons.search),
-            label: AppLocalizations.getMenuText('search', appLanguage),
+            label: AppLocalizations.getNavMenuText('search', appLanguage),
           ),
           NavigationDestination(
             icon: const Icon(Icons.auto_stories_outlined),
             selectedIcon: const Icon(Icons.auto_stories),
-            label: AppLocalizations.getMenuText('dua', appLanguage),
+            label: AppLocalizations.getNavMenuText('dua', appLanguage),
           ),
           NavigationDestination(
             icon: const Icon(Icons.library_books_outlined),
             selectedIcon: const Icon(Icons.library_books),
-            label: AppLocalizations.getMenuText('library', appLanguage),
+            label: AppLocalizations.getNavMenuText('library', appLanguage),
           ),
           NavigationDestination(
             icon: const Icon(Icons.tune_outlined),
             selectedIcon: const Icon(Icons.tune),
-            label: AppLocalizations.getMenuText('settings', appLanguage),
+            label: AppLocalizations.getNavMenuText('settings', appLanguage),
           ),
         ],
           ),
