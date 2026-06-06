@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "entries": [
     {
       "id": "saat_tertekan",
@@ -108,31 +108,31 @@
       "ayahRefs": [{ "surah": 30, "from": 17, "to": 18 }]
     },
     {
-      "id": "khawatir_rezeki",
+      "id": "rezeki_kecukupan",
       "category": "provision",
-      "sort": 200,
+      "sort": 190,
       "title": {
-        "id": "Saat khawatir soal rezeki",
-        "en": "When worried about provision",
-        "zh": "担忧给养时",
-        "ja": "糧を心配するとき"
+        "id": "Rezeki dan kecukupan",
+        "en": "Provision and sufficiency",
+        "zh": "给养与充足",
+        "ja": "糧と足りること"
       },
       "summary": {
-        "id": "Sebelum interview kerja, tagihan menumpuk, atau merasa tidak cukup.",
-        "en": "Before job interviews, piled bills, or feeling you do not have enough.",
-        "zh": "求职面试前、账单堆积时，或感到不足时。",
-        "ja": "面接前、請求が重なったとき、足りないと感じるときに。"
+        "id": "Sebelum interview kerja, tagihan menumpuk, utang, atau butuh jalan keluar dan kecukupan hari ini.",
+        "en": "Before a job interview, bills pile up, debt weighs down, or you need a way out and enough for today.",
+        "zh": "求职面试前、账单堆积、负债沉重，或需要出路与今日之足时。",
+        "ja": "面接前、請求や借金が重い、出口と今日の足りる分が必要なときに。"
       },
       "reflection": {
-        "id": "Baca sambil mengingat bahwa rezeki sudah ditetapkan; fokus pada usaha halal dan tawakal.",
-        "en": "Read while remembering provision is decreed; focus on halal effort and trust.",
-        "zh": "诵读时记住给养已有定数；专注于合法努力与托靠。",
-        "ja": "糧は定められていると思いながら読み、合法な努力と托靠に心を向ける。"
+        "id": "Mulai dari doa seribu dinar (At-Talaq 2–3), lalu ayat lain sebagai pengingat: rezeki ditetapkan, usaha halal, dan tawakal.",
+        "en": "Start with the thousand-dinar verses (At-Talaq 2–3), then the others as reminders: provision is decreed, strive halal, and trust Allah.",
+        "zh": "先从千第纳尔节文（离婚章2–3）读起，再读其他节文提醒自己：给养有定数，合法努力并托靠真主。",
+        "ja": "千ディナールの節（タラーク2–3）から始め、他の節で糧は定められていると、合法な努力と托靠を思い出す。"
       },
       "ayahRefs": [
+        { "surah": 65, "from": 2, "to": 3 },
         { "surah": 11, "from": 6, "to": 6 },
-        { "surah": 29, "from": 60, "to": 60 },
-        { "surah": 65, "from": 3, "to": 3 }
+        { "surah": 29, "from": 60, "to": 60 }
       ]
     },
     {
