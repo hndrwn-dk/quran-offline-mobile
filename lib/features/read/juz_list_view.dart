@@ -7,10 +7,13 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/reader/open_reader_screen.dart';
 
 class JuzListView extends ConsumerWidget {
-  const JuzListView({super.key});
+  const JuzListView({super.key, this.topWidgets = const []});
+
+  final List<Widget> topWidgets;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,10 +21,14 @@ class JuzListView extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      itemCount: 30,
-      itemBuilder: (context, index) {
+    return CustomScrollView(
+      slivers: [
+        for (final widget in topWidgets) SliverToBoxAdapter(child: widget),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
         final juzNo = index + 1;
         final juzSurahsAsync = ref.watch(juzSurahsProvider(juzNo));
 
@@ -48,7 +55,10 @@ class JuzListView extends ConsumerWidget {
                                 openReaderScreen(context, ref);
                               },
                               child: Text(
-                                'Juz $juzNo',
+                                AppLocalizations.getJuzTitle(
+                                  settings.appLanguage,
+                                  juzNo,
+                                ),
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: colorScheme.onSurface,
@@ -186,20 +196,7 @@ class JuzListView extends ConsumerWidget {
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.end,
                                         children: [
-                                          Directionality(
-                                            textDirection: TextDirection.rtl,
-                                            child: Text(
-                                              surahInfo.arabicName,
-                                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                                fontFamily: 'UthmanicHafsV22',
-                                                fontFamilyFallback: const ['UthmanicHafs'],
-                                                color: colorScheme.onSurface,
-                                                height: 1.4,
-                                              ),
-                                              textDirection: TextDirection.rtl,
-                                              textAlign: TextAlign.right,
-                                            ),
-                                          ),
+                                          SurahNameListGlyph(surahId: surahInfo.id),
                                           const SizedBox(height: 4),
                                           Text(
                                             '$ayahCount Ayahs',
@@ -244,7 +241,12 @@ class JuzListView extends ConsumerWidget {
             child: Text('Error: $error'),
           ),
         );
-      },
+              },
+              childCount: 30,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

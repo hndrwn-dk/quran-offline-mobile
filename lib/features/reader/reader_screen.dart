@@ -10,12 +10,15 @@ import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/utils/juz_info.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
 import 'package:quran_offline/features/reader/ayah_card.dart';
 import 'package:quran_offline/features/audio/global_recitation_bar.dart';
+import 'package:quran_offline/features/reader/reader_surah_header_flags.dart';
 import 'package:quran_offline/features/reader/surah_header_card.dart';
+import 'package:quran_offline/features/reader/surah_header_card_mockup.dart';
 import 'package:quran_offline/features/reader/widgets/reader_bismillah_block.dart';
 import 'package:quran_offline/features/reader/text_settings_dialog.dart';
 
@@ -332,6 +335,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   ) {
     final juzSurahsAsync = ref.watch(juzSurahsProvider(juzNo));
     final surahsAsync = ref.watch(surahNamesProvider);
+    final lang = ref.watch(settingsProvider).appLanguage;
+    final juzTitle = AppLocalizations.getJuzTitle(lang, juzNo);
     final colorScheme = Theme.of(context).colorScheme;
     final totalAyah = JuzInfo.getTotalAyah(juzNo) ?? 0;
 
@@ -347,7 +352,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             data: (surahs) {
               if (juzSurahs.surahIds.isEmpty) {
                 return Text(
-                  'Juz $juzNo',
+                  juzTitle,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -418,9 +423,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Line 1: "Juz 1" (titleLarge, bold)
+                  // Line 1: juz title (titleLarge, bold)
                   Text(
-                    'Juz $juzNo',
+                    juzTitle,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           height: 1.2,
@@ -445,13 +450,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
               );
             },
             loading: () => Text(
-              'Juz $juzNo',
+              juzTitle,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
             error: (_, __) => Text(
-              'Juz $juzNo',
+              juzTitle,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -459,13 +464,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           );
         },
         loading: () => Text(
-          'Juz $juzNo',
+          juzTitle,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
         error: (_, __) => Text(
-          'Juz $juzNo',
+          juzTitle,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -504,6 +509,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     int surahId,
   ) {
     final surahsAsync = ref.watch(surahNamesProvider);
+    final lang = ref.watch(settingsProvider).appLanguage;
+    final juzTitle = AppLocalizations.getJuzTitle(lang, juzNo);
     final colorScheme = Theme.of(context).colorScheme;
 
     return AppBar(
@@ -538,9 +545,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     ),
               ),
               const SizedBox(height: 2),
-              // Line 2: "Juz X" (labelMedium/bodySmall, muted)
+              // Line 2: juz title (labelMedium/bodySmall, muted)
               Text(
-                'Juz $juzNo',
+                juzTitle,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                       height: 1.2,
@@ -842,6 +849,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     itemBuilder: (context, index) {
                       // Show header card at the top for surah reading
                       if (isSurahSource && currentSurahInfo != null && index == 0) {
+                        if (kUseQulSurahHeader) {
+                          return SurahHeaderCardMockup(
+                            surahInfo: currentSurahInfo,
+                            verseCount: verseCount,
+                          );
+                        }
                         return SurahHeaderCard(
                           surahInfo: currentSurahInfo,
                           verseCount: verseCount,
