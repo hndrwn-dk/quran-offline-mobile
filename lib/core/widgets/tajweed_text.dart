@@ -19,6 +19,7 @@ class TajweedText extends StatelessWidget {
 
   /// When true (light theme), use UthmanicHafsV22 as primary font so lam/lam-alif render correctly on light background.
   final bool isLightTheme;
+  final FontWeight? fontWeight;
 
   const TajweedText({
     super.key,
@@ -30,6 +31,7 @@ class TajweedText extends StatelessWidget {
     this.height = 1.7,
     this.replaceWaslaWithAlif = false,
     this.isLightTheme = false,
+    this.fontWeight,
   });
   
   /// Normalizes Arabic text for display only (font rendering). See docs/QURAN_TEXT_INTEGRITY.md:
@@ -66,6 +68,7 @@ class TajweedText extends StatelessWidget {
     required Color color,
     double height = 1.7,
     bool isLightTheme = false,
+    FontWeight? fontWeight,
   }) {
     return TextStyle(
       fontSize: fontSize,
@@ -73,6 +76,7 @@ class TajweedText extends StatelessWidget {
       fontFamilyFallback: const ['UthmanicHafs', 'KFGQPCUthmanic', 'ScheherazadeNew'],
       height: height,
       color: color,
+      fontWeight: fontWeight,
       locale: const Locale('ar'),
     );
   }
@@ -90,6 +94,7 @@ class TajweedText extends StatelessWidget {
       fontFamilyFallback: const ['UthmanicHafs', 'KFGQPCUthmanic', 'ScheherazadeNew'],
       height: height ?? this.height,
       color: color ?? defaultColor,
+      fontWeight: fontWeight,
       locale: const Locale('ar'),
     );
   }

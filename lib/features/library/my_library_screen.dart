@@ -13,6 +13,7 @@ import 'package:quran_offline/features/bookmarks/widgets/bookmarks_tab_content.d
 import 'package:quran_offline/features/highlights/highlights_screen.dart';
 import 'package:quran_offline/features/notes/widgets/notes_tab_content.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
+import 'package:quran_offline/features/hafalan/widgets/juz_amma_library_summary.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 
 class MyLibraryScreen extends ConsumerStatefulWidget {
@@ -83,7 +84,10 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('My Library', style: _titleStyle()),
+                Text(
+                  AppLocalizations.getNavMenuText('library', appLanguage),
+                  style: _titleStyle(),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   AppLocalizations.getSubtitleText('library_subtitle', appLanguage),
@@ -119,52 +123,89 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
                   },
                 ),
               ],
-        bottom: _globalSearchMode
-            ? null
-            : TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.bookmark_outline, size: 18),
-                  const SizedBox(width: 6),
-                  Text(AppLocalizations.getMenuText('bookmarks', appLanguage)),
-                ],
-              ),
-            ),
-            Tab(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.note_outlined, size: 18),
-                  const SizedBox(width: 6),
-                  Text(AppLocalizations.getMenuText('notes', appLanguage)),
-                ],
-              ),
-            ),
-            Tab(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.format_color_fill_outlined, size: 18),
-                  const SizedBox(width: 6),
-                  Text(AppLocalizations.getMenuText('highlights', appLanguage)),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
       body: _globalSearchMode
           ? _buildGlobalSearchResults()
-          : TabBarView(
-              controller: _tabController,
-              children: const [
-                BookmarksTabContent(),
-                NotesTabContent(),
-                HighlightsScreen(),
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const JuzAmmaLibrarySummary(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: Text(
+                    AppLocalizations.getLibraryReadingCollectionTitle(
+                      appLanguage,
+                    ),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.4,
+                        ),
+                  ),
+                ),
+                Material(
+                  color: colorScheme.surface,
+                  child: TabBar(
+                    controller: _tabController,
+                    tabs: [
+                      Tab(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.bookmark_outline, size: 18),
+                            const SizedBox(width: 6),
+                            Text(
+                              AppLocalizations.getMenuText(
+                                'bookmarks',
+                                appLanguage,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Tab(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.note_outlined, size: 18),
+                            const SizedBox(width: 6),
+                            Text(
+                              AppLocalizations.getMenuText('notes', appLanguage),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Tab(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.format_color_fill_outlined,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              AppLocalizations.getMenuText(
+                                'highlights',
+                                appLanguage,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: const [
+                      BookmarksTabContent(),
+                      NotesTabContent(),
+                      HighlightsScreen(),
+                    ],
+                  ),
+                ),
               ],
             ),
     );

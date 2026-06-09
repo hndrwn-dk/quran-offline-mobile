@@ -15,7 +15,7 @@ final showGlobalRecitationBarProvider = Provider<bool>((ref) {
 
   final readerSource = ref.watch(readerSourceProvider);
   final splitLayout = ref.watch(readerSplitLayoutProvider);
-  final onReadTab = ref.watch(currentTabProvider) == 0;
+  final onReadTab = ref.watch(currentTabProvider) == AppTab.read;
   final pushedReaderOpen = ref.watch(readerScreenVisibleProvider);
 
   List<Verse>? juzVerses;

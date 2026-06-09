@@ -5,6 +5,7 @@ import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/reader/open_reader_screen.dart';
 
 class SurahListView extends ConsumerWidget {
@@ -115,20 +116,7 @@ class SurahListView extends ConsumerWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Directionality(
-                              textDirection: TextDirection.rtl,
-                              child: Text(
-                                surah.arabicName,
-                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  fontFamily: 'UthmanicHafsV22',
-                                  fontFamilyFallback: const ['UthmanicHafs'],
-                                  color: colorScheme.onSurface,
-                                  height: 1.4,
-                                ),
-                                textDirection: TextDirection.rtl,
-                                textAlign: TextAlign.right,
-                              ),
-                            ),
+                            SurahNameListGlyph(surahId: surah.id),
                             const SizedBox(height: 4),
                             Text(
                               '$ayahCount Ayahs',

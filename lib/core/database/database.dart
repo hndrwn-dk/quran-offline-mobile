@@ -58,12 +58,37 @@ class Highlights extends Table {
   Set<Column> get primaryKey => {surahId, ayahNo};
 }
 
-@DriftDatabase(tables: [Verses, Bookmarks, Notes, Highlights])
+/// Juz Amma (Juz 30) memorization — one row per completed ayah.
+class MemorizationProgress extends Table {
+  IntColumn get surahId => integer()();
+  IntColumn get ayahNo => integer()();
+  DateTimeColumn get completedAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {surahId, ayahNo};
+}
+
+/// Self-marked Friday setoran completion (not a substitute for a teacher).
+class SetoranLogs extends Table {
+  TextColumn get fridayKey => text()();
+  TextColumn get itemKey => text()();
+  IntColumn get surahId => integer()();
+  IntColumn get fromAyah => integer()();
+  IntColumn get toAyah => integer()();
+  DateTimeColumn get completedAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {fridayKey, itemKey};
+}
+
+@DriftDatabase(
+  tables: [Verses, Bookmarks, Notes, Highlights, MemorizationProgress, SetoranLogs],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -98,6 +123,12 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 4) {
           await m.addColumn(verses, verses.translitTj);
+        }
+        if (from < 5) {
+          await m.createTable(memorizationProgress);
+        }
+        if (from < 6) {
+          await m.createTable(setoranLogs);
         }
       },
     );
@@ -387,6 +418,91 @@ class AppDatabase extends _$AppDatabase {
           ..where((b) => b.tag.equals(tag))
           ..orderBy([(b) => OrderingTerm(expression: b.createdAt, mode: OrderingMode.desc)]))
         .get();
+  }
+
+  Future<bool> isAyahMemorized(int surahId, int ayahNo) async {
+    final row = await (select(memorizationProgress)
+          ..where((m) =>
+              m.surahId.equals(surahId) & m.ayahNo.equals(ayahNo)))
+        .getSingleOrNull();
+    return row != null;
+  }
+
+  Future<void> setAyahMemorized(int surahId, int ayahNo, bool memorized) async {
+    if (memorized) {
+      await into(memorizationProgress).insertOnConflictUpdate(
+        MemorizationProgressCompanion.insert(
+          surahId: surahId,
+          ayahNo: ayahNo,
+        ),
+      );
+    } else {
+      await (delete(memorizationProgress)
+            ..where((m) =>
+                m.surahId.equals(surahId) & m.ayahNo.equals(ayahNo)))
+          .go();
+    }
+  }
+
+  Future<List<MemorizationProgressData>> getJuzAmmaMemorization() {
+    return (select(memorizationProgress)
+          ..where((m) =>
+              m.surahId.isBiggerOrEqualValue(78) &
+              m.surahId.isSmallerOrEqualValue(114))
+          ..orderBy([
+            (m) => OrderingTerm(expression: m.surahId),
+            (m) => OrderingTerm(expression: m.ayahNo),
+          ]))
+        .get();
+  }
+
+  Future<List<SetoranLog>> getSetoranLogsForFriday(String fridayKey) {
+    return (select(setoranLogs)
+          ..where((s) => s.fridayKey.equals(fridayKey))
+          ..orderBy([
+            (s) => OrderingTerm(expression: s.completedAt),
+          ]))
+        .get();
+  }
+
+  Future<void> markSetoranItemDone({
+    required String fridayKey,
+    required String itemKey,
+    required int surahId,
+    required int fromAyah,
+    required int toAyah,
+  }) async {
+    await into(setoranLogs).insertOnConflictUpdate(
+      SetoranLogsCompanion.insert(
+        fridayKey: fridayKey,
+        itemKey: itemKey,
+        surahId: surahId,
+        fromAyah: fromAyah,
+        toAyah: toAyah,
+      ),
+    );
+  }
+
+  Future<void> unmarkSetoranItem(String fridayKey, String itemKey) async {
+    await (delete(setoranLogs)
+          ..where(
+            (s) => s.fridayKey.equals(fridayKey) & s.itemKey.equals(itemKey),
+          ))
+        .go();
+  }
+
+  Future<int> countMemorizedAyahsInRange(
+    int surahId,
+    int fromAyah,
+    int toAyah,
+  ) async {
+    final rows = await (select(memorizationProgress)
+          ..where((m) =>
+              m.surahId.equals(surahId) &
+              m.ayahNo.isBiggerOrEqualValue(fromAyah) &
+              m.ayahNo.isSmallerOrEqualValue(toAyah)))
+        .get();
+    return rows.length;
   }
 }
 
