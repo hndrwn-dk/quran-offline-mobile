@@ -16,6 +16,7 @@ class AppLocalizations {
       'highlights' => _getHighlights(language),
       'library' => _getLibrary(language),
       'dua' => _getDua(language),
+      'hafalan' => _getHafalan(language),
       _ => key,
     };
   }
@@ -25,6 +26,7 @@ class AppLocalizations {
     return switch (key) {
       'library' => _getLibraryNav(language),
       'settings' => _getSettingsNav(language),
+      'hafalan' => _getHafalanNav(language),
       _ => getMenuText(key, language),
     };
   }
@@ -354,6 +356,1339 @@ class AppLocalizations {
     };
   }
 
+  static String getJuzAmmaTitle(String language) {
+    return switch (language) {
+      'id' => 'Juz Amma',
+      'en' => 'Juz Amma',
+      'zh' => '阿玛章',
+      'ja' => 'ジュズ・アンマー',
+      _ => 'Juz Amma',
+    };
+  }
+
+  static String getJuzAmmaSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Juz Amma — hafalan surat pendek (Juz 30)',
+      'en' => 'Juz Amma — memorize the short surahs (Juz 30)',
+      'zh' => '阿玛章 — 背诵短章（第30卷）',
+      'ja' => 'ジュズ・アンマー — 短いスーラの暗誦（第30ジュズ）',
+      _ => 'Juz Amma — memorize the short surahs (Juz 30)',
+    };
+  }
+
+  /// Juz 30 is commonly called Juz Amma in the app UI.
+  static String getJuzTitle(String language, int juzNo) {
+    if (juzNo == 30) {
+      return getJuzAmmaTitle(language);
+    }
+    return switch (language) {
+      'id' => 'Juz $juzNo',
+      'en' => 'Juz $juzNo',
+      'zh' => '第$juzNo卷',
+      'ja' => '第$juzNoジュズ',
+      _ => 'Juz $juzNo',
+    };
+  }
+
+  static String getJuzAmmaMethodTip(String language) {
+    return switch (language) {
+      'id' =>
+        'Metode terstruktur: hari biasa hafalan baru (1 unit), Jumat setoran (mengulang), lalu beberapa hari memantapkan (tahsin). Setoran Jumat muncul otomatis di kartu tugas. Konsisten setiap hari.',
+      'en' =>
+        'Structured method: weekdays for new memorization (one unit), Friday setoran (review), then a few tahsin days to strengthen. Friday setoran appears in the task card. Stay consistent.',
+      'zh' =>
+        '结构化方法：平日背新内容（一个单元），周五复习（setoran），随后几天塔辛巩固。周五复习自动显示在任务卡片。每天坚持。',
+      'ja' =>
+        '構成された方法：平日は新しい暗誦（1単位）、金曜は復習（セットラン）、その後数日タフスィーンで定着。金曜の復習はタスクカードに表示されます。毎日続けましょう。',
+      _ => 'Structured method: weekdays for new units, Friday setoran, then tahsin days.',
+    };
+  }
+
+  static String getJuzAmmaModeProgram(String language) {
+    return switch (language) {
+      'id' => 'Program',
+      'en' => 'Program',
+      'zh' => '计划模式',
+      'ja' => 'プログラム',
+      _ => 'Program',
+    };
+  }
+
+  static String getJuzAmmaModeFree(String language) {
+    return switch (language) {
+      'id' => 'Bebas',
+      'en' => 'Free',
+      'zh' => '自由模式',
+      'ja' => '自由',
+      _ => 'Free',
+    };
+  }
+
+  static String getJuzAmmaStartProgram(String language) {
+    return switch (language) {
+      'id' => 'Mulai program',
+      'en' => 'Start program',
+      'zh' => '开始计划',
+      'ja' => 'プログラムを始める',
+      _ => 'Start program',
+    };
+  }
+
+  static String getJuzAmmaTodayNew(String language) {
+    return switch (language) {
+      'id' => 'Hafalan baru hari ini',
+      'en' => 'Today\'s new memorization',
+      'zh' => '今日新背',
+      'ja' => '今日の新しい暗誦',
+      _ => 'Today\'s new memorization',
+    };
+  }
+
+  static String getJuzAmmaTodayMurojaah(String language) {
+    return switch (language) {
+      'id' => 'Setoran Jumat',
+      'en' => 'Friday setoran',
+      'zh' => '周五复习',
+      'ja' => '金曜セットラン',
+      _ => 'Friday setoran',
+    };
+  }
+
+  static String getJuzAmmaFridaySetoranHint(String language) {
+    return switch (language) {
+      'id' => 'Ulang semua hafalan yang sudah dipelajari minggu ini.',
+      'en' => 'Review everything you memorized this week.',
+      'zh' => '复习本周已背内容。',
+      'ja' => '今週覚えた範囲を復習します。',
+      _ => 'Review this week\'s memorization.',
+    };
+  }
+
+  static String getJuzAmmaTodayTahsin(String language, int day, int total) {
+    return switch (language) {
+      'id' => 'Memantapkan hafalan — hari $day dari $total',
+      'en' => 'Strengthen memorization — day $day of $total',
+      'zh' => '巩固背诵 — 第 $day / $total 天',
+      'ja' => '定着の日 — $day / $total 日目',
+      _ => 'Strengthen — day $day of $total',
+    };
+  }
+
+  static String getJuzAmmaProgramComplete(String language) {
+    return switch (language) {
+      'id' => 'Program selesai — terus ulang Juz Amma',
+      'en' => 'Program complete — keep reviewing Juz Amma',
+      'zh' => '计划完成 — 继续复习阿玛章',
+      'ja' => 'プログラム完了 — ジュズ・アンマーを復習し続けましょう',
+      _ => 'Program complete — keep reviewing',
+    };
+  }
+
+  static String getJuzAmmaOpenTarget(String language) {
+    return switch (language) {
+      'id' => 'Buka hafalan hari ini',
+      'en' => 'Open today\'s lesson',
+      'zh' => '打开今日内容',
+      'ja' => '今日の範囲を開く',
+      _ => 'Open today\'s lesson',
+    };
+  }
+
+  static String getJuzAmmaOpenFridaySetoran(String language) {
+    return switch (language) {
+      'id' => 'Mulai setoran Jumat',
+      'en' => 'Start Friday setoran',
+      'zh' => '开始周五复习',
+      'ja' => '金曜セットランを始める',
+      _ => 'Start Friday setoran',
+    };
+  }
+
+  static String getJuzAmmaLibrarySummaryAction(String language) {
+    return switch (language) {
+      'id' => 'Buka program hafalan',
+      'en' => 'Open memorization program',
+      'zh' => '打开背诵计划',
+      'ja' => '暗誦プログラムを開く',
+      _ => 'Open memorization program',
+    };
+  }
+
+  static String getJuzAmmaLibraryTodayLine(String language, String detail) {
+    return switch (language) {
+      'id' => 'Hari ini: $detail',
+      'en' => 'Today: $detail',
+      'zh' => '今日：$detail',
+      'ja' => '今日：$detail',
+      _ => 'Today: $detail',
+    };
+  }
+
+  static String formatJuzAmmaUnitShort(
+    String language,
+    String surahName,
+    int unitNo,
+  ) {
+    return switch (language) {
+      'id' => '$surahName (unit $unitNo)',
+      'en' => '$surahName (unit $unitNo)',
+      'zh' => '$surahName（第 $unitNo 单元）',
+      'ja' => '$surahName（ユニット $unitNo）',
+      _ => '$surahName (unit $unitNo)',
+    };
+  }
+
+  static String getJuzAmmaLibraryFridaySetoranLine(
+    String language,
+    int done,
+    int total,
+  ) {
+    return switch (language) {
+      'id' => '[Jumat] Setoran: $done/$total surat minggu ini',
+      'en' => '[Friday] Setoran: $done/$total surahs this week',
+      'zh' => '[周五] 复习：本周 $done/$total 个苏拉',
+      'ja' => '[金曜] セットラン：今週 $done/$total スーラ',
+      _ => '[Friday] Setoran: $done/$total surahs this week',
+    };
+  }
+
+  static String getFridaySetoranProgressSubtitle(
+    String language,
+    int done,
+    int total,
+  ) {
+    return switch (language) {
+      'id' =>
+        '$done dari $total sudah ditandai — lihat centang di antrian setoran.',
+      'en' =>
+        '$done of $total marked done — see checkmarks in the setoran queue.',
+      'zh' => '已标记 $done/$total — 在复习列表中查看勾选。',
+      'ja' => '$done / $total 件済み — キューでチェックを確認。',
+      _ => '$done of $total marked — see the setoran queue.',
+    };
+  }
+
+  static String getFridaySetoranProgressTitle(String language) {
+    return switch (language) {
+      'id' => 'Progres setoran minggu ini',
+      'en' => 'This week\'s setoran progress',
+      'zh' => '本周复习进度',
+      'ja' => '今週のセットラン進捗',
+      _ => 'This week\'s setoran progress',
+    };
+  }
+
+  static String getLibraryProgramSectionTitle(String language) {
+    return switch (language) {
+      'id' => 'Program hafalan',
+      'en' => 'Memorization program',
+      'zh' => '背诵计划',
+      'ja' => '暗誦プログラム',
+      _ => 'Memorization program',
+    };
+  }
+
+  static String getLibraryReadingCollectionTitle(String language) {
+    return switch (language) {
+      'id' => 'Koleksi bacaan',
+      'en' => 'Reading collection',
+      'zh' => '阅读收藏',
+      'ja' => '読書コレクション',
+      _ => 'Reading collection',
+    };
+  }
+
+  static String getJuzAmmaLibraryFridaySetoranShort(
+    String language,
+    int done,
+    int total,
+  ) {
+    return switch (language) {
+      'id' => 'Setoran $done/$total',
+      'en' => 'Setoran $done/$total',
+      'zh' => '复习 $done/$total',
+      'ja' => 'セットラン $done/$total',
+      _ => 'Setoran $done/$total',
+    };
+  }
+
+  static String formatJuzAmmaLibraryCollapsedStrip(
+    String language,
+    int percent,
+    String detail,
+  ) {
+    return switch (language) {
+      'id' => 'Juz Amma · $percent% · $detail',
+      'en' => 'Juz Amma · $percent% · $detail',
+      'zh' => '阿玛章 · $percent% · $detail',
+      'ja' => 'ジュズ・アンマー · $percent% · $detail',
+      _ => 'Juz Amma · $percent% · $detail',
+    };
+  }
+
+  static String getJuzAmmaLibraryCollapseHint(String language) {
+    return switch (language) {
+      'id' => 'Ciutkan program hafalan',
+      'en' => 'Collapse memorization program',
+      'zh' => '收起背诵计划',
+      'ja' => '暗誦プログラムを折りたたむ',
+      _ => 'Collapse memorization program',
+    };
+  }
+
+  static String getJuzAmmaLibraryExpandHint(String language) {
+    return switch (language) {
+      'id' => 'Buka program hafalan',
+      'en' => 'Expand memorization program',
+      'zh' => '展开背诵计划',
+      'ja' => '暗誦プログラムを展開',
+      _ => 'Expand memorization program',
+    };
+  }
+
+  static String getFridaySetoranBannerTitle(String language) {
+    return switch (language) {
+      'id' => 'Hari Jumat — waktunya setoran',
+      'en' => 'Friday — time for setoran',
+      'zh' => '周五 — 复习时间',
+      'ja' => '金曜 — セットランの日',
+      _ => 'Friday — time for setoran',
+    };
+  }
+
+  static String getFridaySetoranBannerBody(String language, int pending) {
+    return switch (language) {
+      'id' =>
+        '$pending hafalan minggu ini belum disetor. Latihan mandiri — bukan pengganti guru.',
+      'en' =>
+        '$pending items from this week not yet setoran. Self-practice — not a substitute for a teacher.',
+      'zh' => '本周还有 $pending 项未复习。自主练习，不能替代老师。',
+      'ja' => '今週 $pending 件が未セットラン。自主練習であり、師匠の代わりにはなりません。',
+      _ => '$pending items pending setoran this week.',
+    };
+  }
+
+  static String getFridaySetoranScreenTitle(String language) {
+    return switch (language) {
+      'id' => 'Setoran Jumat',
+      'en' => 'Friday setoran',
+      'zh' => '周五复习',
+      'ja' => '金曜セットラン',
+      _ => 'Friday setoran',
+    };
+  }
+
+  static String getFridaySetoranQueueEmpty(String language) {
+    return switch (language) {
+      'id' =>
+        'Belum ada hafalan untuk disetor. Tandai ayat yang sudah dihafal di daftar surah Juz Amma.',
+      'en' =>
+        'Nothing to setoran yet. Mark memorized ayahs on the Juz Amma surah list.',
+      'zh' => '暂无可复习内容。请在 Juz Amma 列表中标记已背经文。',
+      'ja' => 'セットランする項目がありません。Juz Amma で暗誦済みの節をマークしてください。',
+      _ => 'Nothing to setoran yet. Mark memorized ayahs in Juz Amma.',
+    };
+  }
+
+  static String getFridaySetoranQueueHint(String language) {
+    return switch (language) {
+      'id' =>
+        'Ulang hafalan Sabtu–Kamis minggu ini. Tandai "sudah disetor" setelah latihan (catatan pribadi).',
+      'en' =>
+        'Review Sat–Thu memorization. Mark "setoran done" after practice (personal note).',
+      'zh' => '复习本周六至周四内容。练习后可标记“已复习”（个人记录）。',
+      'ja' =>
+        '土〜木曜の暗誦を復習。練習後に「済み」とマーク（個人メモ）。',
+      _ => 'Review this week\'s units. Mark done after self-practice.',
+    };
+  }
+
+  static String getFridaySetoranDone(String language) {
+    return switch (language) {
+      'id' => 'Sudah disetor',
+      'en' => 'Setoran done',
+      'zh' => '已复习',
+      'ja' => 'セットラン済み',
+      _ => 'Setoran done',
+    };
+  }
+
+  static String getFridaySetoranMarkDone(String language) {
+    return switch (language) {
+      'id' => 'Tandai sudah disetor',
+      'en' => 'Mark setoran done',
+      'zh' => '标记已复习',
+      'ja' => 'セットラン済みにする',
+      _ => 'Mark setoran done',
+    };
+  }
+
+  static String getFridaySetoranUnmark(String language) {
+    return switch (language) {
+      'id' => 'Batalkan tanda setoran',
+      'en' => 'Undo setoran mark',
+      'zh' => '取消复习标记',
+      'ja' => 'マークを取り消す',
+      _ => 'Undo setoran mark',
+    };
+  }
+
+  static String getSetoranSessionTitle(String language) {
+    return switch (language) {
+      'id' => 'Mode setoran',
+      'en' => 'Setoran mode',
+      'zh' => '复习模式',
+      'ja' => 'セットランモード',
+      _ => 'Setoran mode',
+    };
+  }
+
+  static String getSetoranHideText(String language) {
+    return switch (language) {
+      'id' => 'Sembunyikan teks',
+      'en' => 'Hide text',
+      'zh' => '隐藏文字',
+      'ja' => '文字を隠す',
+      _ => 'Hide text',
+    };
+  }
+
+  static String getSetoranShowText(String language) {
+    return switch (language) {
+      'id' => 'Tampilkan teks',
+      'en' => 'Show text',
+      'zh' => '显示文字',
+      'ja' => '文字を表示',
+      _ => 'Show text',
+    };
+  }
+
+  static String getSetoranPlayAyah(String language) {
+    return switch (language) {
+      'id' => 'Putar audio ayat',
+      'en' => 'Play ayah audio',
+      'zh' => '播放经文音频',
+      'ja' => '音節を再生',
+      _ => 'Play ayah audio',
+    };
+  }
+
+  static String getSetoranNextAyah(String language) {
+    return switch (language) {
+      'id' => 'Ayat berikutnya',
+      'en' => 'Next ayah',
+      'zh' => '下一节',
+      'ja' => '次の節',
+      _ => 'Next ayah',
+    };
+  }
+
+  static String getSetoranPrevAyah(String language) {
+    return switch (language) {
+      'id' => 'Ayat sebelumnya',
+      'en' => 'Previous ayah',
+      'zh' => '上一节',
+      'ja' => '前の節',
+      _ => 'Previous ayah',
+    };
+  }
+
+  static String getSetoranTeacherNote(String language) {
+    return switch (language) {
+      'id' =>
+        'Catatan mandiri — setoran ke guru tetap dilakukan di luar aplikasi.',
+      'en' =>
+        'Self-practice only — setoran with a teacher happens outside the app.',
+      'zh' => '自主练习记录，向老师复习请在应用外进行。',
+      'ja' =>
+        '自主練習の記録です。師匠へのセットランはアプリ外で行ってください。',
+      _ => 'Self-practice note — teacher setoran is outside the app.',
+    };
+  }
+
+  static String getSetoranFadeModeHint(String language) {
+    return switch (language) {
+      'id' =>
+        'Baca dari hafalan — teks samar seperti sketsa. Ketuk Cek bacaan, baca ayat, lalu Selesai cek. Benar = tebal jelas; salah = merah.',
+      'en' =>
+        'Recite from memory — faint sketch text. Tap Check recitation, recite, then Finish check. Correct = bold; wrong = red.',
+      'zh' => '凭记忆诵读 — 淡影文字。点核对诵读，诵读后点完成。正确加粗，错误变红。',
+      'ja' => '暗誦で読む — 薄い文字。読みチェック→読む→完了。正しければ太字、誤りは赤。',
+      _ => 'Recite from memory. Check recitation, then finish. Correct = bold; wrong = red.',
+    };
+  }
+
+  static String getSetoranCheckOnlyHint(String language) {
+    return switch (language) {
+      'id' =>
+        'Atau pakai Sudah benar / Perlu ulang jika tanpa internet',
+      'en' => 'Or use Already correct / Need repeat when offline',
+      'zh' => '无网络时可用手动标记',
+      'ja' => 'オフライン時は手動で判定できます',
+      _ => 'Or mark manually when offline',
+    };
+  }
+
+  static String getSetoranRecordingActiveHint(String language) {
+    return switch (language) {
+      'id' => 'Sedang merekam — ketuk Stop rekam saat selesai',
+      'en' => 'Recording — tap Stop when finished',
+      'zh' => '正在录音 — 完成后点停止',
+      'ja' => '録音中 — 終わったら停止をタップ',
+      _ => 'Recording — tap Stop when finished',
+    };
+  }
+
+  static String getSetoranRecordingSavedThenCheck(String language) {
+    return switch (language) {
+      'id' => 'Rekaman tersimpan — putar ulang atau ketuk Cek bacaan',
+      'en' => 'Recording saved — replay or tap Check recitation',
+      'zh' => '录音已保存 — 回放或点核对诵读',
+      'ja' => '録音を保存 — 再生するか読みチェックをタップ',
+      _ => 'Recording saved — replay or check recitation',
+    };
+  }
+
+  static String getSetoranCheckRecitation(String language) {
+    return switch (language) {
+      'id' => 'Cek bacaan',
+      'en' => 'Check recitation',
+      'zh' => '核对诵读',
+      'ja' => '読みをチェック',
+      _ => 'Check recitation',
+    };
+  }
+
+  static String getSetoranCheckListeningHint(String language) {
+    return switch (language) {
+      'id' => 'Baca ayat sekarang — teks akan tebal jika cocok, merah jika salah',
+      'en' => 'Recite the ayah now — text turns bold if correct, red if wrong',
+      'zh' => '请诵读本节 — 正确则加粗，错误则变红',
+      'ja' => '節を読んでください — 正しければ太字、誤りは赤',
+      _ => 'Recite now — bold if correct, red if wrong',
+    };
+  }
+
+  static String getSetoranFinishCheck(String language) {
+    return switch (language) {
+      'id' => 'Selesai cek',
+      'en' => 'Finish check',
+      'zh' => '完成核对',
+      'ja' => 'チェック完了',
+      _ => 'Finish check',
+    };
+  }
+
+  static String formatSetoranHeardTranscript(String language, String text) {
+    return switch (language) {
+      'id' => 'Terdeteksi: $text',
+      'en' => 'Heard: $text',
+      'zh' => '识别到：$text',
+      'ja' => '認識：$text',
+      _ => 'Heard: $text',
+    };
+  }
+
+  static String formatSetoranMatchScore(String language, double score) {
+    final pct = (score * 100).round();
+    return switch (language) {
+      'id' => 'Kemiripan: $pct%',
+      'en' => 'Match: $pct%',
+      'zh' => '匹配度：$pct%',
+      'ja' => '一致度：$pct%',
+      _ => 'Match: $pct%',
+    };
+  }
+
+  static String getSetoranAfterPlaybackCheckHint(String language) {
+    return switch (language) {
+      'id' => 'Sudah dengar rekaman? Ketuk Cek bacaan dan baca ayat sekali lagi',
+      'en' => 'Heard your recording? Tap Check recitation and recite once more',
+      'zh' => '听完录音？点核对诵读并再读一遍',
+      'ja' => '録音を聞き終えたら読みチェックで再度読んでください',
+      _ => 'Heard recording? Tap Check recitation and recite again',
+    };
+  }
+
+  static String getSetoranSpeechChecking(String language) {
+    return switch (language) {
+      'id' => 'Memeriksa bacaan...',
+      'en' => 'Checking recitation...',
+      'zh' => '正在核对诵读...',
+      'ja' => '読みを確認中...',
+      _ => 'Checking recitation...',
+    };
+  }
+
+  static String getSetoranSpeechCorrect(String language) {
+    return switch (language) {
+      'id' => 'Bacaan cocok — ayat menjadi jelas',
+      'en' => 'Recitation matched — ayah revealed',
+      'zh' => '诵读匹配 — 经文已显示',
+      'ja' => '一致 — 節を表示しました',
+      _ => 'Recitation matched — ayah revealed',
+    };
+  }
+
+  static String getSetoranSpeechRetry(String language) {
+    return switch (language) {
+      'id' => 'Bacaan belum cocok — coba ulang',
+      'en' => 'Recitation did not match — try again',
+      'zh' => '诵读未匹配 — 请重试',
+      'ja' => '一致しません — やり直してください',
+      _ => 'Recitation did not match — try again',
+    };
+  }
+
+  static String getSetoranSpeechUncertain(String language) {
+    return switch (language) {
+      'id' =>
+        'Suara tidak jelas — tandai manual atau rekam ulang',
+      'en' =>
+        'Could not hear clearly — mark manually or record again',
+      'zh' => '听不清楚 — 请手动标记或重新录音',
+      'ja' => '聞き取れません — 手動で判定するか再録音してください',
+      _ => 'Could not hear clearly — mark manually or record again',
+    };
+  }
+
+  static String getSetoranSpeechUnavailable(String language) {
+    return switch (language) {
+      'id' =>
+        'Pengenalan suara tidak tersedia — gunakan tandai manual',
+      'en' =>
+        'Speech recognition unavailable — use manual marking',
+      'zh' => '语音识别不可用 — 请手动标记',
+      'ja' => '音声認識が使えません — 手動で判定してください',
+      _ => 'Speech recognition unavailable — mark manually',
+    };
+  }
+
+  static String getSetoranSpeechOnlineHint(String language) {
+    return switch (language) {
+      'id' =>
+        'Cek bacaan pakai internet (Wi‑Fi/data). Arab offline tidak wajib di Pixel.',
+      'en' =>
+        'Check recitation needs internet (Wi‑Fi/data). Offline Arabic is optional on Pixel.',
+      'zh' => '核对诵读需要网络。Pixel 上阿拉伯语离线包不是必需的。',
+      'ja' => '読みチェックはインターネットが必要です。オフラインアラビア語は必須ではありません。',
+      _ => 'Check recitation needs internet. Offline Arabic pack is optional.',
+    };
+  }
+
+  static String getSetoranSpeechArabicRequired(String language) {
+    return switch (language) {
+      'id' =>
+        'Paket suara Arab belum terpasang. Tidak perlu ubah bahasa sistem — cukup tambah Arab di pengenalan suara Google (lihat petunjuk di atas). Atau gunakan Sudah benar / Perlu ulang.',
+      'en' =>
+        'Arabic voice pack is not installed. No need to change system language — add Arabic in Google voice input only, or mark manually.',
+      'zh' => '未安装阿拉伯语语音包。无需更改系统语言 — 仅在 Google 语音输入中添加阿拉伯语，或手动标记。',
+      'ja' =>
+        'アラビア語の音声パックがありません。システム言語は変更不要 — Google 音声入力にアラビア語を追加するか、手動で判定してください。',
+      _ => 'Arabic voice pack is not installed. Add Arabic in voice input settings, or mark manually.',
+    };
+  }
+
+  /// Shown when Arabic STT pack is missing — clarifies voice-only setup.
+  static String getSetoranArabicVoiceSetupHint(String language) {
+    return switch (language) {
+      'id' =>
+        'Arab sudah dipilih di Google voice typing? Cek bacaan pakai internet '
+        '(Wi‑Fi/data) — paket offline Arab sering tidak ada di Pixel, itu normal.',
+      'en' =>
+        'Auto check needs an Arabic voice pack (not a system language change). '
+        'New Gboard builds often hide Languages — use the steps below.',
+      'zh' => '自动核对需要阿拉伯语语音包。新版 Gboard 可能没有 Languages 菜单 — 请按下方步骤操作。',
+      'ja' =>
+        '自動チェックにはアラビア語音声パックが必要です。'
+        '新しい Gboard では Languages がない場合があります — 下の手順を参照。',
+      _ => 'Auto check needs Arabic voice input. See steps below.',
+    };
+  }
+
+  static String getSetoranArabicVoiceSetupSteps(String language) {
+    return switch (language) {
+      'id' =>
+        'Pixel & Samsung (tanpa ubah bahasa HP):\n\n'
+        'A) Google voice typing (paling umum)\n'
+        'Settings → System → Languages & input\n'
+        '→ On-screen keyboard → Google voice typing\n'
+        '→ Offline speech recognition → tab All\n'
+        '→ centang Arabic (Saudi Arabia) / العربية (السعودية)\n'
+        '  (paling cocok untuk bacaan Qur\'an; Egypt juga OK)\n\n'
+        'Offline speech: Arab sering TIDAK ada di daftar download Pixel — '
+        'abaikan, cukup langkah A + internet saat Cek bacaan.\n\n'
+        'B) Lewat tile Google\n'
+        'Settings → Google → All services\n'
+        '→ Search, Assistant & Voice → Voice\n'
+        '→ Offline speech recognition → Arabic\n\n'
+        'C) Samsung khusus\n'
+        'Settings → General management\n'
+        '→ Keyboard list and default → Google voice typing\n'
+        '→ Offline speech recognition / Add language\n\n'
+        'D) Update dulu\n'
+        'Play Store: update Google, Gboard, '
+        'Speech Services by Google\n\n'
+        'Setelah download: kembali ke app → ketuk Cek lagi.',
+      'en' =>
+        'Pixel & Samsung (no system language change):\n\n'
+        'A) Google voice typing\n'
+        'Settings → System → Languages & input\n'
+        '→ On-screen keyboard → Google voice typing\n'
+        '→ Offline speech recognition → All\n'
+        '→ Arabic (Saudi Arabia) preferred for Qur\'an\n\n'
+        'B) Google settings tile\n'
+        'Settings → Google → Search, Assistant & Voice → Voice\n'
+        '→ Offline speech recognition → Arabic\n\n'
+        'C) Samsung\n'
+        'Settings → General management → Keyboard list and default\n'
+        '→ Google voice typing → Offline speech recognition\n\n'
+        'D) Update Google, Gboard, Speech Services by Google\n\n'
+        'Then return here and tap Check again.',
+      'zh' =>
+        'Pixel 与 Samsung：\n'
+        '设置 → 系统 → 语言和输入法 → 屏幕键盘 → Google 语音输入\n'
+        '→ 离线语音识别 → 全部 → 下载阿拉伯语\n\n'
+        '或：设置 → Google → 语音 → 离线语音识别\n\n'
+        '完成后返回应用点“重新检测”。',
+      'ja' =>
+        'Pixel / Samsung:\n'
+        '設定 → システム → 言語と入力 → 画面キーボード\n'
+        '→ Google 音声入力 → オフライン音声認識 → アラビア語\n\n'
+        'または 設定 → Google → 音声 → オフライン音声認識\n\n'
+        '戻って「再確認」をタップ。',
+      _ => 'Settings → Languages & input → Google voice typing\n'
+          '→ Offline speech recognition → Arabic',
+    };
+  }
+
+  static String getSetoranArabicVoiceOpenSettings(String language) {
+    return switch (language) {
+      'id' => 'Buka pengaturan suara',
+      'en' => 'Open voice settings',
+      'zh' => '打开语音设置',
+      'ja' => '音声設定を開く',
+      _ => 'Open voice settings',
+    };
+  }
+
+  static String getSetoranArabicVoiceRecheck(String language) {
+    return switch (language) {
+      'id' => 'Cek lagi',
+      'en' => 'Check again',
+      'zh' => '重新检测',
+      'ja' => '再確認',
+      _ => 'Check again',
+    };
+  }
+
+  static String getSetoranArabicVoiceReady(String language, String locale) {
+    return switch (language) {
+      'id' => 'Suara Arab siap ($locale) — Cek bacaan bisa dipakai',
+      'en' => 'Arabic voice ready ($locale) — you can check recitation',
+      'zh' => '阿拉伯语语音已就绪（$locale）— 可以核对诵读',
+      'ja' => 'アラビア語音声の準備完了（$locale）',
+      _ => 'Arabic voice ready ($locale)',
+    };
+  }
+
+  static String getSetoranArabicVoiceRecheckOk(String language, String locale) {
+    return switch (language) {
+      'id' => 'Terdeteksi: $locale — silakan Cek bacaan',
+      'en' => 'Detected: $locale — tap Check recitation',
+      'zh' => '已检测到：$locale — 请点核对诵读',
+      'ja' => '検出：$locale — 読みチェックをタップ',
+      _ => 'Detected: $locale',
+    };
+  }
+
+  static String getSetoranArabicVoiceRecheckFail(String language) {
+    return switch (language) {
+      'id' =>
+        'Belum terdeteksi — tambah Arabic (Saudi Arabia) di Google voice typing, lalu Cek lagi',
+      'en' =>
+        'Not detected yet — add Arabic (Saudi Arabia) in Google voice typing, then Check again',
+      'zh' => '未检测到 — 请在 Google 语音输入中添加阿拉伯语后重新检测',
+      'ja' => '未検出 — Google 音声入力でアラビア語を追加して再確認',
+      _ => 'Arabic voice not detected yet',
+    };
+  }
+
+  static String getSetoranArabicVoiceBlockedTitle(String language) {
+    return switch (language) {
+      'id' => 'Suara Arab belum siap',
+      'en' => 'Arabic voice not ready',
+      'zh' => '阿拉伯语语音未就绪',
+      'ja' => 'アラビア語音声が未設定',
+      _ => 'Arabic voice not ready',
+    };
+  }
+
+  static String getSetoranArabicVoiceBlockedBody(String language) {
+    return switch (language) {
+      'id' =>
+        'HP belum mendeteksi bahasa Arab untuk pengenalan suara. '
+        'Pasang dulu di Google voice typing (Arabic Saudi Arabia), ketuk Cek lagi, '
+        'baru pakai Cek bacaan. Atau gunakan Sudah benar / Perlu ulang manual.',
+      'en' =>
+        'This device has not registered Arabic for speech recognition. '
+        'Add Arabic (Saudi Arabia) in Google voice typing, tap Check again, '
+        'then use Check recitation — or mark manually.',
+      'zh' => '设备尚未注册阿拉伯语语音识别。请先添加阿拉伯语并重新检测，或手动标记。',
+      'ja' =>
+        '端末がアラビア語音声認識を検出していません。設定後に再確認するか、手動で判定してください。',
+      _ => 'Add Arabic voice input first, or mark manually.',
+    };
+  }
+
+  static String getSetoranArabicVoiceShowSteps(String language) {
+    return switch (language) {
+      'id' => 'Lihat langkah',
+      'en' => 'See steps',
+      'zh' => '查看步骤',
+      'ja' => '手順を見る',
+      _ => 'See steps',
+    };
+  }
+
+  static String getSetoranTajwidClean(String language) {
+    return switch (language) {
+      'id' => 'Tajwid: tidak ada catatan khusus',
+      'en' => 'Tajweed: no specific notes',
+      'zh' => '塔吉维德：无特别说明',
+      'ja' => 'タジウィード：特記事項なし',
+      _ => 'Tajweed: no specific notes',
+    };
+  }
+
+  static String formatSetoranTajwidIssueCount(String language, int count) {
+    return switch (language) {
+      'id' => '$count catatan tajwid — ketuk untuk detail',
+      'en' => '$count tajweed notes — tap for details',
+      'zh' => '$count 条塔吉维德说明 — 点击查看',
+      'ja' => 'タジウィードの注意 $count 件 — タップで詳細',
+      _ => '$count tajweed notes — tap for details',
+    };
+  }
+
+  static String getSetoranTajwidPerWord(String language) {
+    return switch (language) {
+      'id' => 'Per kata',
+      'en' => 'Per word',
+      'zh' => '逐词',
+      'ja' => '単語ごと',
+      _ => 'Per word',
+    };
+  }
+
+  static String getSetoranTajwidLaamShams(String language) {
+    return switch (language) {
+      'id' => 'Lam Syamsiyah',
+      'en' => 'Lam shamsiyah',
+      'zh' => '太阳 Lam',
+      'ja' => '太陽のラーム',
+      _ => 'Lam shamsiyah',
+    };
+  }
+
+  static String getSetoranTajwidGhunnah(String language) {
+    return switch (language) {
+      'id' => 'Ghunnah',
+      'en' => 'Ghunnah',
+      'zh' => '鼻音',
+      'ja' => 'グンナ',
+      _ => 'Ghunnah',
+    };
+  }
+
+  static String getSetoranTajwidMajor(String language) {
+    return switch (language) {
+      'id' => 'Utama',
+      'en' => 'Major',
+      'zh' => '主要',
+      'ja' => '重要',
+      _ => 'Major',
+    };
+  }
+
+  static String getSetoranTajwidMinor(String language) {
+    return switch (language) {
+      'id' => 'Ringan',
+      'en' => 'Minor',
+      'zh' => '次要',
+      'ja' => '軽微',
+      _ => 'Minor',
+    };
+  }
+
+  static String getSetoranTajwidExpected(String language) {
+    return switch (language) {
+      'id' => 'Diharapkan',
+      'en' => 'Expected',
+      'zh' => '期望',
+      'ja' => '期待',
+      _ => 'Expected',
+    };
+  }
+
+  static String getSetoranTajwidHeard(String language) {
+    return switch (language) {
+      'id' => 'Terdengar',
+      'en' => 'Heard',
+      'zh' => '听到',
+      'ja' => '認識',
+      _ => 'Heard',
+    };
+  }
+
+  static String getSetoranTajwidMadLazimRush(String language) {
+    return switch (language) {
+      'id' =>
+        'Bacaan mungkin terlalu cepat. Mad lazim wajib 6 harakat — lebih panjang dari mad lainnya.',
+      'en' =>
+        'Recitation may be too fast. Madd lazim requires 6 counts — longer than other madd.',
+      'zh' => '诵读可能过快。必要长音需 6 拍。',
+      'ja' => '読みが速すぎる可能性があります。ラズムは6拍必要です。',
+      _ => 'Recitation may be too fast for madd lazim.',
+    };
+  }
+
+  static String getSurahHeaderQulPreviewBadge(String language) {
+    return switch (language) {
+      'id' => 'Mockup QUL',
+      'en' => 'QUL preview',
+      'zh' => 'QUL 预览',
+      'ja' => 'QULプレビュー',
+      _ => 'QUL preview',
+    };
+  }
+
+  static String getSurahHeaderAboutSurah(String language) {
+    return switch (language) {
+      'id' => 'Tentang surat',
+      'en' => 'About this surah',
+      'zh' => '关于此章',
+      'ja' => 'このスーラについて',
+      _ => 'About this surah',
+    };
+  }
+
+  static String getSurahHeaderLangEnglish(String language) {
+    return switch (language) {
+      'id' => 'Bahasa Inggris',
+      'en' => 'English',
+      'zh' => '英语',
+      'ja' => '英語',
+      _ => 'English',
+    };
+  }
+
+  static String getSurahHeaderLangIndonesian(String language) {
+    return switch (language) {
+      'id' => 'Bahasa Indonesia',
+      'en' => 'Indonesian',
+      'zh' => '印尼语',
+      'ja' => 'インドネシア語',
+      _ => 'Indonesian',
+    };
+  }
+
+  static String getSurahHeaderQulInfoError(String language) {
+    return switch (language) {
+      'id' => 'Gagal memuat info surat QUL.',
+      'en' => 'Could not load QUL surah info.',
+      'zh' => '无法加载 QUL 章节信息。',
+      'ja' => 'QULのスーラ情報を読み込めませんでした。',
+      _ => 'Could not load QUL surah info.',
+    };
+  }
+
+  static String getSurahHeaderQulInfoMissing(String language) {
+    return switch (language) {
+      'id' => 'Info surat belum tersedia untuk surat ini.',
+      'en' => 'Surah info not available for this surah.',
+      'zh' => '此章信息不可用。',
+      'ja' => 'このスーラの情報はありません。',
+      _ => 'Surah info not available.',
+    };
+  }
+
+  static String getSurahMetaMeccan(String language) {
+    return switch (language) {
+      'id' => 'Makkiyah',
+      'en' => 'Meccan',
+      'zh' => '麦加章',
+      'ja' => 'マッカ',
+      _ => 'Meccan',
+    };
+  }
+
+  static String getSurahMetaMedinan(String language) {
+    return switch (language) {
+      'id' => 'Madaniyah',
+      'en' => 'Medinan',
+      'zh' => '麦地那章',
+      'ja' => 'マディーナ',
+      _ => 'Medinan',
+    };
+  }
+
+  static String formatSurahVerseCount(String language, int count) {
+    return switch (language) {
+      'id' => '$count ayat',
+      'en' => '$count verses',
+      'zh' => '$count 节',
+      'ja' => '$count 節',
+      _ => '$count verses',
+    };
+  }
+
+  static String getSetoranSummaryTitle(String language) {
+    return switch (language) {
+      'id' => 'Ringkasan setoran',
+      'en' => 'Recitation summary',
+      'zh' => '诵读总结',
+      'ja' => 'セットラン要約',
+      _ => 'Recitation summary',
+    };
+  }
+
+  static String getSetoranSummaryReady(String language) {
+    return switch (language) {
+      'id' => 'Siap disetor',
+      'en' => 'Ready to submit',
+      'zh' => '可以提交',
+      'ja' => '提出可能',
+      _ => 'Ready to submit',
+    };
+  }
+
+  static String getSetoranSummaryNeedsWork(String language) {
+    return switch (language) {
+      'id' => 'Perlu perbaikan',
+      'en' => 'Needs improvement',
+      'zh' => '需要改进',
+      'ja' => '要改善',
+      _ => 'Needs improvement',
+    };
+  }
+
+  static String getSetoranSummaryAyahProgress(String language) {
+    return switch (language) {
+      'id' => 'Ayat selesai',
+      'en' => 'Ayahs done',
+      'zh' => '已完成经文',
+      'ja' => '完了した節',
+      _ => 'Ayahs done',
+    };
+  }
+
+  static String getSetoranSummaryTextScore(String language) {
+    return switch (language) {
+      'id' => 'Teks',
+      'en' => 'Text',
+      'zh' => '文本',
+      'ja' => 'テキスト',
+      _ => 'Text',
+    };
+  }
+
+  static String getSetoranSummaryTajwidScore(String language) {
+    return switch (language) {
+      'id' => 'Tajwid',
+      'en' => 'Tajweed',
+      'zh' => '塔吉维德',
+      'ja' => 'タジウィード',
+      _ => 'Tajweed',
+    };
+  }
+
+  static String getSetoranSummaryMainNotes(String language) {
+    return switch (language) {
+      'id' => 'Catatan tajwid utama',
+      'en' => 'Main tajweed notes',
+      'zh' => '主要塔吉维德说明',
+      'ja' => '主なタジウィードの注意',
+      _ => 'Main tajweed notes',
+    };
+  }
+
+  static String getSetoranSummaryRetryAyahs(String language) {
+    return switch (language) {
+      'id' => 'Ayat perlu diulang',
+      'en' => 'Ayahs to retry',
+      'zh' => '需重试的经文',
+      'ja' => 'やり直す節',
+      _ => 'Ayahs to retry',
+    };
+  }
+
+  static String formatSetoranSummaryErrorCount(String language, int count) {
+    return switch (language) {
+      'id' => '$count ayat belum benar — gunakan Coba lagi',
+      'en' => '$count ayah(s) not correct — use Try again',
+      'zh' => '$count 节尚未正确 — 请重试',
+      'ja' => '未達成の節 $count — もう一度お試しください',
+      _ => '$count ayah(s) not correct',
+    };
+  }
+
+  static String getSetoranSummaryReviewHint(String language) {
+    return switch (language) {
+      'id' =>
+        'Beberapa ayat sudah benar tetapi masih ada catatan tajwid. Anda boleh lanjut menandai setoran atau ulang ayat lemah.',
+      'en' =>
+        'Some ayahs are correct but tajweed notes remain. You may mark done or retry weaker ayahs.',
+      'zh' => '部分经文已正确但仍有塔吉维德说明。可提交或重试薄弱经文。',
+      'ja' =>
+        '正解の節もありますがタジウィードの注意があります。提出するか弱い節をやり直せます。',
+      _ => 'You may mark done or retry weaker ayahs.',
+    };
+  }
+
+  static String getSetoranSummaryTryAgain(String language) {
+    return switch (language) {
+      'id' => 'Coba lagi',
+      'en' => 'Try again',
+      'zh' => '再试',
+      'ja' => 'もう一度',
+      _ => 'Try again',
+    };
+  }
+
+  static String getSetoranSummaryOpen(String language) {
+    return switch (language) {
+      'id' => 'Lihat ringkasan',
+      'en' => 'View summary',
+      'zh' => '查看总结',
+      'ja' => '要約を見る',
+      _ => 'View summary',
+    };
+  }
+
+  static String getSetoranSummaryBannerBody(
+    String language,
+    int done,
+    int total,
+    int noteCount,
+  ) {
+    return switch (language) {
+      'id' =>
+        'Anda menyelesaikan $done dari $total ayat. '
+        '${noteCount > 0 ? 'Ada $noteCount catatan tajwid untuk dipelajari.' : 'Tidak ada catatan tajwid khusus.'}',
+      'en' =>
+        'You completed $done of $total ayahs. '
+        '${noteCount > 0 ? 'There are $noteCount tajweed notes to review.' : 'No specific tajweed notes.'}',
+      'zh' =>
+        '已完成 $done/$total 节。'
+        '${noteCount > 0 ? '有 $noteCount 条塔吉维德说明可供复习。' : '无特别塔吉维德说明。'}',
+      'ja' =>
+        '$total 節中 $done 節を完了しました。'
+        '${noteCount > 0 ? 'タジウィードの注意が $noteCount 件あります。' : '特記事項はありません。'}',
+      _ => 'Completed $done of $total ayahs.',
+    };
+  }
+
+  static String formatSetoranSummaryAyahLabel(String language, int ayahNo) {
+    return switch (language) {
+      'id' => 'Ayat $ayahNo',
+      'en' => 'Ayah $ayahNo',
+      'zh' => '第 $ayahNo 节',
+      'ja' => '第 $ayahNo 節',
+      _ => 'Ayah $ayahNo',
+    };
+  }
+
+  static String getSetoranTajwidScoreLabel(String language) {
+    return switch (language) {
+      'id' => 'Skor tajwid:',
+      'en' => 'Tajweed score:',
+      'zh' => '塔吉维德得分：',
+      'ja' => 'タジウィードスコア：',
+      _ => 'Tajweed score:',
+    };
+  }
+
+  static String getSetoranSpeechWrongLanguage(String language) {
+    return switch (language) {
+      'id' =>
+        'Bukan bahasa Arab — pasang bahasa Arab di pengenalan suara, atau gunakan Sudah benar / Perlu ulang',
+      'en' =>
+        'Not Arabic — install Arabic speech recognition or use manual buttons',
+      'zh' => '非阿拉伯语识别 — 请安装阿拉伯语或手动标记',
+      'ja' => 'アラビア語ではありません — 手動で判定してください',
+      _ => 'Not recognized as Arabic',
+    };
+  }
+
+  static String getSetoranRecordingEmpty(String language) {
+    return switch (language) {
+      'id' => 'Rekaman kosong — coba rekam lagi lebih dekat ke mic',
+      'en' => 'Recording is empty — try again closer to the mic',
+      'zh' => '录音为空 — 请靠近麦克风重试',
+      'ja' => '録音が空です — マイクに近づけて再試行してください',
+      _ => 'Recording is empty — try again',
+    };
+  }
+
+  static String getSetoranPlaybackFailed(String language) {
+    return switch (language) {
+      'id' => 'Gagal memutar rekaman — coba rekam ulang',
+      'en' => 'Could not play recording — try recording again',
+      'zh' => '无法播放录音 — 请重新录制',
+      'ja' => '再生できません — 再録音してください',
+      _ => 'Playback failed',
+    };
+  }
+
+  static String getSetoranPlaybackRerecordHint(String language) {
+    return switch (language) {
+      'id' =>
+        'Rekaman lama tidak bisa diputar — ketuk mic, rekam ulang, lalu Putar rekaman',
+      'en' =>
+        'Old recording cannot play — tap mic, record again, then Play recording',
+      'zh' => '旧录音无法播放 — 请重新录制后再播放',
+      'ja' => '古い録音は再生できません — 再録音してください',
+      _ => 'Please record again, then play',
+    };
+  }
+
+  static String getSetoranAyahCorrect(String language) {
+    return switch (language) {
+      'id' => 'Sudah benar',
+      'en' => 'Correct',
+      'zh' => '读对了',
+      'ja' => '正しい',
+      _ => 'Correct',
+    };
+  }
+
+  static String getSetoranAyahRetry(String language) {
+    return switch (language) {
+      'id' => 'Perlu ulang',
+      'en' => 'Try again',
+      'zh' => '需要重读',
+      'ja' => 'やり直す',
+      _ => 'Try again',
+    };
+  }
+
+  static String getSetoranAyahReset(String language) {
+    return switch (language) {
+      'id' => 'Ulangi ayat',
+      'en' => 'Retry ayah',
+      'zh' => '重读本节',
+      'ja' => '再読',
+      _ => 'Retry ayah',
+    };
+  }
+
+  static String getSetoranRecordAyah(String language) {
+    return switch (language) {
+      'id' => 'Rekam bacaan',
+      'en' => 'Record recitation',
+      'zh' => '录音诵读',
+      'ja' => '録音する',
+      _ => 'Record recitation',
+    };
+  }
+
+  static String getSetoranStopRecording(String language) {
+    return switch (language) {
+      'id' => 'Stop rekam',
+      'en' => 'Stop recording',
+      'zh' => '停止录音',
+      'ja' => '録音停止',
+      _ => 'Stop recording',
+    };
+  }
+
+  static String getSetoranPlayRecording(String language) {
+    return switch (language) {
+      'id' => 'Putar rekaman',
+      'en' => 'Play recording',
+      'zh' => '播放录音',
+      'ja' => '録音を再生',
+      _ => 'Play recording',
+    };
+  }
+
+  static String getSetoranStopPlayback(String language) {
+    return switch (language) {
+      'id' => 'Stop putar',
+      'en' => 'Stop playback',
+      'zh' => '停止播放',
+      'ja' => '再生停止',
+      _ => 'Stop playback',
+    };
+  }
+
+  static String getSetoranRecordingSaved(String language) {
+    return switch (language) {
+      'id' => 'Rekaman tersimpan',
+      'en' => 'Recording saved',
+      'zh' => '录音已保存',
+      'ja' => '録音を保存しました',
+      _ => 'Recording saved',
+    };
+  }
+
+  static String getSetoranMicPermissionDenied(String language) {
+    return switch (language) {
+      'id' => 'Izin mikrofon ditolak — aktifkan di pengaturan perangkat',
+      'en' => 'Microphone permission denied — enable it in device settings',
+      'zh' => '麦克风权限被拒绝 — 请在设备设置中开启',
+      'ja' => 'マイクの許可がありません — 設定で有効にしてください',
+      _ => 'Microphone permission denied',
+    };
+  }
+
+  static String getSetoranRevealAllHint(String language, int done, int total) {
+    return switch (language) {
+      'id' => 'Ayat jelas: $done / $total — selesaikan semua untuk setoran.',
+      'en' => 'Revealed: $done / $total — complete all ayahs to finish setoran.',
+      'zh' => '已显示：$done / $total — 完成所有节后标记复习。',
+      'ja' => '表示済み：$done / $total — 全節で完了。',
+      _ => 'Revealed: $done / $total ayahs.',
+    };
+  }
+
+  static String getJuzAmmaMemorizedLabel(String language) {
+    return switch (language) {
+      'id' => 'Ayat dihafal',
+      'en' => 'Ayahs memorized',
+      'zh' => '已背经文',
+      'ja' => '暗誦した節',
+      _ => 'Ayahs memorized',
+    };
+  }
+
+  static String getJuzAmmaMarkMemorized(String language) {
+    return switch (language) {
+      'id' => 'Tandai dihafal',
+      'en' => 'Mark memorized',
+      'zh' => '标记已背',
+      'ja' => '暗誦済みにする',
+      _ => 'Mark memorized',
+    };
+  }
+
+  static String formatJuzAmmaAyahRef(
+    int surah,
+    int from,
+    int to,
+    String language,
+  ) {
+    final ref = from == to ? '$surah:$from' : '$surah:$from–$to';
+    return switch (language) {
+      'id' => 'QS. $ref',
+      'en' => 'Q. $ref',
+      'zh' => '第 $ref 节',
+      'ja' => 'クルアーン $ref',
+      _ => 'Q. $ref',
+    };
+  }
+
   static String getAsmaEmpty(String language) {
     return switch (language) {
       'id' => 'Belum ada entri Asmaul Husna.',
@@ -603,6 +1938,20 @@ class AppLocalizations {
       'ja' => '読む',
       _ => 'Read',
     };
+  }
+
+  static String _getHafalan(String language) {
+    return switch (language) {
+      'id' => 'Hafalan',
+      'en' => 'Memorize',
+      'zh' => '背诵',
+      'ja' => '暗誦',
+      _ => 'Memorize',
+    };
+  }
+
+  static String _getHafalanNav(String language) {
+    return _getHafalan(language);
   }
 
   static String _getSearch(String language) {

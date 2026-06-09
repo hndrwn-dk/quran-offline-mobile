@@ -1,7 +1,7 @@
 name: quran_offline
 description: Quran Offline is a simple, fast, and distraction-free Qur’an reading app designed for all ages
 publish_to: 'none'
-version: 1.0.1+19
+version: 1.0.2+23
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -66,6 +66,7 @@ flutter:
     - assets/reflection/calendar_lenses_catalog.json
     - assets/reflection/weekly_rotation_catalog.json
     - assets/asma/
+    - assets/quran/surah_info_qul.json
   
   fonts:
     - family: UthmanicHafsV22
@@ -80,6 +81,9 @@ flutter:
     - family: ScheherazadeNew
       fonts:
         - asset: assets/fonts/ScheherazadeNew-Regular.ttf
+    - family: SurahNameV2
+      fonts:
+        - asset: assets/fonts/surah_name_v2.ttf
 
 flutter_native_splash:
   image: assets/icon/splash_icon.png

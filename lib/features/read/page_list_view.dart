@@ -6,10 +6,13 @@ import 'package:quran_offline/core/providers/page_surahs_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 
 class PageListView extends ConsumerWidget {
-  const PageListView({super.key});
+  const PageListView({super.key, this.topWidgets = const []});
+
+  final List<Widget> topWidgets;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,10 +20,14 @@ class PageListView extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      itemCount: 604,
-      itemBuilder: (context, index) {
+    return CustomScrollView(
+      slivers: [
+        for (final widget in topWidgets) SliverToBoxAdapter(child: widget),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
         final pageNo = index + 1;
         final pageSurahsAsync = ref.watch(pageSurahsProvider(pageNo));
 
@@ -178,20 +185,7 @@ class PageListView extends ConsumerWidget {
                                       ),
                                     ),
                                     // Arabic name
-                                    Directionality(
-                                      textDirection: TextDirection.rtl,
-                                      child: Text(
-                                        surahInfo.arabicName,
-                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                          fontFamily: 'UthmanicHafsV22',
-                                          fontFamilyFallback: const ['UthmanicHafs'],
-                                          color: colorScheme.onSurface,
-                                          height: 1.4,
-                                        ),
-                                        textDirection: TextDirection.rtl,
-                                        textAlign: TextAlign.right,
-                                      ),
-                                    ),
+                                    SurahNameListGlyph(surahId: surahInfo.id),
                                   ],
                                 ),
                               );
@@ -226,7 +220,12 @@ class PageListView extends ConsumerWidget {
             child: Text('Error: $error'),
           ),
         );
-      },
+              },
+              childCount: 604,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
