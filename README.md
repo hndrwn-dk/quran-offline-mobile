@@ -53,6 +53,11 @@ A production-ready, offline-first Quran reader app built with Flutter, featuring
 ### 📤 Sharing
 - **Share Verses**: Share verses with others via system share dialog
 
+### 📿 Hafalan & Setoran (Juz Amma)
+- **Program hafalan**: 41-unit Juz Amma schedule with Friday murojaah
+- **Setoran session**: Ghost-text recitation check with device STT (Arabic locale) and manual fallback
+- **Team docs**: [docs/hafalan-setoran.md](docs/hafalan-setoran.md)
+
 ### 🎯 Additional Features
 - **Offline-First**: Fully functional without internet connection
 - **Material 3 Design**: Modern, accessible UI following Material You guidelines

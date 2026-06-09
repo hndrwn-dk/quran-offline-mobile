@@ -51,7 +51,7 @@ class LastReadCard extends ConsumerWidget {
             };
             break;
           case 'juz':
-            title = 'Juz ${lastRead.id}';
+            title = AppLocalizations.getJuzTitle(appLanguage, lastRead.id);
             subtitle = lastRead.ayahNo != null
                 ? '${AppLocalizations.getMenuText('juz', appLanguage)} ${lastRead.id}:${lastRead.ayahNo}'
                 : AppLocalizations.getMenuText('juz', appLanguage);

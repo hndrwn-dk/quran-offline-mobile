@@ -1,0 +1,254 @@
+{
+  "version": 1,
+  "juz": 30,
+  "nameKey": "juz_amma",
+  "tahsinDays": 5,
+  "units": [
+    {
+      "sort": 1,
+      "surah": 114,
+      "from": 1,
+      "to": 6
+    },
+    {
+      "sort": 2,
+      "surah": 113,
+      "from": 1,
+      "to": 5
+    },
+    {
+      "sort": 3,
+      "surah": 112,
+      "from": 1,
+      "to": 4
+    },
+    {
+      "sort": 4,
+      "surah": 111,
+      "from": 1,
+      "to": 5
+    },
+    {
+      "sort": 5,
+      "surah": 110,
+      "from": 1,
+      "to": 3
+    },
+    {
+      "sort": 6,
+      "surah": 109,
+      "from": 1,
+      "to": 6
+    },
+    {
+      "sort": 7,
+      "surah": 108,
+      "from": 1,
+      "to": 3
+    },
+    {
+      "sort": 8,
+      "surah": 107,
+      "from": 1,
+      "to": 7
+    },
+    {
+      "sort": 9,
+      "surah": 106,
+      "from": 1,
+      "to": 4
+    },
+    {
+      "sort": 10,
+      "surah": 105,
+      "from": 1,
+      "to": 5
+    },
+    {
+      "sort": 11,
+      "surah": 104,
+      "from": 1,
+      "to": 9
+    },
+    {
+      "sort": 12,
+      "surah": 103,
+      "from": 1,
+      "to": 3
+    },
+    {
+      "sort": 13,
+      "surah": 102,
+      "from": 1,
+      "to": 8
+    },
+    {
+      "sort": 14,
+      "surah": 101,
+      "from": 1,
+      "to": 11
+    },
+    {
+      "sort": 15,
+      "surah": 100,
+      "from": 1,
+      "to": 11
+    },
+    {
+      "sort": 16,
+      "surah": 99,
+      "from": 1,
+      "to": 8
+    },
+    {
+      "sort": 17,
+      "surah": 98,
+      "from": 1,
+      "to": 8
+    },
+    {
+      "sort": 18,
+      "surah": 97,
+      "from": 1,
+      "to": 5
+    },
+    {
+      "sort": 19,
+      "surah": 96,
+      "from": 1,
+      "to": 19
+    },
+    {
+      "sort": 20,
+      "surah": 95,
+      "from": 1,
+      "to": 8
+    },
+    {
+      "sort": 21,
+      "surah": 94,
+      "from": 1,
+      "to": 8
+    },
+    {
+      "sort": 22,
+      "surah": 93,
+      "from": 1,
+      "to": 11
+    },
+    {
+      "sort": 23,
+      "surah": 92,
+      "from": 1,
+      "to": 21
+    },
+    {
+      "sort": 24,
+      "surah": 91,
+      "from": 1,
+      "to": 15
+    },
+    {
+      "sort": 25,
+      "surah": 90,
+      "from": 1,
+      "to": 20
+    },
+    {
+      "sort": 26,
+      "surah": 89,
+      "from": 1,
+      "to": 30
+    },
+    {
+      "sort": 27,
+      "surah": 88,
+      "from": 1,
+      "to": 26
+    },
+    {
+      "sort": 28,
+      "surah": 87,
+      "from": 1,
+      "to": 19
+    },
+    {
+      "sort": 29,
+      "surah": 86,
+      "from": 1,
+      "to": 17
+    },
+    {
+      "sort": 30,
+      "surah": 85,
+      "from": 1,
+      "to": 22
+    },
+    {
+      "sort": 31,
+      "surah": 84,
+      "from": 1,
+      "to": 25
+    },
+    {
+      "sort": 32,
+      "surah": 83,
+      "from": 1,
+      "to": 18
+    },
+    {
+      "sort": 33,
+      "surah": 83,
+      "from": 19,
+      "to": 36
+    },
+    {
+      "sort": 34,
+      "surah": 82,
+      "from": 1,
+      "to": 19
+    },
+    {
+      "sort": 35,
+      "surah": 81,
+      "from": 1,
+      "to": 29
+    },
+    {
+      "sort": 36,
+      "surah": 80,
+      "from": 1,
+      "to": 21
+    },
+    {
+      "sort": 37,
+      "surah": 80,
+      "from": 22,
+      "to": 42
+    },
+    {
+      "sort": 38,
+      "surah": 79,
+      "from": 1,
+      "to": 23
+    },
+    {
+      "sort": 39,
+      "surah": 79,
+      "from": 24,
+      "to": 46
+    },
+    {
+      "sort": 40,
+      "surah": 78,
+      "from": 1,
+      "to": 20
+    },
+    {
+      "sort": 41,
+      "surah": 78,
+      "from": 21,
+      "to": 40
+    }
+  ]
+}

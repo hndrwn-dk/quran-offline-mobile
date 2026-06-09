@@ -24,7 +24,7 @@ Future<void> openPlayingRecitation(BuildContext context, WidgetRef ref) async {
   );
   if (strategy == RecitationOpenStrategy.none || surahId == null) return;
 
-  ref.read(currentTabProvider.notifier).state = 0;
+  ref.read(currentTabProvider.notifier).state = AppTab.read;
 
   if (strategy == RecitationOpenStrategy.jumpMushaf ||
       strategy == RecitationOpenStrategy.pushMushaf) {

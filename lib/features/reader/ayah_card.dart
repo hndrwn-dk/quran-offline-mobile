@@ -8,7 +8,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/audio/playback_actions.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
+import 'package:quran_offline/core/models/juz_amma_hafalan.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
+import 'package:quran_offline/core/providers/juz_amma_hafalan_provider.dart';
 import 'package:quran_offline/core/providers/highlights_provider.dart';
 import 'package:quran_offline/core/providers/notes_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
@@ -120,6 +122,14 @@ class _AyahCardState extends ConsumerState<AyahCard> {
         audio.ayahNo == widget.verse.ayahNo;
     final isPlayingThis = isCurrentAyah && audio.isPlaying;
 
+    final showJuzAmma = isJuzAmmaSurah(widget.verse.surahId);
+    final memorizedAsync = ref.watch(juzAmmaMemorizedProvider);
+    final isMemorized = memorizedAsync.maybeWhen(
+      data: (set) =>
+          set.contains('${widget.verse.surahId}:${widget.verse.ayahNo}'),
+      orElse: () => false,
+    );
+
     final BoxDecoration? decoration = isCurrentAyah
         ? BoxDecoration(
             color: colorScheme.primary.withOpacity(0.10),
@@ -190,6 +200,34 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                       constraints: const BoxConstraints(),
                       onPressed: () => _togglePlay(audio),
                     ),
+                    if (showJuzAmma) ...[
+                      const SizedBox(width: 4),
+                      IconButton(
+                        icon: Icon(
+                          isMemorized
+                              ? Icons.check_circle
+                              : Icons.check_circle_outline,
+                          size: 20,
+                        ),
+                        color: isMemorized
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant.withOpacity(0.6),
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        tooltip: AppLocalizations.getJuzAmmaMarkMemorized(
+                          settings.appLanguage,
+                        ),
+                        onPressed: () async {
+                          await toggleJuzAmmaAyahMemorized(
+                            ref,
+                            widget.verse.surahId,
+                            widget.verse.ayahNo,
+                            !isMemorized,
+                          );
+                        },
+                      ),
+                    ],
                     const SizedBox(width: 4),
                     IconButton(
                       icon: Icon(
