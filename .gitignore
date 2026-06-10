@@ -96,3 +96,8 @@ assets/tafsir/*.sqlite
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 docs/
+assets/quran/*.json
+
+# Local dev artifacts
+lib/features/read/widgets/mushaf_page_view.dart.backup
+lib/features/read/widgets/mushaf_page_view_flowing_improved.dart
