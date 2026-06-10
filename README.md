@@ -45,7 +45,7 @@ A production-ready, offline-first Quran reader built with Flutter and Material 3
 
 ### Explore & reflection
 
-- **Dua** catalog, **science & Quran**, **life themes**
+- **Dua** catalog, **science & Quran**, **life themes** (local JSON — see [DATA_SOURCES.md](DATA_SOURCES.md))
 - **Weekly reflection** and calendar lenses on Read tab
 - **Asmaul Husna** names
 

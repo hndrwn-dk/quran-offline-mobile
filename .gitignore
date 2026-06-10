@@ -92,6 +92,16 @@ assets/quran/surah_names/**
 !assets/quran/surah_names/.gitkeep
 assets/tafsir/*.sqlite
 !assets/tafsir/.gitkeep
+assets/duas/*.json
+!assets/duas/.gitkeep
+assets/asma/*.json
+!assets/asma/.gitkeep
+assets/science/*.json
+!assets/science/.gitkeep
+assets/themes/*.json
+!assets/themes/.gitkeep
+assets/reflection/*.json
+!assets/reflection/.gitkeep
 
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
