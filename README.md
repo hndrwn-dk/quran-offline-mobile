@@ -1,158 +1,147 @@
 # Quran Offline
 
-A production-ready, offline-first Quran reader app built with Flutter, featuring Material 3 design, comprehensive reading modes, and advanced features for an enhanced Quranic reading experience.
+A production-ready, offline-first Quran reader built with Flutter and Material 3 — Surah, Juz, and Mushaf reading with tajweed, tafsir, recitation, and a personal library.
 
-## ✨ Features
+**Current version:** 1.0.2 (build 22)
 
-### 📖 Reading Modes
-- **Read by Surah**: Navigate through all 114 surahs with word-by-word translation
-- **Read by Juz**: Read by 30 juz divisions
-- **Read by Pages (Mushaf)**: Traditional page-by-page reading (604 pages)
-- **Last Read**: Automatically saves and resumes your reading position
-- **Swipe Navigation**: Effortlessly swipe between Surah, Juz, and Page modes
+## Features
 
-### 🎨 Tajweed Color Coding
-- **8 Tajweed Rules**: Visual color coding for proper Quranic recitation
-  - Ikhfa (Concealment)
-  - Idgham (Merging)
-  - Iqlab (Conversion)
-  - Ghunnah (Nasalization)
-  - Qalqalah (Echo)
-  - Laam Shamsiyah (Solar Lam)
-  - Madd (Elongation)
-  - Ham Wasl (Connecting Hamza)
-- **Interactive Color Guide**: Tap info icon to view detailed tajweed guide
-- **100% Offline**: All tajweed data stored locally
-- **Toggle Support**: Enable/disable tajweed from Settings or Text Settings
+### Reading
 
-### 📚 My Library
-- **Unified Library**: All personal content in one place with tab navigation
-  - **Bookmarks**: Save and organize favorite verses with bulk delete support
-  - **Notes**: Add personal notes to any verse with search and navigation
-  - **Highlights**: Color-code verses with 8 highlight colors (Favorite, Inspiring, Love, etc.)
-- **Card-Based Design**: Beautiful card layout with verse previews
-- **Arabic & Translation Preview**: See verse content directly in lists
-- **Global Search**: Search across all bookmarks, notes, and highlights
+- **Surah / Juz / Mushaf (604 pages)** with swipe between modes
+- **Last read** resume across Surah, Juz, and page
+- **Reader** with per-ayah translation, transliteration, and tajweed
+- **QUL surah header** — decorative SurahNameV2 glyph plus **Tentang surat** (QUL surah info, EN/ID)
+- **Mushaf** flowing layout with tajweed, tap-to-play ayah, long-press for meaning/bookmark/share
+- **QUL surah titles** in Mushaf (SurahNameV2 font, sized for page layout)
 
-### 🔍 Search & Navigation
-- **Quick Search**: Inline search in Read screen for Surah, Juz, or Page
-- **Advanced Search**: Full-text search through translations
-- **Instant Results**: Quick navigation to search results
+### Audio recitation
 
-### 🌍 Localization
-- **4 Languages**: Full support for Indonesian, English, Chinese, and Japanese
-- **Complete UI Localization**: All UI elements properly localized
-- **Tajweed Guide Localized**: Interactive guide in all supported languages
+- **Per-ayah playback** with global mini player (background-friendly)
+- **Offline download** per surah or full reciter catalog (EveryAyah)
+- Follow-along scroll while reciting
 
-### ⚙️ Customization
-- **Font Sizes**: Adjustable Arabic and translation font sizes independently
-- **Transliteration**: Optional transliteration display
-- **Theme**: System, Light, or Dark mode support
-- **Text Settings**: Quick access to text customization
+### Tafsir
 
-### 📤 Sharing
-- **Share Verses**: Share verses with others via system share dialog
+- Inline **tafsir panel** per ayah (toggle in text settings)
+- Bundled QUL SQLite: Ibn Kathir (EN), As-Sa'di (ID), Mokhtasar (ZH/JA)
 
-### 🎯 Additional Features
-- **Offline-First**: Fully functional without internet connection
-- **Material 3 Design**: Modern, accessible UI following Material You guidelines
-- **Privacy-First**: No analytics or tracking by default
-- **Performance Optimized**: Smooth scrolling and fast navigation
+### Tajweed
 
-## 📋 Requirements
+- Eight color-coded rules (Ikhfa, Idgham, Iqlab, Ghunnah, Qalqalah, Laam Shamsiyah, Madd, Ham Wasl)
+- Interactive guide (localized)
+- Toggle from Settings or reader text settings
 
-- Flutter SDK >=3.0.0
-- Dart SDK >=3.0.0
+### Search
 
-## 🚀 Installation
+- **Quick search** on Read tab (Surah / Juz / Page)
+- **Full search** tab — surah, juz, page, ayat, terjemahan
+- **QUL name glyphs** (SurahNameV2) in surah search results
+
+### My Library
+
+- **Bookmarks**, **notes**, and **highlights** in one screen
+- Arabic + translation previews, global search, jump back to reader or Mushaf
+
+### Explore & reflection
+
+- **Dua** catalog, **science & Quran**, **life themes**
+- **Weekly reflection** and calendar lenses on Read tab
+- **Asmaul Husna** names
+
+### Localization & settings
+
+- **4 UI languages:** Indonesian, English, Chinese, Japanese
+- **Single Bahasa setting** — menu, terjemahan, tafsir, and surah info follow one locale
+- Transliteration, tajweed, tafsir, and font size toggles
+- System / light / dark theme
+- **Data sources** credits (Quran Foundation, QUL, EveryAyah)
+
+### Privacy
+
+- Offline-first core experience
+- No analytics or tracking by default
+- User data stored locally
+
+## Requirements
+
+- Flutter SDK >= 3.0.0
+- Dart SDK >= 3.0.0
+
+## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd quran-offline-mobile
 ```
 
 2. Install dependencies:
+
 ```bash
 flutter pub get
 ```
 
-3. Generate code (for Drift and JSON serialization):
+3. Add Quran data under `assets/` — see [DATA_SOURCES.md](DATA_SOURCES.md) and [assets/README.md](assets/README.md).
+
+4. Generate code (Drift + JSON):
+
 ```bash
-flutter pub run build_runner build --delete-conflicting-outputs
+dart run build_runner build --delete-conflicting-outputs
 ```
 
-   **Note**: This step is required before running the app. It generates:
-   - `lib/core/database/database.g.dart` (Drift database code)
-   - `lib/core/models/verse_model.g.dart` (JSON serialization code)
+5. Run the app:
 
-4. Run the app:
 ```bash
 flutter run
 ```
 
-## 📁 Project Structure
+## Project structure
 
 ```
 lib/
-├── app/                 # App initialization
+├── app/
 ├── core/
-│   ├── database/        # Drift database schema and importer
-│   ├── models/         # Data models
-│   ├── providers/      # Riverpod providers
-│   ├── utils/          # Utilities (localization, helpers)
-│   └── widgets/        # Core widgets (TajweedText, etc.)
+│   ├── database/       # Drift schema + verse importer
+│   ├── surah_info/     # QUL surah info SQLite
+│   ├── tafsir/         # QUL tafsir SQLite
+│   ├── providers/
+│   ├── utils/
+│   └── widgets/        # TajweedText, SurahNameGlyph, NavReadIcon, …
 └── features/
-    ├── bookmarks/      # Bookmarks feature
-    ├── highlights/     # Highlights feature
-    ├── home/           # Main navigation
-    ├── library/        # My Library (unified screen)
-    ├── notes/          # Notes feature
-    ├── read/           # Reading modes (Surah/Juz/Pages)
-    ├── reader/         # Verse reader screen
-    ├── search/         # Search functionality
-    └── settings/       # App settings
+    ├── audio/          # Global recitation bar, offline downloads
+    ├── read/           # Surah / Juz / Mushaf lists + page view
+    ├── reader/         # Verse reader, tafsir panel, surah header
+    ├── search/
+    ├── library/
+    ├── settings/
+    └── …
+integration_test/       # Emulator QA regression (optional)
 ```
 
-## 📊 Data Format
+## Data
 
-The app uses Quran.com v4 style JSON format:
-- `manifest_multi.json`: Dataset metadata
-- `s###.json`: Individual surah files (s001.json to s114.json)
-  - Each file contains: Arabic text, Tajweed HTML (`tj`), Transliteration, Translations (EN/ID/ZH/JA)
-- `index_juz.json`: Juz index mapping
-- `index_pages.json`: Page index mapping
-- `surah_names/`: Localized surah names
+Verse JSON, tafsir, and surah-info SQLite paths are documented in [DATA_SOURCES.md](DATA_SOURCES.md).
 
-## 💾 Database
+On first launch the app imports `assets/quran/s*.json` into a local Drift database. Audio is streamed or cached from EveryAyah at runtime (not under `assets/`).
 
-The app uses Drift (SQLite) for local storage:
-- **Verses Table**: Stores all verses with translations and tajweed data
-- **Bookmarks Table**: Stores user bookmarks
-- **Notes Table**: Stores user notes per verse
-- **Highlights Table**: Stores user highlights with color codes
-- Data is imported from JSON assets on first launch
+## Testing
 
-## ⚙️ Settings
+**Unit / widget tests:**
 
-- **Language**: Switch between Indonesian, English, Chinese, Japanese
-- **Show Tajweed**: Toggle color-coded tajweed rules with interactive guide
-- **Transliteration**: Toggle transliteration display
-- **Font Sizes**: Adjust Arabic and translation font sizes independently
-- **Theme**: System, Light, or Dark mode
-
-## 🧪 Testing
-
-Quick start:
 ```bash
-# Generate required code first
-flutter pub run build_runner build --delete-conflicting-outputs
-
-# Run on connected device/emulator
-flutter run
+flutter test
 ```
 
-## 📦 Building for Release
+**Emulator QA regression** (device required):
+
+```bash
+bash scripts/run_qa_integration_tests.sh
+# or: flutter test integration_test/qa_regression_test.dart -d <device-id>
+```
+
+## Building for release
 
 ### Android
 
@@ -160,7 +149,13 @@ flutter run
 flutter build appbundle
 ```
 
-The AAB file will be generated at: `build/app/outputs/bundle/release/app-release.aab`
+Output: `build/app/outputs/bundle/release/app-release.aab`
+
+APK:
+
+```bash
+flutter build apk --release
+```
 
 ### iOS
 
@@ -169,36 +164,23 @@ flutter build ios
 flutter build ipa
 ```
 
-## 🔒 Privacy
+## License
 
-This app:
-- Works fully offline
-- Does not collect analytics
-- Does not track users
-- Stores all data locally
-- No internet connection required
+- **Source code:** MIT — see [LICENSE](LICENSE)
+- **Quran / translation / tafsir / surah-info data:** see [DATA_SOURCES.md](DATA_SOURCES.md); each source has its own terms
 
-## 📝 Version
+## Credits
 
-**Current Version**: 1.0.1 (Build 16)
+- **Quran text & translations:** Quran Foundation / [Quran.com](https://quran.com/) API v4
+- **Surah info & tafsir:** [QUL](https://qul.tarteel.ai/) (Quranic Universal Library)
+- **Recitation audio:** [EveryAyah](https://everyayah.com/)
+- **Surah name font:** QUL SurahNameV2
+- **Arabic fonts:** King Fahd Complex (Uthmanic HAFS), SIL Scheherazade New
 
-## 📄 License
+## Technical stack
 
-MIT License - see LICENSE file for details
-
-## 🙏 Credits
-
-- **Quran Data**: Quran Foundation / Quran.com v4
-- **Tajweed Data**: Quran Foundation
-- **Fonts**: 
-  - Uthmanic HAFS V22
-  - KFGQPC Uthmanic Script
-  - Scheherazade New
-
-## 🛠️ Technical Stack
-
-- **Framework**: Flutter 3.x
-- **State Management**: Riverpod
-- **Database**: Drift (SQLite)
-- **Localization**: Custom AppLocalizations
-- **Design**: Material 3
+- Flutter 3.x, Material 3
+- Riverpod
+- Drift (SQLite)
+- just_audio + background playback
+- Custom AppLocalizations (ID / EN / ZH / JA)

@@ -19,7 +19,8 @@ class DataImporter {
     final prefs = await SharedPreferences.getInstance();
     final importedVersion = prefs.getString(_versionKey);
 
-    if (importedVersion == currentVersion) {
+    if (importedVersion == currentVersion &&
+        await _db.hasImportedQuranData()) {
       return;
     }
 

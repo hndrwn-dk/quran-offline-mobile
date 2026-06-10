@@ -48,7 +48,6 @@ final quickSearchResultsProvider = FutureProvider<List<QuickSearchResult>>((ref)
         results.insert(0, QuickSearchResult(
           type: 'surah',
           title: surah.englishName,
-          subtitle: surah.arabicName,
           source: SurahSource(surah.id),
         ));
       }
@@ -58,7 +57,6 @@ final quickSearchResultsProvider = FutureProvider<List<QuickSearchResult>>((ref)
         results.add(QuickSearchResult(
           type: 'surah',
           title: surah.englishName,
-          subtitle: surah.arabicName,
           source: SurahSource(surah.id),
         ));
       }

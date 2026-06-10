@@ -8,6 +8,7 @@ class AppSettings {
   final String appLanguage; // For UI/menu
   final bool showTransliteration;
   final bool showTranslation;
+  final bool showTafsir;
   final bool showTajweed;
   final TransliterationStyle transliterationStyle;
   final bool useTajweedTransliteration;
@@ -21,6 +22,7 @@ class AppSettings {
     this.appLanguage = 'en',
     this.showTransliteration = true,
     this.showTranslation = true, // Default to true since translations are currently always shown
+    this.showTafsir = true,
     this.showTajweed = true,
     this.transliterationStyle = TransliterationStyle.readable,
     this.useTajweedTransliteration = true,
@@ -35,6 +37,7 @@ class AppSettings {
     String? appLanguage,
     bool? showTransliteration,
     bool? showTranslation,
+    bool? showTafsir,
     bool? showTajweed,
     TransliterationStyle? transliterationStyle,
     bool? useTajweedTransliteration,
@@ -48,6 +51,7 @@ class AppSettings {
       appLanguage: appLanguage ?? this.appLanguage,
       showTransliteration: showTransliteration ?? this.showTransliteration,
       showTranslation: showTranslation ?? this.showTranslation,
+      showTafsir: showTafsir ?? this.showTafsir,
       showTajweed: showTajweed ?? this.showTajweed,
       transliterationStyle: transliterationStyle ?? this.transliterationStyle,
       useTajweedTransliteration: useTajweedTransliteration ?? this.useTajweedTransliteration,
@@ -64,6 +68,7 @@ class AppSettings {
       'appLanguage': appLanguage,
       'showTransliteration': showTransliteration,
       'showTranslation': showTranslation,
+      'showTafsir': showTafsir,
       'showTajweed': showTajweed,
       'transliterationStyle': transliterationStyle.name,
       'useTajweedTransliteration': useTajweedTransliteration,
@@ -86,6 +91,7 @@ class AppSettings {
       appLanguage: json['appLanguage'] as String? ?? language, // Default to language for backward compatibility
       showTransliteration: json['showTransliteration'] as bool? ?? true,
       showTranslation: json['showTranslation'] as bool? ?? true, // Default to true for backward compatibility
+      showTafsir: json['showTafsir'] as bool? ?? true,
       showTajweed: json['showTajweed'] as bool? ?? true,
       transliterationStyle: transliterationStyle,
       useTajweedTransliteration: useTajweedTransliteration,
@@ -111,6 +117,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final appLanguage = prefs.getString('appLanguage') ?? language; // Default to language for backward compatibility
     final showTransliteration = prefs.getBool('showTransliteration') ?? true;
     final showTranslation = prefs.getBool('showTranslation') ?? true; // Default to true for backward compatibility
+    final showTafsir = prefs.getBool('showTafsir') ?? true;
     final showTajweed = prefs.getBool('showTajweed') ?? true;
     final arabicFontSize = prefs.getDouble('arabicFontSize') ?? 30.0;
     final translationFontSize = prefs.getDouble('translationFontSize') ?? 16.0;
@@ -126,11 +133,17 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
         : TransliterationStyle.readable;
     final useTajweedTransliteration = prefs.getBool('useTajweedTransliteration') ?? true;
 
+    final syncedLanguage = language;
+    if (appLanguage != syncedLanguage) {
+      await prefs.setString('appLanguage', syncedLanguage);
+    }
+
     state = AppSettings(
-      language: language,
-      appLanguage: appLanguage,
+      language: syncedLanguage,
+      appLanguage: syncedLanguage,
       showTransliteration: showTransliteration,
       showTranslation: showTranslation,
+      showTafsir: showTafsir,
       showTajweed: showTajweed,
       transliterationStyle: transliterationStyle,
       useTajweedTransliteration: useTajweedTransliteration,
@@ -141,16 +154,20 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     );
   }
 
-  Future<void> updateLanguage(String language) async {
+  /// Sets menu UI and Qur'an content language together.
+  Future<void> updateLocale(String locale) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('language', language);
-    state = state.copyWith(language: language);
+    await prefs.setString('language', locale);
+    await prefs.setString('appLanguage', locale);
+    state = state.copyWith(language: locale, appLanguage: locale);
+  }
+
+  Future<void> updateLanguage(String language) async {
+    await updateLocale(language);
   }
 
   Future<void> updateAppLanguage(String appLanguage) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('appLanguage', appLanguage);
-    state = state.copyWith(appLanguage: appLanguage);
+    await updateLocale(appLanguage);
   }
 
   Future<void> updateShowTransliteration(bool show) async {
@@ -163,6 +180,12 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('showTranslation', show);
     state = state.copyWith(showTranslation: show);
+  }
+
+  Future<void> updateShowTafsir(bool show) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('showTafsir', show);
+    state = state.copyWith(showTafsir: show);
   }
 
   Future<void> updateShowTajweed(bool show) async {

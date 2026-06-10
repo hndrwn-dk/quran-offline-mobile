@@ -58,9 +58,18 @@ class Highlights extends Table {
   Set<Column> get primaryKey => {surahId, ayahNo};
 }
 
+AppDatabase? _sharedAppDatabase;
+
+/// One SQLite connection for the app process (avoids drift multi-instance races).
+AppDatabase openAppDatabase() {
+  return _sharedAppDatabase ??= AppDatabase._();
+}
+
 @DriftDatabase(tables: [Verses, Bookmarks, Notes, Highlights])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase._() : super(_openConnection());
+
+  factory AppDatabase() => openAppDatabase();
 
   @override
   int get schemaVersion => 4;
@@ -101,6 +110,14 @@ class AppDatabase extends _$AppDatabase {
         }
       },
     );
+  }
+
+  Future<bool> hasImportedQuranData() async {
+    final row = await customSelect(
+      'SELECT COUNT(*) AS c FROM verses',
+      readsFrom: {verses},
+    ).getSingle();
+    return row.read<int>('c') > 0;
   }
 
   Future<List<Verse>> getVersesBySurah(int surahId) {

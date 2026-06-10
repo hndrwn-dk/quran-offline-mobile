@@ -50,7 +50,6 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
         results.add(SearchResult(
           type: 'surah',
           title: surah.englishName,
-          subtitle: surah.arabicName,
           source: SurahSource(surah.id),
         ));
       }

@@ -6,6 +6,7 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/nav_read_icon.dart';
 import 'package:quran_offline/features/read/juz_list_view.dart';
 import 'package:quran_offline/features/read/page_list_view.dart';
 import 'package:quran_offline/features/read/surah_list_view.dart';
@@ -87,11 +88,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
                                   ),
                                 ),
                                 alignment: Alignment.center,
-                                child: Icon(
-                                  Icons.menu_book_outlined,
-                                  size: 20,
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
+                                child: const NavReadIcon(selected: true, size: 20),
                               ),
                               const SizedBox(width: 10),
                               Column(
@@ -201,11 +198,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
                 ),
               ),
               alignment: Alignment.center,
-              child: Icon(
-                Icons.menu_book_outlined,
-                size: 18,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+              child: const NavReadIcon(selected: true, size: 18),
             ),
             const SizedBox(width: 10),
             Column(
