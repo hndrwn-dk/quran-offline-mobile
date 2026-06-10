@@ -18,6 +18,7 @@ import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
+import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 import 'package:quran_offline/features/audio/global_recitation_bar.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_offline_audio_banner.dart';
@@ -585,7 +586,10 @@ class _MushafPageState extends ConsumerState<MushafPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.text_fields),
-            tooltip: 'Text settings',
+            tooltip: AppLocalizations.getSettingsText(
+              'text_settings_title',
+              appLanguage,
+            ),
             onPressed: () {
               showModalBottomSheet(
                 context: context,
@@ -667,6 +671,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                     ),
                   ),
                   MushafOfflineAudioBanner(pageNo: widget.pageNo),
+                  const SizedBox(height: 20),
                 ],
                 Expanded(
                   child: SingleChildScrollView(
@@ -714,6 +719,12 @@ class _MushafPageState extends ConsumerState<MushafPage> {
     );
   }
 }
+
+/// Outer gap around surah name; matches [SurahNameMushafGlyph] vertical pad (10).
+const _mushafSurahNameOuterGap = 12.0;
+
+/// Top inset when a surah title follows ayat on the same page (same visual gap as name→Bismillah).
+const _mushafSurahNameAfterAyahTop = 24.0;
 
 /// Widget untuk menampilkan teks mushaf yang mengalir
 class _FlowingMushafText extends ConsumerWidget {
@@ -796,37 +807,37 @@ class _FlowingMushafText extends ConsumerWidget {
     for (final block in blocks) {
       if (block.isSurahHeader) {
         flushCurrentSpans();
-        
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final shadowColor = isDark
-            ? colorScheme.primary.withOpacity(0.15)
-            : colorScheme.primary.withOpacity(0.12);
-        
+
+        final surahId = block.surahId;
+        final followsAyahOnPage = children.isNotEmpty;
         children.add(
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Directionality(
-              textDirection: TextDirection.rtl,
-              child: Text(
-                block.text,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'UthmanicHafsV22',
-                  fontFamilyFallback: const ['UthmanicHafs'],
-                  fontSize: fontSize + 4,
-                  fontWeight: FontWeight.w600,
-                  height: 1.7,
-                  color: colorScheme.onSurface,
-                  letterSpacing: 0.5,
-                  shadows: [
-                    Shadow(
-                      color: shadowColor,
-                      offset: const Offset(0, 1.5),
-                      blurRadius: 3,
+            padding: EdgeInsets.only(
+              top: followsAyahOnPage
+                  ? _mushafSurahNameAfterAyahTop
+                  : _mushafSurahNameOuterGap,
+              bottom: _mushafSurahNameOuterGap,
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: surahId != null
+                  ? SurahNameMushafGlyph(
+                      surahId: surahId,
+                      mushafFontSize: fontSize,
+                    )
+                  : Text(
+                      block.text,
+                      textAlign: TextAlign.center,
+                      textDirection: TextDirection.rtl,
+                      style: TextStyle(
+                        fontFamily: 'UthmanicHafsV22',
+                        fontFamilyFallback: const ['UthmanicHafs'],
+                        fontSize: fontSize + 4,
+                        fontWeight: FontWeight.w600,
+                        height: 1.7,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
-                  ],
-                ),
-              ),
             ),
           ),
         );

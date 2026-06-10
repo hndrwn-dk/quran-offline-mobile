@@ -209,7 +209,11 @@ class PageListView extends ConsumerWidget {
               error: (error, stack) => Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'Error loading Page $pageNo: $error',
+                  AppLocalizations.formatPageLoadError(
+                    settings.appLanguage,
+                    pageNo,
+                    error,
+                  ),
                   style: TextStyle(color: colorScheme.error),
                 ),
               ),

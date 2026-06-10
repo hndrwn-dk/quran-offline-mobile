@@ -5,6 +5,7 @@ import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/reader/open_reader_screen.dart';
 
@@ -33,6 +34,7 @@ class SurahListView extends ConsumerWidget {
                   final surah = surahs[index];
 
                   return InkWell(
+              key: Key('surah_list_${surah.id}'),
               onTap: () {
                 final source = SurahSource(surah.id);
                 ref.read(readerSourceProvider.notifier).state = source;
@@ -119,7 +121,10 @@ class SurahListView extends ConsumerWidget {
                             SurahNameListGlyph(surahId: surah.id),
                             const SizedBox(height: 4),
                             Text(
-                              '$ayahCount Ayahs',
+                              AppLocalizations.formatSurahVerseCount(
+                                settings.appLanguage,
+                                ayahCount,
+                              ),
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                               ),

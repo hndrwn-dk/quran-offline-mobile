@@ -80,6 +80,19 @@ GOOGLE_PLAY_WHATS_NEW*.md
 # Build data and intermediate files
 data/
 
+# Quran datasets — see DATA_SOURCES.md
+assets/quran/s[0-9][0-9][0-9].json
+assets/quran/manifest_multi.json
+assets/quran/index_juz.json
+assets/quran/index_pages.json
+assets/quran/surah_meanings.json
+assets/quran/surah_info_qul.json
+assets/quran/surah_info/*.sqlite
+assets/quran/surah_names/**
+!assets/quran/surah_names/.gitkeep
+assets/tafsir/*.sqlite
+!assets/tafsir/.gitkeep
+
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 docs/

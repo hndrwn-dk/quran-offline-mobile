@@ -2225,12 +2225,16 @@ class AppLocalizations {
     return switch (key) {
       'settings_title' => _getSettingsTitle(language),
       'quran_settings_header' => _getQuranSettingsHeader(language),
+      'language_title' => _getLanguageTitle(language),
+      'language_subtitle' => _getLanguageSubtitle(language),
       'translation_language_title' => _getTranslationLanguageTitle(language),
       'translation_language_subtitle' => _getTranslationLanguageSubtitle(language),
       'show_transliteration_title' => _getShowTransliterationTitle(language),
       'show_transliteration_subtitle' => _getShowTransliterationSubtitle(language),
       'show_translation_title' => _getShowTranslationTitle(language),
       'show_translation_subtitle' => _getShowTranslationSubtitle(language),
+      'show_tafsir_title' => _getShowTafsirTitle(language),
+      'show_tafsir_subtitle' => _getShowTafsirSubtitle(language),
       'show_tajweed_title' => _getShowTajweedTitle(language),
       'show_tajweed_subtitle' => _getShowTajweedSubtitle(language),
       'app_settings_header' => _getAppSettingsHeader(language),
@@ -2257,6 +2261,9 @@ class AppLocalizations {
       'privacy_subtitle' => _getPrivacySubtitle(language),
       'terms_title' => _getTermsTitle(language),
       'terms_subtitle' => _getTermsSubtitle(language),
+      'data_sources_title' => _getDataSourcesTitle(language),
+      'credits_line1' => _getCreditsLine1(language),
+      'credits_line2' => _getCreditsLine2(language),
       'select_theme_dialog' => _getSelectThemeDialog(language),
       'theme_system' => _getThemeSystem(language),
       'theme_light' => _getThemeLight(language),
@@ -2376,6 +2383,28 @@ class AppLocalizations {
     };
   }
 
+  static String _getLanguageTitle(String language) {
+    return switch (language) {
+      'id' => 'Bahasa',
+      'en' => 'Language',
+      'zh' => '语言',
+      'ja' => '言語',
+      _ => 'Language',
+    };
+  }
+
+  static String _getLanguageSubtitle(String language) {
+    return switch (language) {
+      'id' =>
+          'Menu, terjemahan, tafsir, dan info surat mengikuti bahasa ini.',
+      'en' =>
+          'Menus, translation, tafsir, and surah info follow this language.',
+      'zh' => '菜单、翻译、注释和章节信息均使用此语言。',
+      'ja' => 'メニュー、翻訳、タフスィール、スーラ情報はこの言語に従います。',
+      _ => 'Menus, translation, tafsir, and surah info follow this language.',
+    };
+  }
+
   static String _getTranslationLanguageTitle(String language) {
     return switch (language) {
       'id' => 'Bahasa Terjemahan',
@@ -2433,6 +2462,79 @@ class AppLocalizations {
       'zh' => '显示每节经文的翻译',
       'ja' => '各節の翻訳を表示',
       _ => 'Show translation for each verse',
+    };
+  }
+
+  static String _getShowTafsirTitle(String language) {
+    return switch (language) {
+      'id' => 'Tampilkan tafsir',
+      'en' => 'Show tafsir',
+      'zh' => '显示经注',
+      'ja' => 'タフスィールを表示',
+      _ => 'Show tafsir',
+    };
+  }
+
+  static String _getShowTafsirSubtitle(String language) {
+    return switch (language) {
+      'id' =>
+        'Penjelasan ayat mengikuti bahasa terjemahan (As-Sa\'di, Ibn Kathir, dll.). Tidak tampil di Mushaf.',
+      'en' =>
+        'Verse commentary follows translation language (As-Sa\'di, Ibn Kathir, etc.). Hidden in Mushaf mode.',
+      'zh' => '经注随翻译语言显示。穆沙夫模式不显示。',
+      'ja' => '翻訳言語に合わせたタフスィール。ムスハフでは非表示。',
+      _ => 'Verse commentary follows translation language. Hidden in Mushaf mode.',
+    };
+  }
+
+  static String getTafsirPanelTitle(String language) {
+    return switch (language) {
+      'id' => 'Tafsir',
+      'en' => 'Tafsir',
+      'zh' => '经注',
+      'ja' => 'タフスィール',
+      _ => 'Tafsir',
+    };
+  }
+
+  static String getTafsirReadAction(String language) {
+    return switch (language) {
+      'id' => 'Baca tafsir ayat ini',
+      'en' => 'Read tafsir for this verse',
+      'zh' => '阅读本节经注',
+      'ja' => 'この節のタフスィールを読む',
+      _ => 'Read tafsir for this verse',
+    };
+  }
+
+  static String getTafsirSheetTitle(String language, int surahId, int ayahNo) {
+    final ref = '$surahId:$ayahNo';
+    return switch (language) {
+      'id' => 'Tafsir ayat $ref',
+      'en' => 'Tafsir for $ref',
+      'zh' => '经注 $ref',
+      'ja' => 'タフスィール $ref',
+      _ => 'Tafsir for $ref',
+    };
+  }
+
+  static String getTafsirRangeLabel(String language, String range) {
+    return switch (language) {
+      'id' => 'Mencakup ayat $range',
+      'en' => 'Covers verses $range',
+      'zh' => '涵盖经文 $range',
+      'ja' => '対象: $range',
+      _ => 'Covers verses $range',
+    };
+  }
+
+  static String getTafsirUnavailable(String language) {
+    return switch (language) {
+      'id' => 'Tafsir tidak tersedia untuk ayat ini.',
+      'en' => 'Tafsir not available for this verse.',
+      'zh' => '此节暂无经注。',
+      'ja' => 'この節のタフスィールはありません。',
+      _ => 'Tafsir not available for this verse.',
     };
   }
 
@@ -2509,41 +2611,41 @@ class AppLocalizations {
   // Language option descriptions
   static String _getLanguageIndonesianDesc(String language) {
     return switch (language) {
-      'id' => 'Terjemahan dalam bahasa Indonesia',
-      'en' => 'Translation in Indonesian',
-      'zh' => '印尼语翻译',
-      'ja' => 'インドネシア語の翻訳',
-      _ => 'Translation in Indonesian',
+      'id' => 'Menu dan konten dalam bahasa Indonesia',
+      'en' => 'Menu and content in Indonesian',
+      'zh' => '菜单和内容使用印尼语',
+      'ja' => 'メニューとコンテンツはインドネシア語',
+      _ => 'Menu and content in Indonesian',
     };
   }
 
   static String _getLanguageEnglishDesc(String language) {
     return switch (language) {
-      'id' => 'Terjemahan dalam bahasa Inggris',
-      'en' => 'Translation in English',
-      'zh' => '英语翻译',
-      'ja' => '英語の翻訳',
-      _ => 'Translation in English',
+      'id' => 'Menu dan konten dalam bahasa Inggris',
+      'en' => 'Menu and content in English',
+      'zh' => '菜单和内容使用英语',
+      'ja' => 'メニューとコンテンツは英語',
+      _ => 'Menu and content in English',
     };
   }
 
   static String _getLanguageChineseDesc(String language) {
     return switch (language) {
-      'id' => 'Terjemahan dalam bahasa Mandarin',
-      'en' => 'Translation in Chinese',
-      'zh' => '中文翻译',
-      'ja' => '中国語の翻訳',
-      _ => 'Translation in Chinese',
+      'id' => 'Menu dan konten dalam bahasa Mandarin',
+      'en' => 'Menu and content in Chinese',
+      'zh' => '菜单和内容使用中文',
+      'ja' => 'メニューとコンテンツは中国語',
+      _ => 'Menu and content in Chinese',
     };
   }
 
   static String _getLanguageJapaneseDesc(String language) {
     return switch (language) {
-      'id' => 'Terjemahan dalam bahasa Jepang',
-      'en' => 'Translation in Japanese',
-      'zh' => '日语翻译',
-      'ja' => '日本語の翻訳',
-      _ => 'Translation in Japanese',
+      'id' => 'Menu dan konten dalam bahasa Jepang',
+      'en' => 'Menu and content in Japanese',
+      'zh' => '菜单和内容使用日语',
+      'ja' => 'メニューとコンテンツは日本語',
+      _ => 'Menu and content in Japanese',
     };
   }
 
@@ -2696,6 +2798,40 @@ class AppLocalizations {
       'zh' => '查看使用应用的条款。',
       'ja' => 'アプリを使用するための条件を確認。',
       _ => 'Review the terms for using the app.',
+    };
+  }
+
+  static String _getDataSourcesTitle(String language) {
+    return switch (language) {
+      'id' => 'Sumber data',
+      'en' => 'Data sources',
+      'zh' => '数据来源',
+      'ja' => 'データソース',
+      _ => 'Data sources',
+    };
+  }
+
+  static String _getCreditsLine1(String language) {
+    return switch (language) {
+      'id' =>
+        'Al Quran dan Terjemahan dari Quran Foundation dan QUL (Quranic Universal Library)',
+      'en' =>
+        'Al-Quran and translations from Quran Foundation and QUL (Quranic Universal Library)',
+      'zh' =>
+        '古兰经与翻译来自 Quran Foundation 与 QUL（Quranic Universal Library）',
+      'ja' =>
+        'クルアーンと翻訳: Quran Foundation および QUL（Quranic Universal Library）',
+      _ => 'Al-Quran and translations from Quran Foundation and QUL (Quranic Universal Library)',
+    };
+  }
+
+  static String _getCreditsLine2(String language) {
+    return switch (language) {
+      'id' => 'Al Quran Recitation Audio dari EveryAyah',
+      'en' => 'Al Quran Recitation Audio from EveryAyah',
+      'zh' => '古兰经朗诵音频来自 EveryAyah',
+      'ja' => 'クルアーン朗読音声: EveryAyah',
+      _ => 'Al Quran Recitation Audio from EveryAyah',
     };
   }
 
@@ -3771,6 +3907,87 @@ class AppLocalizations {
       'ja' => '節',
       _ => 'Ayah',
     };
+  }
+
+  static String getReaderTitle(String language) {
+    return switch (language) {
+      'id' => 'Reader',
+      'en' => 'Reader',
+      'zh' => '阅读',
+      'ja' => 'リーダー',
+      _ => 'Reader',
+    };
+  }
+
+  static String getReaderSelectHint(String language) {
+    return switch (language) {
+      'id' => 'Pilih surat, juz, atau halaman untuk membaca',
+      'en' => 'Select a surah, juz, or page to read',
+      'zh' => '选择章节、卷或页开始阅读',
+      'ja' => 'スーラ、ジュズ、またはページを選んで読み始めてください',
+      _ => 'Select a surah, juz, or page to read',
+    };
+  }
+
+  static String getShareAction(String language) {
+    return switch (language) {
+      'id' => 'Bagikan',
+      'en' => 'Share',
+      'zh' => '分享',
+      'ja' => '共有',
+      _ => 'Share',
+    };
+  }
+
+  static String getSplashTagline(String language) {
+    return switch (language) {
+      'id' =>
+          'Baca Al-Qur\'an offline per Surah, Juz, atau Halaman dengan terjemahan',
+      'en' =>
+          'Read the Quran offline by Surah, Juz, or Page with translation',
+      'zh' => '离线按章节、卷或页阅读古兰经，附带翻译',
+      'ja' => 'スーラ・ジュズ・ページ単位でオフライン読書（翻訳付き）',
+      _ => 'Read the Quran offline by Surah, Juz, or Page with translation',
+    };
+  }
+
+  static String getSplashPleaseWait(String language) {
+    return switch (language) {
+      'id' => 'Mohon tunggu, menyiapkan aplikasi…',
+      'en' => 'Please wait, getting things ready…',
+      'zh' => '请稍候，正在准备…',
+      'ja' => '準備中です。少々お待ちください…',
+      _ => 'Please wait, getting things ready…',
+    };
+  }
+
+  static String formatPageLoadError(
+    String language,
+    int pageNo,
+    Object error,
+  ) {
+    final page = getPageText(pageNo, language);
+    return switch (language) {
+      'id' => 'Gagal memuat $page: $error',
+      'en' => 'Error loading $page: $error',
+      'zh' => '加载$page失败：$error',
+      'ja' => '$pageの読み込みエラー：$error',
+      _ => 'Error loading $page: $error',
+    };
+  }
+
+  /// Shown on first launch before language is chosen.
+  static const onboardingSettingsHintMultilingual =
+      'Menu, terjemahan, dan konten mengikuti bahasa ini.\n'
+      'You can change this later in Settings.';
+
+  /// Maps device / app language codes to supported UI languages.
+  static String normalizeLanguageCode(String? code) {
+    if (code == null) return 'en';
+    if (code == 'id') return 'id';
+    if (code == 'ja') return 'ja';
+    if (code.startsWith('zh')) return 'zh';
+    return 'en';
   }
 
   /// Get localized label for verse translation heading (sheet / ayah card)
