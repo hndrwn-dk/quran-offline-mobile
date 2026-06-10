@@ -23,6 +23,17 @@ assets/
 │   ├── id_as_saadi.sqlite
 │   ├── zh_mokhtasar.sqlite
 │   └── ja_mokhtasar.sqlite
+├── duas/
+│   └── duas_catalog.json
+├── asma/
+│   └── asmaul_husna_catalog.json
+├── science/
+│   └── science_catalog.json
+├── themes/
+│   └── life_themes_catalog.json
+├── reflection/
+│   ├── calendar_lenses_catalog.json
+│   └── weekly_rotation_catalog.json
 └── fonts/
     ├── uthmanic_hafs_v22.ttf
     ├── KFGQPC Uthmanic Script HAFS Regular.otf
@@ -30,16 +41,11 @@ assets/
     └── surah_name_v2.ttf
 ```
 
-## App catalogs & icons
+## Icons (in repository)
 
 | Path | Description |
 |------|-------------|
 | `assets/icon/` | Launcher, splash, nav icons |
-| `assets/duas/` | Dua catalog (app content) |
-| `assets/science/` | Science & Quran catalog |
-| `assets/themes/` | Life themes catalog |
-| `assets/reflection/` | Reflection / calendar catalogs |
-| `assets/asma/` | Asmaul Husna catalog |
 
 ## Verse JSON quick reference (`s###.json`)
 

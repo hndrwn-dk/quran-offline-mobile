@@ -169,17 +169,26 @@ EveryAyah audio is subject to EveryAyah's terms. Attribution is shown in app Set
 
 ---
 
-## 8. App-authored catalogs
+## 8. Explore catalogs (required)
 
-These small JSON catalogs are app content (not third-party Quran datasets):
+Jelajahi tab content: dua, science, themes, reflection, and Asmaul Husna. Place JSON locally (same layout as Quran/tafsir folders).
 
-- `assets/duas/duas_catalog.json`
-- `assets/science/science_catalog.json`
-- `assets/themes/life_themes_catalog.json`
-- `assets/reflection/calendar_lenses_catalog.json`
-- `assets/reflection/weekly_rotation_catalog.json`
-- `assets/asma/asmaul_husna_catalog.json`
-- `assets/icon/` — app icons and splash assets
+| File | Feature |
+|------|---------|
+| `assets/duas/duas_catalog.json` | Dua & daily adhkar |
+| `assets/science/science_catalog.json` | Science & Quran |
+| `assets/themes/life_themes_catalog.json` | Life themes |
+| `assets/reflection/calendar_lenses_catalog.json` | Calendar reflection lenses |
+| `assets/reflection/weekly_rotation_catalog.json` | Weekly reflection rotation |
+| `assets/asma/asmaul_husna_catalog.json` | 99 names of Allah |
+
+Each file is a versioned JSON catalog consumed by the matching provider under `lib/core/providers/`. Schemas are validated by tests in `test/*_catalog_test.dart`.
+
+Asma catalog can be regenerated with `scripts/build_asma_catalog.py` when you have the source inputs. Other catalogs are curated content — obtain from a project maintainer or your own build pipeline.
+
+### License
+
+Curated app content; ayah references point to Quran text covered in section 1.
 
 ---
 
