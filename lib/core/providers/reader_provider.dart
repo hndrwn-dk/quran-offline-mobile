@@ -3,7 +3,8 @@ import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
-  return AppDatabase();
+  ref.keepAlive();
+  return openAppDatabase();
 });
 
 final readerSourceProvider = StateProvider<ReaderSource?>((ref) => null);

@@ -8,6 +8,7 @@ import 'package:quran_offline/features/library/my_library_screen.dart';
 import 'package:quran_offline/features/read/read_screen.dart';
 import 'package:quran_offline/features/search/search_screen.dart';
 import 'package:quran_offline/features/settings/settings_screen.dart';
+import 'package:quran_offline/core/widgets/nav_read_icon.dart';
 import 'package:quran_offline/features/audio/global_recitation_bar.dart';
 import 'package:quran_offline/features/audio/audio_download_notifications.dart';
 
@@ -44,26 +45,30 @@ class HomeScreen extends ConsumerWidget {
         },
         destinations: [
           NavigationDestination(
-            icon: const Icon(Icons.book_outlined),
-            selectedIcon: const Icon(Icons.book),
+            key: const Key('nav_read'),
+            icon: NavReadIcon(selected: currentIndex == 0),
             label: AppLocalizations.getNavMenuText('read', appLanguage),
           ),
           NavigationDestination(
+            key: const Key('nav_search'),
             icon: const Icon(Icons.search_outlined),
             selectedIcon: const Icon(Icons.search),
             label: AppLocalizations.getNavMenuText('search', appLanguage),
           ),
           NavigationDestination(
+            key: const Key('nav_explore'),
             icon: const Icon(Icons.auto_stories_outlined),
             selectedIcon: const Icon(Icons.auto_stories),
             label: AppLocalizations.getNavMenuText('dua', appLanguage),
           ),
           NavigationDestination(
+            key: const Key('nav_library'),
             icon: const Icon(Icons.library_books_outlined),
             selectedIcon: const Icon(Icons.library_books),
             label: AppLocalizations.getNavMenuText('library', appLanguage),
           ),
           NavigationDestination(
+            key: const Key('nav_settings'),
             icon: const Icon(Icons.tune_outlined),
             selectedIcon: const Icon(Icons.tune),
             label: AppLocalizations.getNavMenuText('settings', appLanguage),
@@ -76,4 +81,3 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 }
-

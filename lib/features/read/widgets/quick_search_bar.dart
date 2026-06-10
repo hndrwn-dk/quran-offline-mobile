@@ -5,6 +5,7 @@ import 'package:quran_offline/core/providers/quick_search_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 
@@ -278,7 +279,13 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
                                             fontWeight: FontWeight.w600,
                                           ),
                                     ),
-                                    if (result.subtitle != null) ...[
+                                    if (result.type == 'surah' &&
+                                        result.source is SurahSource) ...[
+                                      const SizedBox(height: 2),
+                                      SurahNameSearchGlyph(
+                                        surahId: (result.source as SurahSource).surahId,
+                                      ),
+                                    ] else if (result.subtitle != null) ...[
                                       const SizedBox(height: 2),
                                       Text(
                                         result.subtitle!,

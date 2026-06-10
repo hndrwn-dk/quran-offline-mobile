@@ -10,6 +10,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/transliteration_formatter.dart';
 import 'package:quran_offline/features/settings/audio_downloads_screen.dart';
+import 'package:quran_offline/features/settings/widgets/about_data_sources_tile.dart';
 
 String _transliterationSubtitle(AppSettings settings, String appLanguage) {
   if (settings.useTajweedTransliteration) {
@@ -111,7 +112,7 @@ class SettingsScreen extends ConsumerWidget {
                 Icons.language,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              title: Text(AppLocalizations.getSettingsText('translation_language_title', appLanguage)),
+              title: Text(AppLocalizations.getSettingsText('language_title', appLanguage)),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -120,7 +121,7 @@ class SettingsScreen extends ConsumerWidget {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   Text(
-                    AppLocalizations.getSettingsText('translation_language_subtitle', appLanguage),
+                    AppLocalizations.getSettingsText('language_subtitle', appLanguage),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -156,14 +157,14 @@ class SettingsScreen extends ConsumerWidget {
                     groupValue: settings.language,
                     onChanged: (value) {
                       if (value != null) {
-                        ref.read(settingsProvider.notifier).updateLanguage(value);
+                        ref.read(settingsProvider.notifier).updateLocale(value);
                       }
                     },
                   ),
                   dense: true,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   onTap: () {
-                    ref.read(settingsProvider.notifier).updateLanguage(lang);
+                    ref.read(settingsProvider.notifier).updateLocale(lang);
                   },
                 );
               }).toList(),
@@ -266,6 +267,25 @@ class SettingsScreen extends ConsumerWidget {
               value: settings.showTranslation,
               onChanged: (value) {
                 ref.read(settingsProvider.notifier).updateShowTranslation(value);
+              },
+            ),
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.menu_book_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: Text(AppLocalizations.getSettingsText('show_tafsir_title', appLanguage)),
+            subtitle: Text(
+              AppLocalizations.getSettingsText('show_tafsir_subtitle', appLanguage),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: Switch(
+              value: settings.showTafsir,
+              onChanged: (value) {
+                ref.read(settingsProvider.notifier).updateShowTafsir(value);
               },
             ),
           ),
@@ -390,73 +410,6 @@ class SettingsScreen extends ConsumerWidget {
             ),
             child: ExpansionTile(
               leading: Icon(
-                Icons.language,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: Text(AppLocalizations.getSettingsText('app_language_title', appLanguage)),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _getLanguageName(settings.appLanguage),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  Text(
-                    AppLocalizations.getSettingsText('app_language_subtitle', appLanguage),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-              childrenPadding: EdgeInsets.zero,
-              children: ['id', 'en', 'zh', 'ja'].map((lang) {
-                final descKey = switch (lang) {
-                  'id' => 'app_language_indonesian_desc',
-                  'en' => 'app_language_english_desc',
-                  'zh' => 'app_language_chinese_desc',
-                  'ja' => 'app_language_japanese_desc',
-                  _ => 'app_language_indonesian_desc',
-                };
-                return ListTile(
-                  leading: Icon(
-                    _getLanguageIcon(lang),
-                    color: settings.appLanguage == lang
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
-                  ),
-                  title: Text(_getLanguageName(lang)),
-                  subtitle: Text(
-                    AppLocalizations.getSettingsText(descKey, appLanguage),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontSize: 12,
-                    ),
-                  ),
-                  trailing: Radio<String>(
-                    value: lang,
-                    groupValue: settings.appLanguage,
-                    onChanged: (value) {
-                      if (value != null) {
-                        ref.read(settingsProvider.notifier).updateAppLanguage(value);
-                      }
-                    },
-                  ),
-                  dense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  onTap: () {
-                    ref.read(settingsProvider.notifier).updateAppLanguage(lang);
-                  },
-                );
-              }).toList(),
-            ),
-          ),
-          Theme(
-            data: Theme.of(context).copyWith(
-              dividerColor: Colors.transparent,
-            ),
-            child: ExpansionTile(
-              leading: Icon(
                 Icons.palette,
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -568,6 +521,7 @@ class SettingsScreen extends ConsumerWidget {
             trailing: const Icon(Icons.open_in_new, size: 18),
             onTap: () => _openTermsLink(context),
           ),
+          AboutDataSourcesTile(appLanguage: appLanguage),
         ],
       ),
     );

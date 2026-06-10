@@ -6,6 +6,7 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 
@@ -156,6 +157,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   children: [
                     Expanded(
                       child: TextField(
+                        key: const Key('search_field'),
                         style: Theme.of(context).textTheme.bodyLarge,
                         decoration: InputDecoration(
                           hintText: AppLocalizations.getSearchText('search_placeholder', settings.appLanguage),
@@ -404,7 +406,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                   ),
                                 );
                           Widget? subtitleWidget;
-                          if (result.subtitle != null) {
+                          if (result.type == 'surah' && result.source is SurahSource) {
+                            subtitleWidget = SurahNameSearchGlyph(
+                              surahId: (result.source as SurahSource).surahId,
+                            );
+                          } else if (result.subtitle != null) {
                             subtitleWidget = query.isEmpty
                                 ? Text(
                                     result.subtitle!,

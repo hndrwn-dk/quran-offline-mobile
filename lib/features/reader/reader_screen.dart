@@ -16,9 +16,7 @@ import 'package:quran_offline/core/utils/juz_info.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
 import 'package:quran_offline/features/reader/ayah_card.dart';
 import 'package:quran_offline/features/audio/global_recitation_bar.dart';
-import 'package:quran_offline/features/reader/reader_surah_header_flags.dart';
 import 'package:quran_offline/features/reader/surah_header_card.dart';
-import 'package:quran_offline/features/reader/surah_header_card_mockup.dart';
 import 'package:quran_offline/features/reader/widgets/reader_bismillah_block.dart';
 import 'package:quran_offline/features/reader/text_settings_dialog.dart';
 
@@ -479,7 +477,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       actions: [
         IconButton(
           icon: const Icon(Icons.text_fields),
-          tooltip: 'Text settings',
+          tooltip: AppLocalizations.getSettingsText(
+            'text_settings_title',
+            lang,
+          ),
           onPressed: () {
             showModalBottomSheet(
               context: context,
@@ -578,7 +579,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       actions: [
         IconButton(
           icon: const Icon(Icons.text_fields),
-          tooltip: 'Text settings',
+          tooltip: AppLocalizations.getSettingsText(
+            'text_settings_title',
+            lang,
+          ),
           onPressed: () {
             showModalBottomSheet(
               context: context,
@@ -606,6 +610,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   @override
   Widget build(BuildContext context) {
     final source = ref.watch(readerSourceProvider);
+    final appLanguage = ref.watch(settingsProvider).appLanguage;
     final isLargeScreen = Responsive.isLargeScreen(context);
     final surahsAsync = ref.watch(surahNamesProvider);
     
@@ -668,17 +673,17 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     if (source == null && !isLargeScreen) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Reader'),
+          title: Text(AppLocalizations.getReaderTitle(appLanguage)),
         ),
-        body: const Center(
-          child: Text('Select a surah, juz, or page to read'),
+        body: Center(
+          child: Text(AppLocalizations.getReaderSelectHint(appLanguage)),
         ),
       );
     }
 
     if (source == null) {
-      return const Center(
-        child: Text('Select a surah, juz, or page to read'),
+      return Center(
+        child: Text(AppLocalizations.getReaderSelectHint(appLanguage)),
       );
     }
 
@@ -696,11 +701,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 toolbarHeight: 54,
                 centerTitle: false,
                 titleSpacing: 16,
-                title: Text('Page $pageNo'),
+                title: Text(AppLocalizations.getPageText(pageNo, appLanguage)),
                 actions: [
                   IconButton(
                     icon: const Icon(Icons.text_fields),
-                    tooltip: 'Text settings',
+                    tooltip: AppLocalizations.getSettingsText(
+                      'text_settings_title',
+                      appLanguage,
+                    ),
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,
@@ -732,7 +740,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 actions: [
                   IconButton(
                     icon: const Icon(Icons.text_fields),
-                    tooltip: 'Text settings',
+                    tooltip: AppLocalizations.getSettingsText(
+                      'text_settings_title',
+                      appLanguage,
+                    ),
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,
@@ -849,12 +860,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     itemBuilder: (context, index) {
                       // Show header card at the top for surah reading
                       if (isSurahSource && currentSurahInfo != null && index == 0) {
-                        if (kUseQulSurahHeader) {
-                          return SurahHeaderCardMockup(
-                            surahInfo: currentSurahInfo,
-                            verseCount: verseCount,
-                          );
-                        }
                         return SurahHeaderCard(
                           surahInfo: currentSurahInfo,
                           verseCount: verseCount,

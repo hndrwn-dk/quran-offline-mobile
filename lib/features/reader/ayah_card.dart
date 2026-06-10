@@ -17,6 +17,7 @@ import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/utils/transliteration_formatter.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
+import 'package:quran_offline/features/reader/widgets/ayah_tafsir_panel.dart';
 import 'package:quran_offline/features/reader/widgets/highlight_color_picker.dart';
 import 'package:quran_offline/features/reader/widgets/note_editor_dialog.dart';
 
@@ -287,6 +288,10 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                 ),
               ),
             ],
+            AyahTafsirPanel(
+              surahId: widget.verse.surahId,
+              ayahNo: widget.verse.ayahNo,
+            ),
           ],
         ),
       ),
@@ -323,7 +328,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
             ),
             ListTile(
               leading: const Icon(Icons.share),
-              title: const Text('Share'),
+              title: Text(AppLocalizations.getShareAction(settings.appLanguage)),
               onTap: () {
                 Navigator.pop(context);
                 _shareAyah(context, settings);

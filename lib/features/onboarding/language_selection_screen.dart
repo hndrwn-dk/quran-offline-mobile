@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
 
 const String _logoAssetPath = 'assets/icon/splash_icon.png';
@@ -32,9 +33,7 @@ Future<void> _onLanguageSelected(
   WidgetRef ref,
   String lang,
 ) async {
-  final notifier = ref.read(settingsProvider.notifier);
-  await notifier.updateAppLanguage(lang);
-  await notifier.updateLanguage(lang);
+  await ref.read(settingsProvider.notifier).updateLocale(lang);
   await _markLanguageSelectionDone();
   if (context.mounted) {
     Navigator.of(context).pushReplacement(
@@ -96,10 +95,11 @@ class LanguageSelectionScreen extends ConsumerWidget {
                     const SizedBox(height: 10),
                     // Subtitle (smaller than multilingual header)
                     Text(
-                      'You can change this later in Settings.',
+                      AppLocalizations.onboardingSettingsHintMultilingual,
                       style: textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                         fontSize: 13,
+                        height: 1.45,
                       ),
                       textAlign: TextAlign.center,
                     ),

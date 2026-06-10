@@ -19,10 +19,19 @@ class SurahQulInfoEntry {
   const SurahQulInfoEntry({
     required this.short,
     required this.sections,
+    this.supplementaryBody = '',
   });
 
   final String short;
   final List<SurahQulInfoSection> sections;
+
+  /// Plain follow-up text for surahs without four Pokok-pokok categories.
+  final String supplementaryBody;
+
+  bool get isEmpty =>
+      short.trim().isEmpty &&
+      supplementaryBody.trim().isEmpty &&
+      sections.every((s) => s.title.trim().isEmpty && s.body.trim().isEmpty);
 
   factory SurahQulInfoEntry.fromJson(Map<String, dynamic> json) {
     final rawSections = json['sections'] as List<dynamic>? ?? const [];

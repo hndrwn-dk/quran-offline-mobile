@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/importer.dart';
 import 'package:quran_offline/core/providers/import_progress_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/widgets/nav_read_icon.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
 import 'package:quran_offline/features/onboarding/language_selection_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,6 +33,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       curve: Curves.easeIn,
     );
     _fadeController.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) NavReadIcon.precache(context);
+    });
     _initializeApp();
   }
 
@@ -115,6 +120,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     final progress = ref.watch(importProgressProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final isInitializing = progress != null && !progress.isComplete;
+    final splashLang = AppLocalizations.normalizeLanguageCode(
+      Localizations.localeOf(context).languageCode,
+    );
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -139,7 +147,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Read the Quran offline by Surah, Juz, or Page with translation',
+                    AppLocalizations.getSplashTagline(splashLang),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                       height: 1.5,
@@ -149,7 +157,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   if (isInitializing) ...[
                     const SizedBox(height: 48),
                     Text(
-                      'Please wait, getting things ready…',
+                      AppLocalizations.getSplashPleaseWait(splashLang),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),

@@ -45,7 +45,7 @@ class MushafOfflineAudioBanner extends ConsumerWidget {
             missing.length == 1 ? 'Save surah' : 'Save surahs';
 
         return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.only(bottom: 4),
           child: Material(
             color: colorScheme.secondaryContainer.withValues(alpha: 0.65),
             borderRadius: BorderRadius.circular(12),

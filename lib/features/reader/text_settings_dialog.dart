@@ -15,6 +15,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
   double _currentTranslationSize = 16.0;
   bool _showTransliteration = false;
   bool _showTranslation = true;
+  bool _showTafsir = false;
   bool _showTajweed = false;
   String _currentLanguage = 'en';
 
@@ -26,6 +27,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
     _currentTranslationSize = settings.translationFontSize;
     _showTransliteration = settings.showTransliteration;
     _showTranslation = settings.showTranslation;
+    _showTafsir = settings.showTafsir;
     _showTajweed = settings.showTajweed;
     _currentLanguage = settings.language;
   }
@@ -313,7 +315,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
               ),
               child: ExpansionTile(
                 title: Text(
-                  AppLocalizations.getSettingsText('translation_language_title', appLanguage),
+                  AppLocalizations.getSettingsText('language_title', appLanguage),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: colorScheme.onSurface,
                   ),
@@ -390,6 +392,28 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
               },
             ),
           ),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceVariant.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SwitchListTile(
+              title: Text(
+                AppLocalizations.getSettingsText('show_tafsir_title', appLanguage),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              value: _showTafsir,
+              onChanged: (value) {
+                setState(() {
+                  _showTafsir = value;
+                });
+              },
+            ),
+          ),
           // Tajweed Toggle (no subtitle to keep option compact)
           Container(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -448,13 +472,16 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                 if (_showTranslation != settings.showTranslation) {
                   await ref.read(settingsProvider.notifier).updateShowTranslation(_showTranslation);
                 }
+                if (_showTafsir != settings.showTafsir) {
+                  await ref.read(settingsProvider.notifier).updateShowTafsir(_showTafsir);
+                }
                 // Update Tajweed
                 if (_showTajweed != settings.showTajweed) {
                   await ref.read(settingsProvider.notifier).updateShowTajweed(_showTajweed);
                 }
                 // Update Language
                 if (_currentLanguage != settings.language) {
-                  await ref.read(settingsProvider.notifier).updateLanguage(_currentLanguage);
+                  await ref.read(settingsProvider.notifier).updateLocale(_currentLanguage);
                 }
                 if (mounted) {
                   Navigator.of(context).pop();

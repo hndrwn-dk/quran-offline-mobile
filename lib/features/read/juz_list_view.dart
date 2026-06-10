@@ -199,7 +199,10 @@ class JuzListView extends ConsumerWidget {
                                           SurahNameListGlyph(surahId: surahInfo.id),
                                           const SizedBox(height: 4),
                                           Text(
-                                            '$ayahCount Ayahs',
+                                            AppLocalizations.formatSurahVerseCount(
+                                              settings.appLanguage,
+                                              ayahCount,
+                                            ),
                                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                               color: colorScheme.onSurfaceVariant,
                                             ),
