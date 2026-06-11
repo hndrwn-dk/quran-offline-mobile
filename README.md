@@ -83,7 +83,13 @@ cd quran-offline-mobile
 flutter pub get
 ```
 
-3. Add Quran data under `assets/` — see [DATA_SOURCES.md](DATA_SOURCES.md) and [assets/README.md](assets/README.md).
+3. Add Quran data — see [DATA_SOURCES.md](DATA_SOURCES.md). Then **one-time automation setup**:
+
+```bash
+bash scripts/qo.sh setup
+```
+
+Command reference: [scripts/COMMANDS.md](scripts/COMMANDS.md) · [scripts/DATA_WORKFLOW.md](scripts/DATA_WORKFLOW.md)
 
 4. Generate code (Drift + JSON):
 
@@ -143,19 +149,33 @@ bash scripts/run_qa_integration_tests.sh
 
 ## Building for release
 
+Always use **`qo`** (sync → verify → build):
+
 ### Android
 
+**Play Store AAB:**
+
 ```bash
-flutter build appbundle
+bash scripts/qo.sh aab
+# or: make aab
 ```
 
 Output: `build/app/outputs/bundle/release/app-release.aab`
 
-APK:
+**APK:**
 
 ```bash
-flutter build apk --release
+bash scripts/qo.sh apk
+# or: make apk
 ```
+
+**Run on device:**
+
+```bash
+bash scripts/qo.sh run
+```
+
+Do **not** run bare `flutter build appbundle` for production — use `qo aab` / `qo apk`.
 
 ### iOS
 

@@ -33,9 +33,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       curve: Curves.easeIn,
     );
     _fadeController.forward();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) NavReadIcon.precache(context);
-    });
     _initializeApp();
   }
 
@@ -71,6 +68,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             if (!context.mounted) return;
             final done = await LanguageSelectionScreen.hasCompletedSelection();
             if (!context.mounted) return;
+            await NavReadIcon.precache(context);
+            if (!context.mounted) return;
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                 builder: (_) => done
@@ -88,6 +87,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         await LanguageSelectionScreen.migrateLegacyIfNeeded();
         if (!mounted) return;
         final done = await LanguageSelectionScreen.hasCompletedSelection();
+        if (!mounted) return;
+        await NavReadIcon.precache(context);
         if (!mounted) return;
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
