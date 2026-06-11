@@ -46,7 +46,9 @@ final surahNamesProvider = FutureProvider<List<SurahInfo>>((ref) async {
     // Get localized meanings for this surah
     final surahMeanings = meaningsMap['$id'] as Map<String, dynamic>?;
     final localizedMeanings = surahMeanings != null
-        ? Map<String, String>.from(surahMeanings.map((key, value) => MapEntry(key, value.toString())))
+        ? Map<String, String>.from(surahMeanings.map(
+            (key, value) => MapEntry(key, _cleanSurahMeaning(value.toString())),
+          ))
         : null;
 
     return SurahInfo(
@@ -58,6 +60,11 @@ final surahNamesProvider = FutureProvider<List<SurahInfo>>((ref) async {
     );
   }).toList();
 });
+
+/// Fixes legacy JSON where apostrophes were double-escaped (`Saba\'` -> `Saba'`).
+String _cleanSurahMeaning(String text) {
+  return text.replaceAll(r"\'", "'");
+}
 
 Map<int, String> _getEnglishNames() {
   return {
