@@ -80,6 +80,9 @@ GOOGLE_PLAY_WHATS_NEW*.md
 # Build data and intermediate files
 data/
 
+# Local build/dev scripts (not in repository)
+scripts/
+
 # Quran datasets — see DATA_SOURCES.md
 assets/quran/s[0-9][0-9][0-9].json
 assets/quran/manifest_multi.json

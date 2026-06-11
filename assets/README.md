@@ -1,28 +1,6 @@
 # Assets layout
 
-Place the files below under `assets/`. See [DATA_SOURCES.md](../DATA_SOURCES.md) for official sources and licenses.
-
-## Git-safe workflow (required for release builds)
-
-Use **`data/bundled/`** as your canonical copy (entire `data/` tree is `.gitignore` — Git never deletes it). Flutter reads **`assets/`**, which is repopulated before each build.
-
-**One-time per machine:**
-
-```bash
-bash scripts/qo.sh setup
-```
-
-**Production / daily (always use `qo`, not bare `flutter build`):**
-
-```bash
-bash scripts/qo.sh aab    # Play Store
-bash scripts/qo.sh apk    # sideload APK
-bash scripts/qo.sh run    # debug device
-```
-
-Full command list: [scripts/COMMANDS.md](../scripts/COMMANDS.md)
-
-## Required for a working app
+Place files under `assets/`. Sources and licenses: [DATA_SOURCES.md](../DATA_SOURCES.md).
 
 ```
 assets/
@@ -31,11 +9,11 @@ assets/
 │   ├── index_juz.json
 │   ├── index_pages.json
 │   ├── surah_meanings.json
-│   ├── s001.json … s114.json          # one JSON array per surah
+│   ├── s001.json … s114.json
 │   ├── surah_info/
 │   │   ├── en_surah_info.sqlite
 │   │   └── id_surah_info.sqlite
-│   └── surah_names/                   # optional if using SurahNameV2 font only
+│   └── surah_names/
 │       ├── manifest.json
 │       └── s001.svg … s114.svg
 ├── tafsir/
@@ -54,6 +32,7 @@ assets/
 ├── reflection/
 │   ├── calendar_lenses_catalog.json
 │   └── weekly_rotation_catalog.json
+├── icon/
 └── fonts/
     ├── uthmanic_hafs_v22.ttf
     ├── KFGQPC Uthmanic Script HAFS Regular.otf
@@ -61,13 +40,7 @@ assets/
     └── surah_name_v2.ttf
 ```
 
-## Icons (in repository)
-
-| Path | Description |
-|------|-------------|
-| `assets/icon/` | Launcher, splash, nav icons |
-
-## Verse JSON quick reference (`s###.json`)
+## Verse JSON (`s###.json`)
 
 Array of objects:
 
@@ -83,16 +56,3 @@ Array of objects:
   "m": { "juz": 1, "page": 1, "hizb": 1, "ruku": 1 }
 }
 ```
-
-Parser: `lib/core/models/verse_model.dart`  
-Import version string: `lib/core/database/importer.dart` → `DataImporter.currentVersion`
-
-## Verify
-
-```bash
-flutter pub get
-dart run build_runner build --delete-conflicting-outputs
-flutter run
-```
-
-On first launch the app imports `assets/quran/s*.json` into a local SQLite database. Missing files cause import errors or an empty reader.

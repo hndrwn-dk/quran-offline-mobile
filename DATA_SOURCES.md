@@ -184,7 +184,7 @@ Jelajahi tab content: dua, science, themes, reflection, and Asmaul Husna. Place 
 
 Each file is a versioned JSON catalog consumed by the matching provider under `lib/core/providers/`. Schemas are validated by tests in `test/*_catalog_test.dart`.
 
-Asma catalog can be regenerated with `scripts/build_asma_catalog.py` when you have the source inputs. Other catalogs are curated content — obtain from a project maintainer or your own build pipeline.
+Asma catalog can be regenerated from your source inputs with a local build pipeline. Other catalogs are curated content — obtain from a project maintainer or your own build pipeline.
 
 ### License
 
