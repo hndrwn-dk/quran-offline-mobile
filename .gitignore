@@ -112,5 +112,10 @@ docs/
 assets/quran/*.json
 
 # Local dev artifacts
+backup/
+assets/icon/backup/
+integration_test/
+Makefile
+qo.bat
 lib/features/read/widgets/mushaf_page_view.dart.backup
 lib/features/read/widgets/mushaf_page_view_flowing_improved.dart

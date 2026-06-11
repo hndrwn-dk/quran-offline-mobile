@@ -83,13 +83,7 @@ cd quran-offline-mobile
 flutter pub get
 ```
 
-3. Add Quran data — see [DATA_SOURCES.md](DATA_SOURCES.md). Then **one-time automation setup**:
-
-```bash
-bash scripts/qo.sh setup
-```
-
-Command reference: [scripts/COMMANDS.md](scripts/COMMANDS.md) · [scripts/DATA_WORKFLOW.md](scripts/DATA_WORKFLOW.md)
+3. Add data under `assets/` — see [DATA_SOURCES.md](DATA_SOURCES.md) and [assets/README.md](assets/README.md).
 
 4. Generate code (Drift + JSON):
 
@@ -123,7 +117,7 @@ lib/
     ├── library/
     ├── settings/
     └── …
-integration_test/       # Emulator QA regression (optional)
+test/                   # Unit and widget tests
 ```
 
 ## Data
@@ -134,48 +128,27 @@ On first launch the app imports `assets/quran/s*.json` into a local Drift databa
 
 ## Testing
 
-**Unit / widget tests:**
-
 ```bash
 flutter test
 ```
 
-**Emulator QA regression** (device required):
-
-```bash
-bash scripts/run_qa_integration_tests.sh
-# or: flutter test integration_test/qa_regression_test.dart -d <device-id>
-```
-
 ## Building for release
 
-Always use **`qo`** (sync → verify → build):
+Place all required assets locally before building (see [DATA_SOURCES.md](DATA_SOURCES.md)).
 
 ### Android
 
-**Play Store AAB:**
-
 ```bash
-bash scripts/qo.sh aab
-# or: make aab
+flutter build appbundle --release
 ```
 
 Output: `build/app/outputs/bundle/release/app-release.aab`
 
-**APK:**
+APK:
 
 ```bash
-bash scripts/qo.sh apk
-# or: make apk
+flutter build apk --release
 ```
-
-**Run on device:**
-
-```bash
-bash scripts/qo.sh run
-```
-
-Do **not** run bare `flutter build appbundle` for production — use `qo aab` / `qo apk`.
 
 ### iOS
 
