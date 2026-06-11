@@ -46,7 +46,10 @@ class HomeScreen extends ConsumerWidget {
         destinations: [
           NavigationDestination(
             key: const Key('nav_read'),
-            icon: NavReadIcon(selected: currentIndex == 0),
+            icon: NavReadIcon(
+              key: const ValueKey('nav_read_icon'),
+              selected: currentIndex == 0,
+            ),
             label: AppLocalizations.getNavMenuText('read', appLanguage),
           ),
           NavigationDestination(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/nav_read_icon.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
 
 const String _logoAssetPath = 'assets/icon/splash_icon.png';
@@ -36,9 +37,12 @@ Future<void> _onLanguageSelected(
   await ref.read(settingsProvider.notifier).updateLocale(lang);
   await _markLanguageSelectionDone();
   if (context.mounted) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
+    await NavReadIcon.precache(context);
+    if (context.mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    }
   }
 }
 

@@ -2,6 +2,26 @@
 
 Place the files below under `assets/`. See [DATA_SOURCES.md](../DATA_SOURCES.md) for official sources and licenses.
 
+## Git-safe workflow (required for release builds)
+
+Use **`data/bundled/`** as your canonical copy (entire `data/` tree is `.gitignore` — Git never deletes it). Flutter reads **`assets/`**, which is repopulated before each build.
+
+**One-time per machine:**
+
+```bash
+bash scripts/qo.sh setup
+```
+
+**Production / daily (always use `qo`, not bare `flutter build`):**
+
+```bash
+bash scripts/qo.sh aab    # Play Store
+bash scripts/qo.sh apk    # sideload APK
+bash scripts/qo.sh run    # debug device
+```
+
+Full command list: [scripts/COMMANDS.md](../scripts/COMMANDS.md)
+
 ## Required for a working app
 
 ```

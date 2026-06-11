@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 /// Icons by Freepik via Flaticon:
 /// - https://www.flaticon.com/free-icon/quran_15660421 (default)
 /// - https://www.flaticon.com/free-icon/quran_15660477 (active)
-class NavReadIcon extends StatelessWidget {
+class NavReadIcon extends StatefulWidget {
   const NavReadIcon({super.key, this.selected = false, this.size});
 
   final bool selected;
@@ -13,7 +13,7 @@ class NavReadIcon extends StatelessWidget {
   static const idleAssetPath = 'assets/icon/nav_read_quran.png';
   static const activeAssetPath = 'assets/icon/nav_read_quran_active.png';
 
-  /// Decode both bitmaps once before the nav bar is shown (reduces device flicker).
+  /// Decode both bitmaps before the nav bar is shown (call and await before Home).
   static Future<void> precache(BuildContext context) {
     return Future.wait([
       precacheImage(const AssetImage(idleAssetPath), context),
@@ -22,10 +22,17 @@ class NavReadIcon extends StatelessWidget {
   }
 
   @override
+  State<NavReadIcon> createState() => _NavReadIconState();
+}
+
+class _NavReadIconState extends State<NavReadIcon> {
+  static const _idleKey = ValueKey<String>('nav_read_idle');
+  static const _activeKey = ValueKey<String>('nav_read_active');
+
+  @override
   Widget build(BuildContext context) {
     final iconTheme = IconTheme.of(context);
-    final resolvedSize = size ?? iconTheme.size ?? 24;
-    final cacheSize = _cachePixelSize(context, resolvedSize);
+    final resolvedSize = widget.size ?? iconTheme.size ?? 24;
 
     return RepaintBoundary(
       child: SizedBox(
@@ -36,59 +43,49 @@ class NavReadIcon extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             _NavReadLayer(
-              assetPath: idleAssetPath,
-              visible: !selected,
+              key: _idleKey,
+              assetPath: NavReadIcon.idleAssetPath,
+              offstage: widget.selected,
               size: resolvedSize,
-              cacheSize: cacheSize,
             ),
             _NavReadLayer(
-              assetPath: activeAssetPath,
-              visible: selected,
+              key: _activeKey,
+              assetPath: NavReadIcon.activeAssetPath,
+              offstage: !widget.selected,
               size: resolvedSize,
-              cacheSize: cacheSize,
             ),
           ],
         ),
       ),
     );
   }
-
-  static int _cachePixelSize(BuildContext context, double logicalSize) {
-    final dpr = MediaQuery.devicePixelRatioOf(context);
-    return (logicalSize * dpr).round().clamp(24, 128);
-  }
 }
 
-/// Both layers stay mounted; only opacity toggles (no asset swap / fade on device).
+/// Both layers stay mounted; [Offstage] toggles paint (no opacity / asset swap).
 class _NavReadLayer extends StatelessWidget {
   const _NavReadLayer({
+    super.key,
     required this.assetPath,
-    required this.visible,
+    required this.offstage,
     required this.size,
-    required this.cacheSize,
   });
 
   final String assetPath;
-  final bool visible;
+  final bool offstage;
   final double size;
-  final int cacheSize;
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Opacity(
-        opacity: visible ? 1 : 0,
-        child: Image.asset(
-          assetPath,
-          width: size,
-          height: size,
-          fit: BoxFit.contain,
-          gaplessPlayback: true,
-          filterQuality: FilterQuality.medium,
-          cacheWidth: cacheSize,
-          cacheHeight: cacheSize,
-          excludeFromSemantics: !visible,
-        ),
+    return Offstage(
+      offstage: offstage,
+      child: Image.asset(
+        assetPath,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        gaplessPlayback: true,
+        filterQuality: FilterQuality.high,
+        excludeFromSemantics: offstage,
       ),
     );
   }
