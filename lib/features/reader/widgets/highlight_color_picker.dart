@@ -22,6 +22,8 @@ class HighlightColorPicker extends ConsumerWidget {
     final appLanguage = settings.appLanguage;
     final colorScheme = Theme.of(context).colorScheme;
 
+    final selectedColor = currentColor;
+
     return AlertDialog(
       title: Text(AppLocalizations.getSettingsText('highlight_title', appLanguage)),
       content: Column(
@@ -33,7 +35,8 @@ class HighlightColorPicker extends ConsumerWidget {
             alignment: WrapAlignment.center,
             children: highlightColors.map((colorValue) {
               final color = Color(colorValue);
-              final isSelected = currentColor == colorValue;
+              final isSelected = selectedColor != null &&
+                  highlightColorsMatch(selectedColor, colorValue);
               final icon = getHighlightIcon(colorValue);
               final colorDescription = _getHighlightColorDescription(colorValue, appLanguage);
               return GestureDetector(
@@ -153,7 +156,7 @@ class HighlightColorPicker extends ConsumerWidget {
     final color = Color(colorValue);
     // Return short labels for color picker
     return switch (colorValue) {
-      _ when color == Colors.yellow || color.value == Colors.yellow.toARGB32() => _getShortLabel('Favorite', 'Favorit', '收藏', 'お気に入り', language),
+      _ when isHighlightYellow(color.value) => _getShortLabel('Favorite', 'Favorit', '收藏', 'お気に入り', language),
       _ when color == Colors.orange || color.value == Colors.orange.toARGB32() => _getShortLabel('Inspiring', 'Inspiratif', '鼓舞', 'インスピレーション', language),
       _ when color == Colors.pink || color.value == Colors.pink.toARGB32() => _getShortLabel('Love', 'Cinta', '爱', '愛', language),
       _ when color == Colors.red || color.value == Colors.red.toARGB32() => _getShortLabel('Important', 'Penting', '重要', '重要', language),

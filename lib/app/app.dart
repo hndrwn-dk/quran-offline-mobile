@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/constants/app_colors.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/features/splash/splash_screen.dart';
 
@@ -16,14 +17,23 @@ class _QuranOfflineAppState extends ConsumerState<QuranOfflineApp> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
 
+    final lightScheme = AppColors.lightColorScheme();
+    final darkScheme = AppColors.darkColorScheme();
+
     return MaterialApp(
       title: 'Quran Offline',
       theme: ThemeData(
         useMaterial3: true,
         fontFamily: 'Roboto',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.green,
-          brightness: Brightness.light,
+        colorScheme: lightScheme,
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.warmPrimary,
+            foregroundColor: Colors.white,
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(foregroundColor: AppColors.warmPrimary),
         ),
         textTheme: TextTheme(
           displayLarge: const TextStyle(fontFamily: 'Roboto'),
@@ -51,9 +61,15 @@ class _QuranOfflineAppState extends ConsumerState<QuranOfflineApp> {
       darkTheme: ThemeData(
         useMaterial3: true,
         fontFamily: 'Roboto',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.green,
-          brightness: Brightness.dark,
+        colorScheme: darkScheme,
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.warmPrimaryLight,
+            foregroundColor: const Color(0xFF1A281C),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(foregroundColor: AppColors.warmPrimaryLight),
         ),
         textTheme: TextTheme(
           displayLarge: const TextStyle(fontFamily: 'Roboto'),

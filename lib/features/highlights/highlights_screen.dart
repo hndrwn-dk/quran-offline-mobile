@@ -51,7 +51,8 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                         const SizedBox(width: 8),
                         ...highlightColors.map((colorValue) {
                           final color = Color(colorValue);
-                          final isSelected = _filterColor == colorValue;
+                          final isSelected = _filterColor != null &&
+                              highlightColorsMatch(_filterColor!, colorValue);
                           return Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: _buildColorChip(
@@ -70,7 +71,10 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                 ),
                 IconButton(
                   icon: Icon(Icons.info_outline, size: 20, color: colorScheme.onSurfaceVariant),
-                  tooltip: 'Highlight color guide',
+                  tooltip: AppLocalizations.getActionTooltip(
+                    'highlight_color_guide',
+                    settings.appLanguage,
+                  ),
                   onPressed: () => _showHighlightGuide(context, settings),
                 ),
               ],
@@ -84,7 +88,8 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                 data: (surahs) {
                   // Filter by color only (no search filtering in tab view)
                   var filtered = highlights.where((highlight) {
-                    if (_filterColor != null && highlight.color != _filterColor) {
+                    if (_filterColor != null &&
+                        !highlightColorsMatch(highlight.color, _filterColor!)) {
                       return false;
                     }
                     return true;
@@ -122,7 +127,7 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                           englishMeaning: '',
                         ),
                       );
-                      final highlightColor = Color(highlight.color);
+                      final highlightColor = highlightDisplayColor(highlight.color);
 
                       return FutureBuilder<Verse?>(
                         future: ref.read(databaseProvider).getVerse(highlight.surahId, highlight.ayahNo),
@@ -245,7 +250,10 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                                     const SizedBox(width: 8),
                                     IconButton(
                                       icon: Icon(Icons.edit_outlined, color: colorScheme.onSurfaceVariant),
-                                      tooltip: 'Change color',
+                                      tooltip: AppLocalizations.getActionTooltip(
+                                        'change_color',
+                                        settings.appLanguage,
+                                      ),
                                       onPressed: () {
                                         showDialog(
                                           context: context,
@@ -496,7 +504,7 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
   String _getHighlightColorName(int colorValue, String language) {
     final color = Color(colorValue);
     return switch (colorValue) {
-      _ when color == Colors.yellow || color.value == Colors.yellow.toARGB32() => AppLocalizations.getSettingsText('highlight_color_yellow', language),
+      _ when isHighlightYellow(color.value) => AppLocalizations.getSettingsText('highlight_color_yellow', language),
       _ when color == Colors.orange || color.value == Colors.orange.toARGB32() => AppLocalizations.getSettingsText('highlight_color_orange', language),
       _ when color == Colors.pink || color.value == Colors.pink.toARGB32() => AppLocalizations.getSettingsText('highlight_color_pink', language),
       _ when color == Colors.red || color.value == Colors.red.toARGB32() => AppLocalizations.getSettingsText('highlight_color_red', language),
@@ -512,7 +520,7 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
   String _getHighlightColorDescription(int colorValue, String language) {
     final color = Color(colorValue);
     return switch (colorValue) {
-      _ when color == Colors.yellow || color.value == Colors.yellow.toARGB32() => AppLocalizations.getSettingsText('highlight_color_yellow_desc', language),
+      _ when isHighlightYellow(color.value) => AppLocalizations.getSettingsText('highlight_color_yellow_desc', language),
       _ when color == Colors.orange || color.value == Colors.orange.toARGB32() => AppLocalizations.getSettingsText('highlight_color_orange_desc', language),
       _ when color == Colors.pink || color.value == Colors.pink.toARGB32() => AppLocalizations.getSettingsText('highlight_color_pink_desc', language),
       _ when color == Colors.red || color.value == Colors.red.toARGB32() => AppLocalizations.getSettingsText('highlight_color_red_desc', language),

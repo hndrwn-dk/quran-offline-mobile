@@ -2,7 +2,7 @@
 
 A production-ready, offline-first Quran reader built with Flutter and Material 3 — Surah, Juz, and Mushaf reading with tajweed, tafsir, recitation, and a personal library.
 
-**Current version:** 1.0.2 (build 22)
+**Current version:** 1.0.3 (build 27)
 
 ## Features
 
@@ -35,7 +35,7 @@ A production-ready, offline-first Quran reader built with Flutter and Material 3
 ### Search
 
 - **Quick search** on Read tab (Surah / Juz / Page)
-- **Full search** tab — surah, juz, page, ayat, terjemahan
+- **Full search** tab — surah, juz, page, ayat reference, Arabic verse text, translation
 - **QUL name glyphs** (SurahNameV2) in surah search results
 
 ### My Library
@@ -131,6 +131,10 @@ On first launch the app imports `assets/quran/s*.json` into a local Drift databa
 ```bash
 flutter test
 ```
+
+Manual QA before Play upload: see `bundles_release/play-console/QA_CHECKLIST_1.0.3+27.md` (local; folder gitignored).
+
+Local dev dumps (`.ui_*.xml`, `.audio_test_shots/`, `.regression_shots/`) are gitignored — safe to delete anytime.
 
 ## Building for release
 

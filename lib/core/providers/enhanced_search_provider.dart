@@ -5,21 +5,28 @@ import 'package:quran_offline/core/providers/search_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/utils/arabic_search_normalizer.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
+
+enum SearchVerseMatchKind { reference, translation, arabic }
 
 class SearchResult {
   final String type; // 'verse', 'surah', 'juz', 'page'
   final String title;
   final String? subtitle;
   final ReaderSource source;
+  final SearchVerseMatchKind? verseMatchKind;
 
   SearchResult({
     required this.type,
     required this.title,
     this.subtitle,
     required this.source,
+    this.verseMatchKind,
   });
 }
+
+String _verseResultKey(int surahId, int ayahNo) => '$surahId:$ayahNo';
 
 final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) async {
   final query = ref.watch(searchQueryProvider);
@@ -29,16 +36,24 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
   if (query.isEmpty) return [];
 
   await Future.delayed(const Duration(milliseconds: 300));
-  
+
   final currentQuery = ref.read(searchQueryProvider);
   if (currentQuery != query) {
     return [];
   }
 
   final results = <SearchResult>[];
+  final verseKeys = <String>{};
   final queryLower = query.toLowerCase().trim();
   final juzLabel = AppLocalizations.getMenuText('juz', appLanguage);
   final pageLabel = AppLocalizations.getMenuText('page', appLanguage);
+  final db = ref.read(databaseProvider);
+
+  void addVerseResult(SearchResult result, int surahId, int ayahNo) {
+    final key = _verseResultKey(surahId, ayahNo);
+    if (!verseKeys.add(key)) return;
+    results.add(result);
+  }
 
   // Search surahs
   final surahsAsync = ref.read(surahNamesProvider);
@@ -104,21 +119,21 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
     }
   }
 
-  // Search by Ayat Number (format: "X:Y" or "X:Y" with spaces)
-  // Examples: "1:1", "2:255", "112:1", "1: 1", "2 : 255"
+  // Search by Ayat Number (format: "X:Y")
   final ayatNumberPattern = RegExp(r'^(\d+)\s*:\s*(\d+)$');
   final ayatMatch = ayatNumberPattern.firstMatch(query.trim());
   if (ayatMatch != null) {
     final surahId = int.tryParse(ayatMatch.group(1)!);
     final ayahNo = int.tryParse(ayatMatch.group(2)!);
-    
-    if (surahId != null && ayahNo != null && surahId >= 1 && surahId <= 114 && ayahNo >= 1) {
-      // Validate ayah exists by checking database
-      final db = ref.read(databaseProvider);
+
+    if (surahId != null &&
+        ayahNo != null &&
+        surahId >= 1 &&
+        surahId <= 114 &&
+        ayahNo >= 1) {
       final verses = await db.getVersesByRange(surahId, ayahNo, ayahNo);
-      
+
       if (verses.isNotEmpty) {
-        // Get surah name for display
         surahsAsync.when(
           data: (surahs) {
             final surah = surahs.firstWhere(
@@ -130,13 +145,18 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
                 englishMeaning: '',
               ),
             );
-            
-            results.add(SearchResult(
-              type: 'verse',
-              title: 'QS $surahId:$ayahNo',
-              subtitle: surah.englishName,
-              source: SurahSource(surahId, targetAyahNo: ayahNo),
-            ));
+
+            addVerseResult(
+              SearchResult(
+                type: 'verse',
+                title: 'QS $surahId:$ayahNo',
+                subtitle: surah.englishName,
+                source: SurahSource(surahId, targetAyahNo: ayahNo),
+                verseMatchKind: SearchVerseMatchKind.reference,
+              ),
+              surahId,
+              ayahNo,
+            );
           },
           loading: () {},
           error: (_, __) {},
@@ -145,23 +165,44 @@ final enhancedSearchResultsProvider = FutureProvider<List<SearchResult>>((ref) a
     }
   }
 
+  // Search verses (Arabic text) — before translation so Arabic queries surface ayah text
+  if (ArabicSearchNormalizer.containsArabic(query)) {
+    final arabicResults = await db.searchVersesByArabic(query);
+    for (final verse in arabicResults) {
+      addVerseResult(
+        SearchResult(
+          type: 'verse',
+          title: ArabicSearchNormalizer.snippetForDisplay(verse.arabic),
+          subtitle: 'QS ${verse.surahId}:${verse.ayahNo}',
+          source: SurahSource(verse.surahId, targetAyahNo: verse.ayahNo),
+          verseMatchKind: SearchVerseMatchKind.arabic,
+        ),
+        verse.surahId,
+        verse.ayahNo,
+      );
+    }
+  }
+
   // Search verses (translation text)
-  final db = ref.read(databaseProvider);
   final lang = settings.language;
   final verseResults = await db.searchVerses(query, lang);
-  
+
   for (final verse in verseResults) {
     final rawTranslation = lang == 'en'
         ? (verse.trEn ?? verse.trId ?? '')
         : (verse.trId ?? verse.trEn ?? '');
-    results.add(SearchResult(
-      type: 'verse',
-      title: TranslationCleaner.clean(rawTranslation),
-      subtitle: 'QS ${verse.surahId}:${verse.ayahNo}',
-      source: SurahSource(verse.surahId, targetAyahNo: verse.ayahNo),
-    ));
+    addVerseResult(
+      SearchResult(
+        type: 'verse',
+        title: TranslationCleaner.clean(rawTranslation),
+        subtitle: 'QS ${verse.surahId}:${verse.ayahNo}',
+        source: SurahSource(verse.surahId, targetAyahNo: verse.ayahNo),
+        verseMatchKind: SearchVerseMatchKind.translation,
+      ),
+      verse.surahId,
+      verse.ayahNo,
+    );
   }
 
   return results;
 });
-

@@ -119,7 +119,10 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
                     IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: _clearSelection,
-                      tooltip: 'Cancel selection',
+                      tooltip: AppLocalizations.getActionTooltip(
+                        'cancel_selection',
+                        appLanguage,
+                      ),
                     ),
                     Expanded(
                       child: Text(
@@ -132,7 +135,10 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.select_all),
-                      tooltip: 'Select all',
+                      tooltip: AppLocalizations.getActionTooltip(
+                        'select_all',
+                        appLanguage,
+                      ),
                       onPressed: () {
                         final bookmarks = bookmarksAsync.valueOrNull ?? [];
                         _selectAll(bookmarks);
@@ -140,7 +146,10 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline),
-                      tooltip: 'Delete selected',
+                      tooltip: AppLocalizations.getActionTooltip(
+                        'delete_selected',
+                        appLanguage,
+                      ),
                       onPressed: () async {
                         final bookmarks = bookmarksAsync.valueOrNull ?? [];
                         final selected = bookmarks
@@ -372,7 +381,10 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
                                       const SizedBox(width: 8),
                                       IconButton(
                                         icon: Icon(Icons.delete_outline, color: colorScheme.onSurfaceVariant),
-                                        tooltip: 'Delete bookmark',
+                                        tooltip: AppLocalizations.getActionTooltip(
+                                          'delete_bookmark',
+                                          appLanguage,
+                                        ),
                                         onPressed: () async {
                                           final confirmed = await _confirmDelete(
                                             context,
@@ -418,7 +430,10 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
               _selectionMode = true;
             });
           },
-          tooltip: 'Select bookmarks',
+          tooltip: AppLocalizations.getActionTooltip(
+            'select_bookmarks',
+            appLanguage,
+          ),
           child: const Icon(Icons.checklist),
         ),
       ),

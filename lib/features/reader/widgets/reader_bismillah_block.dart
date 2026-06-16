@@ -4,6 +4,7 @@ import 'package:quran_offline/core/audio/playback_actions.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 
 /// Bismillah block shown before ayah 1 (surahs other than 1 and 9).
@@ -93,7 +94,10 @@ class ReaderBismillahBlock extends ConsumerWidget {
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
-                  tooltip: 'Play Bismillah',
+                  tooltip: AppLocalizations.getActionTooltip(
+                    'play_bismillah',
+                    settings.appLanguage,
+                  ),
                   onPressed: () => _togglePlay(context, ref, audio),
                 ),
               ],

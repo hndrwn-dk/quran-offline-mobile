@@ -5,13 +5,11 @@ import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
+import 'package:quran_offline/core/constants/app_colors.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/widgets/nav_read_icon.dart';
 import 'package:quran_offline/features/read/juz_list_view.dart';
 import 'package:quran_offline/features/read/page_list_view.dart';
 import 'package:quran_offline/features/read/surah_list_view.dart';
-import 'package:quran_offline/features/read/widgets/last_read_card.dart';
-import 'package:quran_offline/features/read/widgets/weekly_reflection_card.dart';
 import 'package:quran_offline/features/read/widgets/quick_search_bar.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 
@@ -88,7 +86,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
                                   ),
                                 ),
                                 alignment: Alignment.center,
-                                child: const NavReadIcon(selected: true, size: 20),
+                                child: const Icon(Icons.auto_stories, size: 20),
                               ),
                               const SizedBox(width: 10),
                               Column(
@@ -119,8 +117,6 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
                               ref.read(readModeProvider.notifier).state = mode;
                             },
                           ),
-                          const SizedBox(height: 8),
-                          const WeeklyReflectionCard(),
                         ],
                       ),
                     ),
@@ -198,7 +194,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
                 ),
               ),
               alignment: Alignment.center,
-              child: const NavReadIcon(selected: true, size: 18),
+              child: const Icon(Icons.auto_stories, size: 18),
             ),
             const SizedBox(width: 10),
             Column(
@@ -272,38 +268,17 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
               ReadMode.surah => _HorizontalSwipeShell(
                   readMode: readMode,
                   onSwipe: (isNext) => _handleModeNavigation(readMode, isNext),
-                  child: const SurahListView(
-                    topWidgets: [
-                      WeeklyReflectionCard(),
-                      LastReadCard(),
-                    ],
-                  ),
+                  child: const SurahListView(),
                 ),
-              ReadMode.juz => Column(
-                  children: [
-                    const WeeklyReflectionCard(),
-                    const LastReadCard(),
-                    Expanded(
-                      child: _HorizontalSwipeShell(
-                        readMode: readMode,
-                        onSwipe: (isNext) => _handleModeNavigation(readMode, isNext),
-                        child: const JuzListView(),
-                      ),
-                    ),
-                  ],
+              ReadMode.juz => _HorizontalSwipeShell(
+                  readMode: readMode,
+                  onSwipe: (isNext) => _handleModeNavigation(readMode, isNext),
+                  child: const JuzListView(),
                 ),
-              ReadMode.pages => Column(
-                  children: [
-                    const WeeklyReflectionCard(),
-                    const LastReadCard(),
-                    Expanded(
-                      child: _HorizontalSwipeShell(
-                        readMode: readMode,
-                        onSwipe: (isNext) => _handleModeNavigation(readMode, isNext),
-                        child: const PageListView(),
-                      ),
-                    ),
-                  ],
+              ReadMode.pages => _HorizontalSwipeShell(
+                  readMode: readMode,
+                  onSwipe: (isNext) => _handleModeNavigation(readMode, isNext),
+                  child: const PageListView(),
                 ),
             },
           ),
@@ -446,14 +421,22 @@ class _CustomSegmentButton extends StatelessWidget {
               return Container(
                 padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? colorScheme.primary
-                      : colorScheme.surface,
+                  gradient: isSelected
+                      ? const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.warmPrimaryLight,
+                            AppColors.warmPrimaryDark,
+                          ],
+                        )
+                      : null,
+                  color: isSelected ? null : colorScheme.surface,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected
                         ? Colors.transparent
-                        : colorScheme.outline.withOpacity(0.12),
+                        : colorScheme.outline.withValues(alpha: 0.12),
                     width: 1,
                   ),
                 ),
@@ -466,8 +449,8 @@ class _CustomSegmentButton extends StatelessWidget {
                         icon,
                         size: 18,
                         color: isSelected
-                            ? colorScheme.onPrimary
-                            : colorScheme.onSurface.withOpacity(0.6),
+                            ? Colors.white
+                            : colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       const SizedBox(width: 6),
                       Flexible(
@@ -478,8 +461,8 @@ class _CustomSegmentButton extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.labelMedium?.copyWith(
                             color: isSelected
-                                ? colorScheme.onPrimary
-                                : colorScheme.onSurface.withOpacity(0.6),
+                                ? Colors.white
+                                : colorScheme.onSurface.withValues(alpha: 0.6),
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                           ),
                         ),

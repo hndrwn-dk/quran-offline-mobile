@@ -23,15 +23,23 @@ class AudioDownloadNotifications extends ConsumerStatefulWidget {
 class _AudioDownloadNotificationsState
     extends ConsumerState<AudioDownloadNotifications> {
   bool _bulkWasActive = false;
+  bool _completedSeeded = false;
+  Set<String> _knownCompleted = const {};
 
   @override
   Widget build(BuildContext context) {
     ref.listen<AudioDownloadsState>(audioDownloadProvider, (previous, next) {
       if (!mounted) return;
 
+      if (!_completedSeeded) {
+        _knownCompleted = Set<String>.from(next.completed);
+        _completedSeeded = true;
+        _bulkWasActive = next.bulk != null;
+        return;
+      }
+
       final language = ref.read(settingsProvider).appLanguage;
-      final prevCompleted = previous?.completed ?? const {};
-      final added = next.completed.difference(prevCompleted);
+      final added = next.completed.difference(_knownCompleted);
       if (added.isNotEmpty && next.bulk == null) {
         final reciter = ref.read(reciterProvider);
         final surahs = ref.read(surahNamesProvider).valueOrNull;
@@ -59,6 +67,7 @@ class _AudioDownloadNotificationsState
           );
         }
       }
+      _knownCompleted = Set<String>.from(next.completed);
 
       final bulkActive = next.bulk != null;
       if (_bulkWasActive && !bulkActive) {

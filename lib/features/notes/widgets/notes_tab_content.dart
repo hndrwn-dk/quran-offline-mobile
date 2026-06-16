@@ -216,7 +216,10 @@ class _NotesTabContentState extends ConsumerState<NotesTabContent> {
                                     const SizedBox(width: 8),
                                     IconButton(
                                       icon: Icon(Icons.edit_outlined, color: colorScheme.onSurfaceVariant),
-                                      tooltip: 'Edit note',
+                                      tooltip: AppLocalizations.getActionTooltip(
+                                        'edit_note',
+                                        settings.appLanguage,
+                                      ),
                                       onPressed: () {
                                         showDialog(
                                           context: context,

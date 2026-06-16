@@ -97,7 +97,6 @@ class TransliterationFormatter {
     if (tlRaw == null || tlRaw.isEmpty) return '';
     switch (style) {
       case TransliterationStyle.original:
-        return tlRaw;
       case TransliterationStyle.readable:
         return toReadable(tlRaw, tajweedHtml: tajweedHtml);
     }

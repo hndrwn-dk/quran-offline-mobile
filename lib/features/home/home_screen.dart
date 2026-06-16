@@ -4,11 +4,10 @@ import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/dua/dua_screen.dart';
+import 'package:quran_offline/features/home/beranda_screen.dart';
 import 'package:quran_offline/features/library/my_library_screen.dart';
 import 'package:quran_offline/features/read/read_screen.dart';
 import 'package:quran_offline/features/search/search_screen.dart';
-import 'package:quran_offline/features/settings/settings_screen.dart';
-import 'package:quran_offline/core/widgets/nav_read_icon.dart';
 import 'package:quran_offline/features/audio/global_recitation_bar.dart';
 import 'package:quran_offline/features/audio/audio_download_notifications.dart';
 
@@ -26,11 +25,11 @@ class HomeScreen extends ConsumerWidget {
       body: IndexedStack(
         index: currentIndex,
         children: const [
+          BerandaScreen(),
           ReadScreen(),
           SearchScreen(),
           DuaScreen(),
           MyLibraryScreen(),
-          SettingsScreen(),
         ],
       ),
       bottomNavigationBar: Column(
@@ -45,36 +44,34 @@ class HomeScreen extends ConsumerWidget {
         },
         destinations: [
           NavigationDestination(
+            key: const Key('nav_home'),
+            icon: const Icon(Icons.foundation_outlined),
+            selectedIcon: const Icon(Icons.foundation),
+            label: AppLocalizations.getNavMenuText('home', appLanguage),
+          ),
+          NavigationDestination(
             key: const Key('nav_read'),
-            icon: NavReadIcon(
-              key: const ValueKey('nav_read_icon'),
-              selected: currentIndex == 0,
-            ),
+            icon: const Icon(Icons.auto_stories_outlined),
+            selectedIcon: const Icon(Icons.auto_stories),
             label: AppLocalizations.getNavMenuText('read', appLanguage),
           ),
           NavigationDestination(
             key: const Key('nav_search'),
-            icon: const Icon(Icons.search_outlined),
-            selectedIcon: const Icon(Icons.search),
+            icon: const Icon(Icons.travel_explore_outlined),
+            selectedIcon: const Icon(Icons.travel_explore),
             label: AppLocalizations.getNavMenuText('search', appLanguage),
           ),
           NavigationDestination(
             key: const Key('nav_explore'),
-            icon: const Icon(Icons.auto_stories_outlined),
-            selectedIcon: const Icon(Icons.auto_stories),
+            icon: const Icon(Icons.library_books_outlined),
+            selectedIcon: const Icon(Icons.library_books),
             label: AppLocalizations.getNavMenuText('dua', appLanguage),
           ),
           NavigationDestination(
             key: const Key('nav_library'),
-            icon: const Icon(Icons.library_books_outlined),
-            selectedIcon: const Icon(Icons.library_books),
+            icon: const Icon(Icons.collections_bookmark_outlined),
+            selectedIcon: const Icon(Icons.collections_bookmark),
             label: AppLocalizations.getNavMenuText('library', appLanguage),
-          ),
-          NavigationDestination(
-            key: const Key('nav_settings'),
-            icon: const Icon(Icons.tune_outlined),
-            selectedIcon: const Icon(Icons.tune),
-            label: AppLocalizations.getNavMenuText('settings', appLanguage),
           ),
         ],
           ),

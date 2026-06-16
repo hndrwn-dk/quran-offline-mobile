@@ -3,9 +3,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 
+/// Warm amber-gold highlight — readable on light backgrounds (replaces pure yellow).
+const kHighlightYellowArgb = 0xFFC4920A;
+
+/// Stored in DB for highlights created before the palette update.
+final int kLegacyHighlightYellowArgb = Colors.yellow.toARGB32();
+
+bool isHighlightYellow(int argb) =>
+    argb == kHighlightYellowArgb || argb == kLegacyHighlightYellowArgb;
+
+/// Map legacy bright yellow rows to the new display/picker value.
+int normalizeHighlightColor(int argb) =>
+    argb == kLegacyHighlightYellowArgb ? kHighlightYellowArgb : argb;
+
+/// True when two stored highlight values are the same palette slot (legacy yellow included).
+bool highlightColorsMatch(int a, int b) =>
+    normalizeHighlightColor(a) == normalizeHighlightColor(b);
+
+Color highlightDisplayColor(int argb) => Color(normalizeHighlightColor(argb));
+
 // Predefined highlight colors with icons
 final highlightColors = [
-  Colors.yellow.toARGB32(),
+  kHighlightYellowArgb,
   Colors.orange.toARGB32(),
   Colors.pink.toARGB32(),
   Colors.red.toARGB32(),
@@ -18,9 +37,9 @@ final highlightColors = [
 
 // Get icon for highlight color
 IconData getHighlightIcon(int colorValue) {
-  final color = Color(colorValue);
-  // Match color to icon based on color similarity
-  if (color == Colors.yellow || color.value == Colors.yellow.toARGB32()) {
+  final normalized = normalizeHighlightColor(colorValue);
+  final color = Color(normalized);
+  if (isHighlightYellow(normalized)) {
     return Icons.star;
   } else if (color == Colors.orange || color.value == Colors.orange.toARGB32()) {
     return Icons.local_fire_department;
@@ -76,4 +95,3 @@ Future<void> removeHighlight(WidgetRef ref, int surahId, int ayahNo) async {
   ref.invalidate(highlightsProvider);
   ref.invalidate(highlightsBySurahProvider(surahId));
 }
-

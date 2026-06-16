@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../tajweed/tajweed_colors.dart';
+import '../tajweed/tajweed_html.dart';
+import '../tajweed/tajweed_parser.dart';
+
 /// Widget to render tajweed text with color coding
 /// Parses HTML tajweed tags and applies appropriate colors
 ///
@@ -36,27 +40,15 @@ class TajweedText extends StatelessWidget {
   /// principle: Al-Quran — jangan menambahkan atau menghilangkan.
   /// - Unify equivalent forms only: U+06DF → U+06E0 so أَنَا۠ displays consistently (no removal).
   /// - Replace/remove only for display when font has no glyph (tofu) or char is redundant with UI.
-  static String normalizeArabicForDisplay(String arabic) {
-    return arabic
-        .replaceAll('\u0671', '\u0627') // Alef Wasla
-        .replaceAll('\u0672', '\u0627') // Alef with Wavy Hamza Below (maddla)
-        .replaceAll('\u065F', '') // Arabic Wavy Hamza Below - renders as circle, no glyph in font
-        .replaceAll('\u0670', '') // ARABIC LETTER SUPERSCRIPT ALEF - renders as circle
-        .replaceAll('\u06A0', '') // Arabic letter that can render as circle in some fonts
-        .replaceAll('\u06DD', '') // ARABIC END OF AYAH - ayah number shown separately in UI
-        .replaceAll('\u06D9', '') // ARABIC SMALL HIGH LAM ALEF (waqf) - often renders as circle
-        .replaceAll('\u06DA', '') // ARABIC SMALL HIGH JEEM - often renders as circle
-        .replaceAll('\u06DF', '\u06E0'); // Unify small high rounded → U+06E0 so أَنَا۠ displays (kept, not removed)
-  }
+  static String normalizeArabicForDisplay(String arabic) =>
+      TajweedHtml.normalizeArabicForDisplay(arabic);
 
   /// Strips all HTML tags from tajweed string and normalizes for display.
   /// Use this when tajweed is OFF so we show the same character stream as when
   /// tajweed is ON (from JSON "tj"), just without colors — avoids circles from
   /// font missing glyphs and keeps one source of truth.
-  static String plainArabicFromTajweedHtml(String tajweedHtml) {
-    final stripped = tajweedHtml.replaceAll(RegExp(r'<[^>]+>'), '').replaceAll('&nbsp;', ' ').trim();
-    return normalizeArabicForDisplay(stripped);
-  }
+  static String plainArabicFromTajweedHtml(String tajweedHtml) =>
+      TajweedHtml.plainArabicFromHtml(tajweedHtml);
 
   /// TextStyle for plain Arabic (no tajweed) so rendering matches and avoids tofu.
   /// Use with [normalizeArabicForDisplay] when showing verse.arabic with tajweed off.
@@ -94,43 +86,13 @@ class TajweedText extends StatelessWidget {
     );
   }
 
-  /// Get color for tajweed class
+  /// Get color for tajweed class (Quran.com-aligned palette).
   Color getTajweedColor(String tajweedClass, BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // Tajweed color mapping based on standard tajweed rules
-    return switch (tajweedClass) {
-      // Ikhfa (concealment) - Teal/Green
-      'ikhfa' => isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00897B),
-      'ikhafa_shafawi' => isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00897B), // Ikhfa with shafawi - same as ikhfa
-      // Idgham (merging) - Blue
-      'idgham' => isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2),
-      'idgham_ghunnah' => defaultColor, // Idgham with ghunnah - Default (white/black) - treated as regular text like mad asli/harakat
-      'idgham_shafawi' => isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2), // Idgham with shafawi - Blue (idgham color)
-      'idgham_wo_ghunnah' => isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2), // Idgham without ghunnah - Blue (idgham color)
-      // Iqlab (conversion) - Purple
-      'iqlab' => isDark ? const Color(0xFFBA68C8) : const Color(0xFF7B1FA2),
-      // Ghunnah (nasalization) - Orange
-      'ghunnah' => isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100),
-      // Qalqalah (echo) - Red
-      'qalqalah' => isDark ? const Color(0xFFE57373) : const Color(0xFFC62828),
-      'qalaqah' => isDark ? const Color(0xFFE57373) : const Color(0xFFC62828), // Alternative spelling - same as qalqalah
-      // Ham wasl (connecting hamza) - Gray
-      'ham_wasl' => colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-      // Laam shamsiyah (solar lam) - Yellow
-      'laam_shamsiyah' => isDark ? const Color(0xFFFFD54F) : const Color(0xFFF57F17),
-      // Madd (elongation)
-      'madda_normal' => isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
-      'madda_permissible' => isDark ? const Color(0xFFA5D6A7) : const Color(0xFF388E3C),
-      'madda_necessary' => isDark ? const Color(0xFF66BB6A) : const Color(0xFF1B5E20),
-      'madda_obligatory' => isDark ? const Color(0xFF4CAF50) : const Color(0xFF0D47A1),
-      // Silent letters - Light gray
-      'silent' => colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-      'slnt' => colorScheme.onSurfaceVariant.withValues(alpha: 0.4), // Abbreviated form
-      // Default - use default color (white/black based on theme)
-      _ => defaultColor,
-    };
+    return TajweedColors.colorForClass(
+      tajweedClass,
+      context,
+      defaultColor: defaultColor,
+    );
   }
 
   /// Returns true if [codePoint] is an Arabic combining mark (harakah, madda, etc.)
@@ -164,10 +126,164 @@ class TajweedText extends StatelessWidget {
 
   /// Merges leading combining characters from each span into the previous span
   /// so that Flutter never lays out a diacritic in a separate span (fixes overlap/missing harakat).
-  /// 
+  ///
+  /// Then merges spans split by tajweed tags inside the same Arabic word (e.g. أَصْحَ + ـٰ + بُ)
+  /// so cursive letters like ب and ت are not clipped.
+  static List<TextSpan> coalesceSpansForArabicLayout(
+    List<TextSpan> spans, {
+    TextStyle? defaultStyle,
+  }) {
+    final merged = mergeLeadingCombiningIntoPrevious(spans, defaultStyle: defaultStyle);
+    return mergeSplitArabicWords(merged, defaultStyle: defaultStyle);
+  }
+
+  /// Returns true if [codePoint] is a base Arabic letter (not a combining mark).
+  static bool isArabicLetter(int codePoint) {
+    return (codePoint >= 0x0621 && codePoint <= 0x064A) ||
+        codePoint == 0x0671 ||
+        codePoint == 0x0672 ||
+        codePoint == 0x06CC;
+  }
+
+  static int? _firstBaseLetterCodePoint(String s) {
+    for (final cp in s.runes) {
+      if (isArabicLetter(cp)) return cp;
+    }
+    return null;
+  }
+
+  static int? _lastBaseLetterCodePoint(String s) {
+    final runes = s.runes.toList();
+    for (var i = runes.length - 1; i >= 0; i--) {
+      if (isArabicLetter(runes[i])) return runes[i];
+    }
+    return null;
+  }
+
+  /// True when [s] is a single letter plus optional diacritics (typical tajweed tag split).
+  static bool _isShortArabicFragment(String s) {
+    var letters = 0;
+    for (final cp in s.runes) {
+      if (isArabicLetter(cp)) letters++;
+    }
+    return letters == 1 && s.length <= 4;
+  }
+
+  /// Whether two adjacent span texts were split inside one Arabic word and must be one span.
+  static bool shouldMergeArabicSpans(
+    String prev,
+    String curr, {
+    Color? defaultColor,
+    Color? prevColor,
+    Color? currColor,
+  }) {
+    if (prev.isEmpty || curr.isEmpty) return false;
+
+    final prevLast = prev.runes.last;
+    final currFirst = curr.runes.first;
+
+    if (prevLast == 0x20 || prevLast == 0xA0) return false;
+    if (currFirst == 0x20 || currFirst == 0xA0) return false;
+
+    // Madda bridge: أَصْحَ + ـٰ + بُ (always merge for glyph shaping)
+    if (prevLast == 0x0640 || prevLast == 0x0670) return true;
+
+    // Span is only combining marks (tatweel, harakat).
+    if (curr.runes.every(_isArabicCombining)) return true;
+
+    // Do not merge colored tajweed into plain letters (or vice versa).
+    if (defaultColor != null) {
+      final prevColored = prevColor != null && prevColor != defaultColor;
+      final currColored = currColor != null && currColor != defaultColor;
+      if (prevColored != currColored) return false;
+    }
+
+    if (_isArabicCombining(prevLast) && isArabicLetter(currFirst)) return true;
+
+    final prevBase = _lastBaseLetterCodePoint(prev);
+    final currBase = _firstBaseLetterCodePoint(curr);
+    if (prevBase != null &&
+        currBase != null &&
+        isArabicLetter(prevBase) &&
+        isArabicLetter(currBase) &&
+        (_isShortArabicFragment(curr) || _isShortArabicFragment(prev))) {
+      if (_colorsBlockMerge(prevColor, currColor, defaultColor)) return false;
+      return true;
+    }
+
+    return false;
+  }
+
+  static bool _colorsBlockMerge(Color? a, Color? b, Color? defaultColor) {
+    if (a == null || b == null || defaultColor == null) return false;
+    final aColored = a != defaultColor;
+    final bColored = b != defaultColor;
+    return aColored && bColored && a != b;
+  }
+
+  /// Merges spans that tajweed HTML split inside one Arabic word (fixes clipped ب / ت / ل, etc.).
+  static List<TextSpan> mergeSplitArabicWords(
+    List<TextSpan> spans, {
+    TextStyle? defaultStyle,
+  }) {
+    if (spans.length <= 1) return spans;
+
+    final result = <TextSpan>[];
+    for (final span in spans) {
+      final text = span.text ?? '';
+      if (text.isEmpty) continue;
+
+      if (result.isEmpty) {
+        result.add(span);
+        continue;
+      }
+
+      final prev = result.last;
+      final prevText = prev.text ?? '';
+      final defaultColor = defaultStyle?.color;
+      if (shouldMergeArabicSpans(
+        prevText,
+        text,
+        defaultColor: defaultColor,
+        prevColor: prev.style?.color,
+        currColor: span.style?.color,
+      )) {
+        result.removeLast();
+        result.add(TextSpan(
+          text: prevText + text,
+          style: _styleForMergedSpans(prev.style, span.style, defaultStyle),
+          recognizer: prev.recognizer ?? span.recognizer,
+        ));
+      } else {
+        result.add(span);
+      }
+    }
+    return result;
+  }
+
+  static TextStyle? _styleForMergedSpans(
+    TextStyle? a,
+    TextStyle? b,
+    TextStyle? defaultStyle,
+  ) {
+    final defaultColor = defaultStyle?.color;
+    if (defaultColor != null) {
+      // Keep tajweed hue when merging a colored tag with default text.
+      if (a?.color != null && a!.color != defaultColor) return a;
+      if (b?.color != null && b!.color != defaultColor) return b;
+    }
+    return a ?? b ?? defaultStyle;
+  }
+
+  /// Merges leading combining characters from each span into the previous span
+  /// so that Flutter never lays out a diacritic in a separate span (fixes overlap/missing harakat).
+  ///
   /// IMPORTANT: Preserves the style from the previous span to ensure font consistency.
   /// If the previous span has no style, we ensure the merged span gets proper font styling.
-  List<TextSpan> _mergeLeadingCombiningIntoPrevious(List<TextSpan> spans) {
+  static List<TextSpan> mergeLeadingCombiningIntoPrevious(
+    List<TextSpan> spans, {
+    TextStyle? defaultStyle,
+  }) {
     if (spans.length <= 1) return spans;
     final result = <TextSpan>[];
     for (int i = 0; i < spans.length; i++) {
@@ -176,20 +292,34 @@ class TajweedText extends StatelessWidget {
       if (text.isEmpty) continue;
       final leading = _leadingCombining(text);
       if (leading.isNotEmpty && result.isNotEmpty) {
+        final last = result.last;
+        final rest = text.substring(leading.length);
+        final lastColor = last.style?.color ?? defaultStyle?.color;
+        final currColor = span.style?.color ?? defaultStyle?.color;
+        final currAllCombining = text.runes.every(_isArabicCombining);
+
+        if (!currAllCombining && lastColor != currColor) {
+          result.add(span);
+          continue;
+        }
+
         // Prepend leading diacritics to the last span so they stay with the previous base character
-        final last = result.removeLast();
+        result.removeLast();
         final newLastText = (last.text ?? '') + leading;
         // Preserve the style from the previous span, or use default if none exists
-        final preservedStyle = last.style ?? quranArabicStyle();
+        final preservedStyle = last.style ?? defaultStyle;
         result.add(TextSpan(
           text: newLastText,
           style: preservedStyle,
+          recognizer: last.recognizer,
         ));
-        final rest = text.substring(leading.length);
         if (rest.isNotEmpty) {
-          // Preserve the style from the current span, or use default if none exists
-          final restStyle = span.style ?? quranArabicStyle();
-          result.add(TextSpan(text: rest, style: restStyle));
+          final restStyle = span.style ?? defaultStyle;
+          result.add(TextSpan(
+            text: rest,
+            style: restStyle,
+            recognizer: span.recognizer,
+          ));
         }
       } else {
         result.add(span);
@@ -208,8 +338,14 @@ class TajweedText extends StatelessWidget {
     // Normalize so U+065F, U+06A0 etc. don't render as circle (e.g. 6:56, 6:44)
     processedHtml = normalizeArabicForDisplay(processedHtml);
 
-    List<TextSpan> spans = _parseTajweedHtml(context, processedHtml);
-    spans = _mergeLeadingCombiningIntoPrevious(spans);
+    List<TextSpan> spans = TajweedParser.parseToSpans(
+      context: context,
+      tajweedHtml: processedHtml,
+      baseStyle: quranArabicStyle(),
+      defaultColor: defaultColor,
+    );
+    final baseStyle = quranArabicStyle();
+    spans = coalesceSpansForArabicLayout(spans, defaultStyle: baseStyle);
 
     // Wrap with Localizations.override to set Arabic locale for proper text shaping
     return Localizations.override(
@@ -223,334 +359,4 @@ class TajweedText extends StatelessWidget {
       ),
     );
   }
-
-  List<TextSpan> _parseTajweedHtml(BuildContext context, [String? htmlText]) {
-    final spans = <TextSpan>[];
-    String text = htmlText ?? tajweedHtml;
-    
-    // Pattern to match tajweed tags: <tajweed class=class_name>content</tajweed>
-    // Handle both quoted and unquoted class attributes
-    // Pattern 1: <tajweed class="value">content</tajweed>
-    // Pattern 2: <tajweed class='value'>content</tajweed>
-    // Pattern 3: <tajweed class=value>content</tajweed>
-    // Pattern 4: <tajweed>content</tajweed> (without class attribute)
-    final tajweedPattern1 = RegExp(
-      r'<tajweed\s+class="([^"]+)"\s*>(.*?)</tajweed>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final tajweedPattern2 = RegExp(
-      r"<tajweed\s+class='([^']+)'\s*>(.*?)</tajweed>",
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final tajweedPattern3 = RegExp(
-      r'<tajweed\s+class=([^>\s]+)\s*>(.*?)</tajweed>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final tajweedPattern4 = RegExp(
-      r'<tajweed\s*>(.*?)</tajweed>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    
-    // Pattern for span tags: <span class=end>ayah_number</span>
-    final spanPattern1 = RegExp(
-      r'<span\s+class="([^"]+)"\s*>(.*?)</span>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final spanPattern2 = RegExp(
-      r"<span\s+class='([^']+)'\s*>(.*?)</span>",
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final spanPattern3 = RegExp(
-      r'<span\s+class=([^>\s]+)\s*>(.*?)</span>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    
-    // Pattern for alternative format: <class=value>content</class>
-    final classPattern1 = RegExp(
-      r'<class="([^"]+)"\s*>(.*?)</class>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final classPattern2 = RegExp(
-      r"<class='([^']+)'\s*>(.*?)</class>",
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final classPattern3 = RegExp(
-      r'<class=([^>\s]+)\s*>(.*?)</class>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    
-    // Pattern to remove any remaining HTML tags that weren't matched
-    final htmlTagPattern = RegExp(r'<[^>]+>');
-    
-    int lastIndex = 0;
-    
-    // Find all matches
-    final allMatches = <_Match>[];
-    
-    // Helper function to check if a match is already in allMatches
-    bool isAlreadyMatched(int start, int end) {
-      return allMatches.any((m) => m.start == start && m.end == end);
-    }
-    
-    // Find tajweed tags (try all four patterns)
-    for (final match in tajweedPattern1.allMatches(text)) {
-      allMatches.add(_Match(
-        start: match.start,
-        end: match.end,
-        type: _MatchType.tajweed,
-        classAttr: match.group(1) ?? '',
-        content: match.group(2) ?? '',
-      ));
-    }
-    for (final match in tajweedPattern2.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_Match(
-          start: match.start,
-          end: match.end,
-          type: _MatchType.tajweed,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-        ));
-      }
-    }
-    for (final match in tajweedPattern3.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_Match(
-          start: match.start,
-          end: match.end,
-          type: _MatchType.tajweed,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-        ));
-      }
-    }
-    for (final match in tajweedPattern4.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_Match(
-          start: match.start,
-          end: match.end,
-          type: _MatchType.tajweed,
-          classAttr: '', // No class attribute
-          content: match.group(1) ?? '',
-        ));
-      }
-    }
-    
-    // Find span tags (try all three patterns)
-    for (final match in spanPattern1.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_Match(
-          start: match.start,
-          end: match.end,
-          type: _MatchType.span,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-        ));
-      }
-    }
-    for (final match in spanPattern2.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_Match(
-          start: match.start,
-          end: match.end,
-          type: _MatchType.span,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-        ));
-      }
-    }
-    for (final match in spanPattern3.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_Match(
-          start: match.start,
-          end: match.end,
-          type: _MatchType.span,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-        ));
-      }
-    }
-    
-    // Find class tags (alternative format: <class=value>content</class>)
-    for (final match in classPattern1.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_Match(
-          start: match.start,
-          end: match.end,
-          type: _MatchType.tajweed,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-        ));
-      }
-    }
-    for (final match in classPattern2.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_Match(
-          start: match.start,
-          end: match.end,
-          type: _MatchType.tajweed,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-        ));
-      }
-    }
-    for (final match in classPattern3.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_Match(
-          start: match.start,
-          end: match.end,
-          type: _MatchType.tajweed,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-        ));
-      }
-    }
-    
-    // Sort matches by start position
-    allMatches.sort((a, b) => a.start.compareTo(b.start));
-    
-    // Build text spans
-    for (final match in allMatches) {
-      // Add text before match (remove any HTML tags from it)
-      if (match.start > lastIndex) {
-        var beforeText = text.substring(lastIndex, match.start);
-        // Remove any HTML tags that weren't matched
-        // Also remove incomplete tags like <tajweed, <class=, etc.
-        beforeText = beforeText.replaceAll(htmlTagPattern, '');
-        // Remove incomplete tags that don't have closing >
-        beforeText = beforeText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
-        beforeText = beforeText.replaceAll(RegExp(r'<tajweed[^>]*', caseSensitive: false), '');
-        beforeText = beforeText.replaceAll(RegExp(r'<class=[^>]*', caseSensitive: false), '');
-        if (beforeText.isNotEmpty) {
-          spans.add(TextSpan(
-            text: beforeText,
-            style: quranArabicStyle(),
-          ));
-        }
-      }
-      
-      // Add styled text for match
-      if (match.type == _MatchType.tajweed) {
-        final tajweedClass = match.classAttr.trim();
-        // Clean content from any remaining HTML tags
-        var content = match.content;
-        content = content.replaceAll(htmlTagPattern, '');
-        content = content.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
-        
-        if (content.isNotEmpty) {
-          // Some tajweed classes should be rendered as plain text (no color)
-          // because they're just regular harakat/diacritics (mad asli, waṣlah, silent), not actual tajweed rules
-          // These should appear as white/default text, not colored circles or black circles
-          final classesToRenderAsPlainText = {
-            'idgham_ghunnah', // Just harakat/diacritics, not a tajweed rule - should be white/default
-            'madda_normal', // Mad asli (natural elongation) - regular harakat, should be white/default, not green/black circle
-            'madda_obligatory', // Madd wajib - regular harakat, should be white/default, not black circle
-            'madda_permissible', // Madd jaiz - regular harakat, should be white/default
-            'madda_necessary', // Madd lazim - regular harakat, should be white/default
-            'ham_wasl', // Waṣlah (connecting hamza) - regular harakat sign, should be white/default, not black circle
-            'slnt', // Silent letters - regular harakat, should be white/default, not black circle
-            'silent', // Silent letters (alternative) - regular harakat, should be white/default, not black circle
-          };
-          
-          if (classesToRenderAsPlainText.contains(tajweedClass)) {
-            // Render as plain text (default color) - these are just harakat/mad asli/waṣlah/silent, not tajweed rules
-            // No colored circle (green/black) should appear - just regular text with default color
-            spans.add(TextSpan(
-              text: content,
-              style: quranArabicStyle(),
-            ));
-          } else {
-            final color = getTajweedColor(tajweedClass, context);
-            spans.add(TextSpan(
-              text: content,
-              style: quranArabicStyle(color: color),
-            ));
-          }
-        }
-      } else if (match.type == _MatchType.span) {
-        // Check if this is the end marker: <span class=end>...</span>
-        final classAttr = match.classAttr.trim();
-        // Match exactly "end" (with or without quotes)
-        if (classAttr == 'end' || classAttr == '"end"' || classAttr == "'end'") {
-          // Skip ayah number marker - we already display it as a badge
-          // Do nothing, just skip this match
-        } else {
-          // Regular span (not end marker) - render it
-          var content = match.content;
-          content = content.replaceAll(htmlTagPattern, '');
-          if (content.isNotEmpty) {
-            spans.add(TextSpan(
-              text: content,
-              style: quranArabicStyle(),
-            ));
-          }
-        }
-      }
-      
-      lastIndex = match.end;
-    }
-    
-    // Add remaining text (remove any HTML tags from it)
-    if (lastIndex < text.length) {
-      var remainingText = text.substring(lastIndex);
-      // Remove any HTML tags that weren't matched
-      remainingText = remainingText.replaceAll(htmlTagPattern, '');
-      // Remove incomplete tags
-      remainingText = remainingText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
-      remainingText = remainingText.replaceAll(RegExp(r'<tajweed[^>]*', caseSensitive: false), '');
-      remainingText = remainingText.replaceAll(RegExp(r'<class=[^>]*', caseSensitive: false), '');
-      if (remainingText.isNotEmpty) {
-        spans.add(TextSpan(
-          text: remainingText,
-          style: quranArabicStyle(),
-        ));
-      }
-    }
-    
-    // If no matches found, remove all HTML tags and return plain text
-    if (spans.isEmpty) {
-      var cleanedText = text.replaceAll(htmlTagPattern, '');
-      cleanedText = cleanedText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
-      cleanedText = cleanedText.replaceAll(RegExp(r'<tajweed[^>]*', caseSensitive: false), '');
-      cleanedText = cleanedText.replaceAll(RegExp(r'<class=[^>]*', caseSensitive: false), '');
-      return [TextSpan(
-        text: cleanedText,
-        style: quranArabicStyle(),
-      )];
-    }
-    
-    return spans;
-  }
 }
-
-enum _MatchType {
-  tajweed,
-  span,
-}
-
-class _Match {
-  final int start;
-  final int end;
-  final _MatchType type;
-  final String classAttr;
-  final String content;
-
-  _Match({
-    required this.start,
-    required this.end,
-    required this.type,
-    required this.classAttr,
-    required this.content,
-  });
-}
-

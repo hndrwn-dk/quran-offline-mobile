@@ -18,6 +18,7 @@ import 'package:quran_offline/features/reader/ayah_card.dart';
 import 'package:quran_offline/features/audio/global_recitation_bar.dart';
 import 'package:quran_offline/features/reader/surah_header_card.dart';
 import 'package:quran_offline/features/reader/widgets/reader_bismillah_block.dart';
+import 'package:quran_offline/features/reader/widgets/go_to_ayah_sheet.dart';
 import 'package:quran_offline/features/reader/text_settings_dialog.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
@@ -37,6 +38,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   bool _scrollListenerSetup = false;
   /// Last ayah we auto-scrolled to (avoids duplicate scrolls).
   int? _lastFollowedAyah;
+  /// Topmost visible ayah while reading a surah (for AppBar progress chip).
+  int _visibleAyahNo = 1;
 
   @override
   void didChangeDependencies() {
@@ -60,7 +63,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     if (!mounted) return;
     
     final source = ref.read(readerSourceProvider);
-    if (source == null || (source is! SurahSource && source is! JuzSource)) return;
+    if (source == null ||
+        (source is! SurahSource &&
+            source is! JuzSource &&
+            source is! SurahInJuzSource)) {
+      return;
+    }
     
     // Cancel previous debounce timer
     _debounceTimer?.cancel();
@@ -126,15 +134,24 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       final isSurahSource = source is SurahSource || source is SurahInJuzSource;
       final hasHeader = isSurahSource && itemIndex > 0;
       final verseIndex = hasHeader ? itemIndex - 1 : itemIndex;
-      
+
+      if (isSurahSource && itemIndex == 0) return;
+
       if (verseIndex >= 0 && verseIndex < verses.length) {
         final visibleAyah = verses[verseIndex].ayahNo;
+        if (isSurahSource && mounted) {
+          setState(() => _visibleAyahNo = visibleAyah);
+        }
         final currentSource = ref.read(readerSourceProvider);
         
         if (source is SurahSource && currentSource is SurahSource && currentSource.surahId == source.surahId) {
           ref.read(lastReadProvider.notifier).saveLastRead(currentSource, ayahNo: visibleAyah);
         } else if (source is JuzSource && currentSource is JuzSource && currentSource.juzNo == source.juzNo) {
-          ref.read(lastReadProvider.notifier).saveLastRead(currentSource, ayahNo: visibleAyah);
+          ref.read(lastReadProvider.notifier).saveLastRead(
+            currentSource,
+            ayahNo: visibleAyah,
+            surahId: verses[verseIndex].surahId,
+          );
         } else if (source is SurahInJuzSource && currentSource is SurahInJuzSource && 
                    currentSource.juzNo == source.juzNo && currentSource.surahId == source.surahId) {
           ref.read(lastReadProvider.notifier).saveLastRead(currentSource, ayahNo: visibleAyah);
@@ -325,6 +342,132 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     });
   }
 
+  PreferredSizeWidget _buildSurahProgressAppBar(
+    BuildContext context,
+    WidgetRef ref, {
+    required int surahId,
+    required AsyncValue<List<Verse>> versesAsync,
+  }) {
+    final lang = ref.watch(settingsProvider).appLanguage;
+    final colorScheme = Theme.of(context).colorScheme;
+    final surahsAsync = ref.watch(surahNamesProvider);
+    final verseCount = versesAsync.valueOrNull?.length ?? 0;
+    final progressLabel = verseCount > 0
+        ? AppLocalizations.formatRecitationPositionLabel(
+            language: lang,
+            ayahNo: _visibleAyahNo,
+            verseCount: verseCount,
+            isBismillah: false,
+          )
+        : null;
+
+    final surahName = surahsAsync.maybeWhen(
+      data: (surahs) {
+        for (final surah in surahs) {
+          if (surah.id == surahId) return surah.englishName;
+        }
+        return 'Surah $surahId';
+      },
+      orElse: () => 'Surah $surahId',
+    );
+
+    return AppBar(
+      leading: Navigator.canPop(context) ? const BackButton() : null,
+      automaticallyImplyLeading: false,
+      toolbarHeight: 54,
+      centerTitle: false,
+      titleSpacing: 16,
+      title: progressLabel == null
+          ? null
+          : Tooltip(
+              message: AppLocalizations.getGoToAyahTooltip(lang),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: verseCount > 0
+                      ? () => _openGoToAyahSheet(
+                            context,
+                            surahId: surahId,
+                            surahName: surahName,
+                            verseCount: verseCount,
+                          )
+                      : null,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer.withValues(
+                        alpha: 0.55,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: colorScheme.primary.withValues(alpha: 0.22),
+                      ),
+                    ),
+                    child: Text(
+                      progressLabel,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: colorScheme.onPrimaryContainer,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.text_fields),
+          tooltip: AppLocalizations.getSettingsText(
+            'text_settings_title',
+            lang,
+          ),
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const TextSettingsDialog(),
+            );
+          },
+        ),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Divider(
+          height: 1,
+          thickness: 1,
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
+      ),
+    );
+  }
+
+  void _openGoToAyahSheet(
+    BuildContext context, {
+    required int surahId,
+    required String surahName,
+    required int verseCount,
+  }) {
+    showGoToAyahSheet(
+      context,
+      surahName: surahName,
+      surahId: surahId,
+      currentAyah: _visibleAyahNo,
+      verseCount: verseCount,
+      onJump: (ayahNo) {
+        setState(() {
+          _visibleAyahNo = ayahNo;
+          _hasScrolledToTarget = false;
+        });
+        ref.read(targetAyahProvider.notifier).state = ayahNo;
+      },
+    );
+  }
+
   /// Build premium 2-line editorial AppBar for Juz reading
   PreferredSizeWidget _buildJuzAppBar(
     BuildContext context,
@@ -502,111 +645,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 
-  /// Build AppBar for SurahInJuzSource showing Surah name and Juz number
-  PreferredSizeWidget _buildSurahInJuzAppBar(
-    BuildContext context,
-    WidgetRef ref,
-    int juzNo,
-    int surahId,
-  ) {
-    final surahsAsync = ref.watch(surahNamesProvider);
-    final lang = ref.watch(settingsProvider).appLanguage;
-    final juzTitle = AppLocalizations.getJuzTitle(lang, juzNo);
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return AppBar(
-      leading: Navigator.canPop(context) ? const BackButton() : null,
-      automaticallyImplyLeading: false,
-      toolbarHeight: 54,
-      centerTitle: false,
-      titleSpacing: 16,
-      title: surahsAsync.when(
-        data: (surahs) {
-          final surah = surahs.firstWhere(
-            (s) => s.id == surahId,
-            orElse: () => SurahInfo(
-              id: surahId,
-              arabicName: '',
-              englishName: 'Surah $surahId',
-              englishMeaning: '',
-            ),
-          );
-
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Line 1: Surah name (titleLarge, bold)
-              Text(
-                surah.englishName,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      height: 1.2,
-                    ),
-              ),
-              const SizedBox(height: 2),
-              // Line 2: juz title (labelMedium/bodySmall, muted)
-              Text(
-                juzTitle,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      height: 1.2,
-                    ) ??
-                    Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          height: 1.2,
-                        ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          );
-        },
-        loading: () => Text(
-          'Surah $surahId',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        error: (_, __) => Text(
-          'Surah $surahId',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.text_fields),
-          tooltip: AppLocalizations.getSettingsText(
-            'text_settings_title',
-            lang,
-          ),
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (context) => const TextSettingsDialog(),
-            );
-          },
-        ),
-      ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Divider(
-          height: 1,
-          thickness: 1,
-          color: Theme.of(context)
-              .colorScheme
-              .outlineVariant
-              .withOpacity(0.3),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final source = ref.watch(readerSourceProvider);
@@ -620,6 +658,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         ref.read(lastReadProvider.notifier).saveLastRead(next);
         setState(() {
           _hasScrolledToTarget = false;
+          _visibleAyahNo = ref.read(targetAyahProvider) ?? 1;
         });
         try {
           _itemScrollController.jumpTo(index: 0);
@@ -634,6 +673,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       if (next != null && next != previous) {
         setState(() {
           _hasScrolledToTarget = false;
+          _visibleAyahNo = next;
         });
       }
     });
@@ -694,7 +734,18 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         ? null
         : switch (source) {
             JuzSource(:final juzNo) => _buildJuzAppBar(context, ref, juzNo),
-            SurahInJuzSource(:final juzNo, :final surahId) => _buildSurahInJuzAppBar(context, ref, juzNo, surahId),
+            SurahInJuzSource(:final surahId) => _buildSurahProgressAppBar(
+                context,
+                ref,
+                surahId: surahId,
+                versesAsync: versesAsync,
+              ),
+            SurahSource(:final surahId) => _buildSurahProgressAppBar(
+                context,
+                ref,
+                surahId: surahId,
+                versesAsync: versesAsync,
+              ),
             PageSource(:final pageNo) => AppBar(
                 leading: Navigator.canPop(context) ? const BackButton() : null,
                 automaticallyImplyLeading: false,
@@ -731,41 +782,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   ),
                 ),
               ),
-            _ => AppBar(
-                leading: Navigator.canPop(context) ? const BackButton() : null,
-                automaticallyImplyLeading: false,
-                toolbarHeight: 54,
-                centerTitle: false,
-                titleSpacing: 16,
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.text_fields),
-                    tooltip: AppLocalizations.getSettingsText(
-                      'text_settings_title',
-                      appLanguage,
-                    ),
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (context) => const TextSettingsDialog(),
-                      );
-                    },
-                  ),
-                ],
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(1),
-                  child: Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .outlineVariant
-                        .withOpacity(0.3),
-                  ),
-                ),
-              ), // No title for Surah (header card shows surah name)
           };
 
     return Scaffold(

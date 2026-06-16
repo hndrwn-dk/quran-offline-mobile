@@ -96,9 +96,7 @@ int _countPokokHeadersInSource(String html) {
     final title = match.group(1)!.replaceAll(RegExp(r'<[^>]+>'), '').trim();
     if (_isPokokLabel(title)) count++;
   }
-  for (final match in _mdHeader.allMatches(html)) {
-    count++;
-  }
+  count += _mdHeader.allMatches(html).length;
   return count;
 }
 

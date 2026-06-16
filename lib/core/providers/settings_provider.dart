@@ -3,6 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_offline/core/utils/transliteration_formatter.dart';
 
+TransliterationStyle _normalizeTransliterationStyle(String? stored) {
+  if (stored == TransliterationStyle.original.name) {
+    return TransliterationStyle.readable;
+  }
+  return TransliterationStyle.readable;
+}
+
 class AppSettings {
   final String language; // For translation
   final String appLanguage; // For UI/menu
@@ -82,9 +89,7 @@ class AppSettings {
   factory AppSettings.fromJson(Map<String, dynamic> json) {
     final language = json['language'] as String? ?? 'en';
     final ts = json['transliterationStyle'] as String?;
-    final transliterationStyle = ts == 'original'
-        ? TransliterationStyle.original
-        : TransliterationStyle.readable;
+    final transliterationStyle = _normalizeTransliterationStyle(ts);
     final useTajweedTransliteration = json['useTajweedTransliteration'] as bool? ?? true;
     return AppSettings(
       language: language,
@@ -128,10 +133,11 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       orElse: () => ThemeMode.system,
     );
     final ts = prefs.getString('transliterationStyle') ?? 'readable';
-    final transliterationStyle = ts == 'original'
-        ? TransliterationStyle.original
-        : TransliterationStyle.readable;
+    final transliterationStyle = _normalizeTransliterationStyle(ts);
     final useTajweedTransliteration = prefs.getBool('useTajweedTransliteration') ?? true;
+    if (ts == 'original') {
+      await prefs.setString('transliterationStyle', TransliterationStyle.readable.name);
+    }
 
     final syncedLanguage = language;
     if (appLanguage != syncedLanguage) {
@@ -219,15 +225,22 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   }
 
   Future<void> updateTransliterationStyle(TransliterationStyle style) async {
+    final normalized = _normalizeTransliterationStyle(style.name);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('transliterationStyle', style.name);
-    state = state.copyWith(transliterationStyle: style);
+    await prefs.setString('transliterationStyle', normalized.name);
+    state = state.copyWith(transliterationStyle: normalized);
   }
 
   Future<void> updateUseTajweedTransliteration(bool use) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('useTajweedTransliteration', use);
-    state = state.copyWith(useTajweedTransliteration: use);
+    if (!use) {
+      await prefs.setString('transliterationStyle', TransliterationStyle.readable.name);
+    }
+    state = state.copyWith(
+      useTajweedTransliteration: use,
+      transliterationStyle: use ? state.transliterationStyle : TransliterationStyle.readable,
+    );
   }
 }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/widgets/tajweed_color_guide.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 
 class TextSettingsDialog extends ConsumerStatefulWidget {
@@ -45,8 +46,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
   void _showTajweedGuide(BuildContext context, ColorScheme colorScheme) {
     final settings = ref.read(settingsProvider);
     final appLanguage = settings.appLanguage;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -61,54 +61,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 16),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_ikhfa', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_ikhfa_desc', appLanguage),
-                isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00897B),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_idgham', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_idgham_desc', appLanguage),
-                isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_iqlab', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_iqlab_desc', appLanguage),
-                isDark ? const Color(0xFFBA68C8) : const Color(0xFF7B1FA2),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_ghunnah', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_ghunnah_desc', appLanguage),
-                isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_qalqalah', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_qalqalah_desc', appLanguage),
-                isDark ? const Color(0xFFE57373) : const Color(0xFFC62828),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_laam_shamsiyah', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_laam_shamsiyah_desc', appLanguage),
-                isDark ? const Color(0xFFFFD54F) : const Color(0xFFF57F17),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_madd', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_madd_desc', appLanguage),
-                isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
-              ),
-              _buildTajweedRuleItem(
-                context,
-                AppLocalizations.getSettingsText('tajweed_rule_ham_wasl', appLanguage),
-                AppLocalizations.getSettingsText('tajweed_rule_ham_wasl_desc', appLanguage),
-                colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-              ),
+              TajweedColorGuideContent(appLanguage: appLanguage),
             ],
           ),
         ),
@@ -121,54 +74,6 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
       ),
     );
   }
-
-  Widget _buildTajweedRuleItem(
-    BuildContext context,
-    String name,
-    String description,
-    Color color,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
 
   @override
   Widget build(BuildContext context) {

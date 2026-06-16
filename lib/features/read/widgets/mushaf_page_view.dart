@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:quran_offline/core/share/verse_share.dart';
 import 'package:quran_offline/core/audio/playback_actions.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
@@ -19,9 +19,13 @@ import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
+import 'package:quran_offline/core/tajweed/tajweed_parser.dart';
+import 'package:quran_offline/core/tajweed/tajweed_report.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 import 'package:quran_offline/features/audio/global_recitation_bar.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_offline_audio_banner.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_gesture_hint_banner.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_page_number_badge.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
 
 class MushafPageView extends ConsumerStatefulWidget {
@@ -460,7 +464,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  tooltip: 'Back',
+                  tooltip: AppLocalizations.getActionTooltip('back', appLanguage),
                 )
               : null,
           automaticallyImplyLeading: false,
@@ -641,37 +645,9 @@ class _MushafPageState extends ConsumerState<MushafPage> {
             child: Column(
               children: [
                 if (!audio.isActive) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Material(
-                      color: colorScheme.primaryContainer.withValues(alpha: 0.55),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.touch_app_outlined,
-                              size: 20,
-                              color: colorScheme.primary,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                'Tap a verse to play. Long-press for meaning, bookmark, and share.',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: colorScheme.onSurface,
-                                      height: 1.35,
-                                    ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  const MushafGestureHintBanner(),
                   MushafOfflineAudioBanner(pageNo: widget.pageNo),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                 ],
                 Expanded(
                   child: SingleChildScrollView(
@@ -703,11 +679,8 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                     ),
                   ),
                 ),
-                Text(
-                  '${widget.pageNo}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                Center(
+                  child: MushafPageNumberBadge(pageNo: widget.pageNo),
                 ),
               ],
             ),
@@ -943,17 +916,26 @@ class _FlowingMushafText extends ConsumerWidget {
       }
 
       final ayahSpans = <InlineSpan>[];
+      final defaultSpanStyle = TextStyle(
+        fontFamily: 'UthmanicHafsV22',
+        fontFamilyFallback: const ['UthmanicHafs'],
+        fontSize: fontSize,
+        color: colorScheme.onSurface,
+      );
       if (showTajweed && block.tajweed != null && block.tajweed!.isNotEmpty) {
-        ayahSpans.addAll(
-          _parseTajweedHtml(
-            context,
-            block.tajweed!,
-            fontSize,
-            colorScheme,
-            recognizer: recognizer,
-            selectionHighlight: recitationHighlight,
-          ),
+        var parsedSpans = TajweedParser.parseToSpans(
+          context: context,
+          tajweedHtml: block.tajweed!,
+          baseStyle: defaultSpanStyle,
+          defaultColor: colorScheme.onSurface,
+          recognizer: recognizer,
+          backgroundColor: recitationHighlight,
         );
+        parsedSpans = TajweedText.coalesceSpansForArabicLayout(
+          parsedSpans,
+          defaultStyle: defaultSpanStyle,
+        );
+        ayahSpans.addAll(parsedSpans);
       } else {
         ayahSpans.add(
           TextSpan(
@@ -1019,354 +1001,6 @@ class _FlowingMushafText extends ConsumerWidget {
     );
   }
 
-  /// Parse tajweed HTML and return List<TextSpan> with colors.
-  /// Input is normalized so problematic Unicode does not render as circle (all surahs).
-  List<TextSpan> _parseTajweedHtml(
-    BuildContext context,
-    String tajweedHtml,
-    double fontSize,
-    ColorScheme colorScheme, {
-    GestureRecognizer? recognizer,
-    Color? selectionHighlight,
-  }) {
-    final spans = <TextSpan>[];
-    String text = TajweedText.normalizeArabicForDisplay(tajweedHtml);
-    
-    // Get tajweed color helper
-    Color getTajweedColor(String tajweedClass) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      return switch (tajweedClass) {
-        'ikhfa' => isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00897B),
-        'idgham' => isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2),
-        'iqlab' => isDark ? const Color(0xFFBA68C8) : const Color(0xFF7B1FA2),
-        'ghunnah' => isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100),
-        'qalqalah' => isDark ? const Color(0xFFE57373) : const Color(0xFFC62828),
-        'ham_wasl' => colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-        'laam_shamsiyah' => isDark ? const Color(0xFFFFD54F) : const Color(0xFFF57F17),
-        'madda_normal' => isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
-        'madda_permissible' => isDark ? const Color(0xFFA5D6A7) : const Color(0xFF388E3C),
-        'madda_necessary' => isDark ? const Color(0xFF66BB6A) : const Color(0xFF1B5E20),
-        'madda_obligatory' => isDark ? const Color(0xFF4CAF50) : const Color(0xFF0D47A1),
-        'silent' => colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-        _ => colorScheme.onSurface,
-      };
-    }
-    
-    // Pattern to match tajweed tags
-    final tajweedPattern1 = RegExp(
-      r'<tajweed\s+class="([^"]+)"\s*>(.*?)</tajweed>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final tajweedPattern2 = RegExp(
-      r"<tajweed\s+class='([^']+)'\s*>(.*?)</tajweed>",
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final tajweedPattern3 = RegExp(
-      r'<tajweed\s+class=([^>\s]+)\s*>(.*?)</tajweed>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final tajweedPattern4 = RegExp(
-      r'<tajweed\s*>(.*?)</tajweed>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    
-    // Pattern for class tags: <class=value>content</class>
-    final classPattern1 = RegExp(
-      r'<class="([^"]+)"\s*>(.*?)</class>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final classPattern2 = RegExp(
-      r"<class='([^']+)'\s*>(.*?)</class>",
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final classPattern3 = RegExp(
-      r'<class=([^>\s]+)\s*>(.*?)</class>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    
-    // Pattern for span tags: <span class=end>ayah_number</span>
-    final spanPattern1 = RegExp(
-      r'<span\s+class="([^"]+)"\s*>(.*?)</span>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final spanPattern2 = RegExp(
-      r"<span\s+class='([^']+)'\s*>(.*?)</span>",
-      dotAll: true,
-      caseSensitive: false,
-    );
-    final spanPattern3 = RegExp(
-      r'<span\s+class=([^>\s]+)\s*>(.*?)</span>',
-      dotAll: true,
-      caseSensitive: false,
-    );
-    
-    final htmlTagPattern = RegExp(r'<[^>]+>');
-    final allMatches = <_TajweedMatch>[];
-    
-    bool isAlreadyMatched(int start, int end) {
-      return allMatches.any((m) => m.start == start && m.end == end);
-    }
-    
-    // Find all tajweed matches
-    for (final match in tajweedPattern1.allMatches(text)) {
-      allMatches.add(_TajweedMatch(
-        start: match.start,
-        end: match.end,
-        classAttr: match.group(1) ?? '',
-        content: match.group(2) ?? '',
-        isSpan: false,
-      ));
-    }
-    for (final match in tajweedPattern2.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_TajweedMatch(
-          start: match.start,
-          end: match.end,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-          isSpan: false,
-        ));
-      }
-    }
-    for (final match in tajweedPattern3.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_TajweedMatch(
-          start: match.start,
-          end: match.end,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-          isSpan: false,
-        ));
-      }
-    }
-    for (final match in tajweedPattern4.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_TajweedMatch(
-          start: match.start,
-          end: match.end,
-          classAttr: '',
-          content: match.group(1) ?? '',
-          isSpan: false,
-        ));
-      }
-    }
-    
-    // Find class tags
-    for (final match in classPattern1.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_TajweedMatch(
-          start: match.start,
-          end: match.end,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-          isSpan: false,
-        ));
-      }
-    }
-    for (final match in classPattern2.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_TajweedMatch(
-          start: match.start,
-          end: match.end,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-          isSpan: false,
-        ));
-      }
-    }
-    for (final match in classPattern3.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_TajweedMatch(
-          start: match.start,
-          end: match.end,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-          isSpan: false,
-        ));
-      }
-    }
-    
-    // Find span tags (to skip class=end)
-    for (final match in spanPattern1.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_TajweedMatch(
-          start: match.start,
-          end: match.end,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-          isSpan: true,
-        ));
-      }
-    }
-    for (final match in spanPattern2.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_TajweedMatch(
-          start: match.start,
-          end: match.end,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-          isSpan: true,
-        ));
-      }
-    }
-    for (final match in spanPattern3.allMatches(text)) {
-      if (!isAlreadyMatched(match.start, match.end)) {
-        allMatches.add(_TajweedMatch(
-          start: match.start,
-          end: match.end,
-          classAttr: match.group(1) ?? '',
-          content: match.group(2) ?? '',
-          isSpan: true,
-        ));
-      }
-    }
-    
-    // Sort matches by start position
-    allMatches.sort((a, b) => a.start.compareTo(b.start));
-    
-    // Build text spans
-    int lastIndex = 0;
-    for (final match in allMatches) {
-      // Add text before match
-      if (match.start > lastIndex) {
-        var beforeText = text.substring(lastIndex, match.start);
-        beforeText = beforeText.replaceAll(htmlTagPattern, '');
-        beforeText = beforeText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
-        if (beforeText.isNotEmpty) {
-          spans.add(TextSpan(
-            text: beforeText,
-            style: TextStyle(
-              fontFamily: 'UthmanicHafsV22',
-              fontFamilyFallback: const ['UthmanicHafs'],
-              fontSize: fontSize,
-              color: colorScheme.onSurface,
-              backgroundColor: selectionHighlight,
-            ),
-            recognizer: recognizer != null ? recognizer : null,
-          ));
-        }
-      }
-      
-      // Handle span tags - skip class=end (ayah number marker)
-      if (match.isSpan) {
-        final classAttr = match.classAttr.trim();
-        // Skip ayah number marker - we already display it as inline badge
-        if (classAttr == 'end' || classAttr == '"end"' || classAttr == "'end'") {
-          // Do nothing, just skip this match
-          lastIndex = match.end;
-          continue;
-        } else {
-          // Regular span (not end marker) - render it as plain text
-          var content = match.content;
-          content = content.replaceAll(htmlTagPattern, '');
-          content = content.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
-          if (content.isNotEmpty) {
-            spans.add(TextSpan(
-              text: content,
-              style: TextStyle(
-                fontFamily: 'UthmanicHafsV22',
-                fontFamilyFallback: const ['UthmanicHafs'],
-                fontSize: fontSize,
-                color: colorScheme.onSurface,
-                backgroundColor: selectionHighlight,
-              ),
-              recognizer: recognizer != null ? recognizer : null,
-            ));
-          }
-          lastIndex = match.end;
-          continue;
-        }
-      }
-      
-      // Add styled text for tajweed match
-      final tajweedClass = match.classAttr.trim();
-      var content = match.content;
-      content = content.replaceAll(htmlTagPattern, '');
-      content = content.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
-      
-      if (content.isNotEmpty) {
-        final color = getTajweedColor(tajweedClass);
-        spans.add(TextSpan(
-          text: content,
-          style: TextStyle(
-            fontFamily: 'UthmanicHafsV22',
-            fontFamilyFallback: const ['UthmanicHafs'],
-            fontSize: fontSize,
-            color: color,
-            backgroundColor: selectionHighlight,
-          ),
-          recognizer: recognizer != null ? recognizer : null,
-        ));
-      }
-      
-      lastIndex = match.end;
-    }
-    
-    // Add remaining text
-    if (lastIndex < text.length) {
-      var remainingText = text.substring(lastIndex);
-      remainingText = remainingText.replaceAll(htmlTagPattern, '');
-      remainingText = remainingText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
-      if (remainingText.isNotEmpty) {
-        spans.add(TextSpan(
-          text: remainingText,
-          style: TextStyle(
-            fontFamily: 'UthmanicHafsV22',
-            fontFamilyFallback: const ['UthmanicHafs'],
-            fontSize: fontSize,
-            color: colorScheme.onSurface,
-            backgroundColor: selectionHighlight,
-          ),
-          recognizer: recognizer != null ? recognizer : null,
-        ));
-      }
-    }
-    
-    // If no matches found, return plain text
-    if (spans.isEmpty) {
-      var cleanedText = text.replaceAll(htmlTagPattern, '');
-      cleanedText = cleanedText.replaceAll(RegExp(r'<[^>]*$', caseSensitive: false), '');
-      return [
-        TextSpan(
-          text: cleanedText,
-          style: TextStyle(
-            fontFamily: 'UthmanicHafsV22',
-            fontFamilyFallback: const ['UthmanicHafs'],
-            fontSize: fontSize,
-            color: colorScheme.onSurface,
-            backgroundColor: selectionHighlight,
-          ),
-          recognizer: recognizer != null ? recognizer : null,
-        )
-      ];
-    }
-    
-    return spans;
-  }
-}
-
-class _TajweedMatch {
-  final int start;
-  final int end;
-  final String classAttr;
-  final String content;
-  final bool isSpan;
-
-  _TajweedMatch({
-    required this.start,
-    required this.end,
-    required this.classAttr,
-    required this.content,
-    this.isSpan = false,
-  });
 }
 
 /// Widget untuk nomor ayat inline dengan bookmark support
@@ -1524,34 +1158,22 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
   }
 
   Future<void> _shareVerse(Verse verse, AppSettings settings) async {
-    final translation = _getTranslation(verse, settings.language);
     final surahs = ref.read(surahNamesProvider).valueOrNull;
     final surahName = surahs != null
-        ? surahs.firstWhere(
-            (s) => s.id == verse.surahId,
-            orElse: () => surahs.first,
-          ).englishName
+        ? surahs
+            .firstWhere(
+              (s) => s.id == verse.surahId,
+              orElse: () => surahs.first,
+            )
+            .englishName
         : 'Surah ${verse.surahId}';
-    final buffer = StringBuffer();
-    buffer.writeln(AppLocalizations.getShareHeader(settings.appLanguage));
-    buffer.writeln('');
-    buffer.writeln(verse.arabic);
-    buffer.writeln('');
-    final translit = settings.useTajweedTransliteration
-        ? (verse.translitTj ?? verse.translit ?? '')
-        : (verse.translit ?? '');
-    if (translit.trim().isNotEmpty) {
-      buffer.writeln(translit.trim());
-      buffer.writeln('');
-    }
-    if (translation != null) {
-      buffer.writeln('"$translation"');
-      buffer.writeln('');
-    }
-    buffer.writeln('(QS. $surahName ${verse.surahId}: ${AppLocalizations.getAyahLabel(settings.appLanguage)} ${verse.ayahNo})');
-    buffer.writeln('');
-    buffer.writeln('https://www.tursinalabs.com/products/quranoffline');
-    await Share.share(buffer.toString());
+
+    await VerseShare.share(
+      context: context,
+      verse: verse,
+      surahName: surahName,
+      settings: settings,
+    );
   }
 
   Future<void> _copyVerse(Verse verse, AppSettings settings) async {
@@ -1720,6 +1342,23 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
                       IconButton.filled(
                         onPressed: () => _copyVerse(verse, settings),
                         icon: const Icon(Icons.copy_rounded, size: 22),
+                        style: IconButton.styleFrom(
+                          backgroundColor: colorScheme.primaryContainer,
+                          foregroundColor: colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton.filled(
+                        onPressed: () {
+                          TajweedReport.launch(
+                            context: context,
+                            language: settings.appLanguage,
+                            surahId: widget.surahId,
+                            ayahNo: widget.ayahNo,
+                            arabicSnippet: verse.arabic,
+                          );
+                        },
+                        icon: const Icon(Icons.flag_outlined, size: 22),
                         style: IconButton.styleFrom(
                           backgroundColor: colorScheme.primaryContainer,
                           foregroundColor: colorScheme.onPrimaryContainer,

@@ -4,7 +4,9 @@ import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/audio/open_playing_recitation.dart';
 import 'package:quran_offline/features/audio/recitation_navigation_logic.dart';
 
@@ -15,7 +17,7 @@ final showGlobalRecitationBarProvider = Provider<bool>((ref) {
 
   final readerSource = ref.watch(readerSourceProvider);
   final splitLayout = ref.watch(readerSplitLayoutProvider);
-  final onReadTab = ref.watch(currentTabProvider) == 0;
+  final onReadTab = ref.watch(currentTabProvider) == AppTab.read;
   final pushedReaderOpen = ref.watch(readerScreenVisibleProvider);
 
   List<Verse>? juzVerses;
@@ -57,14 +59,18 @@ class GlobalRecitationBar extends ConsumerWidget {
     final notifier = ref.read(audioPlayerProvider.notifier);
     final colorScheme = Theme.of(context).colorScheme;
     final isPlaying = audio.isPlaying;
+    final lang = ref.watch(settingsProvider).appLanguage;
 
-    final title = audio.isPlayingBismillah
-        ? '${audio.surahLabel ?? 'Surah'} · Bismillah'
-        : '${audio.surahLabel ?? 'Surah'} · Ayah ${audio.ayahNo ?? 1}';
+    final title = AppLocalizations.formatMiniPlayerTitle(
+      language: lang,
+      surahLabel: audio.surahLabel,
+      ayahNo: audio.ayahNo,
+      isBismillah: audio.isPlayingBismillah,
+    );
 
     return Semantics(
       container: true,
-      label: 'Recitation mini player, $title. Double tap to open.',
+      label: AppLocalizations.formatMiniPlayerSemanticsLabel(lang, title),
       child: Material(
         elevation: 8,
         color: colorScheme.surfaceContainerHigh,
@@ -75,6 +81,7 @@ class GlobalRecitationBar extends ConsumerWidget {
                   context,
                   ref,
                   title,
+                  lang,
                   audio,
                   notifier,
                   colorScheme,
@@ -85,6 +92,7 @@ class GlobalRecitationBar extends ConsumerWidget {
                 context,
                 ref,
                 title,
+                lang,
                 audio,
                 notifier,
                 colorScheme,
@@ -98,6 +106,7 @@ class GlobalRecitationBar extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     String title,
+    String lang,
     AudioPlayerState audio,
     AudioPlayerNotifier notifier,
     ColorScheme colorScheme,
@@ -151,7 +160,7 @@ class GlobalRecitationBar extends ConsumerWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.skip_previous, size: 22),
-                  tooltip: 'Previous ayah',
+                  tooltip: AppLocalizations.getActionTooltip('previous_ayah', lang),
                   visualDensity: VisualDensity.compact,
                   onPressed: notifier.previous,
                 ),
@@ -170,7 +179,9 @@ class GlobalRecitationBar extends ConsumerWidget {
                           isPlaying ? Icons.stop_circle : Icons.play_circle,
                           color: colorScheme.primary,
                         ),
-                  tooltip: isPlaying ? 'Stop' : 'Play',
+                  tooltip: isPlaying
+                      ? AppLocalizations.getActionTooltip('stop', lang)
+                      : AppLocalizations.getActionTooltip('play', lang),
                   visualDensity: VisualDensity.compact,
                   onPressed: audio.isLoading
                       ? null
@@ -178,7 +189,7 @@ class GlobalRecitationBar extends ConsumerWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.skip_next, size: 22),
-                  tooltip: 'Next ayah',
+                  tooltip: AppLocalizations.getActionTooltip('next_ayah', lang),
                   visualDensity: VisualDensity.compact,
                   onPressed: notifier.next,
                 ),
@@ -188,7 +199,7 @@ class GlobalRecitationBar extends ConsumerWidget {
                     size: 20,
                     color: colorScheme.onSurfaceVariant,
                   ),
-                  tooltip: 'Stop recitation',
+                  tooltip: AppLocalizations.getActionTooltip('stop_recitation', lang),
                   visualDensity: VisualDensity.compact,
                   onPressed: notifier.stop,
                 ),
