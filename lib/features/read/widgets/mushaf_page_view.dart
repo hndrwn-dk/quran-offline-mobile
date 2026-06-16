@@ -16,6 +16,8 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/mushaf/qpc_v4_mushaf_layout.dart';
+import 'package:quran_offline/core/mushaf/qpc_v4_models.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
@@ -27,6 +29,7 @@ import 'package:quran_offline/features/read/widgets/mushaf_offline_audio_banner.
 import 'package:quran_offline/features/read/widgets/mushaf_gesture_hint_banner.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_number_badge.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
+import 'package:quran_offline/features/read/widgets/qpc_v4_mushaf_text.dart';
 
 class MushafPageView extends ConsumerStatefulWidget {
   final int initialPage;
@@ -245,7 +248,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
           onBismillahLongPress: _onBismillahLongPress,
           onComputed: () {
             if (pageNo < 604) {
-              MushafLayout.getPageBlocks(context, pageNo + 1);
+              MushafLayout.prewarm(context, pageNo + 1);
             }
           },
         );
@@ -285,8 +288,19 @@ class MushafPage extends ConsumerStatefulWidget {
   ConsumerState<MushafPage> createState() => _MushafPageState();
 }
 
+class _MushafPageSnapshot {
+  const _MushafPageSnapshot.v4(this.v4Content) : legacyBlocks = null;
+
+  const _MushafPageSnapshot.legacy(this.legacyBlocks) : v4Content = null;
+
+  final QpcV4PageContent? v4Content;
+  final List<MushafAyahBlock>? legacyBlocks;
+
+  bool get isV4 => v4Content != null;
+}
+
 class _MushafPageState extends ConsumerState<MushafPage> {
-  late Future<List<MushafAyahBlock>> _blocksFuture;
+  late Future<_MushafPageSnapshot> _pageFuture;
   Timer? _debounceTimer;
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _ayahKeys = {};
@@ -303,7 +317,20 @@ class _MushafPageState extends ConsumerState<MushafPage> {
   }
 
   void _refreshLines() {
-    _blocksFuture = MushafLayout.getPageBlocks(context, widget.pageNo);
+    _pageFuture = _loadPage();
+  }
+
+  Future<_MushafPageSnapshot> _loadPage() async {
+    if (await QpcV4MushafLayout.isAvailable()) {
+      final layout = QpcV4MushafLayout(QpcV4MushafLayout.sharedRepository());
+      final content = await layout.getPageContent(widget.pageNo);
+      return _MushafPageSnapshot.v4(content);
+    }
+    if (!mounted) {
+      return const _MushafPageSnapshot.legacy([]);
+    }
+    final blocks = await MushafLayout.getPageBlocks(context, widget.pageNo);
+    return _MushafPageSnapshot.legacy(blocks);
   }
 
   void _setupScrollListener() {
@@ -323,8 +350,25 @@ class _MushafPageState extends ConsumerState<MushafPage> {
   void _updateLastRead() {
     if (!mounted) return;
     
-    _blocksFuture.then((blocks) {
-      if (!mounted || blocks.isEmpty) return;
+    _pageFuture.then((snapshot) {
+      if (!mounted) return;
+      if (snapshot.isV4) {
+        for (final line in snapshot.v4Content!.lines) {
+          if (!line.isAyah || line.words.isEmpty) continue;
+          final word = line.words.first;
+          final source = PageSource(widget.pageNo);
+          ref.read(lastReadProvider.notifier).saveLastRead(
+            source,
+            ayahNo: word.ayah,
+            surahId: word.surah,
+          );
+          return;
+        }
+        return;
+      }
+
+      final blocks = snapshot.legacyBlocks ?? [];
+      if (blocks.isEmpty) return;
       
       // Find the first visible ayah by checking scroll position
       // This is approximate - for exact tracking, we'd need to measure widget positions
@@ -617,8 +661,8 @@ class _MushafPageState extends ConsumerState<MushafPage> {
           ),
         ),
       ),
-      body: FutureBuilder<List<MushafAyahBlock>>(
-        future: _blocksFuture,
+      body: FutureBuilder<_MushafPageSnapshot>(
+        future: _pageFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -626,7 +670,10 @@ class _MushafPageState extends ConsumerState<MushafPage> {
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
-          final blocks = snapshot.data ?? [];
+          final pageData = snapshot.data;
+          if (pageData == null) {
+            return const Center(child: Text('Error: empty page'));
+          }
           widget.onComputed?.call();
           
           // Scroll to target ayah if needed
@@ -654,26 +701,46 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                     controller: _scrollController,
                     child: Column(
                       children: [
-                        _FlowingMushafText(
-                          blocks: blocks,
-                          fontSize: fontSize,
-                          colorScheme: colorScheme,
-                          ayahKeys: _ayahKeys,
-                          selectedSurahId: widget.selectedSurahId,
-                          selectedAyahNo: widget.selectedAyahNo,
-                          onAyahTap: widget.onAyahTap,
-                          onAyahLongPress: widget.onAyahLongPress,
-                          onBismillahTap: widget.onBismillahTap,
-                          onBismillahLongPress: widget.onBismillahLongPress,
-                          onAyahKeyCreated: () {
-                            // Trigger scroll after keys are created
-                            if (widget.targetSurahId != null && widget.targetAyahNo != null) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                _scrollToTargetAyah();
-                              });
-                            }
-                          },
-                        ),
+                        if (pageData.isV4)
+                          QpcV4MushafText(
+                            content: pageData.v4Content!,
+                            fontSize: fontSize,
+                            colorScheme: colorScheme,
+                            ayahKeys: _ayahKeys,
+                            onAyahTap: widget.onAyahTap,
+                            onAyahLongPress: widget.onAyahLongPress,
+                            onBismillahTap: widget.onBismillahTap,
+                            onBismillahLongPress: widget.onBismillahLongPress,
+                            onAyahKeyCreated: () {
+                              if (widget.targetSurahId != null &&
+                                  widget.targetAyahNo != null) {
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  _scrollToTargetAyah();
+                                });
+                              }
+                            },
+                          )
+                        else
+                          _FlowingMushafText(
+                            blocks: pageData.legacyBlocks ?? [],
+                            fontSize: fontSize,
+                            colorScheme: colorScheme,
+                            ayahKeys: _ayahKeys,
+                            selectedSurahId: widget.selectedSurahId,
+                            selectedAyahNo: widget.selectedAyahNo,
+                            onAyahTap: widget.onAyahTap,
+                            onAyahLongPress: widget.onAyahLongPress,
+                            onBismillahTap: widget.onBismillahTap,
+                            onBismillahLongPress: widget.onBismillahLongPress,
+                            onAyahKeyCreated: () {
+                              if (widget.targetSurahId != null &&
+                                  widget.targetAyahNo != null) {
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  _scrollToTargetAyah();
+                                });
+                              }
+                            },
+                          ),
                         const SizedBox(height: 32),
                       ],
                     ),

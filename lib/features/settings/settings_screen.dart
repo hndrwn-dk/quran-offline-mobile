@@ -12,6 +12,8 @@ import 'package:quran_offline/features/settings/audio_downloads_screen.dart';
 import 'package:quran_offline/core/widgets/tajweed_color_guide.dart';
 import 'package:quran_offline/core/tajweed/tajweed_report.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
+import 'package:quran_offline/features/settings/font_compare_screen.dart';
+import 'package:quran_offline/features/settings/mushaf_font_compare_screen.dart';
 import 'package:quran_offline/features/settings/widgets/about_data_sources_tile.dart';
 
 String _transliterationSubtitle(AppSettings settings, String appLanguage) {
@@ -347,6 +349,42 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.compare_arrows,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: const Text('Bandingkan font Arab (3:3)'),
+            subtitle: const Text(
+              'Uji tanwin قً — QPC Hafs, KFGQPC, Digital Khatt V2',
+            ),
+            onTap: () {
+              Navigator.push<void>(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (context) => const FontCompareScreen(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.menu_book_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: const Text('Bandingkan Mushaf Ali \'Imran 1-9'),
+            subtitle: const Text(
+              'Unicode app vs QPC V2 Madinah glyph p50 (QUL #249)',
+            ),
+            onTap: () {
+              Navigator.push<void>(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (context) => const MushafFontCompareScreen(),
+                ),
+              );
+            },
           ),
           ListTile(
             leading: Icon(

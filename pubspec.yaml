@@ -76,6 +76,9 @@ flutter:
     - assets/tafsir/en_ibn_kathir.sqlite
     - assets/tafsir/zh_mokhtasar.sqlite
     - assets/tafsir/ja_mokhtasar.sqlite
+    - assets/mushaf/layout/qpc_v4_tajweed_15_lines.sqlite
+    - assets/mushaf/script/qpc_v4_tajweed_words.sqlite
+    - assets/fonts/qpc_v4_tajweed/
   
   fonts:
     - family: UthmanicHafsV22

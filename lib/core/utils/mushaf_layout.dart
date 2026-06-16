@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/mushaf/qpc_v4_mushaf_layout.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
@@ -147,9 +148,14 @@ class MushafLayout {
     return blocks;
   }
 
-  /// Optional prewarm – just loads blocks once. No disk cache.
+  /// Optional prewarm – loads page data once (V4 or legacy).
   static Future<void> prewarm(BuildContext context, int pageNo) async {
     if (pageNo < 1 || pageNo > 604) return;
+    if (await QpcV4MushafLayout.isAvailable()) {
+      await QpcV4MushafLayout(QpcV4MushafLayout.sharedRepository())
+          .prewarm(pageNo);
+      return;
+    }
     await getPageBlocks(context, pageNo);
   }
 
@@ -184,6 +190,10 @@ class MushafLayout {
     int surahId,
     int ayahNo,
   ) async {
+    if (await QpcV4MushafLayout.isAvailable()) {
+      return QpcV4MushafLayout(QpcV4MushafLayout.sharedRepository())
+          .pageContainsRecitation(pageNo, surahId, ayahNo);
+    }
     final ranges = await _pageRanges(pageNo);
     for (final r in ranges) {
       if (r.surahId != surahId) continue;
@@ -199,6 +209,10 @@ class MushafLayout {
   /// Get all unique surah IDs for a given page number, sorted.
   /// Returns empty list if page is invalid or has no ranges.
   static Future<List<int>> getSurahIdsForPage(int pageNo) async {
+    if (await QpcV4MushafLayout.isAvailable()) {
+      return QpcV4MushafLayout(QpcV4MushafLayout.sharedRepository())
+          .getSurahIdsForPage(pageNo);
+    }
     final ranges = await _pageRanges(pageNo);
     if (ranges.isEmpty) return const [];
     final surahIds = ranges.map((r) => r.surahId).toSet().toList();
