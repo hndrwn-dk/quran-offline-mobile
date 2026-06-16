@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:quran_offline/core/utils/arabic_search_normalizer.dart';
 
 part 'database.g.dart';
 
@@ -205,6 +206,24 @@ class AppDatabase extends _$AppDatabase {
           ])
           ..limit(100))
         .get();
+  }
+
+  /// Match ayah Arabic text (diacritics-insensitive substring search).
+  Future<List<Verse>> searchVersesByArabic(String query, {int limit = 100}) async {
+    final normalizedQuery = ArabicSearchNormalizer.normalizeForSearch(query);
+    if (normalizedQuery.length < 2) return [];
+
+    final rows = await select(verses).get();
+    final matches = <Verse>[];
+    for (final verse in rows) {
+      final normalizedArabic =
+          ArabicSearchNormalizer.normalizeForSearch(verse.arabic);
+      if (normalizedArabic.contains(normalizedQuery)) {
+        matches.add(verse);
+        if (matches.length >= limit) break;
+      }
+    }
+    return matches;
   }
 
   Future<Bookmark?> getBookmark(int surahId, int ayahNo) {

@@ -8,28 +8,50 @@ import 'package:quran_offline/core/providers/audio_download_provider.dart';
 import 'package:quran_offline/core/providers/reciter_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/utils/transliteration_formatter.dart';
 import 'package:quran_offline/features/settings/audio_downloads_screen.dart';
+import 'package:quran_offline/core/widgets/tajweed_color_guide.dart';
+import 'package:quran_offline/core/tajweed/tajweed_report.dart';
+import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/features/settings/widgets/about_data_sources_tile.dart';
 
 String _transliterationSubtitle(AppSettings settings, String appLanguage) {
   if (settings.useTajweedTransliteration) {
-    return AppLocalizations.getSettingsText('transliteration_source_tajweed', appLanguage);
+    return AppLocalizations.getSettingsText('transliteration_source_tajweed_sub', appLanguage);
   }
-  final styleLabel = settings.transliterationStyle == TransliterationStyle.readable
-      ? AppLocalizations.getSettingsText('transliteration_style_readable', appLanguage)
-      : AppLocalizations.getSettingsText('transliteration_style_raw', appLanguage);
-  final source = AppLocalizations.getSettingsText('transliteration_source_original', appLanguage);
-  return '$source \u2013 $styleLabel';
+  return AppLocalizations.getSettingsText('transliteration_source_simple_sub', appLanguage);
 }
 
 class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.showBackButton = false});
+
+  final bool showBackButton;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     final appLanguage = settings.appLanguage;
+
+    final titleColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          AppLocalizations.getSettingsText('settings_title', appLanguage),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          AppLocalizations.getSubtitleText('settings_subtitle', appLanguage),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+      ],
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -40,6 +62,19 @@ class SettingsScreen extends ConsumerWidget {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (showBackButton) ...[
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.maybePop(context),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minWidth: 36,
+                  minHeight: 36,
+                ),
+                visualDensity: VisualDensity.compact,
+              ),
+              const SizedBox(width: 2),
+            ],
             Container(
               width: 28,
               height: 28,
@@ -59,26 +94,7 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppLocalizations.getSettingsText('settings_title', appLanguage),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  AppLocalizations.getSubtitleText('settings_subtitle', appLanguage),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
+            titleColumn,
           ],
         ),
         bottom: PreferredSize(
@@ -209,6 +225,12 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 RadioListTile<bool>(
                   title: Text(AppLocalizations.getSettingsText('transliteration_source_tajweed', appLanguage)),
+                  subtitle: Text(
+                    AppLocalizations.getSettingsText('transliteration_source_tajweed_sub', appLanguage),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                   value: true,
                   groupValue: settings.useTajweedTransliteration,
                   onChanged: (v) {
@@ -216,38 +238,19 @@ class SettingsScreen extends ConsumerWidget {
                   },
                 ),
                 RadioListTile<bool>(
-                  title: Text(AppLocalizations.getSettingsText('transliteration_source_original', appLanguage)),
+                  title: Text(AppLocalizations.getSettingsText('transliteration_source_simple', appLanguage)),
+                  subtitle: Text(
+                    AppLocalizations.getSettingsText('transliteration_source_simple_sub', appLanguage),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                   value: false,
                   groupValue: settings.useTajweedTransliteration,
                   onChanged: (v) {
                     if (v != null) ref.read(settingsProvider.notifier).updateUseTajweedTransliteration(v);
                   },
                 ),
-                if (!settings.useTajweedTransliteration) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 24.0),
-                    child: Column(
-                      children: [
-                        RadioListTile<TransliterationStyle>(
-                          title: Text(AppLocalizations.getSettingsText('transliteration_style_readable', appLanguage)),
-                          value: TransliterationStyle.readable,
-                          groupValue: settings.transliterationStyle,
-                          onChanged: (v) {
-                            if (v != null) ref.read(settingsProvider.notifier).updateTransliterationStyle(v);
-                          },
-                        ),
-                        RadioListTile<TransliterationStyle>(
-                          title: Text(AppLocalizations.getSettingsText('transliteration_style_original', appLanguage)),
-                          value: TransliterationStyle.original,
-                          groupValue: settings.transliterationStyle,
-                          onChanged: (v) {
-                            if (v != null) ref.read(settingsProvider.notifier).updateTransliterationStyle(v);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -339,9 +342,35 @@ class SettingsScreen extends ConsumerWidget {
               ),
               childrenPadding: const EdgeInsets.fromLTRB(72, 8, 16, 16),
               children: [
-                _buildTajweedGuideContent(context, ref),
+                TajweedColorGuideContent(
+                  appLanguage: appLanguage,
+                ),
               ],
             ),
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.flag_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: Text(
+              AppLocalizations.getSettingsText('report_tajweed_title', appLanguage),
+            ),
+            subtitle: Text(
+              AppLocalizations.getSettingsText('report_tajweed_subtitle', appLanguage),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            onTap: () {
+              final lastAyah = TajweedReport.ayahFromLastRead(ref.read(lastReadProvider));
+              TajweedReport.launch(
+                context: context,
+                language: appLanguage,
+                surahId: lastAyah?.surahId,
+                ayahNo: lastAyah?.ayahNo,
+              );
+            },
           ),
           const Divider(),
           // Recitation section
@@ -641,113 +670,6 @@ class SettingsScreen extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTajweedGuideContent(BuildContext context, WidgetRef ref) {
-    final appLanguage = ref.read(settingsProvider).appLanguage;
-    final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildTajweedRuleItem(
-          context,
-          AppLocalizations.getSettingsText('tajweed_rule_ikhfa', appLanguage),
-          AppLocalizations.getSettingsText('tajweed_rule_ikhfa_desc', appLanguage),
-          isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00897B),
-        ),
-        _buildTajweedRuleItem(
-          context,
-          AppLocalizations.getSettingsText('tajweed_rule_idgham', appLanguage),
-          AppLocalizations.getSettingsText('tajweed_rule_idgham_desc', appLanguage),
-          isDark ? const Color(0xFF64B5F6) : const Color(0xFF1976D2),
-        ),
-        _buildTajweedRuleItem(
-          context,
-          AppLocalizations.getSettingsText('tajweed_rule_iqlab', appLanguage),
-          AppLocalizations.getSettingsText('tajweed_rule_iqlab_desc', appLanguage),
-          isDark ? const Color(0xFFBA68C8) : const Color(0xFF7B1FA2),
-        ),
-        _buildTajweedRuleItem(
-          context,
-          AppLocalizations.getSettingsText('tajweed_rule_ghunnah', appLanguage),
-          AppLocalizations.getSettingsText('tajweed_rule_ghunnah_desc', appLanguage),
-          isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100),
-        ),
-        _buildTajweedRuleItem(
-          context,
-          AppLocalizations.getSettingsText('tajweed_rule_qalqalah', appLanguage),
-          AppLocalizations.getSettingsText('tajweed_rule_qalqalah_desc', appLanguage),
-          isDark ? const Color(0xFFE57373) : const Color(0xFFC62828),
-        ),
-        _buildTajweedRuleItem(
-          context,
-          AppLocalizations.getSettingsText('tajweed_rule_laam_shamsiyah', appLanguage),
-          AppLocalizations.getSettingsText('tajweed_rule_laam_shamsiyah_desc', appLanguage),
-          isDark ? const Color(0xFFFFD54F) : const Color(0xFFF57F17),
-        ),
-        _buildTajweedRuleItem(
-          context,
-          AppLocalizations.getSettingsText('tajweed_rule_madd', appLanguage),
-          AppLocalizations.getSettingsText('tajweed_rule_madd_desc', appLanguage),
-          isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
-        ),
-        _buildTajweedRuleItem(
-          context,
-          AppLocalizations.getSettingsText('tajweed_rule_ham_wasl', appLanguage),
-          AppLocalizations.getSettingsText('tajweed_rule_ham_wasl_desc', appLanguage),
-          colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTajweedRuleItem(
-    BuildContext context,
-    String name,
-    String description,
-    Color color,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),

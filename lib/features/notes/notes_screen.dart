@@ -88,7 +88,10 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
             ? [
                 IconButton(
                   icon: const Icon(Icons.close),
-                  tooltip: 'Close search',
+                  tooltip: AppLocalizations.getActionTooltip(
+                    'close_search',
+                    settings.appLanguage,
+                  ),
                   onPressed: () {
                     setState(() {
                       _searchController.clear();
@@ -101,7 +104,10 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                 if (_filterSurahId != null)
                   IconButton(
                     icon: const Icon(Icons.filter_alt),
-                    tooltip: 'Clear filter',
+                    tooltip: AppLocalizations.getActionTooltip(
+                      'clear_filter',
+                      settings.appLanguage,
+                    ),
                     onPressed: () {
                       setState(() {
                         _filterSurahId = null;
@@ -110,7 +116,10 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                   ),
                 IconButton(
                   icon: const Icon(Icons.search),
-                  tooltip: 'Search',
+                  tooltip: AppLocalizations.getMenuText(
+                    'search',
+                    settings.appLanguage,
+                  ),
                   onPressed: () {
                     setState(() {
                       _searchMode = true;
@@ -341,7 +350,10 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                                 const SizedBox(width: 8),
                                 IconButton(
                                   icon: Icon(Icons.edit_outlined, color: colorScheme.onSurfaceVariant),
-                                  tooltip: 'Edit note',
+                                  tooltip: AppLocalizations.getActionTooltip(
+                                    'edit_note',
+                                    settings.appLanguage,
+                                  ),
                                   onPressed: () {
                                     showDialog(
                                       context: context,

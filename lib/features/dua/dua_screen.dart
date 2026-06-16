@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/asma_entry.dart';
 import 'package:quran_offline/core/models/dua_entry.dart';
-import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/models/science_entry.dart';
 import 'package:quran_offline/core/models/theme_entry.dart';
 import 'package:quran_offline/core/providers/asma_catalog_provider.dart';
 import 'package:quran_offline/core/providers/dua_catalog_provider.dart';
 import 'package:quran_offline/core/providers/science_catalog_provider.dart';
 import 'package:quran_offline/core/providers/theme_catalog_provider.dart';
-import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/explore_detail_sheet.dart';
@@ -106,7 +104,7 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
               ),
               alignment: Alignment.center,
               child: Icon(
-                Icons.auto_stories_outlined,
+                Icons.library_books,
                 size: 18,
                 color: colorScheme.onSurface,
               ),
@@ -173,8 +171,6 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
         ),
         data: (catalog) => TabBarView(
           controller: _tabController,
-          // Tab changes via TabBar only — avoids horizontal swipe fighting list scroll.
-          physics: const NeverScrollableScrollPhysics(),
           children: [
             _DuaListView(
               entries: catalog.byCategory('daily'),
@@ -351,16 +347,23 @@ class _AsmaListTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: Text(
-                    entry.arabic,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontFamily: 'UthmanicHafsV22',
-                          fontFamilyFallback: const ['UthmanicHafs'],
-                          height: 1.5,
-                        ),
-                    textAlign: TextAlign.right,
+                SizedBox(
+                  width: 88,
+                  child: Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: Text(
+                      entry.arabic,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontFamily: 'UthmanicHafsV22',
+                            fontFamilyFallback: const ['UthmanicHafs'],
+                            fontSize: 26,
+                            fontWeight: FontWeight.w600,
+                            height: 1.45,
+                          ),
+                      textAlign: TextAlign.right,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -657,7 +660,9 @@ class _ExploreTabScrollViewState extends State<_ExploreTabScrollView> {
         children: [
           CustomScrollView(
             controller: _controller,
-            physics: const _ExploreOverflowScrollPhysics(),
+            physics: _canScroll
+                ? const _ExploreOverflowScrollPhysics()
+                : const NeverScrollableScrollPhysics(),
             slivers: widget.slivers,
           ),
           if (showFade)

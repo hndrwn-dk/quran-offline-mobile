@@ -286,7 +286,6 @@ class SurahInfoHtml {
 
     final buffer = <String>[];
     var afterPokokMarker = false;
-    var insideHubungan = false;
 
     for (final paragraph in paragraphs) {
       if (_isPokokMarkerParagraph(paragraph)) {
@@ -303,7 +302,6 @@ class SurahInfoHtml {
         final header = _cleanText(boldHeader.group(1)!);
         if (_pokokPokokHeader.hasMatch(header)) continue;
         if (_hubunganSuratHeader.hasMatch(header)) {
-          insideHubungan = true;
           buffer.add(_formatHubunganHeading(header));
           continue;
         }

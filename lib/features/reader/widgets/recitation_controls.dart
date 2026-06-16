@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/audio/playback_actions.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
+import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
 
 /// Fixed height so idle "Play surah" and active controls do not resize the header.
 const double _surahRecitationBarHeight = 48;
@@ -24,6 +26,7 @@ class SurahRecitationControls extends ConsumerWidget {
     final audio = ref.watch(audioPlayerProvider);
     final notifier = ref.read(audioPlayerProvider.notifier);
     final colorScheme = Theme.of(context).colorScheme;
+    final lang = ref.watch(settingsProvider).appLanguage;
 
     final isThisSurah = audio.surahId == surahId;
     final showActiveBar = isThisSurah && audio.isActive;
@@ -42,8 +45,10 @@ class SurahRecitationControls extends ConsumerWidget {
               surahName: surahName,
             ),
             icon: const Icon(Icons.play_arrow, size: 18),
-            label: const Text('Play surah'),
+            label: Text(AppLocalizations.getActionTooltip('play_surah', lang)),
             style: FilledButton.styleFrom(
+              backgroundColor: colorScheme.primaryContainer,
+              foregroundColor: colorScheme.onPrimaryContainer,
               visualDensity: VisualDensity.compact,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             ),
@@ -52,19 +57,22 @@ class SurahRecitationControls extends ConsumerWidget {
       );
     }
 
-    final positionLabel = audio.isPlayingBismillah
-        ? 'Bismillah / $verseCount'
-        : 'Ayah ${audio.ayahNo ?? 1} / $verseCount';
+    final positionLabel = AppLocalizations.formatRecitationPositionLabel(
+      language: lang,
+      ayahNo: audio.ayahNo,
+      verseCount: verseCount,
+      isBismillah: audio.isPlayingBismillah,
+    );
 
     return SizedBox(
       height: _surahRecitationBarHeight,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: colorScheme.primaryContainer.withOpacity(0.45),
+          color: colorScheme.primaryContainer.withValues(alpha: 0.55),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: colorScheme.primary.withOpacity(0.25),
+            color: colorScheme.primary.withValues(alpha: 0.22),
           ),
         ),
         child: Row(
@@ -87,7 +95,7 @@ class SurahRecitationControls extends ConsumerWidget {
             ),
             IconButton(
               icon: const Icon(Icons.skip_previous, size: 22),
-              tooltip: 'Previous ayah',
+              tooltip: AppLocalizations.getActionTooltip('previous_ayah', lang),
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -108,7 +116,9 @@ class SurahRecitationControls extends ConsumerWidget {
                       isPlaying ? Icons.stop_circle : Icons.play_circle,
                       color: colorScheme.primary,
                     ),
-              tooltip: isPlaying ? 'Stop' : 'Play',
+              tooltip: isPlaying
+                  ? AppLocalizations.getActionTooltip('stop', lang)
+                  : AppLocalizations.getActionTooltip('play', lang),
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -118,7 +128,7 @@ class SurahRecitationControls extends ConsumerWidget {
             ),
             IconButton(
               icon: const Icon(Icons.skip_next, size: 22),
-              tooltip: 'Next ayah',
+              tooltip: AppLocalizations.getActionTooltip('next_ayah', lang),
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -126,7 +136,7 @@ class SurahRecitationControls extends ConsumerWidget {
             ),
             IconButton(
               icon: Icon(Icons.close, size: 20, color: colorScheme.onSurfaceVariant),
-              tooltip: 'Stop recitation',
+              tooltip: AppLocalizations.getActionTooltip('stop_recitation', lang),
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
@@ -154,6 +164,8 @@ class MushafRecitationAppBarActions extends ConsumerWidget {
     if (showOnPage.valueOrNull != true) return const SizedBox.shrink();
 
     final notifier = ref.read(audioPlayerProvider.notifier);
+    final lang = ref.watch(settingsProvider).appLanguage;
+    final surahFallback = AppLocalizations.getMenuText('surah', lang);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -163,8 +175,8 @@ class MushafRecitationAppBarActions extends ConsumerWidget {
             padding: const EdgeInsets.only(right: 4),
             child: Text(
               audio.isPlayingBismillah
-                  ? '${audio.surahLabel ?? 'Surah'}'
-                  : '${audio.surahLabel ?? 'Surah'} :${audio.ayahNo}',
+                  ? (audio.surahLabel ?? surahFallback)
+                  : '${audio.surahLabel ?? surahFallback} :${audio.ayahNo}',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -172,26 +184,28 @@ class MushafRecitationAppBarActions extends ConsumerWidget {
           ),
         IconButton(
           icon: const Icon(Icons.skip_previous),
-          tooltip: 'Previous ayah',
+          tooltip: AppLocalizations.getActionTooltip('previous_ayah', lang),
           onPressed: notifier.previous,
         ),
         IconButton(
           icon: Icon(
             audio.isPlaying ? Icons.stop : Icons.play_arrow,
           ),
-          tooltip: audio.isPlaying ? 'Stop' : 'Play',
+          tooltip: audio.isPlaying
+              ? AppLocalizations.getActionTooltip('stop', lang)
+              : AppLocalizations.getActionTooltip('play', lang),
           onPressed: audio.isLoading
               ? null
               : (audio.isPlaying ? notifier.stop : notifier.restart),
         ),
         IconButton(
           icon: const Icon(Icons.skip_next),
-          tooltip: 'Next ayah',
+          tooltip: AppLocalizations.getActionTooltip('next_ayah', lang),
           onPressed: notifier.next,
         ),
         IconButton(
           icon: const Icon(Icons.close),
-          tooltip: 'Stop',
+          tooltip: AppLocalizations.getActionTooltip('stop', lang),
           onPressed: notifier.stop,
         ),
       ],

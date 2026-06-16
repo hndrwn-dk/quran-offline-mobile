@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quran_offline/core/database/database.dart' show AppSettings, SurahInfo, Verse, databaseProvider;
+import 'package:quran_offline/core/database/database.dart' show Verse;
 import 'package:quran_offline/core/models/dua_entry.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
@@ -8,6 +8,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
+import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
 void openReaderFromAyahRefs(WidgetRef ref, List<DuaAyahRef> ayahRefs) {
@@ -100,7 +101,10 @@ class ExploreDetailSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final settings = ref.watch(settingsProvider);
     final surahNames = ref.watch(surahNamesProvider).valueOrNull ?? [];
+    final headerArabicText = headerArabic;
+    final headerArabicSize = settings.arabicFontSize * 1.25;
 
     final body = SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
@@ -108,27 +112,53 @@ class ExploreDetailSheet extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            title.forLanguage(lang),
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
+          if (headerArabicText != null)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    title.forLanguage(lang),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
                 ),
-          ),
-          if (headerArabic != null) ...[
-            const SizedBox(height: 10),
-            Directionality(
-              textDirection: TextDirection.rtl,
-              child: Text(
-                headerArabic!,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontFamily: 'UthmanicHafsV22',
-                      fontFamilyFallback: const ['UthmanicHafs'],
-                      height: 1.5,
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 112,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Directionality(
+                        textDirection: TextDirection.rtl,
+                        child: Text(
+                          headerArabicText,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontFamily: 'UthmanicHafsV22',
+                                fontFamilyFallback: const ['UthmanicHafs'],
+                                fontSize: headerArabicSize,
+                                fontWeight: FontWeight.w600,
+                                height: 1.45,
+                                color: colorScheme.onSurface,
+                              ),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
                     ),
-                textAlign: TextAlign.right,
-              ),
+                  ),
+                ),
+              ],
+            )
+          else
+            Text(
+              title.forLanguage(lang),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
             ),
-          ],
           const SizedBox(height: 8),
           Text(
             summary.forLanguage(lang),
@@ -265,32 +295,43 @@ class ExploreAyahBlock extends ConsumerWidget {
         children: [
           if (surahInfo != null)
             Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Text(
-                    '(${surahInfo.getMeaning(lang)})',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          color: colorScheme.onSurface,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        surahInfo.englishName,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                              color: colorScheme.onSurface,
+                            ),
+                      ),
+                      if (surahInfo.getMeaning(lang).isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            surahInfo.getMeaning(lang),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                          ),
                         ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 10),
-                Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: Text(
-                    surahInfo.arabicName,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontFamily: 'UthmanicHafsV22',
-                          fontFamilyFallback: const ['UthmanicHafs'],
-                          fontSize: 26,
-                          fontWeight: FontWeight.w600,
-                          height: 1.5,
-                          color: colorScheme.onSurface,
-                        ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 128,
+                  child: FittedBox(
+                    fit: BoxFit.fitWidth,
+                    alignment: Alignment.centerRight,
+                    child: SurahNameListGlyph(
+                      surahId: surahInfo.id,
+                      fontSize: 96,
+                    ),
                   ),
                 ),
               ],

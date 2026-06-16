@@ -43,7 +43,15 @@ Each file is a JSON **array** of verse objects. Fields used by the app:
 | `zh` | 109 | Muhammad Makin |
 | `ja` | 35 | Ryoichi Mita |
 
-Use the Quran.com v4 API to fetch verses and translations per surah, then shape files to match the schema above. Tajweed can be fetched from:
+Use the Quran.com v4 API to fetch verses and translations per surah, then shape files to match the schema above.
+
+**Tajweed** is fetched from the **words API** (richer than verse-level `uthmani_tajweed`):
+
+`GET https://api.quran.com/api/v4/verses/by_chapter/{surah}?words=true&word_fields=text_uthmani_tajweed`
+
+Run `python scripts/fetch_tajweed_data.py --overwrite` to refresh the `tj` field in all surah JSON files. Rule class names and markup follow Quran.com; colors in the app follow the [Quran.com Tajweed Mushaf legend](https://quran.com) (Dar Al-Marifa palette). Runtime augmentation adds tafkhim on isti'laa letters and Ra with fatha/damma where the API omits markers.
+
+Legacy verse endpoint (less complete):
 
 `GET https://api.quran.com/api/v4/quran/verses/uthmani_tajweed?verse_key={surah}:{ayah}`
 

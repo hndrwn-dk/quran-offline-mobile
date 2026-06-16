@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Bottom nav and Read screen header Quran icon.
-/// Icons by Freepik via Flaticon:
-/// - https://www.flaticon.com/free-icon/quran_15660421 (default)
-/// - https://www.flaticon.com/free-icon/quran_15660477 (active)
+/// Bottom nav and Read screen header — Al-Qur'an on rehal (Noun Project, Wendi Abi).
+/// Attribution text removed from artwork; see assets/icon/ICON_CREDITS.md.
 class NavReadIcon extends StatefulWidget {
   const NavReadIcon({super.key, this.selected = false, this.size});
 
@@ -13,7 +11,6 @@ class NavReadIcon extends StatefulWidget {
   static const idleAssetPath = 'assets/icon/nav_read_quran.png';
   static const activeAssetPath = 'assets/icon/nav_read_quran_active.png';
 
-  /// Decode both bitmaps before the nav bar is shown (call and await before Home).
   static Future<void> precache(BuildContext context) {
     return Future.wait([
       precacheImage(const AssetImage(idleAssetPath), context),
@@ -61,7 +58,6 @@ class _NavReadIconState extends State<NavReadIcon> {
   }
 }
 
-/// Both layers stay mounted; [Offstage] toggles paint (no opacity / asset swap).
 class _NavReadLayer extends StatelessWidget {
   const _NavReadLayer({
     super.key,
@@ -76,6 +72,10 @@ class _NavReadLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final iconTheme = IconTheme.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final tint = iconTheme.color ?? scheme.onSurface;
+
     return Offstage(
       offstage: offstage,
       child: Image.asset(
@@ -85,6 +85,8 @@ class _NavReadLayer extends StatelessWidget {
         fit: BoxFit.contain,
         gaplessPlayback: true,
         filterQuality: FilterQuality.high,
+        color: tint,
+        colorBlendMode: BlendMode.srcIn,
         excludeFromSemantics: offstage,
       ),
     );

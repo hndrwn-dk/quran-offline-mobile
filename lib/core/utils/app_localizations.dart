@@ -4,6 +4,7 @@ class AppLocalizations {
   /// Get localized text for menu items based on language code
   static String getMenuText(String key, String language) {
     return switch (key) {
+      'home' => _getHome(language),
       'read' => _getRead(language),
       'search' => _getSearch(language),
       'bookmarks' => _getBookmarks(language),
@@ -1905,10 +1906,41 @@ class AppLocalizations {
     return '$mushafLabel - $pageLabel $pageNo';
   }
 
+  static String getMushafGestureHint(String language) {
+    return switch (language) {
+      'id' => 'Ketuk ayat untuk putar. Tahan untuk arti & bookmark.',
+      'en' => 'Tap a verse to play. Long-press for meaning & bookmark.',
+      'zh' => '点按播放经文。长按查看释义与书签。',
+      'ja' => 'タップで再生。長押しで意味とブックマーク。',
+      _ => 'Tap a verse to play. Long-press for meaning & bookmark.',
+    };
+  }
+
+  static String getMushafAudioHint(String language) {
+    return switch (language) {
+      'id' => 'Unduh audio untuk putar offline.',
+      'en' => 'Download audio for offline playback.',
+      'zh' => '下载音频以离线播放。',
+      'ja' => 'オフライン再生用に音声をダウンロード。',
+      _ => 'Download audio for offline playback.',
+    };
+  }
+
+  static String getMushafSaveSurahAction(String language, {bool plural = false}) {
+    return switch (language) {
+      'id' => plural ? 'Unduh surah' : 'Unduh surah',
+      'en' => plural ? 'Download surahs' : 'Download surah',
+      'zh' => plural ? '下载章节' : '下载章节',
+      'ja' => plural ? '章をDL' : '章をDL',
+      _ => plural ? 'Download surahs' : 'Download surah',
+    };
+  }
+
   /// Get localized text for AppBar subtitles based on language code
   static String getSubtitleText(String key, String language) {
     return switch (key) {
       'settings_subtitle' => _getSettingsSubtitle(language),
+      'home_subtitle' => _getHomeSubtitle(language),
       'read_subtitle' => _getReadSubtitle(language),
       'bookmarks_subtitle' => _getBookmarksSubtitle(language),
       'bookmarks_empty' => _getBookmarksEmpty(language),
@@ -1927,6 +1959,16 @@ class AppLocalizations {
       'library_search_hint' => _getLibrarySearchHint(language),
       'library_no_results' => _getLibraryNoResults(language),
       _ => key,
+    };
+  }
+
+  static String _getHome(String language) {
+    return switch (language) {
+      'id' => 'Beranda',
+      'en' => 'Home',
+      'zh' => '首页',
+      'ja' => 'ホーム',
+      _ => 'Home',
     };
   }
 
@@ -2019,14 +2061,453 @@ class AppLocalizations {
     };
   }
 
+  static String _getHomeSubtitle(String language) => getHomeTagline(language);
+
   static String _getReadSubtitle(String language) {
     return switch (language) {
-      'id' => 'Baca dan renungkan',
-      'en' => 'Read and reflect',
-      'zh' => '阅读与思考',
-      'ja' => '読んで考える',
-      _ => 'Read and reflect',
+      'id' => 'Surah, Juz, dan Mushaf',
+      'en' => 'Surah, Juz, and Mushaf',
+      'zh' => '章节、卷与穆沙夫',
+      'ja' => 'スーラ、ジュズ、ムシャフ',
+      _ => 'Surah, Juz, and Mushaf',
     };
+  }
+
+  static String getHomeActivityTitle(String language) {
+    return switch (language) {
+      'id' => 'Aktivitas Anda',
+      'en' => 'Your activity',
+      'zh' => '您的活动',
+      'ja' => 'あなたの活動',
+      _ => 'Your activity',
+    };
+  }
+
+  static String getHomeViewAllInLibrary(String language) {
+    return switch (language) {
+      'id' => 'Lihat semua di Koleksi',
+      'en' => 'View all in Library',
+      'zh' => '在收藏中查看全部',
+      'ja' => 'ライブラリですべて表示',
+      _ => 'View all in Library',
+    };
+  }
+
+  static String getHomeActivityEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ada penanda, catatan, atau sorotan.',
+      'en' => 'No bookmarks, notes, or highlights yet.',
+      'zh' => '尚无书签、笔记或高亮。',
+      'ja' => 'ブックマーク、メモ、ハイライトはまだありません。',
+      _ => 'No bookmarks, notes, or highlights yet.',
+    };
+  }
+
+  static String getHomeHafalanPlaceholder(String language) {
+    return switch (language) {
+      'id' => 'Program hafalan Juz Amma akan hadir di sini.',
+      'en' => 'Juz Amma memorization will appear here.',
+      'zh' => '朱兹阿迈背诵计划将在此显示。',
+      'ja' => 'ジュズ・アンマーの暗誦プログラムはここに表示されます。',
+      _ => 'Juz Amma memorization will appear here.',
+    };
+  }
+
+  static const String homeWelcomeArabic = 'ٱلسَّلَامُ';
+
+  static String getHomeWelcomeTransliteration(String language) {
+    return switch (language) {
+      'id' => 'Assalamu\'alaikum',
+      'en' => 'Assalamu\'alaikum',
+      'zh' => 'Assalamu\'alaikum',
+      'ja' => 'Assalamu\'alaikum',
+      _ => 'Assalamu\'alaikum',
+    };
+  }
+
+  static String getHomeTagline(String language) {
+    return switch (language) {
+      'id' => 'Qur\'an di genggaman, ketenangan di hati.',
+      'en' => 'The Qur\'an in your hands, peace in your heart.',
+      'zh' => '古兰在握，心安于内。',
+      'ja' => 'クルアーンを手に、心に安らぎを。',
+      _ => 'The Qur\'an in your hands, peace in your heart.',
+    };
+  }
+
+  static String? getHomeFridayHint(String language) {
+    if (DateTime.now().weekday != DateTime.friday) return null;
+    return switch (language) {
+      'id' => 'Hari Jumat — renungan Al-Kahfi menanti',
+      'en' => 'Friday — Al-Kahf reflection awaits',
+      'zh' => '周五 — 洞穴章默想等你',
+      'ja' => '金曜日 — カーフの黙想が待っています',
+      _ => 'Friday — Al-Kahf reflection awaits',
+    };
+  }
+
+  static String getHomeContinueCta(String language) {
+    return switch (language) {
+      'id' => 'Lanjutkan membaca',
+      'en' => 'Continue reading',
+      'zh' => '继续阅读',
+      'ja' => '読み続ける',
+      _ => 'Continue reading',
+    };
+  }
+
+  static String getHomeContinuePill(String language) {
+    return switch (language) {
+      'id' => 'Lanjutkan baca',
+      'en' => 'Continue',
+      'zh' => '继续阅读',
+      'ja' => '続きを読む',
+      _ => 'Continue',
+    };
+  }
+
+  static String getHomeContinueButton(String language) {
+    return switch (language) {
+      'id' => 'Lanjutkan',
+      'en' => 'Continue',
+      'zh' => '继续',
+      'ja' => '続ける',
+      _ => 'Continue',
+    };
+  }
+
+  static String getHomeStartPill(String language) {
+    return switch (language) {
+      'id' => 'Mulai baca',
+      'en' => 'Start reading',
+      'zh' => '开始阅读',
+      'ja' => '読み始める',
+      _ => 'Start reading',
+    };
+  }
+
+  static String getHomeStartButton(String language) {
+    return switch (language) {
+      'id' => 'Mulai',
+      'en' => 'Start',
+      'zh' => '开始',
+      'ja' => '始める',
+      _ => 'Start',
+    };
+  }
+
+  static String getHomeProgressScopeLabel(String scope, String language) {
+    return switch (scope) {
+      'surah' => switch (language) {
+          'id' => 'Progress surah',
+          'en' => 'Surah progress',
+          'zh' => '章节进度',
+          'ja' => 'スーラの進捗',
+          _ => 'Surah progress',
+        },
+      'juz' => switch (language) {
+          'id' => 'Progress juz',
+          'en' => 'Juz progress',
+          'zh' => '卷进度',
+          'ja' => 'ジュズの進捗',
+          _ => 'Juz progress',
+        },
+      'page' => switch (language) {
+          'id' => 'Progress mushaf',
+          'en' => 'Mushaf progress',
+          'zh' => '穆沙夫进度',
+          'ja' => 'ムシャフの進捗',
+          _ => 'Mushaf progress',
+        },
+      _ => switch (language) {
+          'id' => 'Progress',
+          'en' => 'Progress',
+          'zh' => '进度',
+          'ja' => '進捗',
+          _ => 'Progress',
+        },
+    };
+  }
+
+  static String formatHomeLastReadSubtitle({
+    required String language,
+    required int? ayahNo,
+    required String scopeKey,
+  }) {
+    final scopeLabel = switch (scopeKey) {
+      'surah' => getMenuText('surah', language),
+      'juz' => getMenuText('juz', language),
+      'page' => getMenuText('mushaf', language),
+      _ => '',
+    };
+    if (ayahNo != null) {
+      return '${getAyahLabel(language)} $ayahNo · $scopeLabel';
+    }
+    return scopeLabel;
+  }
+
+  static String formatHomeReadProgressPercent(int percent, String scope, String language) {
+    return switch (scope) {
+      'surah' => switch (language) {
+          'id' => '$percent% surah ini',
+          'en' => '$percent% of this surah',
+          'zh' => '本章 $percent%',
+          'ja' => 'このスーラ $percent%',
+          _ => '$percent% of this surah',
+        },
+      'juz' => switch (language) {
+          'id' => '$percent% juz ini',
+          'en' => '$percent% of this juz',
+          'zh' => '本卷 $percent%',
+          'ja' => 'このジュズ $percent%',
+          _ => '$percent% of this juz',
+        },
+      'page' => switch (language) {
+          'id' => '$percent% mushaf',
+          'en' => '$percent% of mushaf',
+          'zh' => '穆沙夫 $percent%',
+          'ja' => 'ムシャフ $percent%',
+          _ => '$percent% of mushaf',
+        },
+      _ => '$percent%',
+    };
+  }
+
+  static String getHomeStartReadingTitle(String language) {
+    return switch (language) {
+      'id' => 'Mulai membaca Qur\'an',
+      'en' => 'Start reading the Qur\'an',
+      'zh' => '开始阅读古兰经',
+      'ja' => 'クルアーンを読み始める',
+      _ => 'Start reading the Qur\'an',
+    };
+  }
+
+  static String getHomeStartReadingBody(String language) {
+    return switch (language) {
+      'id' => 'Pilih surah dan mulai perjalanan Anda.',
+      'en' => 'Pick a surah and begin your journey.',
+      'zh' => '选择章节，开始您的旅程。',
+      'ja' => 'スーラを選んで旅を始めましょう。',
+      _ => 'Pick a surah and begin your journey.',
+    };
+  }
+
+  static String getHomeActivitySubtitle(String language) {
+    return switch (language) {
+      'id' => 'Terbaru dari Koleksi',
+      'en' => 'Recent from Library',
+      'zh' => '收藏中的最新',
+      'ja' => 'ライブラリの最新',
+      _ => 'Recent from Library',
+    };
+  }
+
+  static String getHomeReflectionCta(String language) {
+    return switch (language) {
+      'id' => 'Buka renungan',
+      'en' => 'Open reflection',
+      'zh' => '打开默想',
+      'ja' => '黙想を開く',
+      _ => 'Open reflection',
+    };
+  }
+
+  static String getHomeQuickAccessTitle(String language) {
+    return switch (language) {
+      'id' => 'AKSES CEPAT',
+      'en' => 'QUICK ACCESS',
+      'zh' => '快捷入口',
+      'ja' => 'クイックアクセス',
+      _ => 'QUICK ACCESS',
+    };
+  }
+
+  static String getHomeRecentSectionTitle(String language) {
+    return switch (language) {
+      'id' => 'TERBARU',
+      'en' => 'RECENT',
+      'zh' => '最近',
+      'ja' => '最近',
+      _ => 'RECENT',
+    };
+  }
+
+  static String getHomeNotesSectionTitle(String language) {
+    return switch (language) {
+      'id' => 'CATATAN',
+      'en' => 'NOTES',
+      'zh' => '笔记',
+      'ja' => 'メモ',
+      _ => 'NOTES',
+    };
+  }
+
+  static String getHomeOpenNotesCta(String language) {
+    return switch (language) {
+      'id' => 'Buka catatan',
+      'en' => 'Open notes',
+      'zh' => '打开笔记',
+      'ja' => 'メモを開く',
+      _ => 'Open notes',
+    };
+  }
+
+  static String getHomeAllNotesLink(String language) {
+    return switch (language) {
+      'id' => 'Semua catatan',
+      'en' => 'All notes',
+      'zh' => '全部笔记',
+      'ja' => 'すべてのメモ',
+      _ => 'All notes',
+    };
+  }
+
+  static String getHomeNotesEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ada catatan. Tulis saat belajar di reader.',
+      'en' => 'No notes yet. Add one while reading in the reader.',
+      'zh' => '尚无笔记。在阅读时添加吧。',
+      'ja' => 'メモはまだありません。リーダーで追加できます。',
+      _ => 'No notes yet. Add one while reading in the reader.',
+    };
+  }
+
+  static String getHomeCollectionSectionTitle(String language) {
+    return switch (language) {
+      'id' => 'KOLEKSI',
+      'en' => 'COLLECTION',
+      'zh' => '收藏',
+      'ja' => 'コレクション',
+      _ => 'COLLECTION',
+    };
+  }
+
+  static String getHomeKoleksiEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ada penanda atau sorotan.',
+      'en' => 'No bookmarks or highlights yet.',
+      'zh' => '尚无书签或高亮。',
+      'ja' => 'ブックマークやハイライトはまだありません。',
+      _ => 'No bookmarks or highlights yet.',
+    };
+  }
+
+  static String formatHomeKoleksiStats({
+    required int bookmarks,
+    required int highlights,
+    required String language,
+  }) {
+    final b = switch (language) {
+      'id' => '$bookmarks penanda',
+      'zh' => '$bookmarks 个书签',
+      'ja' => 'ブックマーク $bookmarks',
+      _ => '$bookmarks bookmarks',
+    };
+    final h = switch (language) {
+      'id' => '$highlights sorotan',
+      'zh' => '$highlights 条高亮',
+      'ja' => 'ハイライト $highlights',
+      _ => '$highlights highlights',
+    };
+    return switch (language) {
+      'zh' => '$b · $h',
+      'ja' => '$b · $h',
+      _ => '$b · $h',
+    };
+  }
+
+  static String getHomeOpenLink(String language) {
+    return switch (language) {
+      'id' => 'Buka',
+      'en' => 'Open',
+      'zh' => '打开',
+      'ja' => '開く',
+      _ => 'Open',
+    };
+  }
+
+  static String getHomeLibraryLink(String language) {
+    return switch (language) {
+      'id' => 'Koleksi',
+      'en' => 'Library',
+      'zh' => '收藏',
+      'ja' => 'ライブラリ',
+      _ => 'Library',
+    };
+  }
+
+  static String formatHomeRelativeTime(DateTime at, String language) {
+    final diff = DateTime.now().difference(at);
+    if (diff.inMinutes < 1) {
+      return switch (language) {
+        'id' => 'baru',
+        'zh' => '刚刚',
+        'ja' => 'たった今',
+        _ => 'now',
+      };
+    }
+    if (diff.inHours < 1) {
+      final m = diff.inMinutes;
+      return switch (language) {
+        'id' => '${m}m',
+        'zh' => '${m}分钟',
+        'ja' => '${m}分',
+        _ => '${m}m',
+      };
+    }
+    if (diff.inHours < 24) {
+      final h = diff.inHours;
+      return switch (language) {
+        'id' => '${h}j',
+        'zh' => '${h}小时',
+        'ja' => '${h}時間',
+        _ => '${h}h',
+      };
+    }
+    if (diff.inDays < 7) {
+      final d = diff.inDays;
+      return switch (language) {
+        'id' => '${d}hr',
+        'zh' => '${d}天',
+        'ja' => '${d}日',
+        _ => '${d}d',
+      };
+    }
+    return switch (language) {
+      'id' => '${at.day}/${at.month}',
+      'en' => '${at.month}/${at.day}',
+      'zh' => '${at.month}/${at.day}',
+      'ja' => '${at.month}/${at.day}',
+      _ => '${at.month}/${at.day}',
+    };
+  }
+
+  static String formatHomeCollectionStats({
+    required int bookmarks,
+    required int notes,
+    required int highlights,
+    required String language,
+  }) {
+    final b = switch (language) {
+      'id' => '$bookmarks penanda',
+      'zh' => '$bookmarks 个书签',
+      'ja' => 'ブックマーク $bookmarks',
+      _ => '$bookmarks bookmarks',
+    };
+    final n = switch (language) {
+      'id' => '$notes catatan',
+      'zh' => '$notes 条笔记',
+      'ja' => 'メモ $notes',
+      _ => '$notes notes',
+    };
+    final h = switch (language) {
+      'id' => '$highlights sorotan',
+      'zh' => '$highlights 处高亮',
+      'ja' => 'ハイライト $highlights',
+      _ => '$highlights highlights',
+    };
+    return '$b · $n · $h';
   }
 
   static String _getBookmarksSubtitle(String language) {
@@ -2093,8 +2574,66 @@ class AppLocalizations {
       'translation_example' => _getTranslationExample(language),
       'translation_label' => _getTranslationLabel(language),
       'no_results' => _getNoResults(language),
+      'search_show_all_filter' => _getSearchShowAllFilter(language),
       'results_heading' => _getResultsHeading(language),
+      'arabic_label' => _getArabicSearchLabel(language),
+      'arabic_example' => _getArabicSearchExample(language),
       _ => key,
+    };
+  }
+
+  /// Empty-state hint when a type filter hides all matches.
+  static String getSearchNoResultsForFilter(String language, String filter) {
+    return switch (filter) {
+      'surah' => switch (language) {
+          'id' => 'Tidak ada surat pada filter ini. Coba "Semua" atau nama surat lain.',
+          'en' => 'No surah matches this filter. Try All or another surah name.',
+          'zh' => '此筛选下没有章节。请尝试“全部”或其他章节名。',
+          'ja' => 'このフィルターに該当するスーラはありません。「すべて」や別の名前をお試しください。',
+          _ => 'No surah matches this filter. Try All or another surah name.',
+        },
+      'juz' => switch (language) {
+          'id' => 'Tidak ada juz pada filter ini. Coba angka 1–30 atau filter "Semua".',
+          'en' => 'No juz matches this filter. Try 1–30 or the All filter.',
+          'zh' => '此筛选下没有卷。请尝试 1–30 或“全部”。',
+          'ja' => 'このフィルターに該当するジュズはありません。1–30 または「すべて」をお試しください。',
+          _ => 'No juz matches this filter. Try 1–30 or the All filter.',
+        },
+      'page' => switch (language) {
+          'id' => 'Tidak ada halaman pada filter ini. Coba nomor halaman atau "Semua".',
+          'en' => 'No page matches this filter. Try a page number or All.',
+          'zh' => '此筛选下没有页。请尝试页码或“全部”。',
+          'ja' => 'このフィルターに該当するページはありません。ページ番号または「すべて」をお試しください。',
+          _ => 'No page matches this filter. Try a page number or All.',
+        },
+      'ayat' => switch (language) {
+          'id' =>
+              'Tidak ada ayat pada filter ini. Coba format 2:255, teks Arab ayat, atau filter "Semua".',
+          'en' =>
+              'No verse matches this filter. Try 2:255, Arabic verse text, or All.',
+          'zh' => '此筛选下没有经文。请尝试 2:255、阿拉伯文经文或“全部”。',
+          'ja' =>
+              'このフィルターに該当する節はありません。2:255、アラビア語、または「すべて」をお試しください。',
+          _ => 'No verse matches this filter. Try 2:255, Arabic verse text, or All.',
+        },
+      'terjemahan' => switch (language) {
+          'id' =>
+              'Tidak ada terjemahan pada filter ini. Coba kata dalam teks terjemahan atau filter "Semua".',
+          'en' =>
+              'No translation matches this filter. Try a word from the translation or All.',
+          'zh' => '此筛选下没有翻译结果。请尝试译文中的词或“全部”。',
+          'ja' =>
+              'このフィルターに該当する翻訳はありません。訳文の語句または「すべて」をお試しください。',
+          _ => 'No translation matches this filter. Try a word from the translation or All.',
+        },
+      _ => switch (language) {
+          'id' =>
+              'Tidak ada hasil untuk filter ini. Coba filter "Semua" atau kata kunci lain.',
+          'en' => 'No results for this filter. Try All or a different keyword.',
+          'zh' => '此筛选下没有结果。请尝试“全部”或其他关键词。',
+          'ja' => 'このフィルターに結果はありません。「すべて」や別のキーワードをお試しください。',
+          _ => 'No results for this filter. Try All or a different keyword.',
+        },
     };
   }
 
@@ -2110,11 +2649,11 @@ class AppLocalizations {
 
   static String _getSearchPlaceholder(String language) {
     return switch (language) {
-      'id' => 'Surah, Juz, Halaman, Ayat (2:255), atau terjemahan...',
-      'en' => 'Surah, Juz, Page, Verse (2:255), or translation...',
-      'zh' => '章节、卷、页、经文 (2:255) 或翻译...',
-      'ja' => '章、ジュズ、ページ、節 (2:255) または翻訳...',
-      _ => 'Surah, Juz, Page, Verse (2:255), or translation...',
+      'id' => 'Surah, Juz, halaman, 2:255, teks Arab, atau terjemahan...',
+      'en' => 'Surah, Juz, page, 2:255, Arabic text, or translation...',
+      'zh' => '章节、卷、页、2:255、阿拉伯文或翻译...',
+      'ja' => '章、ジュズ、ページ、2:255、阿拉伯文または翻訳...',
+      _ => 'Surah, Juz, page, 2:255, Arabic text, or translation...',
     };
   }
 
@@ -2210,6 +2749,26 @@ class AppLocalizations {
     };
   }
 
+  static String _getArabicSearchLabel(String language) {
+    return switch (language) {
+      'id' => 'Teks Arab ayat',
+      'en' => 'Arabic verse text',
+      'zh' => '阿拉伯文经文',
+      'ja' => 'アラビア語の節',
+      _ => 'Arabic verse text',
+    };
+  }
+
+  static String _getArabicSearchExample(String language) {
+    return switch (language) {
+      'id' => 'Fragmen seperti الرحمن (tanpa harakat juga bisa)',
+      'en' => 'A fragment such as الرحمن (works without diacritics too)',
+      'zh' => '例如 الرحمن（可无音标）',
+      'ja' => '例: الرحمن（短音符なしでも可）',
+      _ => 'A fragment such as الرحمن (works without diacritics too)',
+    };
+  }
+
   static String _getNoResults(String language) {
     return switch (language) {
       'id' => 'Tidak ada hasil ditemukan',
@@ -2217,6 +2776,16 @@ class AppLocalizations {
       'zh' => '未找到结果',
       'ja' => '結果が見つかりません',
       _ => 'No results found',
+    };
+  }
+
+  static String _getSearchShowAllFilter(String language) {
+    return switch (language) {
+      'id' => 'Tampilkan semua hasil',
+      'en' => 'Show all results',
+      'zh' => '显示全部结果',
+      'ja' => 'すべての結果を表示',
+      _ => 'Show all results',
     };
   }
 
@@ -2284,12 +2853,35 @@ class AppLocalizations {
       'tajweed_rule_ghunnah_desc' => _getTajweedRuleGhunnahDesc(language),
       'tajweed_rule_qalqalah' => _getTajweedRuleQalqalah(language),
       'tajweed_rule_qalqalah_desc' => _getTajweedRuleQalqalahDesc(language),
+      'tajweed_rule_tafkhim' => _getTajweedRuleTafkhim(language),
+      'tajweed_rule_tafkhim_desc' => _getTajweedRuleTafkhimDesc(language),
       'tajweed_rule_laam_shamsiyah' => _getTajweedRuleLaamShamsiyah(language),
       'tajweed_rule_laam_shamsiyah_desc' => _getTajweedRuleLaamShamsiyahDesc(language),
       'tajweed_rule_madd' => _getTajweedRuleMadd(language),
       'tajweed_rule_madd_desc' => _getTajweedRuleMaddDesc(language),
+      'tajweed_rule_madd_wajib_munfasil' => _getTajweedRuleMaddWajibMunfasil(language),
+      'tajweed_rule_madd_wajib_munfasil_desc' => _getTajweedRuleMaddWajibMunfasilDesc(language),
+      'tajweed_rule_madd_wajib_muttasil' => _getTajweedRuleMaddWajibMuttasil(language),
+      'tajweed_rule_madd_wajib_muttasil_desc' => _getTajweedRuleMaddWajibMuttasilDesc(language),
+      'tajweed_rule_madd_lazim' => _getTajweedRuleMaddLazim(language),
+      'tajweed_rule_madd_lazim_desc' => _getTajweedRuleMaddLazimDesc(language),
       'tajweed_rule_ham_wasl' => _getTajweedRuleHamWasl(language),
       'tajweed_rule_ham_wasl_desc' => _getTajweedRuleHamWaslDesc(language),
+      'report_tajweed_title' => _getReportTajweedTitle(language),
+      'report_tajweed_subtitle' => _getReportTajweedSubtitle(language),
+      'report_tajweed_action' => _getReportTajweedAction(language),
+      'report_tajweed_email_subject' => _getReportTajweedEmailSubject(language),
+      'report_tajweed_email_subject_generic' =>
+          _getReportTajweedEmailSubjectGeneric(language),
+      'report_tajweed_body_header' => _getReportTajweedBodyHeader(language),
+      'report_tajweed_body_verse' => _getReportTajweedBodyVerse(language),
+      'report_tajweed_body_verse_unknown' =>
+          _getReportTajweedBodyVerseUnknown(language),
+      'report_tajweed_body_reference' => _getReportTajweedBodyReference(language),
+      'report_tajweed_body_arabic' => _getReportTajweedBodyArabic(language),
+      'report_tajweed_body_meta' => _getReportTajweedBodyMeta(language),
+      'report_tajweed_body_prompt' => _getReportTajweedBodyPrompt(language),
+      'report_tajweed_launch_failed' => _getReportTajweedLaunchFailed(language),
       // Highlight Guide
       'highlight_guide_title' => _getHighlightGuideTitle(language),
       'highlight_guide_intro' => _getHighlightGuideIntro(language),
@@ -2352,6 +2944,9 @@ class AppLocalizations {
       'transliteration_style_readable' => _getTransliterationStyleReadable(language),
       'transliteration_source_title' => _getTransliterationSourceTitle(language),
       'transliteration_source_tajweed' => _getTransliterationSourceTajweed(language),
+      'transliteration_source_tajweed_sub' => _getTransliterationSourceTajweedSub(language),
+      'transliteration_source_simple' => _getTransliterationSourceSimple(language),
+      'transliteration_source_simple_sub' => _getTransliterationSourceSimpleSub(language),
       'transliteration_source_original' => _getTransliterationSourceOriginal(language),
       'transliteration_choice_title' => _getTransliterationChoiceTitle(language),
       'transliteration_style_raw' => _getTransliterationStyleRaw(language),
@@ -2535,6 +3130,18 @@ class AppLocalizations {
       'zh' => '此节暂无经注。',
       'ja' => 'この節のタフスィールはありません。',
       _ => 'Tafsir not available for this verse.',
+    };
+  }
+
+  /// Makkiyah / Madaniyah labels from tafsir metadata.
+  static String getTafsirRevelationLabel(String language, String revelationType) {
+    final isMadani = revelationType.toLowerCase().startsWith('mad');
+    return switch (language) {
+      'id' => isMadani ? 'Madaniyah' : 'Makkiyah',
+      'en' => isMadani ? 'Madaniyah' : 'Makkiyah',
+      'zh' => isMadani ? '麦地那章' : '麦加章',
+      'ja' => isMadani ? 'マディーナ啓示' : 'マッカ啓示',
+      _ => isMadani ? 'Madaniyah' : 'Makkiyah',
     };
   }
 
@@ -2936,6 +3543,141 @@ class AppLocalizations {
     };
   }
 
+  static String _getReportTajweedTitle(String language) {
+    return switch (language) {
+      'id' => 'Laporkan tajweed salah',
+      'en' => 'Report tajweed issue',
+      'zh' => '报告泰吉维德颜色问题',
+      'ja' => 'タジウィードの色を報告',
+      _ => 'Report tajweed issue',
+    };
+  }
+
+  static String _getReportTajweedSubtitle(String language) {
+    return switch (language) {
+      'id' =>
+        'Kirim email jika warna tajweed tidak sesuai quran.com',
+      'en' =>
+        'Send email if tajweed colors do not match quran.com',
+      'zh' => '若泰吉维德颜色与 quran.com 不符，请发送邮件',
+      'ja' => 'quran.com と色が違う場合はメールで報告',
+      _ => 'Send email if tajweed colors do not match quran.com',
+    };
+  }
+
+  static String _getReportTajweedAction(String language) {
+    return switch (language) {
+      'id' => 'Laporkan tajweed salah',
+      'en' => 'Report tajweed issue',
+      'zh' => '报告泰吉维德问题',
+      'ja' => 'タジウィードを報告',
+      _ => 'Report tajweed issue',
+    };
+  }
+
+  static String _getReportTajweedEmailSubject(String language) {
+    return switch (language) {
+      'id' => 'Laporan tajweed — QS {surah}:{ayah}',
+      'en' => 'Tajweed report — QS {surah}:{ayah}',
+      'zh' => '泰吉维德报告 — {surah}:{ayah}',
+      'ja' => 'タジウィード報告 — {surah}:{ayah}',
+      _ => 'Tajweed report — QS {surah}:{ayah}',
+    };
+  }
+
+  static String _getReportTajweedEmailSubjectGeneric(String language) {
+    return switch (language) {
+      'id' => 'Laporan tajweed — Quran Offline',
+      'en' => 'Tajweed report — Quran Offline',
+      'zh' => '泰吉维德报告 — Quran Offline',
+      'ja' => 'タジウィード報告 — Quran Offline',
+      _ => 'Tajweed report — Quran Offline',
+    };
+  }
+
+  static String _getReportTajweedBodyHeader(String language) {
+    return switch (language) {
+      'id' => 'Laporan warna tajweed — Quran Offline',
+      'en' => 'Tajweed color issue report — Quran Offline',
+      'zh' => '泰吉维德颜色问题报告 — Quran Offline',
+      'ja' => 'タジウィード色の報告 — Quran Offline',
+      _ => 'Tajweed color issue report — Quran Offline',
+    };
+  }
+
+  static String _getReportTajweedBodyVerse(String language) {
+    return switch (language) {
+      'id' => 'Ayat: QS {surah}:{ayah}',
+      'en' => 'Verse: QS {surah}:{ayah}',
+      'zh' => '经文: {surah}:{ayah}',
+      'ja' => '節: {surah}:{ayah}',
+      _ => 'Verse: QS {surah}:{ayah}',
+    };
+  }
+
+  static String _getReportTajweedBodyVerseUnknown(String language) {
+    return switch (language) {
+      'id' => 'Ayat: (isi surat:ayat, mis. 56:91)',
+      'en' => 'Verse: (fill in surah:ayah, e.g. 56:91)',
+      'zh' => '经文: (请填写章:节，如 56:91)',
+      'ja' => '節: (章:節を記入、例 56:91)',
+      _ => 'Verse: (fill in surah:ayah, e.g. 56:91)',
+    };
+  }
+
+  static String _getReportTajweedBodyReference(String language) {
+    return switch (language) {
+      'id' => 'Referensi quran.com: {url}',
+      'en' => 'quran.com reference: {url}',
+      'zh' => 'quran.com 参考: {url}',
+      'ja' => 'quran.com 参照: {url}',
+      _ => 'quran.com reference: {url}',
+    };
+  }
+
+  static String _getReportTajweedBodyArabic(String language) {
+    return switch (language) {
+      'id' => 'Teks Arab (di aplikasi):',
+      'en' => 'Arabic text (in app):',
+      'zh' => '阿拉伯文（应用中）:',
+      'ja' => 'アラビア語（アプリ内）:',
+      _ => 'Arabic text (in app):',
+    };
+  }
+
+  static String _getReportTajweedBodyMeta(String language) {
+    return switch (language) {
+      'id' => 'Aplikasi: {version}\nData: {dataVersion}',
+      'en' => 'App: {version}\nData: {dataVersion}',
+      'zh' => '应用: {version}\n数据: {dataVersion}',
+      'ja' => 'アプリ: {version}\nデータ: {dataVersion}',
+      _ => 'App: {version}\nData: {dataVersion}',
+    };
+  }
+
+  static String _getReportTajweedBodyPrompt(String language) {
+    return switch (language) {
+      'id' =>
+        'Jelaskan masalahnya (huruf mana, warna yang salah vs yang diharapkan sesuai quran.com):',
+      'en' =>
+        'Describe the issue (which letters, wrong color vs expected on quran.com):',
+      'zh' => '请描述问题（哪些字母、错误颜色、quran.com 上应有的颜色）:',
+      'ja' =>
+        '問題を記述してください（どの文字、誤った色、quran.com で期待される色）:',
+      _ => 'Describe the issue (which letters, wrong color vs expected on quran.com):',
+    };
+  }
+
+  static String _getReportTajweedLaunchFailed(String language) {
+    return switch (language) {
+      'id' => 'Tidak bisa membuka aplikasi email',
+      'en' => 'Could not open email app',
+      'zh' => '无法打开邮件应用',
+      'ja' => 'メールアプリを開けませんでした',
+      _ => 'Could not open email app',
+    };
+  }
+
   // Tajweed Rule Names
   static String _getTajweedRuleIkhfa(String language) {
     return 'Ikhfa'; // Arabic term, same in all languages
@@ -3019,25 +3761,105 @@ class AppLocalizations {
 
   static String _getTajweedRuleLaamShamsiyahDesc(String language) {
     return switch (language) {
-      'id' => 'Lam Matahari',
-      'en' => 'Solar Lam',
-      'zh' => '太阳拉姆',
-      'ja' => '太陽のラーム',
-      _ => 'Solar Lam',
+      'id' => 'Lam tidak dibaca pada huruf syamsiyah (matahari)',
+      'en' => 'Silent lam before sun letters',
+      'zh' => '太阳字母前的隐读拉姆',
+      'ja' => '太陽字母の前で読まないラーム',
+      _ => 'Silent lam before sun letters',
+    };
+  }
+
+  static String _getTajweedRuleTafkhim(String language) {
+    return 'Tafkhim';
+  }
+
+  static String _getTajweedRuleTafkhimDesc(String language) {
+    return switch (language) {
+      'id' => 'Pelafalan tebal (huruf berat)',
+      'en' => 'Heavy pronunciation (emphatic letters)',
+      'zh' => '重读（强调字母）',
+      'ja' => '重い発音（強調のある字母）',
+      _ => 'Heavy pronunciation (emphatic letters)',
     };
   }
 
   static String _getTajweedRuleMadd(String language) {
-    return 'Madd'; // Arabic term
+    return switch (language) {
+      'id' => 'Madd biasa',
+      'en' => 'Normal madd',
+      'zh' => '普通延长',
+      'ja' => '通常のマッド',
+      _ => 'Normal madd',
+    };
   }
 
   static String _getTajweedRuleMaddDesc(String language) {
     return switch (language) {
-      'id' => 'Pemanjangan',
-      'en' => 'Elongation',
-      'zh' => '延长',
-      'ja' => '延長',
-      _ => 'Elongation',
+      'id' => 'Pemanjangan 2 harakat',
+      'en' => 'Elongation of 2 counts',
+      'zh' => '延长 2 拍',
+      'ja' => '2拍の延長',
+      _ => 'Elongation of 2 counts',
+    };
+  }
+
+  static String _getTajweedRuleMaddWajibMunfasil(String language) {
+    return switch (language) {
+      'id' => 'Madd wajib terpisah',
+      'en' => 'Separated obligatory madd',
+      'zh' => '分离式义务延长',
+      'ja' => '分離型の必須マッド',
+      _ => 'Separated obligatory madd',
+    };
+  }
+
+  static String _getTajweedRuleMaddWajibMunfasilDesc(String language) {
+    return switch (language) {
+      'id' => 'Pemanjangan wajib 4–6 harakat',
+      'en' => 'Obligatory elongation of 4–6 counts',
+      'zh' => '义务延长 4–6 拍',
+      'ja' => '4〜6拍の必須延長',
+      _ => 'Obligatory elongation of 4–6 counts',
+    };
+  }
+
+  static String _getTajweedRuleMaddWajibMuttasil(String language) {
+    return switch (language) {
+      'id' => 'Madd wajib bersambung',
+      'en' => 'Connected obligatory madd',
+      'zh' => '连接式义务延长',
+      'ja' => '連結型の必須マッド',
+      _ => 'Connected obligatory madd',
+    };
+  }
+
+  static String _getTajweedRuleMaddWajibMuttasilDesc(String language) {
+    return switch (language) {
+      'id' => 'Pemanjangan wajib 4–5 harakat',
+      'en' => 'Obligatory elongation of 4–5 counts',
+      'zh' => '义务延长 4–5 拍',
+      'ja' => '4〜5拍の必須延長',
+      _ => 'Obligatory elongation of 4–5 counts',
+    };
+  }
+
+  static String _getTajweedRuleMaddLazim(String language) {
+    return switch (language) {
+      'id' => 'Madd lazim',
+      'en' => 'Necessary madd',
+      'zh' => '必要延长',
+      'ja' => '必要マッド',
+      _ => 'Necessary madd',
+    };
+  }
+
+  static String _getTajweedRuleMaddLazimDesc(String language) {
+    return switch (language) {
+      'id' => 'Pemanjangan wajib 6 harakat',
+      'en' => 'Obligatory elongation of 6 counts',
+      'zh' => '义务延长 6 拍',
+      'ja' => '6拍の必須延長',
+      _ => 'Obligatory elongation of 6 counts',
     };
   }
 
@@ -3396,15 +4218,45 @@ class AppLocalizations {
 
   static String _getTransliterationSourceTajweed(String language) {
     return switch (language) {
-      'id' => 'Tajwid (pelafalan, disarankan)',
-      'en' => 'Tajweed (pronunciation, recommended)',
-      'zh' => '塔吉维德（发音，推荐）',
-      'ja' => 'タジウィード（発音、推奨）',
-      _ => 'Tajweed (pronunciation, recommended)',
+      'id' => 'Tajwid',
+      'en' => 'Tajweed',
+      'zh' => '塔吉维德',
+      'ja' => 'タジウィード',
+      _ => 'Tajweed',
     };
   }
 
-  /// Transliteration without tajweed (scripted text-by-text, no pronunciation adjustment).
+  static String _getTransliterationSourceTajweedSub(String language) {
+    return switch (language) {
+      'id' => 'Pelafalan sesuai tajwid · disarankan',
+      'en' => 'Pronunciation with tajweed · recommended',
+      'zh' => '符合塔吉维德发音 · 推荐',
+      'ja' => 'タジウィードに沿った発音 · 推奨',
+      _ => 'Pronunciation with tajweed · recommended',
+    };
+  }
+
+  static String _getTransliterationSourceSimple(String language) {
+    return switch (language) {
+      'id' => 'Mudah dibaca',
+      'en' => 'Easy to read',
+      'zh' => '易读',
+      'ja' => '読みやすい',
+      _ => 'Easy to read',
+    };
+  }
+
+  static String _getTransliterationSourceSimpleSub(String language) {
+    return switch (language) {
+      'id' => 'Latin halus tanpa penanda tajwid',
+      'en' => 'Smooth Latin without tajweed marks',
+      'zh' => '无塔吉维德标记的流畅拉丁转写',
+      'ja' => 'タジウィード記号なしの読みやすいラテン',
+      _ => 'Smooth Latin without tajweed marks',
+    };
+  }
+
+  /// Legacy label — kept for prefs migration only; not shown in UI.
   static String _getTransliterationSourceOriginal(String language) {
     return switch (language) {
       'id' => 'Tanpa tajwid',
@@ -3911,7 +4763,7 @@ class AppLocalizations {
 
   static String getReaderTitle(String language) {
     return switch (language) {
-      'id' => 'Reader',
+      'id' => 'Pembaca',
       'en' => 'Reader',
       'zh' => '阅读',
       'ja' => 'リーダー',
@@ -3929,6 +4781,92 @@ class AppLocalizations {
     };
   }
 
+  static String getGoToAyahTooltip(String language) {
+    return switch (language) {
+      'id' => 'Ke ayat',
+      'en' => 'Go to ayah',
+      'zh' => '跳转到节',
+      'ja' => '節へ移動',
+      _ => 'Go to ayah',
+    };
+  }
+
+  static String getGoToAyahSheetTitle(String language) {
+    return switch (language) {
+      'id' => 'Ke ayat berapa?',
+      'en' => 'Go to which ayah?',
+      'zh' => '跳转到第几节？',
+      'ja' => 'どの節へ移動しますか？',
+      _ => 'Go to which ayah?',
+    };
+  }
+
+  static String formatGoToAyahSheetHint(
+    String language,
+    int currentAyah,
+    int verseCount,
+  ) {
+    return switch (language) {
+      'id' =>
+          'Saat ini ayat $currentAyah. Pilih nomor 1–$verseCount.',
+      'en' =>
+          'Currently on ayah $currentAyah. Choose a number from 1–$verseCount.',
+      'zh' => '当前在第 $currentAyah 节。请选择 1–$verseCount。',
+      'ja' => '現在 $currentAyah 節です。1–$verseCount から選んでください。',
+      _ => 'Currently on ayah $currentAyah. Choose a number from 1–$verseCount.',
+    };
+  }
+
+  static String getGoToAyahShortcutStart(String language) {
+    return switch (language) {
+      'id' => 'Awal',
+      'en' => 'Start',
+      'zh' => '开头',
+      'ja' => '冒頭',
+      _ => 'Start',
+    };
+  }
+
+  static String getGoToAyahShortcutMiddle(String language) {
+    return switch (language) {
+      'id' => 'Tengah',
+      'en' => 'Middle',
+      'zh' => '中间',
+      'ja' => '中間',
+      _ => 'Middle',
+    };
+  }
+
+  static String getGoToAyahShortcutEnd(String language) {
+    return switch (language) {
+      'id' => 'Akhir',
+      'en' => 'End',
+      'zh' => '末尾',
+      'ja' => '末尾',
+      _ => 'End',
+    };
+  }
+
+  static String getGoToAyahShortcutKursi(String language) {
+    return switch (language) {
+      'id' => 'Ayat Kursi',
+      'en' => 'Ayat al-Kursi',
+      'zh' => '宝座节',
+      'ja' => 'アーヤトゥル・クルスィー',
+      _ => 'Ayat al-Kursi',
+    };
+  }
+
+  static String formatGoToAyahJump(String language, int ayahNo) {
+    return switch (language) {
+      'id' => 'Loncat ke ayat $ayahNo',
+      'en' => 'Jump to ayah $ayahNo',
+      'zh' => '跳转到第 $ayahNo 节',
+      'ja' => '第 $ayahNo 節へ移動',
+      _ => 'Jump to ayah $ayahNo',
+    };
+  }
+
   static String getShareAction(String language) {
     return switch (language) {
       'id' => 'Bagikan',
@@ -3936,6 +4874,16 @@ class AppLocalizations {
       'zh' => '分享',
       'ja' => '共有',
       _ => 'Share',
+    };
+  }
+
+  static String getSharePlayStoreCta(String language) {
+    return switch (language) {
+      'id' => 'Unduh gratis di Google Play',
+      'en' => 'Get it free on Google Play',
+      'zh' => '在 Google Play 免费下载',
+      'ja' => 'Google Playで無料ダウンロード',
+      _ => 'Get it free on Google Play',
     };
   }
 
@@ -3976,10 +4924,264 @@ class AppLocalizations {
     };
   }
 
-  /// Shown on first launch before language is chosen.
-  static const onboardingSettingsHintMultilingual =
-      'Menu, terjemahan, dan konten mengikuti bahasa ini.\n'
-      'You can change this later in Settings.';
+  /// Shown on first launch; uses device locale until the user picks a language.
+  static String getOnboardingSettingsHint(String language) {
+    return switch (language) {
+      'id' =>
+          'Menu, terjemahan, dan konten mengikuti bahasa ini.\n'
+          'Anda dapat mengubahnya nanti di Pengaturan.',
+      'en' =>
+          'Menus, translation, and content follow this language.\n'
+          'You can change this later in Settings.',
+      'zh' =>
+          '菜单、译文和内容将使用所选语言。\n'
+          '之后可在设置中更改。',
+      'ja' =>
+          'メニュー、翻訳、コンテンツはこの言語に従います。\n'
+          '後から設定で変更できます。',
+      _ =>
+          'Menus, translation, and content follow this language.\n'
+          'You can change this later in Settings.',
+    };
+  }
+
+  static String getOnboardingWelcome(String language) {
+    return switch (language) {
+      'id' => 'Selamat datang',
+      'en' => 'Welcome',
+      'zh' => '欢迎',
+      'ja' => 'ようこそ',
+      _ => 'Welcome',
+    };
+  }
+
+  static String getOnboardingLanguageHeadline(String language) {
+    return switch (language) {
+      'id' => 'Pilih bahasa Anda',
+      'en' => 'Choose your language',
+      'zh' => '选择您的语言',
+      'ja' => '言語を選択',
+      _ => 'Choose your language',
+    };
+  }
+
+  /// Short multilingual line for onboarding (all supported UI languages).
+  static String getOnboardingMultilingualLine() {
+    return 'Bahasa Indonesia · English · 中文 · 日本語';
+  }
+
+  /// Short tooltips for common icon buttons (back, playback, library, clear).
+  static String getActionTooltip(String key, String language) {
+    return switch (key) {
+      'back' => switch (language) {
+          'id' => 'Kembali',
+          'en' => 'Back',
+          'zh' => '返回',
+          'ja' => '戻る',
+          _ => 'Back',
+        },
+      'clear' => switch (language) {
+          'id' => 'Hapus',
+          'en' => 'Clear',
+          'zh' => '清除',
+          'ja' => 'クリア',
+          _ => 'Clear',
+        },
+      'close' => switch (language) {
+          'id' => 'Tutup',
+          'en' => 'Close',
+          'zh' => '关闭',
+          'ja' => '閉じる',
+          _ => 'Close',
+        },
+      'previous_ayah' => switch (language) {
+          'id' => 'Ayat sebelumnya',
+          'en' => 'Previous ayah',
+          'zh' => '上一节',
+          'ja' => '前の節',
+          _ => 'Previous ayah',
+        },
+      'next_ayah' => switch (language) {
+          'id' => 'Ayat berikutnya',
+          'en' => 'Next ayah',
+          'zh' => '下一节',
+          'ja' => '次の節',
+          _ => 'Next ayah',
+        },
+      'stop_recitation' => switch (language) {
+          'id' => 'Hentikan tilawah',
+          'en' => 'Stop recitation',
+          'zh' => '停止诵读',
+          'ja' => '朗読を停止',
+          _ => 'Stop recitation',
+        },
+      'play' => switch (language) {
+          'id' => 'Putar',
+          'en' => 'Play',
+          'zh' => '播放',
+          'ja' => '再生',
+          _ => 'Play',
+        },
+      'stop' => switch (language) {
+          'id' => 'Berhenti',
+          'en' => 'Stop',
+          'zh' => '停止',
+          'ja' => '停止',
+          _ => 'Stop',
+        },
+      'play_surah' => switch (language) {
+          'id' => 'Putar surat',
+          'en' => 'Play surah',
+          'zh' => '播放章节',
+          'ja' => 'スーラを再生',
+          _ => 'Play surah',
+        },
+      'play_bismillah' => switch (language) {
+          'id' => 'Putar Bismillah',
+          'en' => 'Play Bismillah',
+          'zh' => '播放 Bismillah',
+          'ja' => 'Bismillahを再生',
+          _ => 'Play Bismillah',
+        },
+      'select_all' => switch (language) {
+          'id' => 'Pilih semua',
+          'en' => 'Select all',
+          'zh' => '全选',
+          'ja' => 'すべて選択',
+          _ => 'Select all',
+        },
+      'delete_selected' => switch (language) {
+          'id' => 'Hapus yang dipilih',
+          'en' => 'Delete selected',
+          'zh' => '删除所选',
+          'ja' => '選択項目を削除',
+          _ => 'Delete selected',
+        },
+      'close_search' => switch (language) {
+          'id' => 'Tutup pencarian',
+          'en' => 'Close search',
+          'zh' => '关闭搜索',
+          'ja' => '検索を閉じる',
+          _ => 'Close search',
+        },
+      'view_notes' => switch (language) {
+          'id' => 'Lihat catatan',
+          'en' => 'View notes',
+          'zh' => '查看笔记',
+          'ja' => 'ノートを表示',
+          _ => 'View notes',
+        },
+      'sort_and_filter' => switch (language) {
+          'id' => 'Urutkan & filter',
+          'en' => 'Sort & Filter',
+          'zh' => '排序和筛选',
+          'ja' => '並べ替えとフィルター',
+          _ => 'Sort & Filter',
+        },
+      'delete_bookmark' => switch (language) {
+          'id' => 'Hapus bookmark',
+          'en' => 'Delete bookmark',
+          'zh' => '删除书签',
+          'ja' => 'ブックマークを削除',
+          _ => 'Delete bookmark',
+        },
+      'cancel_selection' => switch (language) {
+          'id' => 'Batalkan pilihan',
+          'en' => 'Cancel selection',
+          'zh' => '取消选择',
+          'ja' => '選択を解除',
+          _ => 'Cancel selection',
+        },
+      'select_bookmarks' => switch (language) {
+          'id' => 'Pilih bookmark',
+          'en' => 'Select bookmarks',
+          'zh' => '选择书签',
+          'ja' => 'ブックマークを選択',
+          _ => 'Select bookmarks',
+        },
+      'clear_filter' => switch (language) {
+          'id' => 'Hapus filter',
+          'en' => 'Clear filter',
+          'zh' => '清除筛选',
+          'ja' => 'フィルターをクリア',
+          _ => 'Clear filter',
+        },
+      'edit_note' => switch (language) {
+          'id' => 'Edit catatan',
+          'en' => 'Edit note',
+          'zh' => '编辑笔记',
+          'ja' => 'ノートを編集',
+          _ => 'Edit note',
+        },
+      'highlight_color_guide' => switch (language) {
+          'id' => 'Panduan warna sorotan',
+          'en' => 'Highlight color guide',
+          'zh' => '高亮颜色指南',
+          'ja' => 'ハイライト色のガイド',
+          _ => 'Highlight color guide',
+        },
+      'change_color' => switch (language) {
+          'id' => 'Ubah warna',
+          'en' => 'Change color',
+          'zh' => '更改颜色',
+          'ja' => '色を変更',
+          _ => 'Change color',
+        },
+      'search_all' => switch (language) {
+          'id' => 'Cari semua',
+          'en' => 'Search all',
+          'zh' => '搜索全部',
+          'ja' => 'すべて検索',
+          _ => 'Search all',
+        },
+      _ => key,
+    };
+  }
+
+  static String getBismillahLabel(String language) {
+    return switch (language) {
+      'id' => 'Bismillah',
+      'en' => 'Bismillah',
+      'zh' => 'Bismillah',
+      'ja' => 'Bismillah',
+      _ => 'Bismillah',
+    };
+  }
+
+  static String formatMiniPlayerTitle({
+    required String language,
+    required String? surahLabel,
+    required int? ayahNo,
+    required bool isBismillah,
+  }) {
+    final surah = surahLabel ?? getMenuText('surah', language);
+    if (isBismillah) {
+      return '$surah · ${getBismillahLabel(language)}';
+    }
+    return '$surah · ${getAyahLabel(language)} ${ayahNo ?? 1}';
+  }
+
+  static String formatMiniPlayerSemanticsLabel(String language, String title) {
+    return switch (language) {
+      'id' => 'Pemutar tilawah mini, $title. Ketuk dua kali untuk membuka.',
+      'en' => 'Recitation mini player, $title. Double tap to open.',
+      'zh' => '诵读迷你播放器，$title。双击打开。',
+      'ja' => '朗読ミニプレーヤー、$title。ダブルタップで開く。',
+      _ => 'Recitation mini player, $title. Double tap to open.',
+    };
+  }
+
+  static String formatRecitationPositionLabel({
+    required String language,
+    required int? ayahNo,
+    required int verseCount,
+    required bool isBismillah,
+  }) {
+    if (isBismillah) {
+      return '${getBismillahLabel(language)} / $verseCount';
+    }
+    return '${getAyahLabel(language)} ${ayahNo ?? 1} / $verseCount';
+  }
 
   /// Maps device / app language codes to supported UI languages.
   static String normalizeLanguageCode(String? code) {
@@ -4022,6 +5224,13 @@ class AppLocalizations {
       'save_surah_action' => _recSaveSurahAction(language),
       'save_all_114' => _recSaveAll114(language),
       'cancel_save_all' => _recCancelSaveAll(language),
+      'previous_ayah' => getActionTooltip('previous_ayah', language),
+      'next_ayah' => getActionTooltip('next_ayah', language),
+      'stop_recitation' => getActionTooltip('stop_recitation', language),
+      'play' => getActionTooltip('play', language),
+      'stop' => getActionTooltip('stop', language),
+      'play_surah' => getActionTooltip('play_surah', language),
+      'play_bismillah' => getActionTooltip('play_bismillah', language),
       'recommended_smooth' => _recRecommendedSmooth(language),
       'storage_on_phone' => _recStorageOnPhone(language),
       'storage_phone_desc' => _recStoragePhoneDesc(language),
@@ -4115,11 +5324,11 @@ class AppLocalizations {
 
   static String _recSaveAll114(String language) {
     return switch (language) {
-      'id' => 'Simpan semua 114 surah',
-      'en' => 'Save all 114 surahs',
-      'zh' => '保存全部114章',
-      'ja' => '全114章を保存',
-      _ => 'Save all 114 surahs',
+      'id' => 'Unduh semua surah',
+      'en' => 'Download all surahs',
+      'zh' => '下载全部章节',
+      'ja' => '全章をダウンロード',
+      _ => 'Download all surahs',
     };
   }
 
@@ -4135,41 +5344,41 @@ class AppLocalizations {
 
   static String _recRecommendedSmooth(String language) {
     return switch (language) {
-      'id' => 'Disarankan agar pemutaran lancar tanpa indikator memuat.',
-      'en' => 'Recommended for smooth playback with no loading spinners.',
-      'zh' => '建议保存以获得流畅播放，无需加载等待。',
-      'ja' => '読み込み表示なしのスムーズな再生に推奨。',
-      _ => 'Recommended for smooth playback with no loading spinners.',
+      'id' => 'Untuk pemutaran offline tanpa jeda.',
+      'en' => 'For offline playback without buffering.',
+      'zh' => '离线播放，无需等待加载。',
+      'ja' => 'オフライン再生で待ち時間なし。',
+      _ => 'For offline playback without buffering.',
     };
   }
 
   static String _recStorageOnPhone(String language) {
     return switch (language) {
-      'id' => 'Penyimpanan di ponsel Anda',
-      'en' => 'Storage on your phone',
-      'zh' => '手机存储',
-      'ja' => '端末のストレージ',
-      _ => 'Storage on your phone',
+      'id' => 'Penyimpanan',
+      'en' => 'Storage',
+      'zh' => '存储',
+      'ja' => 'ストレージ',
+      _ => 'Storage',
     };
   }
 
   static String _recStoragePhoneDesc(String language) {
     return switch (language) {
-      'id' => 'Mengunduh setiap qari memakai lebih banyak ruang. Hapus suara yang tidak Anda perlukan lagi.',
-      'en' => 'Downloading every reciter uses more space. Remove voices you no longer need.',
-      'zh' => '下载每位诵读者会占用更多空间。删除您不再需要的声音。',
-      'ja' => 'すべての朗読者をダウンロードすると容量を多く使います。不要な音声は削除してください。',
-      _ => 'Downloading every reciter uses more space. Remove voices you no longer need.',
+      'id' => 'Setiap qari disimpan terpisah.',
+      'en' => 'Each reciter is stored separately.',
+      'zh' => '每位诵读者单独存储。',
+      'ja' => '朗読者ごとに別々に保存されます。',
+      _ => 'Each reciter is stored separately.',
     };
   }
 
   static String _recNoFilesSaved(String language) {
     return switch (language) {
-      'id' => 'Belum ada file tilawah yang tersimpan.',
-      'en' => 'No recitation files saved yet.',
-      'zh' => '尚未保存诵读文件。',
-      'ja' => '保存された朗読ファイルはまだありません。',
-      _ => 'No recitation files saved yet.',
+      'id' => 'Belum ada unduhan.',
+      'en' => 'No downloads yet.',
+      'zh' => '尚无下载。',
+      'ja' => 'まだダウンロードがありません。',
+      _ => 'No downloads yet.',
     };
   }
 
@@ -4195,11 +5404,11 @@ class AppLocalizations {
 
   static String _recAllSurahsSaved(String language) {
     return switch (language) {
-      'id' => 'Semua 114 surah tersimpan di perangkat Anda. Tilawah berfungsi sepenuhnya offline.',
-      'en' => 'All 114 surahs are saved on your device. Recitation works fully offline.',
-      'zh' => '全部114章已保存到您的设备。诵读可完全离线使用。',
-      'ja' => '全114章を端末に保存しました。朗読は完全にオフラインで動作します。',
-      _ => 'All 114 surahs are saved on your device. Recitation works fully offline.',
+      'id' => 'Semua surah tersimpan — tilawah offline siap.',
+      'en' => 'All surahs saved — ready for offline playback.',
+      'zh' => '全部章节已保存，可离线播放。',
+      'ja' => '全章保存済み — オフライン再生できます。',
+      _ => 'All surahs saved — ready for offline playback.',
     };
   }
 
@@ -4207,11 +5416,11 @@ class AppLocalizations {
 
   static String recAllSavedFor(String name, String language) {
     return switch (language) {
-      'id' => 'Semua 114 surah tersimpan untuk $name',
-      'en' => 'All 114 surahs saved for $name',
-      'zh' => '已为 $name 保存全部114章',
-      'ja' => '$name の全114章を保存済み',
-      _ => 'All 114 surahs saved for $name',
+      'id' => '114/114 surah tersimpan',
+      'en' => '114/114 surahs saved',
+      'zh' => '已保存 114/114 章',
+      'ja' => '114/114 章を保存済み',
+      _ => '114/114 surahs saved',
     };
   }
 
@@ -4222,61 +5431,70 @@ class AppLocalizations {
     String language,
   ) {
     return switch (language) {
-      'id' => '$saved/$total tersimpan untuk $name — setiap qari terpisah',
-      'en' => '$saved/$total saved for $name — each reciter is separate',
-      'zh' => '已为 $name 保存 $saved/$total — 每位诵读者独立',
-      'ja' => '$name に $saved/$total を保存 — 朗読者ごとに別々',
-      _ => '$saved/$total saved for $name — each reciter is separate',
+      'id' => '$saved/$total surah tersimpan',
+      'en' => '$saved/$total surahs saved',
+      'zh' => '已保存 $saved/$total 章',
+      'ja' => '$saved/$total 章を保存済み',
+      _ => '$saved/$total surahs saved',
     };
   }
 
   static String recReciterSeparateHeader(String name, String language) {
     return switch (language) {
-      'id' => 'Setiap qari memiliki audio terpisah di ponsel Anda. Menyimpan di sini hanya berlaku untuk $name. Qari lain tidak ditimpa.',
-      'en' => 'Each reciter has separate audio on your phone. Saving here only applies to $name. Other reciters are not overwritten.',
-      'zh' => '每位诵读者在您的手机上都有独立的音频。在此保存仅适用于 $name。其他诵读者不会被覆盖。',
-      'ja' => '各朗読者は端末に別々の音声を持ちます。ここでの保存は $name のみに適用されます。他の朗読者は上書きされません。',
-      _ => 'Each reciter has separate audio on your phone. Saving here only applies to $name. Other reciters are not overwritten.',
+      'id' => 'Audio qari disimpan terpisah.',
+      'en' => 'Each reciter is stored separately.',
+      'zh' => '每位诵读者单独存储。',
+      'ja' => '朗読者ごとに別々に保存されます。',
+      _ => 'Each reciter is stored separately.',
     };
   }
 
   static String recSavedForThisReciter(int saved, int total, String language) {
     return switch (language) {
-      'id' => 'Tersimpan untuk qari ini: $saved/$total surah',
-      'en' => 'Saved for this reciter: $saved/$total surahs',
-      'zh' => '已为此诵读者保存：$saved/$total 章',
-      'ja' => 'この朗読者の保存済み：$saved/$total 章',
-      _ => 'Saved for this reciter: $saved/$total surahs',
+      'id' => '$saved/$total surah',
+      'en' => '$saved/$total surahs',
+      'zh' => '$saved/$total 章',
+      'ja' => '$saved/$total 章',
+      _ => '$saved/$total surahs',
     };
   }
 
   static String recStorageForReciter(String name, String size, String language) {
-    return switch (language) {
-      'id' => 'Penyimpanan untuk $name: $size',
-      'en' => 'Storage for $name: $size',
-      'zh' => '$name 的存储：$size',
-      'ja' => '$name のストレージ：$size',
-      _ => 'Storage for $name: $size',
-    };
+    return size;
   }
 
   static String recTotalAllReciters(String size, String language) {
     return switch (language) {
-      'id' => 'Total semua qari: $size',
-      'en' => 'Total for all reciters: $size',
-      'zh' => '所有诵读者总计：$size',
-      'ja' => '全朗読者の合計：$size',
-      _ => 'Total for all reciters: $size',
+      'id' => 'Semua qari · $size',
+      'en' => 'All reciters · $size',
+      'zh' => '全部诵读者 · $size',
+      'ja' => '全朗読者 · $size',
+      _ => 'All reciters · $size',
+    };
+  }
+
+  static String recHeaderStatsLine(
+    int saved,
+    int total,
+    String size,
+    String language,
+  ) {
+    return switch (language) {
+      'id' => '$saved/$total surah · $size',
+      'en' => '$saved/$total surahs · $size',
+      'zh' => '$saved/$total 章 · $size',
+      'ja' => '$saved/$total 章 · $size',
+      _ => '$saved/$total surahs · $size',
     };
   }
 
   static String recOtherRecitersUseSpace(int count, String language) {
     return switch (language) {
-      'id' => '$count qari lain juga memakai ruang di ponsel Anda. Lihat di bawah untuk mengosongkan penyimpanan.',
-      'en' => '$count other reciter(s) also use space on your phone. See below to free storage.',
-      'zh' => '另有 $count 位诵读者也占用您手机的空间。请见下方以释放存储。',
-      'ja' => '他に $count 人の朗読者も端末の容量を使用しています。空き容量を増やすには下記をご覧ください。',
-      _ => '$count other reciter(s) also use space on your phone. See below to free storage.',
+      'id' => '+$count qari lain',
+      'en' => '+$count other reciter(s)',
+      'zh' => '另有 $count 位诵读者',
+      'ja' => '他 $count 人の朗読者',
+      _ => '+$count other reciter(s)',
     };
   }
 
@@ -4292,11 +5510,11 @@ class AppLocalizations {
 
   static String recDeleteAllAudioForReciter(String name, String language) {
     return switch (language) {
-      'id' => 'Hapus semua audio untuk $name',
-      'en' => 'Delete all audio for $name',
-      'zh' => '删除 $name 的所有音频',
-      'ja' => '$name のすべての音声を削除',
-      _ => 'Delete all audio for $name',
+      'id' => 'Hapus semua',
+      'en' => 'Delete all',
+      'zh' => '全部删除',
+      'ja' => 'すべて削除',
+      _ => 'Delete all',
     };
   }
 

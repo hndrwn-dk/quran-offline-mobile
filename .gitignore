@@ -119,3 +119,8 @@ Makefile
 qo.bat
 lib/features/read/widgets/mushaf_page_view.dart.backup
 lib/features/read/widgets/mushaf_page_view_flowing_improved.dart
+.ui_*.xml
+.audio_test_shots/
+.regression_shots/
+.tmp_*
+.tmp_api_*

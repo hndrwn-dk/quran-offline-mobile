@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
-import 'package:quran_offline/core/providers/enhanced_search_provider.dart';
+import 'package:quran_offline/core/providers/enhanced_search_provider.dart'
+    show SearchResult, SearchVerseMatchKind, enhancedSearchResultsProvider;
+import 'package:quran_offline/core/utils/arabic_search_normalizer.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
@@ -34,9 +36,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       case 'page':
         return results.where((r) => r.type == 'page').toList();
       case 'ayat':
-        return results.where((r) => r.type == 'verse' && r.title.startsWith('QS ')).toList();
+        return results
+            .where(
+              (r) =>
+                  r.type == 'verse' &&
+                  (r.verseMatchKind == SearchVerseMatchKind.reference ||
+                      r.verseMatchKind == SearchVerseMatchKind.arabic),
+            )
+            .toList();
       case 'terjemahan':
-        return results.where((r) => r.type == 'verse' && !r.title.startsWith('QS ')).toList();
+        return results
+            .where(
+              (r) =>
+                  r.type == 'verse' &&
+                  r.verseMatchKind == SearchVerseMatchKind.translation,
+            )
+            .toList();
       default:
         return results;
     }
@@ -90,15 +105,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.08),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.18),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.18),
                   width: 1,
                 ),
               ),
               alignment: Alignment.center,
               child: Icon(
-                Icons.filter_alt_outlined,
+                Icons.travel_explore,
                 size: 18,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
@@ -131,7 +146,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           child: Divider(
             height: 1,
             thickness: 1,
-            color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
           ),
         ),
       ),
@@ -149,7 +164,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.4),
+                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.4),
                     width: 1,
                   ),
                 ),
@@ -203,7 +218,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           Icon(
                             Icons.search,
                             size: 64,
-                            color: colorScheme.onSurface.withOpacity(0.3),
+                            color: colorScheme.onSurface.withValues(alpha: 0.3),
                           ),
                           const SizedBox(height: 24),
                           Text(
@@ -260,6 +275,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             AppLocalizations.getSearchText('translation_example', settings.appLanguage),
                             colorScheme,
                           ),
+                          const SizedBox(height: 12),
+                          _buildSearchHint(
+                            context,
+                            Icons.language,
+                            AppLocalizations.getSearchText('arabic_label', settings.appLanguage),
+                            AppLocalizations.getSearchText('arabic_example', settings.appLanguage),
+                            colorScheme,
+                          ),
                         ],
                       ),
                     ),
@@ -267,84 +290,126 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 }
 
                 final filtered = _filterResults(results, _selectedTypeFilter);
-
-                if (filtered.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 64,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          AppLocalizations.getSearchText('no_results', settings.appLanguage),
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
                 final colorScheme = Theme.of(context).colorScheme;
                 final textTheme = Theme.of(context).textTheme;
                 final appLanguage = settings.appLanguage;
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Type filter chips row (pill style, 8px gap)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: List.generate(_typeFilterKeys.length, (i) {
-                            final key = _typeFilterKeys[i];
-                            final label = key == 'all'
-                                ? AppLocalizations.getSettingsText('filter_all', appLanguage)
-                                : key == 'ayat'
-                                    ? AppLocalizations.getSearchText('verse_label', appLanguage)
-                                    : key == 'terjemahan'
-                                        ? AppLocalizations.getSearchText('translation_label', appLanguage)
-                                        : AppLocalizations.getMenuText(key, appLanguage);
-                            final isSelected = _selectedTypeFilter == key;
-                            return Padding(
-                              padding: EdgeInsets.only(right: i < _typeFilterKeys.length - 1 ? 8 : 0),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () => setState(() => _selectedTypeFilter = key),
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                if (filtered.isEmpty) {
+                  final filterHidesMatches =
+                      results.isNotEmpty && _selectedTypeFilter != 'all';
+                  final title = AppLocalizations.getSearchText(
+                    'no_results',
+                    appLanguage,
+                  );
+                  final subtitle = filterHidesMatches
+                      ? AppLocalizations.getSearchNoResultsForFilter(
+                          appLanguage,
+                          _selectedTypeFilter,
+                        )
+                      : AppLocalizations.getSearchText(
+                          'search_by_label',
+                          appLanguage,
+                        );
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildTypeFilterChips(
+                        colorScheme: colorScheme,
+                        textTheme: textTheme,
+                        appLanguage: appLanguage,
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 24,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_off,
+                                  size: 56,
+                                  color: colorScheme.onSurface
+                                      .withValues(alpha: 0.35),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  title,
+                                  textAlign: TextAlign.center,
+                                  style: textTheme.titleMedium?.copyWith(
+                                    color: colorScheme.onSurface,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (query.trim().isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 8,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: isSelected ? colorScheme.primary : colorScheme.surface,
+                                      color: colorScheme
+                                          .surfaceContainerHighest
+                                          .withValues(alpha: 0.6),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
-                                        color: isSelected ? Colors.transparent : colorScheme.outline.withOpacity(0.12),
-                                        width: 1,
+                                        color: colorScheme.outlineVariant
+                                            .withValues(alpha: 0.4),
                                       ),
                                     ),
                                     child: Text(
-                                      label,
-                                      style: textTheme.labelLarge?.copyWith(
-                                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                      query.trim(),
+                                      textAlign: TextAlign.center,
+                                      style: textTheme.bodyMedium?.copyWith(
+                                        color: colorScheme.onSurface,
+                                        fontStyle: FontStyle.italic,
                                       ),
                                     ),
                                   ),
+                                ],
+                                const SizedBox(height: 12),
+                                Text(
+                                  subtitle,
+                                  textAlign: TextAlign.center,
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    height: 1.45,
+                                  ),
                                 ),
-                              ),
-                            );
-                          }),
+                                if (filterHidesMatches) ...[
+                                  const SizedBox(height: 20),
+                                  FilledButton.tonal(
+                                    onPressed: () => setState(
+                                      () => _selectedTypeFilter = 'all',
+                                    ),
+                                    child: Text(
+                                      AppLocalizations.getSearchText(
+                                        'search_show_all_filter',
+                                        appLanguage,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
                         ),
                       ),
+                    ],
+                  );
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildTypeFilterChips(
+                      colorScheme: colorScheme,
+                      textTheme: textTheme,
+                      appLanguage: appLanguage,
                     ),
                     // Result count header
                     Padding(
@@ -386,25 +451,52 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           final highlightStyle = (query.isEmpty ? titleStyle : titleStyle.copyWith(fontWeight: FontWeight.bold));
                           final subtitleHighlightStyle = (query.isEmpty ? subtitleStyle : subtitleStyle.copyWith(fontWeight: FontWeight.bold));
 
+                          final isArabicTitle =
+                              result.verseMatchKind == SearchVerseMatchKind.arabic;
+                          final titleAlign = isArabicTitle
+                              ? TextAlign.right
+                              : TextAlign.start;
+                          final highlightQuery = isArabicTitle
+                              ? ArabicSearchNormalizer.normalizeForSearch(query)
+                              : query;
+
                           Widget titleWidget = query.isEmpty
                               ? Text(
                                   result.title,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
+                                  textAlign: titleAlign,
                                 )
                               : RichText(
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
+                                  textAlign: titleAlign,
                                   text: TextSpan(
-                                    style: titleStyle.copyWith(color: colorScheme.onSurface),
+                                    style: titleStyle.copyWith(
+                                      color: colorScheme.onSurface,
+                                      fontFamily: isArabicTitle ? 'UthmanicHafsV22' : null,
+                                      fontFamilyFallback: isArabicTitle
+                                          ? const ['UthmanicHafs']
+                                          : null,
+                                    ),
                                     children: buildHighlightedSpans(
-                                      result.title,
-                                      query,
+                                      isArabicTitle
+                                          ? ArabicSearchNormalizer.normalizeForSearch(
+                                              result.title,
+                                            )
+                                          : result.title,
+                                      highlightQuery,
                                       titleStyle.copyWith(color: colorScheme.onSurface),
                                       highlightStyle.copyWith(color: colorScheme.onSurface),
                                     ),
                                   ),
                                 );
+                          if (isArabicTitle) {
+                            titleWidget = Directionality(
+                              textDirection: TextDirection.rtl,
+                              child: titleWidget,
+                            );
+                          }
                           Widget? subtitleWidget;
                           if (result.type == 'surah' && result.source is SurahSource) {
                             subtitleWidget = SurahNameSearchGlyph(
@@ -433,7 +525,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: iconColor?.withOpacity(0.1),
+                                backgroundColor: iconColor?.withValues(alpha: 0.1),
                                 child: Icon(icon, color: iconColor),
                               ),
                               title: titleWidget,
@@ -485,6 +577,76 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
+  Widget _buildTypeFilterChips({
+    required ColorScheme colorScheme,
+    required TextTheme textTheme,
+    required String appLanguage,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(_typeFilterKeys.length, (i) {
+            final key = _typeFilterKeys[i];
+            final label = key == 'all'
+                ? AppLocalizations.getSettingsText('filter_all', appLanguage)
+                : key == 'ayat'
+                    ? AppLocalizations.getSearchText('verse_label', appLanguage)
+                    : key == 'terjemahan'
+                        ? AppLocalizations.getSearchText(
+                            'translation_label',
+                            appLanguage,
+                          )
+                        : AppLocalizations.getMenuText(key, appLanguage);
+            final isSelected = _selectedTypeFilter == key;
+            return Padding(
+              padding: EdgeInsets.only(
+                right: i < _typeFilterKeys.length - 1 ? 8 : 0,
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => setState(() => _selectedTypeFilter = key),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected
+                            ? Colors.transparent
+                            : colorScheme.outline.withValues(alpha: 0.12),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      label,
+                      style: textTheme.labelLarge?.copyWith(
+                        color: isSelected
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurface,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSearchHint(
     BuildContext context,
     IconData icon,
@@ -495,10 +657,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: colorScheme.outlineVariant.withOpacity(0.3),
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

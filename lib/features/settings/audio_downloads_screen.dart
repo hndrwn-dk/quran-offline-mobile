@@ -220,83 +220,53 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
     required int otherRecitersWithData,
     required String appLanguage,
   }) {
-    return Container(
-      width: double.infinity,
-      color: colorScheme.surfaceContainerHighest,
+    final showTotalAllReciters =
+        !_storageLoading && _totalBytes > 0 && otherRecitersWithData > 0;
+
+    return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             reciter.name,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.recReciterSeparateHeader(reciter.name, appLanguage),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.4,
+                  letterSpacing: -0.2,
                 ),
           ),
           const SizedBox(height: 10),
-          Text(
-            AppLocalizations.recSavedForThisReciter(
-              savedCount,
-              AudioOfflinePrompts.totalSurahs,
-              appLanguage,
-            ),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-          ),
-          const SizedBox(height: 2),
           if (_storageLoading)
-            const Padding(
-              padding: EdgeInsets.only(top: 4),
-              child: LinearProgressIndicator(minHeight: 2),
-            )
-          else ...[
-            Text(
-              AppLocalizations.recStorageForReciter(
-                reciter.name,
-                _formatBytes(_currentReciterBytes),
-                appLanguage,
-              ),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              AppLocalizations.recTotalAllReciters(
-                _formatBytes(_totalBytes),
-                appLanguage,
-              ),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
-            ),
-            if (otherRecitersWithData > 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  AppLocalizations.recOtherRecitersUseSpace(
-                    otherRecitersWithData,
+            const LinearProgressIndicator(minHeight: 2)
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                _HeaderStatChip(
+                  label: AppLocalizations.recHeaderStatsLine(
+                    savedCount,
+                    AudioOfflinePrompts.totalSurahs,
+                    _formatBytes(_currentReciterBytes),
                     appLanguage,
                   ),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        height: 1.35,
-                      ),
+                  colorScheme: colorScheme,
                 ),
-              ),
-          ],
+                if (showTotalAllReciters)
+                  Text(
+                    AppLocalizations.recTotalAllReciters(
+                      _formatBytes(_totalBytes),
+                      appLanguage,
+                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+              ],
+            ),
           if (bulk != null) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             LinearProgressIndicator(
               value: bulk.fraction,
               borderRadius: BorderRadius.circular(4),
@@ -309,11 +279,13 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                 bulk.surahsTotal,
                 appLanguage,
               ),
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
             ),
           ],
           if (!allSaved) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             SizedBox(
               width: double.infinity,
               child: bulk != null
@@ -322,7 +294,10 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                           .read(audioDownloadProvider.notifier)
                           .cancelBulkDownload(),
                       child: Text(
-                        AppLocalizations.getRecitationText('cancel_save_all', appLanguage),
+                        AppLocalizations.getRecitationText(
+                          'cancel_save_all',
+                          appLanguage,
+                        ),
                       ),
                     )
                   : FilledButton.icon(
@@ -331,30 +306,53 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                           .downloadAllSurahs(reciter),
                       icon: const Icon(Icons.download_for_offline),
                       label: Text(
-                        AppLocalizations.getRecitationText('save_all_114', appLanguage),
+                        AppLocalizations.getRecitationText(
+                          'save_all_114',
+                          appLanguage,
+                        ),
                       ),
                     ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              AppLocalizations.getRecitationText('recommended_smooth', appLanguage),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+          ] else ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  size: 18,
+                  color: colorScheme.primary,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    AppLocalizations.getRecitationText(
+                      'all_surahs_saved',
+                      appLanguage,
+                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                   ),
+                ),
+              ],
             ),
           ],
           if (!_storageLoading && _currentReciterBytes > 0) ...[
             const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: bulk != null
-                  ? null
-                  : () => _deleteReciter(reciter.id, reciter.name),
-              icon: const Icon(Icons.delete_outline),
-              label: Text(
-                AppLocalizations.recDeleteAllAudioForReciter(reciter.name, appLanguage),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colorScheme.error,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: bulk != null
+                    ? null
+                    : () => _deleteReciter(reciter.id, reciter.name),
+                icon: Icon(Icons.delete_outline, color: colorScheme.error),
+                label: Text(
+                  AppLocalizations.recDeleteAllAudioForReciter(
+                    reciter.name,
+                    appLanguage,
+                  ),
+                  style: TextStyle(color: colorScheme.error),
+                ),
               ),
             ),
           ],
@@ -370,7 +368,7 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
     String appLanguage,
   ) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -378,14 +376,6 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
             AppLocalizations.getRecitationText('storage_on_phone', appLanguage),
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            AppLocalizations.getRecitationText('storage_phone_desc', appLanguage),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.35,
                 ),
           ),
           const SizedBox(height: 8),
@@ -402,6 +392,7 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
+                  dense: true,
                   title: Text(summary.displayName),
                   subtitle: Text(
                     _storageSummarySubtitle(summary, isSelected, appLanguage),
@@ -412,7 +403,10 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                             Icons.delete_outline,
                             color: colorScheme.error,
                           ),
-                          tooltip: AppLocalizations.getRecitationText('delete', appLanguage),
+                          tooltip: AppLocalizations.getRecitationText(
+                            'delete',
+                            appLanguage,
+                          ),
                           onPressed: () => _deleteReciter(
                             summary.reciterId,
                             summary.displayName,
@@ -453,9 +447,7 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
   ) {
     final parts = <String>[_formatBytes(summary.bytes)];
     if (summary.savedSurahCount > 0) {
-      parts.add(
-        AppLocalizations.recSurahsMarkedSaved(summary.savedSurahCount, appLanguage),
-      );
+      parts.add('${summary.savedSurahCount}/114');
     }
     if (isSelected) {
       parts.add(
@@ -517,6 +509,36 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
       onPressed: () {
         ref.read(audioDownloadProvider.notifier).downloadSurah(reciter, surahId);
       },
+    );
+  }
+}
+
+class _HeaderStatChip extends StatelessWidget {
+  const _HeaderStatChip({
+    required this.label,
+    required this.colorScheme,
+  });
+
+  final String label;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface,
+              ),
+        ),
+      ),
     );
   }
 }

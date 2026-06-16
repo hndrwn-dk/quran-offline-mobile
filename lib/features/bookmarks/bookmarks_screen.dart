@@ -158,7 +158,10 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
             ? [
                 IconButton(
                   icon: const Icon(Icons.select_all),
-                  tooltip: 'Select all',
+                  tooltip: AppLocalizations.getActionTooltip(
+                    'select_all',
+                    settings.appLanguage,
+                  ),
                   onPressed: () {
                     final bookmarks = bookmarksAsync.valueOrNull ?? [];
                     _selectAll(bookmarks);
@@ -166,7 +169,10 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
-                  tooltip: 'Delete selected',
+                  tooltip: AppLocalizations.getActionTooltip(
+                    'delete_selected',
+                    settings.appLanguage,
+                  ),
                   onPressed: () async {
                     final bookmarks = bookmarksAsync.valueOrNull ?? [];
                     final selected = bookmarks
@@ -187,7 +193,10 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                 ? [
                     IconButton(
                       icon: const Icon(Icons.close),
-                      tooltip: 'Close search',
+                      tooltip: AppLocalizations.getActionTooltip(
+                        'close_search',
+                        settings.appLanguage,
+                      ),
                       onPressed: () {
                         setState(() {
                           _searchController.clear();
@@ -199,7 +208,10 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                 : [
                     IconButton(
                       icon: const Icon(Icons.note_outlined),
-                      tooltip: 'View notes',
+                      tooltip: AppLocalizations.getActionTooltip(
+                        'view_notes',
+                        settings.appLanguage,
+                      ),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -211,12 +223,18 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.sort),
-                      tooltip: 'Sort & Filter',
+                      tooltip: AppLocalizations.getActionTooltip(
+                        'sort_and_filter',
+                        settings.appLanguage,
+                      ),
                       onPressed: () => _showSortFilterDialog(context, ref),
                     ),
                     IconButton(
                       icon: const Icon(Icons.search),
-                      tooltip: 'Search',
+                      tooltip: AppLocalizations.getMenuText(
+                        'search',
+                        settings.appLanguage,
+                      ),
                       onPressed: () {
                         setState(() {
                           _searchMode = true;
@@ -525,7 +543,10 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                                   const SizedBox(width: 8),
                                   IconButton(
                                     icon: Icon(Icons.delete_outline, color: colorScheme.onSurfaceVariant),
-                                    tooltip: 'Delete bookmark',
+                                    tooltip: AppLocalizations.getActionTooltip(
+                                      'delete_bookmark',
+                                      settings.appLanguage,
+                                    ),
                                     onPressed: () async {
                                       final confirmed = await _confirmDelete(
                                         context,

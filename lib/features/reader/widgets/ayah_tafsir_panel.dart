@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/tafsir_content.dart';
+import 'package:quran_offline/core/models/tafsir_entry.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/tafsir_provider.dart';
 import 'package:quran_offline/core/tafsir/tafsir_config.dart';
@@ -26,16 +27,16 @@ class AyahTafsirPanel extends ConsumerWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final appLang = settings.appLanguage;
+    final mutedColor = colorScheme.onSurfaceVariant.withValues(alpha: 0.6);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Divider(
           height: 1,
           color: colorScheme.outlineVariant.withValues(alpha: 0.7),
         ),
-        const SizedBox(height: 4),
         Material(
           color: Colors.transparent,
           child: InkWell(
@@ -56,15 +57,15 @@ class AyahTafsirPanel extends ConsumerWidget {
                   Icon(
                     Icons.menu_book_outlined,
                     size: 20,
-                    color: colorScheme.primary,
+                    color: mutedColor,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       AppLocalizations.getTafsirReadAction(appLang),
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.primary,
+                            fontWeight: FontWeight.w500,
+                            color: mutedColor,
                           ),
                     ),
                   ),
@@ -122,6 +123,12 @@ class AyahTafsirPanel extends ConsumerWidget {
   }
 }
 
+double _effectiveTafsirFontSize(BuildContext context, double fontSize) {
+  final height = MediaQuery.sizeOf(context).height;
+  final maxSize = height < 640 ? 18.0 : 24.0;
+  return fontSize.clamp(13.0, maxSize);
+}
+
 class _TafsirSheetBody extends ConsumerWidget {
   const _TafsirSheetBody({
     required this.scrollController,
@@ -154,7 +161,7 @@ class _TafsirSheetBody extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+          padding: const EdgeInsets.fromLTRB(20, 4, 12, 12),
           child: Row(
             children: [
               Expanded(
@@ -170,6 +177,8 @@ class _TafsirSheetBody extends ConsumerWidget {
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -184,6 +193,7 @@ class _TafsirSheetBody extends ConsumerWidget {
               IconButton(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.close),
+                tooltip: AppLocalizations.getActionTooltip('close', appLanguage),
                 visualDensity: VisualDensity.compact,
               ),
             ],
@@ -221,35 +231,23 @@ class _TafsirSheetBody extends ConsumerWidget {
                 );
               }
 
-              return ListView(
-                controller: scrollController,
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+              final effectiveFontSize =
+                  _effectiveTafsirFontSize(context, fontSize);
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (entry.content.revelationType != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _RevelationChip(
-                        label: entry.content.revelationType!,
-                      ),
-                    ),
-                  if (entry.rangeLabel != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        AppLocalizations.getTafsirRangeLabel(
-                          appLanguage,
-                          entry.rangeLabel!,
-                        ),
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                    ),
-                  ...entry.content.sections.map(
-                    (section) => _TafsirSectionView(
-                      section: section,
-                      fontSize: fontSize,
+                  _TafsirMetadataBar(
+                    entry: entry,
+                    appLanguage: appLanguage,
+                    colorScheme: colorScheme,
+                  ),
+                  Expanded(
+                    child: _TafsirSectionsScrollView(
+                      scrollController: scrollController,
+                      sections: entry.content.sections,
+                      fontSize: effectiveFontSize,
+                      colorScheme: colorScheme,
                     ),
                   ),
                 ],
@@ -257,6 +255,223 @@ class _TafsirSheetBody extends ConsumerWidget {
             },
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _TafsirMetadataBar extends StatelessWidget {
+  const _TafsirMetadataBar({
+    required this.entry,
+    required this.appLanguage,
+    required this.colorScheme,
+  });
+
+  final TafsirEntry entry;
+  final String appLanguage;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final revelation = entry.content.revelationType;
+    final rangeLabel = entry.rangeLabel;
+
+    if (revelation == null && rangeLabel == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Material(
+      color: colorScheme.surface,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (revelation != null)
+              _RevelationChip(
+                label: AppLocalizations.getTafsirRevelationLabel(
+                  appLanguage,
+                  revelation,
+                ),
+              ),
+            if (rangeLabel != null) ...[
+              if (revelation != null) const SizedBox(height: 8),
+              Text(
+                AppLocalizations.getTafsirRangeLabel(appLanguage, rangeLabel),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TafsirSectionsScrollView extends StatelessWidget {
+  const _TafsirSectionsScrollView({
+    required this.scrollController,
+    required this.sections,
+    required this.fontSize,
+    required this.colorScheme,
+  });
+
+  final ScrollController scrollController;
+  final List<TafsirSection> sections;
+  final double fontSize;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final slivers = <Widget>[];
+
+    for (final section in sections) {
+      final title = section.title?.trim();
+      final hasTitle = title != null && title.isNotEmpty;
+
+      if (hasTitle) {
+        slivers.add(
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _TafsirSectionHeaderDelegate(
+              title: title,
+              colorScheme: colorScheme,
+            ),
+          ),
+        );
+      }
+
+      slivers.add(
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(20, hasTitle ? 8 : 16, 20, 0),
+          sliver: SliverToBoxAdapter(
+            child: _TafsirSectionBody(
+              section: section,
+              fontSize: fontSize,
+              includeTitle: !hasTitle,
+              colorScheme: colorScheme,
+            ),
+          ),
+        ),
+      );
+    }
+
+    slivers.add(const SliverPadding(padding: EdgeInsets.only(bottom: 28)));
+
+    return CustomScrollView(
+      controller: scrollController,
+      slivers: slivers,
+    );
+  }
+}
+
+class _TafsirSectionHeaderDelegate extends SliverPersistentHeaderDelegate {
+  _TafsirSectionHeaderDelegate({
+    required this.title,
+    required this.colorScheme,
+  });
+
+  final String title;
+  final ColorScheme colorScheme;
+
+  @override
+  double get minExtent => 44;
+
+  @override
+  double get maxExtent => 44;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Material(
+      color: colorScheme.surface,
+      elevation: overlapsContent ? 0.5 : 0,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.primary,
+                ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _TafsirSectionHeaderDelegate oldDelegate) {
+    return oldDelegate.title != title ||
+        oldDelegate.colorScheme != colorScheme;
+  }
+}
+
+class _TafsirSectionBody extends StatelessWidget {
+  const _TafsirSectionBody({
+    required this.section,
+    required this.fontSize,
+    required this.includeTitle,
+    required this.colorScheme,
+  });
+
+  final TafsirSection section;
+  final double fontSize;
+  final bool includeTitle;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final bodyStyle = TextStyle(
+      fontSize: fontSize,
+      height: 1.65,
+      color: colorScheme.onSurface,
+    );
+    final labelStyle = bodyStyle.copyWith(
+      fontWeight: FontWeight.w700,
+      color: colorScheme.primary,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (includeTitle &&
+            section.title != null &&
+            section.title!.trim().isNotEmpty) ...[
+          Text(
+            section.title!,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.primary,
+                ),
+          ),
+          const SizedBox(height: 10),
+        ],
+        for (final paragraph in section.paragraphs) ...[
+          if (paragraph.label != null)
+            RichText(
+              text: TextSpan(
+                style: bodyStyle,
+                children: [
+                  TextSpan(text: '${paragraph.label} ', style: labelStyle),
+                  TextSpan(text: paragraph.text),
+                ],
+              ),
+            )
+          else
+            SelectableText(paragraph.text, style: bodyStyle),
+          const SizedBox(height: 12),
+        ],
       ],
     );
   }
@@ -285,64 +500,6 @@ class _RevelationChip extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
         ),
-      ),
-    );
-  }
-}
-
-class _TafsirSectionView extends StatelessWidget {
-  const _TafsirSectionView({
-    required this.section,
-    required this.fontSize,
-  });
-
-  final TafsirSection section;
-  final double fontSize;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final bodyStyle = TextStyle(
-      fontSize: fontSize,
-      height: 1.65,
-      color: colorScheme.onSurface,
-    );
-    final labelStyle = bodyStyle.copyWith(
-      fontWeight: FontWeight.w700,
-      color: colorScheme.primary,
-    );
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (section.title != null && section.title!.trim().isNotEmpty) ...[
-            Text(
-              section.title!,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.primary,
-                  ),
-            ),
-            const SizedBox(height: 10),
-          ],
-          for (final paragraph in section.paragraphs) ...[
-            if (paragraph.label != null)
-              RichText(
-                text: TextSpan(
-                  style: bodyStyle,
-                  children: [
-                    TextSpan(text: '${paragraph.label} ', style: labelStyle),
-                    TextSpan(text: paragraph.text),
-                  ],
-                ),
-              )
-            else
-              SelectableText(paragraph.text, style: bodyStyle),
-            const SizedBox(height: 12),
-          ],
-        ],
       ),
     );
   }

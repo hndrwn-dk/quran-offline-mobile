@@ -71,13 +71,13 @@ void main() {
     });
 
     group('displayTransliteration', () {
-      test('original style returns tlRaw as-is', () {
+      test('original style maps to readable (legacy preference)', () {
         const tl = "bis'mi l-lahi";
         final out = TransliterationFormatter.displayTransliteration(
           tlRaw: tl,
           style: TransliterationStyle.original,
         );
-        expect(out, tl);
+        expect(out, 'bismi llah');
       });
 
       test('readable style returns toReadable(tlRaw)', () {

@@ -1,10 +1,5 @@
-import 'dart:io';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/audio/playback_actions.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
@@ -17,6 +12,8 @@ import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/utils/transliteration_formatter.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
+import 'package:quran_offline/core/share/verse_share.dart';
+import 'package:quran_offline/core/tajweed/tajweed_report.dart';
 import 'package:quran_offline/features/reader/widgets/ayah_tafsir_panel.dart';
 import 'package:quran_offline/features/reader/widgets/highlight_color_picker.dart';
 import 'package:quran_offline/features/reader/widgets/note_editor_dialog.dart';
@@ -115,6 +112,9 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     
     final hasNote = noteAsync.valueOrNull != null;
     final highlightColor = highlightAsync.valueOrNull?.color;
+    final displayHighlight = highlightColor != null
+        ? highlightDisplayColor(highlightColor)
+        : null;
 
     final audio = ref.watch(audioPlayerProvider);
     final isCurrentAyah = audio.surahId == widget.verse.surahId &&
@@ -130,12 +130,12 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               width: 1,
             ),
           )
-        : highlightColor != null
+        : displayHighlight != null
             ? BoxDecoration(
-                color: Color(highlightColor).withOpacity(0.15),
+                color: displayHighlight.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: Color(highlightColor).withOpacity(0.3),
+                  color: displayHighlight.withOpacity(0.3),
                   width: 1,
                 ),
               )
@@ -197,8 +197,8 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                         highlightColor != null ? Icons.format_color_fill : Icons.format_color_fill_outlined,
                         size: 20,
                       ),
-                      color: highlightColor != null
-                          ? Color(highlightColor)
+                      color: displayHighlight != null
+                          ? displayHighlight
                           : colorScheme.onSurfaceVariant.withOpacity(0.6),
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
@@ -335,6 +335,25 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.flag_outlined),
+              title: Text(
+                AppLocalizations.getSettingsText(
+                  'report_tajweed_action',
+                  settings.appLanguage,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                TajweedReport.launch(
+                  context: context,
+                  language: settings.appLanguage,
+                  surahId: widget.verse.surahId,
+                  ayahNo: widget.verse.ayahNo,
+                  arabicSnippet: widget.verse.arabic,
+                );
+              },
+            ),
+            ListTile(
               leading: Icon(_isBookmarked ? Icons.bookmark : Icons.bookmark_outline),
               title: Text(_isBookmarked ? 'Remove bookmark' : 'Bookmark'),
               onTap: () async {
@@ -425,216 +444,22 @@ class _AyahCardState extends ConsumerState<AyahCard> {
   }
 
   Future<void> _shareAyah(BuildContext context, AppSettings settings) async {
-    try {
-      final translation = _getTranslation(settings.language);
-      
-      // Get surah name
-      final surahsAsync = ref.read(surahNamesProvider);
-      final surahs = surahsAsync.valueOrNull;
-      final surahName = surahs != null
-          ? surahs.firstWhere(
+    final surahs = ref.read(surahNamesProvider).valueOrNull;
+    final surahName = surahs != null
+        ? surahs
+            .firstWhere(
               (s) => s.id == widget.verse.surahId,
               orElse: () => surahs.first,
-            ).englishName
-          : 'Surah ${widget.verse.surahId}';
-      
-      // Render Arabic text with UthmanicHafsV22 font as image
-      final imageFile = await _renderArabicTextToImage(context, settings);
-      
-      // Prepare text content with refined format
-      final buffer = StringBuffer();
-      
-      // Header: "Allah Subhanahu Wa Ta'ala berfirman:" - use app language for UI text
-      buffer.writeln(AppLocalizations.getShareHeader(settings.appLanguage));
-      buffer.writeln('');
-      
-      // Arabic text will be included as image
-      // Transliteration (if available); respect tajweed vs original source
-      final translitToShare = _getDisplayTransliteration(settings);
-      if (translitToShare.isNotEmpty) {
-        buffer.writeln(translitToShare);
-        buffer.writeln('');
-      }
-      
-      // Translation
-      if (translation != null) {
-        buffer.writeln('"$translation"');
-        buffer.writeln('');
-      }
-      
-      // Reference: (QS. Al-Baqarah 2: Ayat 186) - use app language for UI text
-      final ayahLabel = AppLocalizations.getAyahLabel(settings.appLanguage);
-      buffer.writeln('(QS. $surahName ${widget.verse.surahId}: $ayahLabel ${widget.verse.ayahNo})');
-      buffer.writeln('');
-      
-      // Link
-      buffer.writeln('https://www.tursinalabs.com/products/quranoffline');
+            )
+            .englishName
+        : 'Surah ${widget.verse.surahId}';
 
-      // Share image and text
-      if (imageFile != null) {
-        await Share.shareXFiles(
-          [XFile(imageFile.path)],
-          text: buffer.toString(),
-        );
-        // Clean up temporary file after sharing
-        try {
-          await imageFile.delete();
-        } catch (_) {
-          // Ignore deletion errors
-        }
-      } else {
-        // Fallback to text-only sharing if image rendering fails
-        // Prepend Arabic text to the existing buffer (which already has header, transliteration, translation, reference, link)
-        final fallbackBuffer = StringBuffer();
-        fallbackBuffer.writeln(AppLocalizations.getShareHeader(settings.appLanguage));
-        fallbackBuffer.writeln('');
-        fallbackBuffer.writeln(widget.verse.arabic); // Add Arabic text
-        fallbackBuffer.writeln('');
-        // Append the rest from buffer (transliteration, translation, reference, link)
-        // Skip the header line and empty line from buffer
-        final bufferLines = buffer.toString().split('\n');
-        // Start from index 2 to skip header and empty line
-        for (int i = 2; i < bufferLines.length; i++) {
-          fallbackBuffer.writeln(bufferLines[i]);
-        }
-        await Share.share(fallbackBuffer.toString());
-      }
-    } catch (e) {
-      // Fallback to text-only sharing on error
-      try {
-        final translation = _getTranslation(settings.language);
-        final surahsAsync = ref.read(surahNamesProvider);
-        final surahs = surahsAsync.valueOrNull;
-        final surahName = surahs != null
-            ? surahs.firstWhere(
-                (s) => s.id == widget.verse.surahId,
-                orElse: () => surahs.first,
-              ).englishName
-            : 'Surah ${widget.verse.surahId}';
-        
-        final buffer = StringBuffer();
-        buffer.writeln(AppLocalizations.getShareHeader(settings.appLanguage));
-        buffer.writeln('');
-        buffer.writeln(widget.verse.arabic);
-        buffer.writeln('');
-        final translitFallback = _getDisplayTransliteration(settings);
-        if (translitFallback.isNotEmpty) {
-          buffer.writeln(translitFallback);
-          buffer.writeln('');
-        }
-        if (translation != null) {
-          buffer.writeln('"$translation"');
-          buffer.writeln('');
-        }
-        final ayahLabel = AppLocalizations.getAyahLabel(settings.appLanguage);
-        buffer.writeln('(QS. $surahName ${widget.verse.surahId}: $ayahLabel ${widget.verse.ayahNo})');
-        buffer.writeln('');
-        buffer.writeln('https://www.tursinalabs.com/products/quranoffline');
-        await Share.share(buffer.toString());
-      } catch (_) {
-        // Ultimate fallback
-        final buffer = StringBuffer();
-        buffer.writeln(widget.verse.arabic);
-        buffer.writeln('');
-        buffer.writeln('QS ${widget.verse.surahId}:${widget.verse.ayahNo}');
-        buffer.writeln('');
-        buffer.writeln('https://www.tursinalabs.com/products/quranoffline');
-        await Share.share(buffer.toString());
-      }
-    }
-  }
-
-  Future<File?> _renderArabicTextToImage(BuildContext context, AppSettings settings) async {
-    try {
-      final colorScheme = Theme.of(context).colorScheme;
-      final fontSize = settings.arabicFontSize * 1.5;
-      final padding = 24.0;
-      
-      // Get the Arabic text (remove HTML tags if tajweed is enabled)
-      String arabicText = widget.verse.arabic;
-      if (settings.showTajweed && widget.verse.tajweed != null && widget.verse.tajweed!.isNotEmpty) {
-        arabicText = widget.verse.tajweed!
-            .replaceAll(RegExp(r'<[^>]*>'), '')
-            .replaceAll('&nbsp;', ' ')
-            .trim();
-      }
-      arabicText = TajweedText.normalizeArabicForDisplay(arabicText);
-
-      // Create a widget with Arabic text using UthmanicHafsV22 font
-      // This ensures Flutter's font system properly loads the font
-      final arabicWidget = Directionality(
-        textDirection: TextDirection.rtl,
-        child: Container(
-          padding: EdgeInsets.all(padding),
-          color: colorScheme.surface,
-          width: 600,
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: Text(
-            arabicText,
-            style: TextStyle(
-              fontSize: fontSize,
-              fontFamily: 'UthmanicHafsV22',
-              fontFamilyFallback: const ['UthmanicHafs'],
-              height: 1.7,
-              color: colorScheme.onSurface,
-            ),
-            textDirection: TextDirection.rtl,
-            textAlign: TextAlign.right,
-          ),
-        ),
-      );
-
-      // Use RenderRepaintBoundary to capture the widget as an image
-      final repaintBoundary = RepaintBoundary(
-        child: MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.0)),
-          child: Theme(
-            data: Theme.of(context),
-            child: arabicWidget,
-          ),
-        ),
-      );
-
-      // Build the widget tree
-      final renderObject = repaintBoundary.createRenderObject(context);
-      final pipelineOwner = PipelineOwner();
-      final buildOwner = BuildOwner();
-      final rootElement = RenderObjectToWidgetAdapter<RenderBox>(
-        container: renderObject,
-        child: repaintBoundary,
-      ).attachToRenderTree(buildOwner);
-
-      // Wait for layout
-      await Future.delayed(const Duration(milliseconds: 50));
-
-      // Layout and paint
-      pipelineOwner.rootNode = renderObject;
-      renderObject.attach(pipelineOwner);
-      pipelineOwner.flushLayout();
-      pipelineOwner.flushCompositingBits();
-      pipelineOwner.flushPaint();
-
-      // Capture the image
-      final image = await renderObject.toImage(pixelRatio: 2.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-
-      // Cleanup
-      rootElement.unmount();
-      renderObject.detach();
-      image.dispose();
-
-      if (byteData == null) return null;
-
-      // Save to temporary file
-      final tempDir = await getTemporaryDirectory();
-      final file = File('${tempDir.path}/ayah_${widget.verse.surahId}_${widget.verse.ayahNo}_${DateTime.now().millisecondsSinceEpoch}.png');
-      await file.writeAsBytes(byteData.buffer.asUint8List());
-
-      return file;
-    } catch (e) {
-      // Return null on error, fallback to text-only sharing
-      return null;
-    }
+    await VerseShare.share(
+      context: context,
+      verse: widget.verse,
+      surahName: surahName,
+      settings: settings,
+    );
   }
 }
 

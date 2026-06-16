@@ -8,6 +8,7 @@ import 'package:quran_offline/core/providers/notes_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/bookmarks/widgets/bookmarks_tab_content.dart';
 import 'package:quran_offline/features/highlights/highlights_screen.dart';
@@ -42,6 +43,13 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int?>(librarySubTabProvider, (previous, next) {
+      if (next != null && next >= 0 && next < _tabController.length) {
+        _tabController.animateTo(next);
+        ref.read(librarySubTabProvider.notifier).state = null;
+      }
+    });
+
     final settings = ref.watch(settingsProvider);
     final appLanguage = settings.appLanguage;
     final colorScheme = Theme.of(context).colorScheme;
@@ -74,7 +82,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
               ),
               alignment: Alignment.center,
               child: Icon(
-                Icons.library_books_rounded,
+                Icons.collections_bookmark,
                 size: 18,
                 color: colorScheme.onSurface,
               ),
@@ -99,7 +107,10 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
             ? [
                 IconButton(
                   icon: const Icon(Icons.close),
-                  tooltip: 'Close search',
+                  tooltip: AppLocalizations.getActionTooltip(
+                    'close_search',
+                    appLanguage,
+                  ),
                   onPressed: () {
                     setState(() {
                       _globalSearchController.clear();
@@ -111,7 +122,10 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
             : [
                 IconButton(
                   icon: const Icon(Icons.search),
-                  tooltip: 'Search all',
+                  tooltip: AppLocalizations.getActionTooltip(
+                    'search_all',
+                    appLanguage,
+                  ),
                   onPressed: () {
                     setState(() {
                       _globalSearchMode = true;
@@ -666,7 +680,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
         englishMeaning: '',
       ),
     );
-    final highlightColor = Color(highlight.color);
+    final highlightColor = highlightDisplayColor(highlight.color);
 
     return InkWell(
       onTap: () {

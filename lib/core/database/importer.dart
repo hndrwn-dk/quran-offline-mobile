@@ -11,7 +11,7 @@ class DataImporter {
   final AppDatabase _db;
   final void Function(ImportProgress)? onProgress;
   static const String _versionKey = 'quran_data_version';
-  static const String currentVersion = 'v7-uthmani+tajweed+translit+tl_tj+EN(SI)+ID(KEMENAG)+ZH(MaJian)+JA(Mita)-cleaned';
+  static const String currentVersion = 'v9-uthmani+tajweed-words+tafkhim-heavy+translit+tl_tj+EN(SI)+ID(KEMENAG)+ZH(MaJian)+JA(Mita)-cleaned';
 
   DataImporter(this._db, {this.onProgress});
 

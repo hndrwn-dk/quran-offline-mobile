@@ -4,12 +4,23 @@ import 'package:quran_offline/core/audio/audio_offline_prompts.dart';
 import 'package:quran_offline/core/models/reciter.dart';
 import 'package:quran_offline/core/providers/audio_download_provider.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
+import 'package:quran_offline/core/providers/mushaf_navigation_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/reciter_provider.dart';
+import 'package:quran_offline/core/providers/tab_provider.dart';
 
 /// Shared entry points for starting recitation from the UI.
 class PlaybackActions {
   PlaybackActions._();
+
+  /// Offline save prompts only while the user is in reader or mushaf.
+  static bool _shouldShowOfflineSnackbars(WidgetRef ref) {
+    if (ref.read(readerScreenVisibleProvider)) return true;
+    if (ref.read(mushafSessionActiveProvider)) return true;
+    final onReadTab = ref.read(currentTabProvider) == AppTab.read;
+    if (onReadTab && ref.read(readerSplitLayoutProvider)) return true;
+    return false;
+  }
 
   static Future<void> playAyah(
     BuildContext context,
@@ -67,7 +78,7 @@ class PlaybackActions {
     if (!downloads.isComplete(reciter.id, surahId)) {
       final db = ref.read(databaseProvider);
       final ayahCount = await db.getAyahCountForSurah(surahId);
-      if (context.mounted) {
+      if (context.mounted && _shouldShowOfflineSnackbars(ref)) {
         AudioOfflinePrompts.showPreparingPlayback(
           context,
           ref,
@@ -81,7 +92,7 @@ class PlaybackActions {
 
     await play();
 
-    if (!context.mounted) return;
+    if (!context.mounted || !_shouldShowOfflineSnackbars(ref)) return;
     AudioOfflinePrompts.showStreamingReminder(
       context,
       ref,
@@ -105,7 +116,7 @@ class PlaybackActions {
         .playAyahExact(surahId, ayahNo, surahName: surahName);
     if (!context.mounted) return;
     final error = ref.read(audioPlayerProvider).error;
-    if (error != null) {
+    if (error != null && _shouldShowOfflineSnackbars(ref)) {
       AudioOfflinePrompts.showNotSavedOnDevice(
         context,
         ref,
