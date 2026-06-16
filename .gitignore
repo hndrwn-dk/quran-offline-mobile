@@ -105,6 +105,18 @@ assets/themes/*.json
 !assets/themes/.gitkeep
 assets/reflection/*.json
 !assets/reflection/.gitkeep
+assets/mushaf/layout/*.sqlite
+!assets/mushaf/layout/.gitkeep
+assets/mushaf/script/*.sqlite
+!assets/mushaf/script/.gitkeep
+assets/mushaf/*.json
+assets/fonts/qpc_v4_tajweed/**
+!assets/fonts/qpc_v4_tajweed/.gitkeep
+assets/fonts/QPC V2 Font.ttf
+assets/fonts/qpc_v2_p*.ttf
+assets/fonts/DigitalKhattV2.otf
+assets/qpc-v2-15-lines.db.zip
+assets/qpc-v4-tajweed-15-lines.db.zip
 
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
