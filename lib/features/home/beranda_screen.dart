@@ -92,6 +92,8 @@ class BerandaScreen extends ConsumerWidget {
       ),
       body: HomeBackdrop(
         child: SafeArea(
+          top: false,
+          bottom: false,
           child: SingleChildScrollView(
             child: isLargeScreen ? tabletBody : phoneBody,
           ),

@@ -79,9 +79,9 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
                                 height: 32,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.08),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
                                   border: Border.all(
-                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.18),
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.18),
                                     width: 1,
                                   ),
                                 ),
@@ -187,9 +187,9 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
               height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.08),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.18),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.18),
                   width: 1,
                 ),
               ),
@@ -254,7 +254,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
               Divider(
                 height: 1,
                 thickness: 1,
-                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
               ),
             ],
           ),

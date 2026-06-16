@@ -613,7 +613,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
           child: Divider(
             height: 1,
             thickness: 1,
-            color: colorScheme.outlineVariant.withOpacity(0.3),
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
           ),
         ),
       ),
@@ -1085,7 +1085,7 @@ class _InlineAyahNumberState extends ConsumerState<_InlineAyahNumber> {
     final reciting = widget.isReciting;
     final borderColor = _isBookmarked
         ? widget.colorScheme.primary
-        : widget.colorScheme.outline.withOpacity(0.3);
+        : widget.colorScheme.outline.withValues(alpha: 0.3);
 
     return GestureDetector(
       onTap: widget.surahId != null && !_isCheckingBookmark ? _toggleBookmark : null,
@@ -1100,7 +1100,7 @@ class _InlineAyahNumberState extends ConsumerState<_InlineAyahNumber> {
           color: reciting
               ? widget.colorScheme.primary.withValues(alpha: 0.12)
               : _isBookmarked
-                  ? widget.colorScheme.primary.withOpacity(0.1)
+                  ? widget.colorScheme.primary.withValues(alpha: 0.1)
                   : Colors.transparent,
         ),
         child: Text(
@@ -1247,7 +1247,7 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
                       width: 36,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: colorScheme.outline.withOpacity(0.5),
+                        color: colorScheme.outline.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),

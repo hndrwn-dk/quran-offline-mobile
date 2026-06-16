@@ -125,9 +125,9 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                     height: 28,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: colorScheme.onSurface.withOpacity(0.08),
+                      color: colorScheme.onSurface.withValues(alpha: 0.08),
                       border: Border.all(
-                        color: colorScheme.onSurface.withOpacity(0.18),
+                        color: colorScheme.onSurface.withValues(alpha: 0.18),
                         width: 1,
                       ),
                     ),
@@ -247,7 +247,7 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
           child: Divider(
             height: 1,
             thickness: 1,
-            color: colorScheme.outlineVariant.withOpacity(0.3),
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
           ),
         ),
       ),
@@ -267,7 +267,7 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                     color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(
-                      color: colorScheme.outlineVariant.withOpacity(0.4),
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.4),
                       width: 1,
                     ),
                   ),
@@ -431,15 +431,15 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
                               color: selected
-                                  ? colorScheme.primaryContainer.withOpacity(0.35)
+                                  ? colorScheme.primaryContainer.withValues(alpha: 0.35)
                                   : null,
                               border: isLast
                                   ? null
                                   : Border(
                                       bottom: BorderSide(
                                         color: selected
-                                            ? colorScheme.primary.withOpacity(0.5)
-                                            : colorScheme.outlineVariant.withOpacity(0.1),
+                                            ? colorScheme.primary.withValues(alpha: 0.5)
+                                            : colorScheme.outlineVariant.withValues(alpha: 0.1),
                                         width: selected ? 1.2 : 1,
                                       ),
                                     ),

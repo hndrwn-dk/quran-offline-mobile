@@ -123,19 +123,19 @@ class _AyahCardState extends ConsumerState<AyahCard> {
 
     final BoxDecoration? decoration = isCurrentAyah
         ? BoxDecoration(
-            color: colorScheme.primary.withOpacity(0.10),
+            color: colorScheme.primary.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: colorScheme.primary.withOpacity(0.4),
+              color: colorScheme.primary.withValues(alpha: 0.4),
               width: 1,
             ),
           )
         : displayHighlight != null
             ? BoxDecoration(
-                color: displayHighlight.withOpacity(0.15),
+                color: displayHighlight.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: displayHighlight.withOpacity(0.3),
+                  color: displayHighlight.withValues(alpha: 0.3),
                   width: 1,
                 ),
               )
@@ -185,7 +185,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                       ),
                       color: isCurrentAyah
                           ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant.withOpacity(0.6),
+                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -199,7 +199,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                       ),
                       color: displayHighlight != null
                           ? displayHighlight
-                          : colorScheme.onSurfaceVariant.withOpacity(0.6),
+                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -212,7 +212,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                       ),
                       color: hasNote
                           ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant.withOpacity(0.6),
+                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -220,7 +220,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.share_outlined, size: 20),
-                      color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -233,7 +233,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                       ),
                       color: _isBookmarked
                           ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant.withOpacity(0.6),
+                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),

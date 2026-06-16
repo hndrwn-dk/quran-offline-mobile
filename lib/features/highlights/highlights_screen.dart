@@ -158,7 +158,7 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 side: BorderSide(
-                                  color: highlightColor.withOpacity(0.3),
+                                  color: highlightColor.withValues(alpha: 0.3),
                                   width: 1,
                                 ),
                               ),
@@ -172,7 +172,7 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                                       width: 40,
                                       height: 40,
                                       decoration: BoxDecoration(
-                                        color: highlightColor.withOpacity(0.2),
+                                        color: highlightColor.withValues(alpha: 0.2),
                                         shape: BoxShape.circle,
                                         border: Border.all(
                                           color: highlightColor,
@@ -312,19 +312,19 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
       if (isSelected) {
         // Selected: use muted color in dark mode, full color in light mode
         chipBackgroundColor = isDark 
-            ? color.withOpacity(0.25) 
-            : color.withOpacity(0.15);
+            ? color.withValues(alpha: 0.25) 
+            : color.withValues(alpha: 0.15);
         chipBorderColor = isDark 
-            ? color.withOpacity(0.6) 
+            ? color.withValues(alpha: 0.6) 
             : color;
       } else {
         // Unselected: very subtle in dark mode
         chipBackgroundColor = isDark 
             ? colorScheme.surfaceVariant 
-            : color.withOpacity(0.1);
+            : color.withValues(alpha: 0.1);
         chipBorderColor = isDark 
-            ? colorScheme.outline.withOpacity(0.2)
-            : colorScheme.outline.withOpacity(0.3);
+            ? colorScheme.outline.withValues(alpha: 0.2)
+            : colorScheme.outline.withValues(alpha: 0.3);
       }
       iconContainerColor = color;
     } else {
@@ -334,7 +334,7 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
           : colorScheme.surfaceVariant;
       chipBorderColor = isSelected 
           ? colorScheme.primary 
-          : colorScheme.outline.withOpacity(0.3);
+          : colorScheme.outline.withValues(alpha: 0.3);
       iconContainerColor = colorScheme.primary;
     }
     
@@ -362,8 +362,8 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                   borderRadius: BorderRadius.circular(4),
                   border: Border.all(
                     color: isDark 
-                        ? colorScheme.outline.withOpacity(0.2)
-                        : colorScheme.outline.withOpacity(0.3),
+                        ? colorScheme.outline.withValues(alpha: 0.2)
+                        : colorScheme.outline.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -381,7 +381,7 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: isSelected
                           ? (color != null && isDark
-                              ? color.withOpacity(0.9)
+                              ? color.withValues(alpha: 0.9)
                               : color ?? colorScheme.onPrimaryContainer)
                           : colorScheme.onSurfaceVariant,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
@@ -466,7 +466,7 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
               color: color,
               borderRadius: BorderRadius.circular(6),
               border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),

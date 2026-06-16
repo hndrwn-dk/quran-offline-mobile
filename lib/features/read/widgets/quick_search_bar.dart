@@ -125,7 +125,7 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
                   color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
-                    color: colorScheme.outlineVariant.withOpacity(0.4),
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.4),
                     width: 1,
                   ),
                 ),
@@ -146,7 +146,7 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
                           hintText: AppLocalizations.getSubtitleText('quick_search_hint', settings.appLanguage),
                           border: InputBorder.none,
                           hintStyle: TextStyle(
-                            color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+                            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                           ),
                         ),
                         style: Theme.of(context).textTheme.bodyMedium,
@@ -180,7 +180,7 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
                       color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: colorScheme.outlineVariant.withOpacity(0.2),
+                        color: colorScheme.outlineVariant.withValues(alpha: 0.2),
                         width: 1,
                       ),
                     ),
@@ -203,12 +203,12 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
                     color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: colorScheme.outlineVariant.withOpacity(0.2),
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.2),
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: colorScheme.shadow.withOpacity(0.1),
+                        color: colorScheme.shadow.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                         spreadRadius: 0,
@@ -222,7 +222,7 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
                     separatorBuilder: (context, index) => Divider(
                       height: 1,
                       thickness: 1,
-                      color: colorScheme.outlineVariant.withOpacity(0.1),
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.1),
                       indent: 16,
                       endIndent: 16,
                     ),
@@ -259,7 +259,7 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
                                 width: 40,
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: iconColor.withOpacity(0.1),
+                                  color: iconColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Icon(
@@ -319,7 +319,7 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
                   color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: colorScheme.outlineVariant.withOpacity(0.2),
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.2),
                     width: 1,
                   ),
                 ),

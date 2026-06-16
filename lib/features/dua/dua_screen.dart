@@ -96,9 +96,9 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
               height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: colorScheme.onSurface.withOpacity(0.08),
+                color: colorScheme.onSurface.withValues(alpha: 0.08),
                 border: Border.all(
-                  color: colorScheme.onSurface.withOpacity(0.18),
+                  color: colorScheme.onSurface.withValues(alpha: 0.18),
                   width: 1,
                 ),
               ),
@@ -140,7 +140,7 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
               Divider(
                 height: 1,
                 thickness: 1,
-                color: colorScheme.outlineVariant.withOpacity(0.3),
+                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
               ),
               TabBar(
                 controller: _tabController,
@@ -293,7 +293,7 @@ class _AsmaListTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Ink(
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest.withOpacity(0.35),
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Padding(
@@ -305,7 +305,7 @@ class _AsmaListTile extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.1),
+                    color: colorScheme.primary.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
@@ -445,7 +445,7 @@ class _ThemeCategoryListView extends ConsumerWidget {
                     AppLocalizations.getThemeTopicCount(items.length, lang),
                     style: TextStyle(
                       fontSize: 12,
-                      color: colorScheme.onSurface.withOpacity(0.6),
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   children: items
@@ -502,7 +502,7 @@ class _ThemeListTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: Ink(
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withOpacity(0.35),
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
               borderRadius: BorderRadius.circular(12),
             ),
             child: ListTile(
@@ -816,7 +816,7 @@ class _ScienceCategoryListView extends ConsumerWidget {
                     AppLocalizations.getScienceTopicCount(items.length, lang),
                     style: TextStyle(
                       fontSize: 12,
-                      color: colorScheme.onSurface.withOpacity(0.6),
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   children: items
@@ -872,7 +872,7 @@ class _ScienceListTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: Ink(
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withOpacity(0.35),
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
               borderRadius: BorderRadius.circular(12),
             ),
             child: ListTile(
@@ -936,7 +936,7 @@ class _ProphetDuaListView extends ConsumerWidget {
                     AppLocalizations.getDuaProphetCount(items.length, lang),
                     style: TextStyle(
                       fontSize: 12,
-                      color: colorScheme.onSurface.withOpacity(0.6),
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   children: items
@@ -995,7 +995,7 @@ class _DuaListTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: Ink(
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withOpacity(0.35),
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
               borderRadius: BorderRadius.circular(12),
             ),
             child: ListTile(

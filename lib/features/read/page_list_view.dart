@@ -96,7 +96,7 @@ class PageListView extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: colorScheme.shadow.withOpacity(0.08),
+                              color: colorScheme.shadow.withValues(alpha: 0.08),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                               spreadRadius: 0,
@@ -126,7 +126,7 @@ class PageListView extends ConsumerWidget {
                                       ? null
                                       : Border(
                                           bottom: BorderSide(
-                                            color: colorScheme.outlineVariant.withOpacity(0.1),
+                                            color: colorScheme.outlineVariant.withValues(alpha: 0.1),
                                             width: 1,
                                           ),
                                         ),

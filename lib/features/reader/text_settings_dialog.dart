@@ -99,7 +99,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
               height: 4,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                color: colorScheme.onSurfaceVariant.withOpacity(0.4),
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -211,7 +211,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
           Container(
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withOpacity(0.3),
+              color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Theme(
@@ -256,7 +256,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withOpacity(0.3),
+              color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
             ),
             child: SwitchListTile(
@@ -279,7 +279,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withOpacity(0.3),
+              color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
             ),
             child: SwitchListTile(
@@ -301,7 +301,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withOpacity(0.3),
+              color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
             ),
             child: SwitchListTile(
@@ -323,7 +323,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withOpacity(0.3),
+              color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
             ),
             child: SwitchListTile(

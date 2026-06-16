@@ -74,9 +74,9 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
               height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: colorScheme.onSurface.withOpacity(0.08),
+                color: colorScheme.onSurface.withValues(alpha: 0.08),
                 border: Border.all(
-                  color: colorScheme.onSurface.withOpacity(0.18),
+                  color: colorScheme.onSurface.withValues(alpha: 0.18),
                   width: 1,
                 ),
               ),
@@ -215,7 +215,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
                 color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(28),
                 border: Border.all(
-                  color: colorScheme.outlineVariant.withOpacity(0.4),
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.4),
                   width: 1,
                 ),
               ),
@@ -492,7 +492,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: colorScheme.outlineVariant.withOpacity(0.1),
+              color: colorScheme.outlineVariant.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -504,7 +504,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
               height: 36,
               decoration: BoxDecoration(
                 color: bookmark.color != null
-                    ? Color(bookmark.color!).withOpacity(0.2)
+                    ? Color(bookmark.color!).withValues(alpha: 0.2)
                     : colorScheme.surfaceVariant,
                 shape: BoxShape.circle,
                 border: bookmark.color != null
@@ -593,7 +593,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: colorScheme.outlineVariant.withOpacity(0.1),
+              color: colorScheme.outlineVariant.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -698,7 +698,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: colorScheme.outlineVariant.withOpacity(0.1),
+              color: colorScheme.outlineVariant.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -709,7 +709,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> with SingleTi
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: highlightColor.withOpacity(0.2),
+                color: highlightColor.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
                 border: Border.all(color: highlightColor, width: 2),
               ),
