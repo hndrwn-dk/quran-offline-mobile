@@ -109,7 +109,7 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
                   color: colorScheme.primaryContainer,
                   border: Border(
                     bottom: BorderSide(
-                      color: colorScheme.outlineVariant.withOpacity(0.1),
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.1),
                       width: 1,
                     ),
                   ),
@@ -263,13 +263,13 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
                               ),
                               elevation: selected ? 4 : 1,
                               color: selected
-                                  ? colorScheme.primaryContainer.withOpacity(0.5)
+                                  ? colorScheme.primaryContainer.withValues(alpha: 0.5)
                                   : null,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 side: selected
                                     ? BorderSide(
-                                        color: colorScheme.primary.withOpacity(0.5),
+                                        color: colorScheme.primary.withValues(alpha: 0.5),
                                         width: 2,
                                       )
                                     : BorderSide.none,

@@ -80,9 +80,9 @@ class SettingsScreen extends ConsumerWidget {
               height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.08),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.18),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.18),
                   width: 1,
                 ),
               ),
@@ -102,7 +102,7 @@ class SettingsScreen extends ConsumerWidget {
           child: Divider(
             height: 1,
             thickness: 1,
-            color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
           ),
         ),
       ),
@@ -158,7 +158,7 @@ class SettingsScreen extends ConsumerWidget {
                     _getLanguageIcon(lang),
                     color: settings.language == lang
                         ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                        : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   ),
                   title: Text(_getLanguageName(lang)),
                   subtitle: Text(
@@ -467,7 +467,7 @@ class SettingsScreen extends ConsumerWidget {
                     _getThemeModeIcon(mode),
                     color: settings.themeMode == mode
                         ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                        : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   ),
                   title: Text(_getThemeModeName(mode, appLanguage)),
                   subtitle: Text(

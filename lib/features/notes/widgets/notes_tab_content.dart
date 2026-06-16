@@ -180,10 +180,10 @@ class _NotesTabContentState extends ConsumerState<NotesTabContent> {
                                           Container(
                                             padding: const EdgeInsets.all(10),
                                             decoration: BoxDecoration(
-                                              color: colorScheme.primaryContainer.withOpacity(0.3),
+                                              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
                                               borderRadius: BorderRadius.circular(8),
                                               border: Border.all(
-                                                color: colorScheme.primary.withOpacity(0.2),
+                                                color: colorScheme.primary.withValues(alpha: 0.2),
                                                 width: 1,
                                               ),
                                             ),

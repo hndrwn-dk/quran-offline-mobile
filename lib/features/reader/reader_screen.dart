@@ -639,7 +639,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         child: Divider(
           height: 1,
           thickness: 1,
-          color: colorScheme.outlineVariant.withOpacity(0.3),
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
         ),
       ),
     );
@@ -778,7 +778,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     color: Theme.of(context)
                         .colorScheme
                         .outlineVariant
-                        .withOpacity(0.3),
+                        .withValues(alpha: 0.3),
                   ),
                 ),
               ),
@@ -919,7 +919,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                               child: Divider(
                                 height: 1,
                                 thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
                               ),
                             ),
                           ],
@@ -933,7 +933,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                   child: Divider(
                                     height: 1,
                                     thickness: 1,
-                                    color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
                                   ),
                                 ),
                               ],
@@ -978,7 +978,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                               child: Divider(
                                 height: 1,
                                 thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
                               ),
                             ),
                           ],
@@ -997,7 +997,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                               child: Divider(
                                 height: 1,
                                 thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
                               ),
                             ),
                           ],
@@ -1008,7 +1008,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                               child: Divider(
                                 height: 1,
                                 thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
                               ),
                             ),
                           ],
@@ -1022,7 +1022,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                   child: Divider(
                                     height: 1,
                                     thickness: 1,
-                                    color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
                                   ),
                                 ),
                               ],
@@ -1067,7 +1067,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                               child: Divider(
                                 height: 1,
                                 thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
                               ),
                             ),
                           ],
@@ -1086,7 +1086,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                               child: Divider(
                                 height: 1,
                                 thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
                               ),
                             ),
                           ],
@@ -1097,7 +1097,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                               child: Divider(
                                 height: 1,
                                 thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
                               ),
                             ),
                           ],
@@ -1111,7 +1111,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                   child: Divider(
                                     height: 1,
                                     thickness: 1,
-                                    color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.1),
+                                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
                                   ),
                                 ),
                               ],

@@ -32,52 +32,55 @@ class HomeScreen extends ConsumerWidget {
           MyLibraryScreen(),
         ],
       ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const GlobalRecitationBar(padForSystemBottomInset: false),
-          NavigationBar(
-        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          ref.read(currentTabProvider.notifier).state = index;
-        },
-        destinations: [
-          NavigationDestination(
-            key: const Key('nav_home'),
-            icon: const Icon(Icons.foundation_outlined),
-            selectedIcon: const Icon(Icons.foundation),
-            label: AppLocalizations.getNavMenuText('home', appLanguage),
-          ),
-          NavigationDestination(
-            key: const Key('nav_read'),
-            icon: const Icon(Icons.auto_stories_outlined),
-            selectedIcon: const Icon(Icons.auto_stories),
-            label: AppLocalizations.getNavMenuText('read', appLanguage),
-          ),
-          NavigationDestination(
-            key: const Key('nav_search'),
-            icon: const Icon(Icons.travel_explore_outlined),
-            selectedIcon: const Icon(Icons.travel_explore),
-            label: AppLocalizations.getNavMenuText('search', appLanguage),
-          ),
-          NavigationDestination(
-            key: const Key('nav_explore'),
-            icon: const Icon(Icons.library_books_outlined),
-            selectedIcon: const Icon(Icons.library_books),
-            label: AppLocalizations.getNavMenuText('dua', appLanguage),
-          ),
-          NavigationDestination(
-            key: const Key('nav_library'),
-            icon: const Icon(Icons.collections_bookmark_outlined),
-            selectedIcon: const Icon(Icons.collections_bookmark),
-            label: AppLocalizations.getNavMenuText('library', appLanguage),
-          ),
-        ],
-          ),
-        ],
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const GlobalRecitationBar(padForSystemBottomInset: false),
+            NavigationBar(
+              labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+              selectedIndex: currentIndex,
+              onDestinationSelected: (index) {
+                ref.read(currentTabProvider.notifier).state = index;
+              },
+              destinations: [
+                NavigationDestination(
+                  key: const Key('nav_home'),
+                  icon: const Icon(Icons.foundation_outlined),
+                  selectedIcon: const Icon(Icons.foundation),
+                  label: AppLocalizations.getNavMenuText('home', appLanguage),
+                ),
+                NavigationDestination(
+                  key: const Key('nav_read'),
+                  icon: const Icon(Icons.auto_stories_outlined),
+                  selectedIcon: const Icon(Icons.auto_stories),
+                  label: AppLocalizations.getNavMenuText('read', appLanguage),
+                ),
+                NavigationDestination(
+                  key: const Key('nav_search'),
+                  icon: const Icon(Icons.travel_explore_outlined),
+                  selectedIcon: const Icon(Icons.travel_explore),
+                  label: AppLocalizations.getNavMenuText('search', appLanguage),
+                ),
+                NavigationDestination(
+                  key: const Key('nav_explore'),
+                  icon: const Icon(Icons.library_books_outlined),
+                  selectedIcon: const Icon(Icons.library_books),
+                  label: AppLocalizations.getNavMenuText('dua', appLanguage),
+                ),
+                NavigationDestination(
+                  key: const Key('nav_library'),
+                  icon: const Icon(Icons.collections_bookmark_outlined),
+                  selectedIcon: const Icon(Icons.collections_bookmark),
+                  label: AppLocalizations.getNavMenuText('library', appLanguage),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
+      ),
     );
   }
 }

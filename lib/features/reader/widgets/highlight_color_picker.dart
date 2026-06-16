@@ -58,13 +58,13 @@ class HighlightColorPicker extends ConsumerWidget {
                         border: Border.all(
                           color: isSelected
                               ? colorScheme.primary
-                              : colorScheme.outline.withOpacity(0.3),
+                              : colorScheme.outline.withValues(alpha: 0.3),
                           width: isSelected ? 3 : 1,
                         ),
                         boxShadow: isSelected
                             ? [
                                 BoxShadow(
-                                  color: colorScheme.primary.withOpacity(0.3),
+                                  color: colorScheme.primary.withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   spreadRadius: 2,
                                 ),

@@ -55,9 +55,9 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
               height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: colorScheme.onSurface.withOpacity(0.08),
+                color: colorScheme.onSurface.withValues(alpha: 0.08),
                 border: Border.all(
-                  color: colorScheme.onSurface.withOpacity(0.18),
+                  color: colorScheme.onSurface.withValues(alpha: 0.18),
                   width: 1,
                 ),
               ),
@@ -132,7 +132,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           child: Divider(
             height: 1,
             thickness: 1,
-            color: colorScheme.outlineVariant.withOpacity(0.3),
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
           ),
         ),
       ),
@@ -152,7 +152,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                     color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(
-                      color: colorScheme.outlineVariant.withOpacity(0.4),
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.4),
                       width: 1,
                     ),
                   ),
@@ -284,7 +284,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                                   ? null
                                   : Border(
                                       bottom: BorderSide(
-                                        color: colorScheme.outlineVariant.withOpacity(0.1),
+                                        color: colorScheme.outlineVariant.withValues(alpha: 0.1),
                                         width: 1,
                                       ),
                                     ),

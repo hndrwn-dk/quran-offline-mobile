@@ -16,10 +16,10 @@ class HomeHafalanPlaceholder extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withOpacity(0.35),
+          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: colorScheme.outlineVariant.withOpacity(0.35),
+            color: colorScheme.outlineVariant.withValues(alpha: 0.35),
           ),
         ),
         child: Row(
@@ -29,7 +29,7 @@ class HomeHafalanPlaceholder extends ConsumerWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
