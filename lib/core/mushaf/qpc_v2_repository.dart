@@ -18,6 +18,8 @@ class QpcV2Repository {
 
   static final Map<int, List<QpcV2Line>> _pageLinesCache = {};
   static final List<int> _pageCacheOrder = [];
+  static final Set<int> _validatedPages = {};
+  static bool _layoutCacheVersionChecked = false;
   static String? _bismillahGlyphTextCache;
 
   Database? _layoutDb;
@@ -65,6 +67,8 @@ class QpcV2Repository {
     if (storedVersion != bundleVersion) {
       _pageLinesCache.clear();
       _pageCacheOrder.clear();
+      _validatedPages.clear();
+      _layoutCacheVersionChecked = false;
       _bismillahGlyphTextCache = null;
       await prefs.setInt(versionKey, bundleVersion);
     }
@@ -86,10 +90,16 @@ class QpcV2Repository {
 
     final cached = _pageLinesCache[pageNumber];
     if (cached != null) {
+      if (_validatedPages.contains(pageNumber)) {
+        _touchPageCache(pageNumber);
+        return cached;
+      }
       if (!await _isPageCacheValid(pageNumber, cached)) {
         _pageLinesCache.remove(pageNumber);
         _pageCacheOrder.remove(pageNumber);
+        _validatedPages.remove(pageNumber);
       } else {
+        _validatedPages.add(pageNumber);
         _touchPageCache(pageNumber);
         return cached;
       }
@@ -97,6 +107,7 @@ class QpcV2Repository {
 
     final lines = await _loadPageLines(pageNumber);
     _storePageCache(pageNumber, lines);
+    _validatedPages.add(pageNumber);
     return lines;
   }
 
@@ -232,19 +243,25 @@ class QpcV2Repository {
   }
 
   Future<void> _ensureLayoutCacheVersion() async {
+    if (_layoutCacheVersionChecked) return;
+
     final prefs = await SharedPreferences.getInstance();
     final stored = prefs.getInt('qpc_v2_layout_cache_v') ?? 0;
-    if (stored == layoutCacheVersion) return;
-
-    _pageLinesCache.clear();
-    _pageCacheOrder.clear();
-    _bismillahGlyphTextCache = null;
-    await prefs.setInt('qpc_v2_layout_cache_v', layoutCacheVersion);
+    if (stored != layoutCacheVersion) {
+      _pageLinesCache.clear();
+      _pageCacheOrder.clear();
+      _validatedPages.clear();
+      _bismillahGlyphTextCache = null;
+      await prefs.setInt('qpc_v2_layout_cache_v', layoutCacheVersion);
+    }
+    _layoutCacheVersionChecked = true;
   }
 
   static void clearPageCache() {
     _pageLinesCache.clear();
     _pageCacheOrder.clear();
+    _validatedPages.clear();
+    _layoutCacheVersionChecked = false;
     _bismillahGlyphTextCache = null;
   }
 
@@ -288,6 +305,7 @@ class QpcV2Repository {
     while (_pageCacheOrder.length > _pageCacheLimit) {
       final evict = _pageCacheOrder.removeAt(0);
       _pageLinesCache.remove(evict);
+      _validatedPages.remove(evict);
     }
   }
 

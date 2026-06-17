@@ -12,6 +12,7 @@ class QpcV2MushafLayout {
   final QpcV2Repository _repository;
 
   static QpcV2Repository? _sharedRepository;
+  static String? _basmallahFontFamily;
 
   static QpcV2Repository sharedRepository() {
     return _sharedRepository ??= QpcV2Repository();
@@ -21,14 +22,15 @@ class QpcV2MushafLayout {
 
   Future<QpcV2PageContent> getPageContent(int pageNumber) async {
     final fontFamily = await QpcV2FontLoader.ensurePageFontLoaded(pageNumber);
-    final basmallahFontFamily = await QpcV2FontLoader.ensurePageFontLoaded(1);
+    _basmallahFontFamily ??=
+        await QpcV2FontLoader.ensurePageFontLoaded(1);
     final lines = await _repository.getPageLines(pageNumber);
     final bismillahGlyphText = await _repository.bismillahGlyphText();
     return QpcV2PageContent(
       pageNumber: pageNumber,
       lines: lines,
       fontFamily: fontFamily,
-      basmallahFontFamily: basmallahFontFamily,
+      basmallahFontFamily: _basmallahFontFamily!,
       bismillahGlyphText: bismillahGlyphText,
     );
   }
