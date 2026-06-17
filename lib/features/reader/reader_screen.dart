@@ -18,6 +18,7 @@ import 'package:quran_offline/features/reader/ayah_card.dart';
 import 'package:quran_offline/features/audio/global_recitation_bar.dart';
 import 'package:quran_offline/features/reader/surah_header_card.dart';
 import 'package:quran_offline/features/reader/widgets/reader_bismillah_block.dart';
+import 'package:quran_offline/features/reader/widgets/reader_loading_placeholder.dart';
 import 'package:quran_offline/features/reader/widgets/go_to_ayah_sheet.dart';
 import 'package:quran_offline/features/reader/text_settings_dialog.dart';
 
@@ -1126,7 +1127,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ReaderLoadingPlaceholder(),
         error: (error, stack) => Center(
           child: Text('Error: $error'),
         ),

@@ -35,7 +35,7 @@ class AppSettings {
     this.useTajweedTransliteration = true,
     this.arabicFontSize = 30.0,
     this.translationFontSize = 16.0,
-    this.mushafFontSize = 30.0,
+    this.mushafFontSize = 38.0,
     this.themeMode = ThemeMode.system,
   });
 
@@ -102,7 +102,7 @@ class AppSettings {
       useTajweedTransliteration: useTajweedTransliteration,
       arabicFontSize: (json['arabicFontSize'] as num?)?.toDouble() ?? 30.0,
       translationFontSize: (json['translationFontSize'] as num?)?.toDouble() ?? 16.0,
-      mushafFontSize: (json['mushafFontSize'] as num?)?.toDouble() ?? 30.0,
+      mushafFontSize: (json['mushafFontSize'] as num?)?.toDouble() ?? 38.0,
       themeMode: ThemeMode.values.firstWhere(
         (e) => e.name == json['themeMode'],
         orElse: () => ThemeMode.system,
@@ -126,7 +126,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final showTajweed = prefs.getBool('showTajweed') ?? true;
     final arabicFontSize = prefs.getDouble('arabicFontSize') ?? 30.0;
     final translationFontSize = prefs.getDouble('translationFontSize') ?? 16.0;
-    final mushafFontSize = prefs.getDouble('mushafFontSize') ?? 30.0;
+    final mushafFontSize = prefs.getDouble('mushafFontSize') ?? 38.0;
     final themeModeStr = prefs.getString('themeMode') ?? 'system';
     final themeMode = ThemeMode.values.firstWhere(
       (e) => e.name == themeModeStr,

@@ -70,7 +70,7 @@ class SurahNameMushafGlyph extends StatelessWidget {
     final accent = colorScheme.primary;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 14),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final contentWidth = constraints.maxWidth.isFinite &&

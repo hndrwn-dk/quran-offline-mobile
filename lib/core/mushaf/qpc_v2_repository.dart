@@ -3,16 +3,22 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:quran_offline/core/mushaf/qpc_v4_assets.dart';
-import 'package:quran_offline/core/mushaf/qpc_v4_models.dart';
+import 'package:quran_offline/core/mushaf/qpc_v2_assets.dart';
+import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
-/// Reads QUL QPC V4 layout + word glyph SQLite bundles.
-class QpcV4Repository {
-  QpcV4Repository();
+/// Reads QUL QPC V2 layout + word glyph SQLite bundles.
+class QpcV2Repository {
+  QpcV2Repository();
 
-  static const bundleVersion = 1;
+  static const bundleVersion = 3;
+  static const layoutCacheVersion = 7;
+  static const _pageCacheLimit = 32;
+
+  static final Map<int, List<QpcV2Line>> _pageLinesCache = {};
+  static final List<int> _pageCacheOrder = [];
+  static String? _bismillahGlyphTextCache;
 
   Database? _layoutDb;
   Database? _wordsDb;
@@ -20,9 +26,9 @@ class QpcV4Repository {
 
   static Future<bool> assetsAvailable() async {
     try {
-      await rootBundle.load(QpcV4Assets.layoutSqlite);
-      await rootBundle.load(QpcV4Assets.wordsSqlite);
-      await rootBundle.load(QpcV4Assets.pageFontAssetPath(1));
+      await rootBundle.load(QpcV2Assets.layoutSqlite);
+      await rootBundle.load(QpcV2Assets.wordsSqlite);
+      await rootBundle.load(QpcV2Assets.pageFontAssetPath(1));
       return true;
     } catch (_) {
       return false;
@@ -34,14 +40,14 @@ class QpcV4Repository {
 
     _rootDir ??= await _mushafRoot();
     final prefs = await SharedPreferences.getInstance();
-    const versionKey = 'qpc_v4_mushaf_bundle_v';
+    const versionKey = 'qpc_v2_mushaf_bundle_v';
     final storedVersion = prefs.getInt(versionKey) ?? 0;
 
-    final layoutFile = File(p.join(_rootDir!.path, 'qpc_v4_layout.sqlite'));
-    final wordsFile = File(p.join(_rootDir!.path, 'qpc_v4_words.sqlite'));
+    final layoutFile = File(p.join(_rootDir!.path, 'qpc_v2_layout.sqlite'));
+    final wordsFile = File(p.join(_rootDir!.path, 'qpc_v2_words.sqlite'));
 
     if (!await layoutFile.exists() || storedVersion != bundleVersion) {
-      final bytes = await rootBundle.load(QpcV4Assets.layoutSqlite);
+      final bytes = await rootBundle.load(QpcV2Assets.layoutSqlite);
       await layoutFile.writeAsBytes(
         bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
         flush: true,
@@ -49,7 +55,7 @@ class QpcV4Repository {
     }
 
     if (!await wordsFile.exists() || storedVersion != bundleVersion) {
-      final bytes = await rootBundle.load(QpcV4Assets.wordsSqlite);
+      final bytes = await rootBundle.load(QpcV2Assets.wordsSqlite);
       await wordsFile.writeAsBytes(
         bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
         flush: true,
@@ -57,6 +63,9 @@ class QpcV4Repository {
     }
 
     if (storedVersion != bundleVersion) {
+      _pageLinesCache.clear();
+      _pageCacheOrder.clear();
+      _bismillahGlyphTextCache = null;
       await prefs.setInt(versionKey, bundleVersion);
     }
 
@@ -72,10 +81,46 @@ class QpcV4Repository {
     );
   }
 
-  Future<QpcV4PageContent> getPageContent(
-    int pageNumber, {
-    required String fontFamily,
-  }) async {
+  Future<List<QpcV2Line>> getPageLines(int pageNumber) async {
+    await _ensureLayoutCacheVersion();
+
+    final cached = _pageLinesCache[pageNumber];
+    if (cached != null) {
+      if (!await _isPageCacheValid(pageNumber, cached)) {
+        _pageLinesCache.remove(pageNumber);
+        _pageCacheOrder.remove(pageNumber);
+      } else {
+        _touchPageCache(pageNumber);
+        return cached;
+      }
+    }
+
+    final lines = await _loadPageLines(pageNumber);
+    _storePageCache(pageNumber, lines);
+    return lines;
+  }
+
+  /// Joined PUA glyphs for standalone Bismillah (words 1–4; word 5 is ayah marker).
+  Future<String> bismillahGlyphText() async {
+    if (_bismillahGlyphTextCache != null) return _bismillahGlyphTextCache!;
+
+    await ensureReady();
+    final wordRows = await _wordsDb!.query(
+      'words',
+      where: 'id >= ? AND id <= ?',
+      whereArgs: [
+        QpcV2Assets.bismillahFirstWordId,
+        QpcV2Assets.bismillahStandaloneLastWordId,
+      ],
+      orderBy: 'id ASC',
+    );
+
+    _bismillahGlyphTextCache =
+        wordRows.map((w) => w['text'] as String).join();
+    return _bismillahGlyphTextCache!;
+  }
+
+  Future<List<QpcV2Line>> _loadPageLines(int pageNumber) async {
     await ensureReady();
     final layoutDb = _layoutDb!;
     final wordsDb = _wordsDb!;
@@ -87,8 +132,9 @@ class QpcV4Repository {
       orderBy: 'line_number ASC',
     );
 
-    int? pageSurahId;
-    final lines = <QpcV4Line>[];
+    int? lastSurahNameId;
+    final ayahRanges = <({int lineNumber, bool isCentered, int first, int last})>[];
+    final lines = <QpcV2Line>[];
 
     for (final row in lineRows) {
       final lineType = row['line_type'] as String;
@@ -101,25 +147,10 @@ class QpcV4Repository {
         surahId = int.tryParse(surahRaw);
       }
 
-      if (lineType == 'surah_name' && surahId != null) {
-        pageSurahId = surahId;
-      }
-
-      if (lineType == 'basmallah') {
-        lines.add(
-          QpcV4Line(
-            lineNumber: row['line_number'] as int,
-            lineType: lineType,
-            isCentered: isCentered,
-            surahId: pageSurahId,
-          ),
-        );
-        continue;
-      }
-
       if (lineType == 'surah_name') {
+        lastSurahNameId = surahId;
         lines.add(
-          QpcV4Line(
+          QpcV2Line(
             lineNumber: row['line_number'] as int,
             lineType: lineType,
             isCentered: isCentered,
@@ -129,50 +160,135 @@ class QpcV4Repository {
         continue;
       }
 
+      if (lineType == 'basmallah') {
+        // Basmallah is rendered as Unicode (UthmanicHafsV22), not page PUA glyphs.
+        lines.add(
+          QpcV2Line(
+            lineNumber: row['line_number'] as int,
+            lineType: lineType,
+            isCentered: isCentered,
+            surahId: lastSurahNameId,
+          ),
+        );
+        continue;
+      }
+
       if (lineType != 'ayah') continue;
 
-      final firstRaw = row['first_word_id'];
-      final lastRaw = row['last_word_id'];
-      if (firstRaw == null || lastRaw == null) continue;
-      final first = _asInt(firstRaw);
-      final last = _asInt(lastRaw);
+      final first = _asInt(row['first_word_id']);
+      final last = _asInt(row['last_word_id']);
       if (first == null || last == null) continue;
+
+      ayahRanges.add((
+        lineNumber: row['line_number'] as int,
+        isCentered: isCentered,
+        first: first,
+        last: last,
+      ));
+    }
+
+    if (ayahRanges.isNotEmpty) {
+      final minId = ayahRanges.map((r) => r.first).reduce((a, b) => a < b ? a : b);
+      final maxId = ayahRanges.map((r) => r.last).reduce((a, b) => a > b ? a : b);
 
       final wordRows = await wordsDb.query(
         'words',
         where: 'id >= ? AND id <= ?',
-        whereArgs: [first, last],
+        whereArgs: [minId, maxId],
         orderBy: 'id ASC',
       );
 
-      final words = wordRows
-          .map(
-            (w) => QpcV4Word(
-              id: w['id'] as int,
-              surah: w['surah'] as int,
-              ayah: w['ayah'] as int,
-              word: w['word'] as int,
-              glyph: w['text'] as String,
-              location: w['location'] as String,
-            ),
-          )
-          .toList();
+      final wordsById = <int, QpcV2Word>{
+        for (final w in wordRows)
+          w['id'] as int: QpcV2Word(
+            id: w['id'] as int,
+            surah: w['surah'] as int,
+            ayah: w['ayah'] as int,
+            word: w['word'] as int,
+            glyph: w['text'] as String,
+            location: w['location'] as String,
+          ),
+      };
 
-      lines.add(
-        QpcV4Line(
-          lineNumber: row['line_number'] as int,
-          lineType: lineType,
-          isCentered: isCentered,
-          words: words,
-        ),
-      );
+      for (final range in ayahRanges) {
+        final words = <QpcV2Word>[];
+        for (var id = range.first; id <= range.last; id++) {
+          final word = wordsById[id];
+          if (word != null) words.add(word);
+        }
+        lines.add(
+          QpcV2Line(
+            lineNumber: range.lineNumber,
+            lineType: 'ayah',
+            isCentered: range.isCentered,
+            words: words,
+          ),
+        );
+      }
     }
 
-    return QpcV4PageContent(
-      pageNumber: pageNumber,
-      lines: lines,
-      fontFamily: fontFamily,
+    lines.sort((a, b) => a.lineNumber.compareTo(b.lineNumber));
+    return lines;
+  }
+
+  Future<void> _ensureLayoutCacheVersion() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getInt('qpc_v2_layout_cache_v') ?? 0;
+    if (stored == layoutCacheVersion) return;
+
+    _pageLinesCache.clear();
+    _pageCacheOrder.clear();
+    _bismillahGlyphTextCache = null;
+    await prefs.setInt('qpc_v2_layout_cache_v', layoutCacheVersion);
+  }
+
+  static void clearPageCache() {
+    _pageLinesCache.clear();
+    _pageCacheOrder.clear();
+    _bismillahGlyphTextCache = null;
+  }
+
+  /// Synchronous cache hit for already-loaded pages (swipe / revisit).
+  static List<QpcV2Line>? peekCachedLines(int pageNumber) {
+    return _pageLinesCache[pageNumber];
+  }
+
+  /// True when cached lines match layout DB (e.g. basmallah row present).
+  Future<bool> _isPageCacheValid(int pageNumber, List<QpcV2Line> cached) async {
+    await ensureReady();
+    final layoutRows = await _layoutDb!.query(
+      'pages',
+      columns: ['line_type'],
+      where: 'page_number = ?',
+      whereArgs: [pageNumber],
     );
+
+    final layoutBasmallah =
+        layoutRows.where((r) => r['line_type'] == 'basmallah').length;
+    final cacheBasmallah = cached.where((l) => l.isBasmallah).toList();
+
+    if (layoutBasmallah > 0) {
+      if (cacheBasmallah.length < layoutBasmallah) return false;
+      for (final line in cacheBasmallah) {
+        if (line.words.isNotEmpty) return false;
+      }
+    }
+
+    return true;
+  }
+
+  static void _touchPageCache(int pageNumber) {
+    _pageCacheOrder.remove(pageNumber);
+    _pageCacheOrder.add(pageNumber);
+  }
+
+  static void _storePageCache(int pageNumber, List<QpcV2Line> lines) {
+    _pageLinesCache[pageNumber] = lines;
+    _touchPageCache(pageNumber);
+    while (_pageCacheOrder.length > _pageCacheLimit) {
+      final evict = _pageCacheOrder.removeAt(0);
+      _pageLinesCache.remove(evict);
+    }
   }
 
   Future<bool> pageContainsRecitation(
@@ -294,7 +410,7 @@ class QpcV4Repository {
 
   Future<Directory> _mushafRoot() async {
     final docs = await getApplicationDocumentsDirectory();
-    final dir = Directory(p.join(docs.path, 'qpc_v4_mushaf'));
+    final dir = Directory(p.join(docs.path, 'qpc_v2_mushaf'));
     if (!await dir.exists()) {
       await dir.create(recursive: true);
     }

@@ -1,6 +1,6 @@
-/// One glyph word on a QPC V4 Mushaf line.
-class QpcV4Word {
-  const QpcV4Word({
+/// One glyph word on a QPC V2 Mushaf line.
+class QpcV2Word {
+  const QpcV2Word({
     required this.id,
     required this.surah,
     required this.ayah,
@@ -20,8 +20,8 @@ class QpcV4Word {
 }
 
 /// A rendered line on a Mushaf page (layout DB + words DB).
-class QpcV4Line {
-  const QpcV4Line({
+class QpcV2Line {
+  const QpcV2Line({
     required this.lineNumber,
     required this.lineType,
     required this.isCentered,
@@ -33,7 +33,7 @@ class QpcV4Line {
   final String lineType;
   final bool isCentered;
   final int? surahId;
-  final List<QpcV4Word> words;
+  final List<QpcV2Word> words;
 
   bool get isSurahName => lineType == 'surah_name';
   bool get isBasmallah => lineType == 'basmallah';
@@ -43,14 +43,20 @@ class QpcV4Line {
 }
 
 /// Full page payload for the Mushaf renderer.
-class QpcV4PageContent {
-  const QpcV4PageContent({
+class QpcV2PageContent {
+  const QpcV2PageContent({
     required this.pageNumber,
     required this.lines,
     required this.fontFamily,
+    required this.basmallahFontFamily,
+    required this.bismillahGlyphText,
   });
 
   final int pageNumber;
-  final List<QpcV4Line> lines;
+  final List<QpcV2Line> lines;
   final String fontFamily;
+
+  /// Page-1 QPC V2 font renders Bismillah PUA glyphs on every page.
+  final String basmallahFontFamily;
+  final String bismillahGlyphText;
 }

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/importer.dart';
@@ -38,8 +41,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   Future<void> _initializeApp() async {
     try {
-      // Check if data is already imported before showing progress bar
       final prefs = await SharedPreferences.getInstance();
+      final lastMushafPage = MushafWarmup.readLastMushafPageFromPrefs(prefs);
+      unawaited(MushafWarmup.beginSession(priorityPage: lastMushafPage));
+
+      // Check if data is already imported before showing progress bar
       final importedVersion = prefs.getString('quran_data_version');
       final isAlreadyImported = importedVersion == DataImporter.currentVersion;
       

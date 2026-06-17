@@ -5,6 +5,8 @@ import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/page_surahs_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
+import 'package:quran_offline/core/utils/mushaf_layout.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
@@ -13,6 +15,24 @@ class PageListView extends ConsumerWidget {
   const PageListView({super.key, this.topWidgets = const []});
 
   final List<Widget> topWidgets;
+
+  Future<void> _openMushafPage(
+    BuildContext context,
+    WidgetRef ref,
+    int pageNo,
+  ) async {
+    final source = PageSource(pageNo);
+    ref.read(lastReadProvider.notifier).saveLastRead(source);
+    MushafWarmup.beginSession(priorityPage: pageNo);
+    await MushafLayout.prewarmPage(context, pageNo);
+    if (!context.mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MushafPageView(initialPage: pageNo),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,17 +66,7 @@ class PageListView extends ConsumerWidget {
                         children: [
                           Expanded(
                             child: InkWell(
-                              onTap: () {
-                                final source = PageSource(pageNo);
-                                // Save last read (without ayahNo, will be updated when user scrolls)
-                                ref.read(lastReadProvider.notifier).saveLastRead(source);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MushafPageView(initialPage: pageNo),
-                                  ),
-                                );
-                              },
+                              onTap: () => _openMushafPage(context, ref, pageNo),
                               child: Text(
                                 AppLocalizations.getPageText(pageNo, settings.appLanguage),
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -67,14 +77,7 @@ class PageListView extends ConsumerWidget {
                             ),
                           ),
                           InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MushafPageView(initialPage: pageNo),
-                                ),
-                              );
-                            },
+                            onTap: () => _openMushafPage(context, ref, pageNo),
                             child: Text(
                               AppLocalizations.getReadPage(settings.appLanguage),
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -199,11 +202,28 @@ class PageListView extends ConsumerWidget {
                 );
               },
               loading: () => Padding(
-                padding: const EdgeInsets.all(16),
-                child: Center(
-                  child: CircularProgressIndicator(
-                    color: colorScheme.primary,
-                  ),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Text(
+                        AppLocalizations.getPageText(pageNo, settings.appLanguage),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
+                      ),
+                    ),
+                    Container(
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceVariant.withValues(alpha: 0.35),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               error: (error, stack) => Padding(

@@ -16,8 +16,9 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/mushaf/qpc_v4_mushaf_layout.dart';
-import 'package:quran_offline/core/mushaf/qpc_v4_models.dart';
+import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
+import 'package:quran_offline/core/mushaf/qpc_v2_mushaf_layout.dart';
+import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
@@ -29,7 +30,7 @@ import 'package:quran_offline/features/read/widgets/mushaf_offline_audio_banner.
 import 'package:quran_offline/features/read/widgets/mushaf_gesture_hint_banner.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_number_badge.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
-import 'package:quran_offline/features/read/widgets/qpc_v4_mushaf_text.dart';
+import 'package:quran_offline/features/read/widgets/qpc_v2_mushaf_text.dart';
 
 class MushafPageView extends ConsumerStatefulWidget {
   final int initialPage;
@@ -68,15 +69,28 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     _controller = PageController(initialPage: initialIndex);
     // Defer provider writes: initState can run mid-build (e.g. a push triggered
     // while another widget is building), and writing during build throws.
+    _controller.addListener(_onPageControllerTick);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(mushafSessionActiveProvider.notifier).state = true;
       ref.read(mushafVisiblePageProvider.notifier).state = _visiblePageNo;
+      MushafWarmup.beginSession(priorityPage: widget.initialPage);
+      unawaited(
+        MushafLayout.prewarmNeighbors(context, widget.initialPage),
+      );
     });
+  }
+
+  void _onPageControllerTick() {
+    if (!_controller.hasClients) return;
+    final page = _controller.page;
+    if (page == null) return;
+    MushafWarmup.prefetchDuringSwipe(page);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onPageControllerTick);
     _controller.dispose();
     super.dispose();
   }
@@ -218,8 +232,10 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
       controller: _controller,
       reverse: true, // RTL direction: swipe right-to-left = next page (index increases)
       onPageChanged: (index) {
-        _visiblePageNo = index + 1;
-        ref.read(mushafVisiblePageProvider.notifier).state = _visiblePageNo;
+        final pageNo = index + 1;
+        _visiblePageNo = pageNo;
+        ref.read(mushafVisiblePageProvider.notifier).state = pageNo;
+        MushafLayout.prewarmNeighbors(context, pageNo);
         if (_programmaticPageChange) {
           _programmaticPageChange = false;
         } else {
@@ -289,14 +305,14 @@ class MushafPage extends ConsumerStatefulWidget {
 }
 
 class _MushafPageSnapshot {
-  const _MushafPageSnapshot.v4(this.v4Content) : legacyBlocks = null;
+  const _MushafPageSnapshot.glyph(this.glyphContent) : legacyBlocks = null;
 
-  const _MushafPageSnapshot.legacy(this.legacyBlocks) : v4Content = null;
+  const _MushafPageSnapshot.legacy(this.legacyBlocks) : glyphContent = null;
 
-  final QpcV4PageContent? v4Content;
+  final QpcV2PageContent? glyphContent;
   final List<MushafAyahBlock>? legacyBlocks;
 
-  bool get isV4 => v4Content != null;
+  bool get isGlyph => glyphContent != null;
 }
 
 class _MushafPageState extends ConsumerState<MushafPage> {
@@ -321,10 +337,11 @@ class _MushafPageState extends ConsumerState<MushafPage> {
   }
 
   Future<_MushafPageSnapshot> _loadPage() async {
-    if (await QpcV4MushafLayout.isAvailable()) {
-      final layout = QpcV4MushafLayout(QpcV4MushafLayout.sharedRepository());
+    if (await QpcV2MushafLayout.isAvailable()) {
+      await MushafWarmup.ensureInitialized();
+      final layout = QpcV2MushafLayout(QpcV2MushafLayout.sharedRepository());
       final content = await layout.getPageContent(widget.pageNo);
-      return _MushafPageSnapshot.v4(content);
+      return _MushafPageSnapshot.glyph(content);
     }
     if (!mounted) {
       return const _MushafPageSnapshot.legacy([]);
@@ -352,8 +369,8 @@ class _MushafPageState extends ConsumerState<MushafPage> {
     
     _pageFuture.then((snapshot) {
       if (!mounted) return;
-      if (snapshot.isV4) {
-        for (final line in snapshot.v4Content!.lines) {
+      if (snapshot.isGlyph) {
+        for (final line in snapshot.glyphContent!.lines) {
           if (!line.isAyah || line.words.isEmpty) continue;
           final word = line.words.first;
           final source = PageSource(widget.pageNo);
@@ -464,6 +481,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
     final surahsAsync = ref.watch(surahNamesProvider);
     
     return GestureDetector(
+      behavior: HitTestBehavior.deferToChild,
       onVerticalDragStart: (details) {
         // Only detect swipe down from top area (AppBar region)
         if (details.globalPosition.dy < 100) {
@@ -701,23 +719,30 @@ class _MushafPageState extends ConsumerState<MushafPage> {
                     controller: _scrollController,
                     child: Column(
                       children: [
-                        if (pageData.isV4)
-                          QpcV4MushafText(
-                            content: pageData.v4Content!,
-                            fontSize: fontSize,
-                            colorScheme: colorScheme,
-                            ayahKeys: _ayahKeys,
-                            onAyahTap: widget.onAyahTap,
-                            onAyahLongPress: widget.onAyahLongPress,
-                            onBismillahTap: widget.onBismillahTap,
-                            onBismillahLongPress: widget.onBismillahLongPress,
-                            onAyahKeyCreated: () {
-                              if (widget.targetSurahId != null &&
-                                  widget.targetAyahNo != null) {
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  _scrollToTargetAyah();
-                                });
-                              }
+                        if (pageData.isGlyph)
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              return QpcV2MushafText(
+                                content: pageData.glyphContent!,
+                                contentWidth: constraints.maxWidth,
+                                fontSize: fontSize,
+                                colorScheme: colorScheme,
+                                ayahKeys: _ayahKeys,
+                                onAyahTap: widget.onAyahTap,
+                                onAyahLongPress: widget.onAyahLongPress,
+                                onBismillahTap: widget.onBismillahTap,
+                                onBismillahLongPress:
+                                    widget.onBismillahLongPress,
+                                onAyahKeyCreated: () {
+                                  if (widget.targetSurahId != null &&
+                                      widget.targetAyahNo != null) {
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      _scrollToTargetAyah();
+                                    });
+                                  }
+                                },
+                              );
                             },
                           )
                         else
