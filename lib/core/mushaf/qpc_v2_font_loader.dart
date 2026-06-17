@@ -36,7 +36,6 @@ class QpcV2FontLoader {
       _loadedFamilies[pageNumber] = family;
       _loading.remove(pageNumber);
       _touchLru(pageNumber);
-      clearQpcV2GlyphFitCache();
       return family;
     });
   }
@@ -58,6 +57,7 @@ class QpcV2FontLoader {
     while (_lruOrder.length > _maxCachedFonts) {
       final evict = _lruOrder.removeAt(0);
       _loadedFamilies.remove(evict);
+      clearQpcV2GlyphFitCache();
     }
   }
 }

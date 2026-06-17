@@ -258,37 +258,28 @@ double fitQpcV2GlyphFontSize({
   if (glyphText.isEmpty || maxWidth <= 0) return maxFontSize;
 
   const minSize = 14.0;
-  const step = 0.25;
   const edgeSafety = 6.0;
   final fitWidth = maxWidth - edgeSafety;
   if (fitWidth <= 0) return minSize;
 
-  var size = maxFontSize;
-
-  while (size >= minSize) {
-    final painter = TextPainter(
-      text: TextSpan(
-        text: glyphText,
-        style: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: size,
-          height: 1.55,
-          letterSpacing: 0,
-          wordSpacing: 0,
-        ),
-      ),
-      textDirection: TextDirection.rtl,
-      textAlign: TextAlign.center,
-      textWidthBasis: TextWidthBasis.parent,
-      maxLines: 1,
-    );
-    painter.layout(maxWidth: fitWidth);
-    if (_glyphLineFits(painter, glyphText, fitWidth)) {
-      return size;
-    }
-    size -= step;
+  if (_glyphLineFitsAtSize(glyphText, fontFamily, maxFontSize, fitWidth)) {
+    return maxFontSize;
   }
-  return minSize;
+
+  var lo = minSize;
+  var hi = maxFontSize;
+  var best = minSize;
+
+  while (hi - lo > 0.5) {
+    final mid = (lo + hi) / 2;
+    if (_glyphLineFitsAtSize(glyphText, fontFamily, mid, fitWidth)) {
+      best = mid;
+      lo = mid;
+    } else {
+      hi = mid;
+    }
+  }
+  return best;
 }
 
 bool _glyphLineFits(TextPainter painter, String glyphText, double maxWidth) {
