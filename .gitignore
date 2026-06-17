@@ -110,8 +110,10 @@ assets/mushaf/layout/*.sqlite
 assets/mushaf/script/*.sqlite
 !assets/mushaf/script/.gitkeep
 assets/mushaf/*.json
-assets/fonts/qpc_v4_tajweed/**
-!assets/fonts/qpc_v4_tajweed/.gitkeep
+assets/fonts/qpc_v2/**
+!assets/fonts/qpc_v2/.gitkeep
+# Local QUL download staging (canonical copy is data/bundled/)
+assets/V2/
 assets/fonts/QPC V2 Font.ttf
 assets/fonts/qpc_v2_p*.ttf
 assets/fonts/DigitalKhattV2.otf

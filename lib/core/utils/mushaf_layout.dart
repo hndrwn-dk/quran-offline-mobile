@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
-import 'package:quran_offline/core/mushaf/qpc_v4_mushaf_layout.dart';
+import 'package:quran_offline/core/mushaf/qpc_v2_mushaf_layout.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
@@ -151,12 +151,43 @@ class MushafLayout {
   /// Optional prewarm – loads page data once (V4 or legacy).
   static Future<void> prewarm(BuildContext context, int pageNo) async {
     if (pageNo < 1 || pageNo > 604) return;
-    if (await QpcV4MushafLayout.isAvailable()) {
-      await QpcV4MushafLayout(QpcV4MushafLayout.sharedRepository())
+    if (await QpcV2MushafLayout.isAvailable()) {
+      await QpcV2MushafLayout(QpcV2MushafLayout.sharedRepository())
           .prewarm(pageNo);
       return;
     }
     await getPageBlocks(context, pageNo);
+  }
+
+  /// Prewarm a single page before navigation (page list, search, bookmarks).
+  static Future<void> prewarmPage(BuildContext context, int pageNo) async {
+    if (pageNo < 1 || pageNo > 604) return;
+    if (await QpcV2MushafLayout.isAvailable()) {
+      await QpcV2MushafLayout.prewarmPage(pageNo);
+      return;
+    }
+    await getPageBlocks(context, pageNo);
+  }
+
+  /// Prewarm [centerPage] and adjacent pages for smoother Mushaf swiping.
+  static Future<void> prewarmNeighbors(
+    BuildContext context,
+    int centerPage,
+  ) async {
+    if (centerPage < 1 || centerPage > 604) return;
+    if (await QpcV2MushafLayout.isAvailable()) {
+      QpcV2MushafLayout.prewarmNeighbors(centerPage);
+      return;
+    }
+    final pages = <int>{
+      centerPage - 1,
+      centerPage,
+      centerPage + 1,
+      centerPage + 2,
+    }.where((p) => p >= 1 && p <= 604);
+    for (final page in pages) {
+      await getPageBlocks(context, page);
+    }
   }
 
   static Future<Map<int, String>> _loadSurahNames() async {
@@ -190,8 +221,8 @@ class MushafLayout {
     int surahId,
     int ayahNo,
   ) async {
-    if (await QpcV4MushafLayout.isAvailable()) {
-      return QpcV4MushafLayout(QpcV4MushafLayout.sharedRepository())
+    if (await QpcV2MushafLayout.isAvailable()) {
+      return QpcV2MushafLayout(QpcV2MushafLayout.sharedRepository())
           .pageContainsRecitation(pageNo, surahId, ayahNo);
     }
     final ranges = await _pageRanges(pageNo);
@@ -207,12 +238,8 @@ class MushafLayout {
   }
 
   /// Get all unique surah IDs for a given page number, sorted.
-  /// Returns empty list if page is invalid or has no ranges.
+  /// Uses [index_pages.json] — fast and sufficient for headers / page list.
   static Future<List<int>> getSurahIdsForPage(int pageNo) async {
-    if (await QpcV4MushafLayout.isAvailable()) {
-      return QpcV4MushafLayout(QpcV4MushafLayout.sharedRepository())
-          .getSurahIdsForPage(pageNo);
-    }
     final ranges = await _pageRanges(pageNo);
     if (ranges.isEmpty) return const [];
     final surahIds = ranges.map((r) => r.surahId).toSet().toList();

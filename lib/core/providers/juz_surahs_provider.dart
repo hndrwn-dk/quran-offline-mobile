@@ -15,14 +15,17 @@ class JuzSurahsInfo {
 
 final juzSurahsProvider = FutureProvider.family<JuzSurahsInfo, int>((ref, juzNo) async {
   final db = ref.read(databaseProvider);
-  final surahIds = await db.getSurahIdsInJuz(juzNo);
+  final verses = await db.getVersesByJuz(juzNo);
+  final surahIds = <int>[];
   final surahAyahCounts = <int, int>{};
-  
-  for (final surahId in surahIds) {
-    final ayahCount = await db.getAyahCountForSurah(surahId);
-    surahAyahCounts[surahId] = ayahCount;
+
+  for (final verse in verses) {
+    surahAyahCounts[verse.surahId] = (surahAyahCounts[verse.surahId] ?? 0) + 1;
+    if (surahIds.isEmpty || surahIds.last != verse.surahId) {
+      surahIds.add(verse.surahId);
+    }
   }
-  
+
   return JuzSurahsInfo(
     juzNo: juzNo,
     surahIds: surahIds,

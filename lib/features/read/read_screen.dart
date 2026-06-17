@@ -7,6 +7,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
 import 'package:quran_offline/core/constants/app_colors.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
 import 'package:quran_offline/features/read/juz_list_view.dart';
 import 'package:quran_offline/features/read/page_list_view.dart';
 import 'package:quran_offline/features/read/surah_list_view.dart';
@@ -25,6 +26,12 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
   double _swipeStartY = 0.0;
   bool _isSwiping = false;
   final _searchBarKey = GlobalKey<QuickSearchBarState>();
+
+  @override
+  void initState() {
+    super.initState();
+    MushafWarmup.beginSession();
+  }
 
   void _handleModeNavigation(ReadMode currentMode, bool isNext) {
     final newMode = switch (currentMode) {
