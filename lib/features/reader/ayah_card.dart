@@ -85,11 +85,11 @@ class _AyahCardState extends ConsumerState<AyahCard> {
 
   String _getDisplayTransliteration(AppSettings settings) {
     if (settings.useTajweedTransliteration) {
-      final tj = widget.verse.translitTj;
-      if (tj != null && tj.trim().isNotEmpty) return tj.trim();
-      final tl = widget.verse.translit;
-      if (tl != null && tl.trim().isNotEmpty) return tl.trim();
-      return '';
+      return TransliterationFormatter.displayTajweedTransliteration(
+        tlRaw: widget.verse.translit,
+        tlTjRaw: widget.verse.translitTj,
+        tajweedHtml: widget.verse.tajweed,
+      );
     }
     return TransliterationFormatter.displayTransliteration(
       tlRaw: widget.verse.translit,

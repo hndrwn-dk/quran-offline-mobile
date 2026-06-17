@@ -61,11 +61,11 @@ class VerseShareContent {
 
   String get transliteration {
     if (useTajweedTransliteration) {
-      final tj = verse.translitTj;
-      if (tj != null && tj.trim().isNotEmpty) return tj.trim();
-      final tl = verse.translit;
-      if (tl != null && tl.trim().isNotEmpty) return tl.trim();
-      return '';
+      return TransliterationFormatter.displayTajweedTransliteration(
+        tlRaw: verse.translit,
+        tlTjRaw: verse.translitTj,
+        tajweedHtml: verse.tajweed,
+      );
     }
     return TransliterationFormatter.displayTransliteration(
       tlRaw: verse.translit,

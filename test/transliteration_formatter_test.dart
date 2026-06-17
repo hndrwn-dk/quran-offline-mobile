@@ -115,5 +115,32 @@ void main() {
         );
       });
     });
+
+    group('displayTajweedTransliteration', () {
+      test('38:70 formats tl_tj to match expected tajweed latin', () {
+        const tl =
+            'in yūḥā ilayya illā annamā anā nadhīrun mubīnun';
+        const tlTj =
+            'iyn yuwhan ilaa illa annamma ana nadhiyrun mmnubiyn';
+        const expected =
+            'iyn yuwha ilayya illā annnama ana nadhiyrun mmnubiyn';
+
+        final out = TransliterationFormatter.displayTajweedTransliteration(
+          tlRaw: tl,
+          tlTjRaw: tlTj,
+        );
+
+        expect(out, expected);
+      });
+
+      test('formatTajweedTransliteration fixes innnama when tl missing', () {
+        expect(
+          TransliterationFormatter.formatTajweedTransliteration(
+            'qaluwa innnama nahnu',
+          ),
+          'qaluwa innnama nahnu',
+        );
+      });
+    });
   });
 }

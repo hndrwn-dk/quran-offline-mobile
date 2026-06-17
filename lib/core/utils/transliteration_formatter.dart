@@ -101,4 +101,46 @@ class TransliterationFormatter {
         return toReadable(tlRaw, tajweedHtml: tajweedHtml);
     }
   }
+
+  /// Tajweed transliteration display — uses `tl_tj` with boundary fixes.
+  ///
+  /// Scholarly `tl` is fallback only when `tl_tj` is missing.
+  static String displayTajweedTransliteration({
+    required String? tlRaw,
+    required String? tlTjRaw,
+    String? tajweedHtml,
+  }) {
+    if (tlTjRaw != null && tlTjRaw.trim().isNotEmpty) {
+      return formatTajweedTransliteration(tlTjRaw.trim(), tlRaw: tlRaw);
+    }
+    if (tlRaw != null && tlRaw.trim().isNotEmpty) {
+      return toReadable(tlRaw.trim(), tajweedHtml: tajweedHtml);
+    }
+    return '';
+  }
+
+  /// Fixes systematic `tl_tj` romanizer artifacts (38:70: yuwhan→yuwha, etc.).
+  static String formatTajweedTransliteration(
+    String tlTj, {
+    String? tlRaw,
+  }) {
+    if (tlTj.isEmpty) return tlTj;
+    var s = tlTj;
+
+    s = s.replaceAll(RegExp(r'\byuwhan\b', caseSensitive: false), 'yuwha');
+    s = s.replaceAll(RegExp(r'\bannamma\b', caseSensitive: false), 'annnama');
+
+    final tl = tlRaw ?? '';
+    if (RegExp(r'\bilayya\b', caseSensitive: false).hasMatch(tl)) {
+      s = s.replaceAll(RegExp(r'\bilaa\b', caseSensitive: false), 'ilayya');
+    }
+    if (tl.contains('illā')) {
+      s = s.replaceAll(RegExp(r'\billa\b', caseSensitive: false), 'illā');
+    }
+
+    return s.replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
+  @Deprecated('Use formatTajweedTransliteration')
+  static String fromTajweedWords(String tlTj) => formatTajweedTransliteration(tlTj);
 }
