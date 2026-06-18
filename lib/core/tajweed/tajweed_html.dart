@@ -67,19 +67,17 @@ class TajweedHtml {
 
       if (cls == 'ikhafa' || cls == 'ikhfa') {
         if (base == 0x0646) {
-          final narrowed = _sourceLetterCluster(content, 0x0646);
-          if (narrowed.isEmpty || narrowed == content) return m.group(0)!;
-          final rest = content.substring(narrowed.length);
-          return '<tajweed class=$cls>$narrowed</tajweed>$rest';
+          final split = _splitIkhfaSourceCluster(content, 0x0646);
+          if (split == null || split.cluster == content) return m.group(0)!;
+          return '<tajweed class=$cls>${split.cluster}</tajweed>${split.rest}';
         }
         return content;
       }
       if (cls == 'ikhafa_shafawi') {
         if (base == 0x0645) {
-          final narrowed = _sourceLetterCluster(content, 0x0645);
-          if (narrowed.isEmpty || narrowed == content) return m.group(0)!;
-          final rest = content.substring(narrowed.length);
-          return '<tajweed class=$cls>$narrowed</tajweed>$rest';
+          final split = _splitIkhfaSourceCluster(content, 0x0645);
+          if (split == null || split.cluster == content) return m.group(0)!;
+          return '<tajweed class=$cls>${split.cluster}</tajweed>${split.rest}';
         }
         return content;
       }
@@ -272,21 +270,33 @@ class TajweedHtml {
   }
 
   /// Noon/meem ikhfa tag often includes the following consonant; color source only.
-  static String _sourceLetterCluster(String content, int sourceLetter) {
+  static ({String cluster, String rest})? _splitIkhfaSourceCluster(
+    String content,
+    int sourceLetter,
+  ) {
     final runes = content.runes.toList();
-    var i = 0;
-    while (i < runes.length && !_isBaseLetter(runes[i])) {
-      i++;
+    var baseIndex = 0;
+    while (baseIndex < runes.length && !_isBaseLetter(runes[baseIndex])) {
+      baseIndex++;
     }
-    if (i >= runes.length || runes[i] != sourceLetter) return content;
+    if (baseIndex >= runes.length || runes[baseIndex] != sourceLetter) {
+      return null;
+    }
 
-    final out = StringBuffer()..writeCharCode(runes[i]);
-    i++;
-    while (i < runes.length && _isArabicDiacritic(runes[i])) {
-      out.writeCharCode(runes[i]);
-      i++;
+    var clusterStart = baseIndex;
+    while (clusterStart > 0 && _isArabicDiacritic(runes[clusterStart - 1])) {
+      clusterStart--;
     }
-    return out.toString();
+
+    var clusterEnd = baseIndex + 1;
+    while (clusterEnd < runes.length && _isArabicDiacritic(runes[clusterEnd])) {
+      clusterEnd++;
+    }
+
+    return (
+      cluster: String.fromCharCodes(runes.sublist(clusterStart, clusterEnd)),
+      rest: String.fromCharCodes(runes.sublist(clusterEnd)),
+    );
   }
 
   /// Tanwin-bearing idgham: plain tanwin source + colored absorbing letter.

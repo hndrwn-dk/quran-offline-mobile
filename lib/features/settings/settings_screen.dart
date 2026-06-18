@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -350,42 +351,44 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
-          ListTile(
-            leading: Icon(
-              Icons.compare_arrows,
-              color: Theme.of(context).colorScheme.primary,
+          if (kDebugMode) ...[
+            ListTile(
+              leading: Icon(
+                Icons.compare_arrows,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: const Text('Bandingkan font Arab (3:3)'),
+              subtitle: const Text(
+                'Uji tanwin قً — QPC Hafs, KFGQPC, Digital Khatt V2',
+              ),
+              onTap: () {
+                Navigator.push<void>(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const FontCompareScreen(),
+                  ),
+                );
+              },
             ),
-            title: const Text('Bandingkan font Arab (3:3)'),
-            subtitle: const Text(
-              'Uji tanwin قً — QPC Hafs, KFGQPC, Digital Khatt V2',
+            ListTile(
+              leading: Icon(
+                Icons.menu_book_outlined,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: const Text('Bandingkan Mushaf Ali \'Imran 1-9'),
+              subtitle: const Text(
+                'Unicode app vs QPC V2 Madinah glyph p50 (QUL #249)',
+              ),
+              onTap: () {
+                Navigator.push<void>(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const MushafFontCompareScreen(),
+                  ),
+                );
+              },
             ),
-            onTap: () {
-              Navigator.push<void>(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (context) => const FontCompareScreen(),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(
-              Icons.menu_book_outlined,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            title: const Text('Bandingkan Mushaf Ali \'Imran 1-9'),
-            subtitle: const Text(
-              'Unicode app vs QPC V2 Madinah glyph p50 (QUL #249)',
-            ),
-            onTap: () {
-              Navigator.push<void>(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (context) => const MushafFontCompareScreen(),
-                ),
-              );
-            },
-          ),
+          ],
           ListTile(
             leading: Icon(
               Icons.flag_outlined,
