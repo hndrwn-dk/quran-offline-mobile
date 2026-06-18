@@ -294,16 +294,23 @@ class TajweedText extends StatelessWidget {
       if (leading.isNotEmpty && result.isNotEmpty) {
         final last = result.last;
         final rest = text.substring(leading.length);
-        final lastColor = last.style?.color ?? defaultStyle?.color;
-        final currColor = span.style?.color ?? defaultStyle?.color;
-        final currAllCombining = text.runes.every(_isArabicCombining);
+        final defaultColor = defaultStyle?.color;
+        final currColor = span.style?.color ?? defaultColor;
+        final currColored =
+            defaultColor != null && currColor != null && currColor != defaultColor;
 
-        if (!currAllCombining && lastColor != currColor) {
+        // Leading harakat on a colored span belong to that span (e.g. madda ِي).
+        final leadingBelongsToCurrentColoredSpan = currColored &&
+            rest.isNotEmpty &&
+            _firstBaseLetterCodePoint(rest) != null;
+
+        if (leadingBelongsToCurrentColoredSpan) {
           result.add(span);
           continue;
         }
 
-        // Prepend leading diacritics to the last span so they stay with the previous base character
+        // Orphan harakat after a tajweed tag boundary → previous span's letter
+        // (e.g. م</tajweed>َيْنَ → بَ on previous, يْنَ plain).
         result.removeLast();
         final newLastText = (last.text ?? '') + leading;
         // Preserve the style from the previous span, or use default if none exists
