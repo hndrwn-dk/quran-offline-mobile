@@ -14,8 +14,7 @@ assets/
 │   │   ├── en_surah_info.sqlite
 │   │   └── id_surah_info.sqlite
 │   └── surah_names/
-│       ├── manifest.json
-│       └── s001.svg … s114.svg
+│       └── manifest.json
 ├── tafsir/
 │   ├── en_ibn_kathir.sqlite
 │   ├── id_as_saadi.sqlite

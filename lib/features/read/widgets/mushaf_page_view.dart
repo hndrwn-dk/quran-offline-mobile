@@ -324,6 +324,15 @@ class _MushafPageState extends ConsumerState<MushafPage> {
   double _swipeStartY = 0.0;
   double _swipeStartX = 0.0;
   bool _isSwipingDown = false;
+  bool _textSettingsAppBarVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    isMushafTextSettingsAppBarVisible().then((visible) {
+      if (mounted) setState(() => _textSettingsAppBarVisible = visible);
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -650,25 +659,26 @@ class _MushafPageState extends ConsumerState<MushafPage> {
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.text_fields),
-            tooltip: AppLocalizations.getSettingsText(
-              'text_settings_title',
-              appLanguage,
-            ),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const MushafTextSettingsDialog(),
-              ).then((_) {
-                setState(() {
-                  _refreshLines();
+          if (_textSettingsAppBarVisible)
+            IconButton(
+              icon: const Icon(Icons.text_fields),
+              tooltip: AppLocalizations.getSettingsText(
+                'text_settings_title',
+                appLanguage,
+              ),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => const MushafTextSettingsDialog(),
+                ).then((_) {
+                  setState(() {
+                    _refreshLines();
+                  });
                 });
-              });
-            },
-          ),
+              },
+            ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),

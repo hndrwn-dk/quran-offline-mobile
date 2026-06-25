@@ -373,52 +373,42 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
 
     return AppBar(
-      leading: Navigator.canPop(context) ? const BackButton() : null,
       automaticallyImplyLeading: false,
       toolbarHeight: 54,
       centerTitle: false,
       titleSpacing: 16,
-      title: progressLabel == null
-          ? null
-          : Tooltip(
-              message: AppLocalizations.getGoToAyahTooltip(lang),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: verseCount > 0
-                      ? () => _openGoToAyahSheet(
-                            context,
-                            surahId: surahId,
-                            surahName: surahName,
-                            verseCount: verseCount,
-                          )
-                      : null,
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer.withValues(
-                        alpha: 0.55,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: colorScheme.primary.withValues(alpha: 0.22),
-                      ),
-                    ),
-                    child: Text(
-                      progressLabel,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: colorScheme.onPrimaryContainer,
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                  ),
-                ),
+      title: Row(
+        children: [
+          if (Navigator.canPop(context)) ...[
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.maybePop(context),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(
+                minWidth: 36,
+                minHeight: 36,
+              ),
+              visualDensity: VisualDensity.compact,
+            ),
+            const SizedBox(width: 2),
+          ],
+          if (progressLabel != null)
+            Flexible(
+              child: GoToAyahAppBarChip(
+                label: progressLabel,
+                tooltip: AppLocalizations.getGoToAyahTooltip(lang),
+                onPressed: verseCount > 0
+                    ? () => _openGoToAyahSheet(
+                          context,
+                          surahId: surahId,
+                          surahName: surahName,
+                          verseCount: verseCount,
+                        )
+                    : null,
               ),
             ),
+        ],
+      ),
       actions: [
         IconButton(
           icon: const Icon(Icons.text_fields),
@@ -430,6 +420,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             showModalBottomSheet(
               context: context,
               isScrollControlled: true,
+              useSafeArea: true,
               backgroundColor: Colors.transparent,
               builder: (context) => const TextSettingsDialog(),
             );
@@ -629,6 +620,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             showModalBottomSheet(
               context: context,
               isScrollControlled: true,
+              useSafeArea: true,
               backgroundColor: Colors.transparent,
               builder: (context) => const TextSettingsDialog(),
             );
@@ -765,6 +757,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                       showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
+                        useSafeArea: true,
                         backgroundColor: Colors.transparent,
                         builder: (context) => const TextSettingsDialog(),
                       );

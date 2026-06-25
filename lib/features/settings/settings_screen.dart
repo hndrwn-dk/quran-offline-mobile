@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,8 +12,6 @@ import 'package:quran_offline/features/settings/audio_downloads_screen.dart';
 import 'package:quran_offline/core/widgets/tajweed_color_guide.dart';
 import 'package:quran_offline/core/tajweed/tajweed_report.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
-import 'package:quran_offline/features/settings/font_compare_screen.dart';
-import 'package:quran_offline/features/settings/mushaf_font_compare_screen.dart';
 import 'package:quran_offline/features/settings/widgets/about_data_sources_tile.dart';
 
 String _transliterationSubtitle(AppSettings settings, String appLanguage) {
@@ -351,57 +348,13 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
-          if (kDebugMode) ...[
-            ListTile(
-              leading: Icon(
-                Icons.compare_arrows,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: const Text('Bandingkan font Arab (3:3)'),
-              subtitle: const Text(
-                'Uji tanwin قً — QPC Hafs, KFGQPC, Digital Khatt V2',
-              ),
-              onTap: () {
-                Navigator.push<void>(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (context) => const FontCompareScreen(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.menu_book_outlined,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: const Text('Bandingkan Mushaf Ali \'Imran 1-9'),
-              subtitle: const Text(
-                'Unicode app vs QPC V2 Madinah glyph p50 (QUL #249)',
-              ),
-              onTap: () {
-                Navigator.push<void>(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (context) => const MushafFontCompareScreen(),
-                  ),
-                );
-              },
-            ),
-          ],
           ListTile(
             leading: Icon(
-              Icons.flag_outlined,
+              Icons.bug_report,
               color: Theme.of(context).colorScheme.primary,
             ),
             title: Text(
               AppLocalizations.getSettingsText('report_tajweed_title', appLanguage),
-            ),
-            subtitle: Text(
-              AppLocalizations.getSettingsText('report_tajweed_subtitle', appLanguage),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
             ),
             onTap: () {
               final lastAyah = TajweedReport.ayahFromLastRead(ref.read(lastReadProvider));

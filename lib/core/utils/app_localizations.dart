@@ -2769,6 +2769,25 @@ class AppLocalizations {
     };
   }
 
+  /// Short query filled into the search field when a category hint is tapped.
+  static String getSearchSampleQuery(String kind, String language) {
+    return switch (kind) {
+      'surah' => 'Al-Fatihah',
+      'juz' => '1',
+      'page' => '1',
+      'ayat' => '2:255',
+      'terjemahan' => switch (language) {
+        'id' => 'rahmat',
+        'en' => 'mercy',
+        'zh' => '慈悲',
+        'ja' => '慈悲',
+        _ => 'mercy',
+      },
+      'arabic' => 'الرحمن',
+      _ => '',
+    };
+  }
+
   static String _getNoResults(String language) {
     return switch (language) {
       'id' => 'Tidak ada hasil ditemukan',
@@ -2868,7 +2887,6 @@ class AppLocalizations {
       'tajweed_rule_ham_wasl' => _getTajweedRuleHamWasl(language),
       'tajweed_rule_ham_wasl_desc' => _getTajweedRuleHamWaslDesc(language),
       'report_tajweed_title' => _getReportTajweedTitle(language),
-      'report_tajweed_subtitle' => _getReportTajweedSubtitle(language),
       'report_tajweed_action' => _getReportTajweedAction(language),
       'report_tajweed_email_subject' => _getReportTajweedEmailSubject(language),
       'report_tajweed_email_subject_generic' =>
@@ -3550,18 +3568,6 @@ class AppLocalizations {
       'zh' => '报告泰吉维德颜色问题',
       'ja' => 'タジウィードの色を報告',
       _ => 'Report tajweed issue',
-    };
-  }
-
-  static String _getReportTajweedSubtitle(String language) {
-    return switch (language) {
-      'id' =>
-        'Kirim email jika warna tajweed tidak sesuai quran.com',
-      'en' =>
-        'Send email if tajweed colors do not match quran.com',
-      'zh' => '若泰吉维德颜色与 quran.com 不符，请发送邮件',
-      'ja' => 'quran.com と色が違う場合はメールで報告',
-      _ => 'Send email if tajweed colors do not match quran.com',
     };
   }
 
