@@ -5,6 +5,15 @@ import 'package:quran_offline/core/mushaf/qpc_v2_mushaf_layout.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 
+/// Re-enable when QPC V2 glyph Mushaf font-size slider is wired again.
+const kMushafGlyphTextSettingsUiEnabled = false;
+
+/// Whether the Mushaf AppBar "Tt" entry should show (legacy Mushaf always; glyph when flag on).
+Future<bool> isMushafTextSettingsAppBarVisible() async {
+  if (!await QpcV2MushafLayout.isAvailable()) return true;
+  return kMushafGlyphTextSettingsUiEnabled;
+}
+
 class MushafTextSettingsDialog extends ConsumerStatefulWidget {
   const MushafTextSettingsDialog({super.key});
 

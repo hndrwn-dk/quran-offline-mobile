@@ -92,14 +92,17 @@ Same as Quran.com / Quran Foundation (see section 1).
 
 ---
 
-## 3. Surah display names — SVG (optional)
+## 3. Surah display names — manifest + QUL font
 
-Legacy SVG surah titles under `assets/quran/surah_names/`. The app primarily uses the QUL **SurahNameV2** font for decorative names; SVGs are optional if you only use the font glyph.
+Decorative surah titles use the QUL **SurahNameV2** font (`assets/fonts/surah_name_v2.ttf`). Ligatures such as `surah001` render the decorative glyph in Mushaf headers, lists, search, and the reader.
+
+Arabic surah titles as plain text (and surah IDs) come from `manifest.json` only. Legacy per-surah SVG files (`s001.svg` … `s114.svg`) are **not** bundled or used by the app.
 
 | Field | Value |
 |-------|--------|
-| **Output** | `assets/quran/surah_names/manifest.json`, `s001.svg` … `s114.svg` |
-| **API** | Quran.com v4 chapter names / glyphs as needed |
+| **Output** | `assets/quran/surah_names/manifest.json` (canonical: `data/bundled/quran/surah_names/manifest.json`) |
+| **Font** | `assets/fonts/surah_name_v2.ttf` — see section 6 |
+| **Runtime** | `surah_names_provider.dart` reads `id` + `display`; `SurahNameGlyph` uses `SurahNameV2` ligatures |
 
 ---
 

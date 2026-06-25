@@ -24,6 +24,30 @@ class SearchScreen extends ConsumerStatefulWidget {
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   String _selectedTypeFilter = 'all';
+  late final TextEditingController _searchController;
+  late final FocusNode _searchFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialQuery = ref.read(searchQueryProvider);
+    _searchController = TextEditingController(text: initialQuery);
+    _searchFocusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _applySampleQuery(String sample) {
+    _searchController.text = sample;
+    _searchController.selection = TextSelection.collapsed(offset: sample.length);
+    ref.read(searchQueryProvider.notifier).state = sample;
+    _searchFocusNode.requestFocus();
+  }
 
   /// Filter provider results by selected type. Ayat = verse with "QS " title; Terjemahan = verse without.
   List<SearchResult> _filterResults(List<SearchResult> results, String filter) {
@@ -153,7 +177,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: Material(
               elevation: 0,
               color: Theme.of(context).colorScheme.surface,
@@ -173,6 +197,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     Expanded(
                       child: TextField(
                         key: const Key('search_field'),
+                        controller: _searchController,
+                        focusNode: _searchFocusNode,
                         style: Theme.of(context).textTheme.bodyLarge,
                         decoration: InputDecoration(
                           hintText: AppLocalizations.getSearchText('search_placeholder', settings.appLanguage),
@@ -209,84 +235,89 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               data: (results) {
                 if (query.isEmpty) {
                   final colorScheme = Theme.of(context).colorScheme;
-                  return Center(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.search,
-                            size: 64,
-                            color: colorScheme.onSurface.withValues(alpha: 0.3),
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 4, 24, 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Icon(
+                          Icons.search,
+                          size: 56,
+                          color: colorScheme.onSurface.withValues(alpha: 0.3),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          AppLocalizations.getSearchText('search_title', settings.appLanguage),
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: colorScheme.onSurface,
+                            fontWeight: FontWeight.w600,
                           ),
-                          const SizedBox(height: 24),
-                          Text(
-                            AppLocalizations.getSearchText('search_title', settings.appLanguage),
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: colorScheme.onSurface,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          AppLocalizations.getSearchText('search_by_label', settings.appLanguage),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
                           ),
-                          const SizedBox(height: 16),
-                          Text(
-                            AppLocalizations.getSearchText('search_by_label', settings.appLanguage),
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          _buildSearchHint(
-                            context,
-                            Icons.book,
-                            AppLocalizations.getMenuText('surah', settings.appLanguage),
-                            AppLocalizations.getSearchText('surah_example', settings.appLanguage),
-                            colorScheme,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildSearchHint(
-                            context,
-                            Icons.format_list_numbered,
-                            AppLocalizations.getMenuText('juz', settings.appLanguage),
-                            AppLocalizations.getSearchText('juz_example', settings.appLanguage),
-                            colorScheme,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildSearchHint(
-                            context,
-                            Icons.pages,
-                            AppLocalizations.getMenuText('page', settings.appLanguage),
-                            AppLocalizations.getSearchText('page_example', settings.appLanguage),
-                            colorScheme,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildSearchHint(
-                            context,
-                            Icons.numbers,
-                            AppLocalizations.getSearchText('verse_label', settings.appLanguage),
-                            AppLocalizations.getSearchText('verse_example', settings.appLanguage),
-                            colorScheme,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildSearchHint(
-                            context,
-                            Icons.translate,
-                            AppLocalizations.getSearchText('translation_label', settings.appLanguage),
-                            AppLocalizations.getSearchText('translation_example', settings.appLanguage),
-                            colorScheme,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildSearchHint(
-                            context,
-                            Icons.language,
-                            AppLocalizations.getSearchText('arabic_label', settings.appLanguage),
-                            AppLocalizations.getSearchText('arabic_example', settings.appLanguage),
-                            colorScheme,
-                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildSearchHint(
+                          context,
+                          Icons.book,
+                          AppLocalizations.getMenuText('surah', settings.appLanguage),
+                          AppLocalizations.getSearchText('surah_example', settings.appLanguage),
+                          AppLocalizations.getSearchSampleQuery('surah', settings.appLanguage),
+                          colorScheme,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildSearchHint(
+                          context,
+                          Icons.format_list_numbered,
+                          AppLocalizations.getMenuText('juz', settings.appLanguage),
+                          AppLocalizations.getSearchText('juz_example', settings.appLanguage),
+                          AppLocalizations.getSearchSampleQuery('juz', settings.appLanguage),
+                          colorScheme,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildSearchHint(
+                          context,
+                          Icons.pages,
+                          AppLocalizations.getMenuText('page', settings.appLanguage),
+                          AppLocalizations.getSearchText('page_example', settings.appLanguage),
+                          AppLocalizations.getSearchSampleQuery('page', settings.appLanguage),
+                          colorScheme,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildSearchHint(
+                          context,
+                          Icons.numbers,
+                          AppLocalizations.getSearchText('verse_label', settings.appLanguage),
+                          AppLocalizations.getSearchText('verse_example', settings.appLanguage),
+                          AppLocalizations.getSearchSampleQuery('ayat', settings.appLanguage),
+                          colorScheme,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildSearchHint(
+                          context,
+                          Icons.translate,
+                          AppLocalizations.getSearchText('translation_label', settings.appLanguage),
+                          AppLocalizations.getSearchText('translation_example', settings.appLanguage),
+                          AppLocalizations.getSearchSampleQuery('terjemahan', settings.appLanguage),
+                          colorScheme,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildSearchHint(
+                          context,
+                          Icons.language,
+                          AppLocalizations.getSearchText('arabic_label', settings.appLanguage),
+                          AppLocalizations.getSearchText('arabic_example', settings.appLanguage),
+                          AppLocalizations.getSearchSampleQuery('arabic', settings.appLanguage),
+                          colorScheme,
+                        ),
+                          const SizedBox(height: 8),
                         ],
                       ),
-                    ),
-                  );
+                    );
                 }
 
                 final filtered = _filterResults(results, _selectedTypeFilter);
@@ -652,48 +683,58 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     IconData icon,
     String title,
     String example,
+    String sampleQuery,
     ColorScheme colorScheme,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _applySampleQuery(sampleQuery),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 20,
-            color: colorScheme.onSurfaceVariant,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+              width: 1,
+            ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
               children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
+                Icon(
+                  icon,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  example,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        example,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
