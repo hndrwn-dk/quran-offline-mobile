@@ -57,5 +57,13 @@ void main() {
     }
 
     expect(entries.length, greaterThan(40));
+
+    for (final raw in entries) {
+      final entry = raw as Map<String, dynamic>;
+      if (entry['category'] != 'daily') continue;
+      final theme = entry['theme'] as String?;
+      expect(theme, isNotNull, reason: 'daily ${entry['id']} missing theme');
+      expect(theme, isNotEmpty);
+    }
   });
 }

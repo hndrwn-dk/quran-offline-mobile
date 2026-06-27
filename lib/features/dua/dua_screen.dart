@@ -11,6 +11,13 @@ import 'package:quran_offline/core/providers/theme_catalog_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/explore_detail_sheet.dart';
+import 'package:quran_offline/features/dua/life_situation.dart';
+import 'package:quran_offline/features/dua/explore_icons.dart';
+import 'package:quran_offline/features/dua/explore_search.dart';
+import 'package:quran_offline/features/dua/widgets/explore_hub_search_bar.dart';
+import 'package:quran_offline/features/dua/widgets/explore_hub_section_card.dart';
+import 'package:quran_offline/features/dua/widgets/explore_section_scaffold.dart';
+import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/reader/open_reader_screen.dart';
 
 class _CatalogLoadError extends StatelessWidget {
@@ -48,46 +55,26 @@ class _CatalogLoadError extends StatelessWidget {
   }
 }
 
-class DuaScreen extends ConsumerStatefulWidget {
+class DuaScreen extends ConsumerWidget {
   const DuaScreen({super.key});
 
   @override
-  ConsumerState<DuaScreen> createState() => _DuaScreenState();
-}
-
-class _DuaScreenState extends ConsumerState<DuaScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 5, vsync: this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ref.read(asmaCatalogProvider.future);
-    });
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     final lang = settings.appLanguage;
     final catalogAsync = ref.watch(duaCatalogProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      backgroundColor: HomeBackdrop.topTint(colorScheme),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         toolbarHeight: 54,
         centerTitle: false,
         titleSpacing: 16,
+        backgroundColor: HomeBackdrop.topTint(colorScheme),
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -132,31 +119,6 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
             ),
           ],
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(49),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Divider(
-                height: 1,
-                thickness: 1,
-                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-              ),
-              TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                tabs: [
-                  Tab(text: AppLocalizations.getDuaCategoryLabel('daily', lang)),
-                  Tab(text: AppLocalizations.getDuaCategoryLabel('prophet', lang)),
-                  Tab(text: AppLocalizations.getDuaCategoryLabel('science', lang)),
-                  Tab(text: AppLocalizations.getDuaCategoryLabel('asma', lang)),
-                  Tab(text: AppLocalizations.getDuaCategoryLabel('life_theme', lang)),
-                ],
-              ),
-            ],
-          ),
-        ),
       ),
       body: catalogAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -169,27 +131,293 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
             ),
           ),
         ),
-        data: (catalog) => TabBarView(
-          controller: _tabController,
-          children: [
-            _DuaListView(
-              entries: catalog.byCategory('daily'),
-              lang: lang,
-              colorScheme: colorScheme,
-            ),
-            _ProphetDuaListView(
-              grouped: catalog.prophetsGrouped(),
-              lang: lang,
-              colorScheme: colorScheme,
-            ),
-            _ScienceTabBody(lang: lang, colorScheme: colorScheme),
-            _AsmaTabBody(lang: lang, colorScheme: colorScheme),
-            _ThemeTabBody(lang: lang, colorScheme: colorScheme),
-          ],
+        data: (catalog) => _ExploreHubBody(
+          catalog: catalog,
+          lang: lang,
+          colorScheme: colorScheme,
         ),
       ),
     );
   }
+}
+
+class _ExploreHubBody extends ConsumerStatefulWidget {
+  const _ExploreHubBody({
+    required this.catalog,
+    required this.lang,
+    required this.colorScheme,
+  });
+
+  final DuaCatalog catalog;
+  final String lang;
+  final ColorScheme colorScheme;
+
+  @override
+  ConsumerState<_ExploreHubBody> createState() => _ExploreHubBodyState();
+}
+
+class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
+  late final TextEditingController _searchController;
+  late final FocusNode _searchFocusNode;
+  String _query = '';
+
+  DuaCatalog get catalog => widget.catalog;
+  String get lang => widget.lang;
+  ColorScheme get colorScheme => widget.colorScheme;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+    _searchFocusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() => _query = value);
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() => _query = '');
+    _searchFocusNode.unfocus();
+  }
+
+  void _openSearchHit(ExploreSearchHit hit) {
+    switch (hit.kind) {
+      case ExploreSearchKind.dua:
+        final entry = hit.dua;
+        if (entry != null) _showDuaDetail(context, ref, entry, lang);
+      case ExploreSearchKind.science:
+        final entry = hit.science;
+        if (entry != null) _showScienceDetail(context, ref, entry, lang);
+      case ExploreSearchKind.theme:
+        final entry = hit.theme;
+        if (entry != null) _showThemeDetail(context, ref, entry, lang);
+      case ExploreSearchKind.asma:
+        final entry = hit.asma;
+        if (entry != null) _showAsmaDetail(context, ref, entry, lang);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final asmaAsync = ref.watch(asmaCatalogProvider);
+    final scienceAsync = ref.watch(scienceCatalogProvider);
+    final themeAsync = ref.watch(themeCatalogProvider);
+
+    final asmaCatalog = asmaAsync.value;
+    final scienceCatalog = scienceAsync.value;
+    final themeCatalog = themeAsync.value;
+
+    final trimmedQuery = _query.trim();
+    final isSearching = trimmedQuery.isNotEmpty;
+
+    final searchHits = isSearching
+        ? searchExploreContent(
+            query: trimmedQuery,
+            lang: lang,
+            duaCatalog: catalog,
+            asmaCatalog: asmaCatalog,
+            scienceCatalog: scienceCatalog,
+            themeCatalog: themeCatalog,
+          )
+        : const <ExploreSearchHit>[];
+
+    final dailyCount = catalog.byCategory('daily').length;
+    final prophetGrouped = catalog.prophetsGrouped();
+    final prophetCount =
+        prophetGrouped.values.fold<int>(0, (sum, list) => sum + list.length);
+    final scienceCount = scienceCatalog?.entries.length ?? 0;
+    final asmaCount = asmaCatalog?.entries.length ?? 0;
+    final themeCount = themeCatalog?.entries.length ?? 0;
+
+    final sections = [
+      _HubSection(
+        sectionKey: 'prophet',
+        countLabel: AppLocalizations.getDuaProphetCount(prophetCount, lang),
+        onTap: () => _openProphetHub(context, lang, colorScheme, prophetGrouped),
+      ),
+      _HubSection(
+        sectionKey: 'science',
+        countLabel: AppLocalizations.getScienceTopicCount(scienceCount, lang),
+        onTap: () => _openScienceHub(context, lang, colorScheme),
+      ),
+      _HubSection(
+        sectionKey: 'asma',
+        countLabel: AppLocalizations.getAsmaNamesCount(asmaCount, lang),
+        onTap: () => _openAsmaSection(context, lang, colorScheme),
+      ),
+      _HubSection(
+        sectionKey: 'life_theme',
+        countLabel: AppLocalizations.getLifeSituationHubCount(
+          dailyCount,
+          themeCount,
+          lang,
+        ),
+        onTap: () => _openThemeHub(context, lang, colorScheme),
+      ),
+    ];
+
+    return HomeBackdrop(
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: ExploreHubSearchBar(
+              lang: lang,
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              onChanged: _onSearchChanged,
+              onClear: _clearSearch,
+            ),
+          ),
+          if (!isSearching) ...[
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              sliver: SliverList.separated(
+                itemCount: sections.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final section = sections[index];
+                  return ExploreHubSectionCard(
+                    sectionKey: section.sectionKey,
+                    title:
+                        AppLocalizations.getDuaCategoryLabel(section.sectionKey, lang),
+                    countLabel: section.countLabel,
+                    hint: AppLocalizations.getExploreHubHint(section.sectionKey, lang),
+                    onTap: section.onTap,
+                  );
+                },
+              ),
+            ),
+          ] else if (searchHits.isEmpty) ...[
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    AppLocalizations.getExploreSearchEmpty(lang),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                ),
+              ),
+            ),
+          ] else ...[
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              sliver: SliverList.separated(
+                itemCount: searchHits.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  final hit = searchHits[index];
+                  return ExploreTopicCard(
+                    title: hit.title,
+                    refLabel: hit.subtitle,
+                    onTap: () => _openSearchHit(hit),
+                  );
+                },
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _openProphetHub(
+    BuildContext context,
+    String lang,
+    ColorScheme colorScheme,
+    Map<String, List<DuaEntry>> grouped,
+  ) {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExploreSectionScaffold(
+          title: AppLocalizations.getDuaCategoryLabel('prophet', lang),
+          subtitle: AppLocalizations.getExploreHubHint('prophet', lang),
+          body: _ProphetCategoryGrid(
+            grouped: grouped,
+            lang: lang,
+            colorScheme: colorScheme,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openScienceHub(
+    BuildContext context,
+    String lang,
+    ColorScheme colorScheme,
+  ) {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExploreSectionScaffold(
+          title: AppLocalizations.getDuaCategoryLabel('science', lang),
+          subtitle: AppLocalizations.getExploreHubHint('science', lang),
+          body: _ScienceTabBody(lang: lang, colorScheme: colorScheme),
+        ),
+      ),
+    );
+  }
+
+  void _openAsmaSection(
+    BuildContext context,
+    String lang,
+    ColorScheme colorScheme,
+  ) {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExploreSectionScaffold(
+          title: AppLocalizations.getDuaCategoryLabel('asma', lang),
+          subtitle: AppLocalizations.getExploreHubHint('asma', lang),
+          body: _AsmaTabBody(lang: lang, colorScheme: colorScheme),
+        ),
+      ),
+    );
+  }
+
+  void _openThemeHub(
+    BuildContext context,
+    String lang,
+    ColorScheme colorScheme,
+  ) {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExploreSectionScaffold(
+          title: AppLocalizations.getDuaCategoryLabel('life_theme', lang),
+          subtitle: AppLocalizations.getExploreHubHint('life_theme', lang),
+          body: _ThemeTabBody(lang: lang, colorScheme: colorScheme),
+        ),
+      ),
+    );
+  }
+}
+
+class _HubSection {
+  const _HubSection({
+    required this.sectionKey,
+    required this.countLabel,
+    required this.onTap,
+  });
+
+  final String sectionKey;
+  final String countLabel;
+  final VoidCallback onTap;
 }
 
 class _AsmaTabBody extends ConsumerWidget {
@@ -290,11 +518,14 @@ class _AsmaListTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         child: Ink(
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-            borderRadius: BorderRadius.circular(12),
+            color: colorScheme.surface.withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -380,6 +611,277 @@ class _AsmaListTile extends StatelessWidget {
   }
 }
 
+class _LifeSituationTabBody extends ConsumerWidget {
+  const _LifeSituationTabBody({
+    required this.lang,
+    required this.colorScheme,
+  });
+
+  final String lang;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final duaAsync = ref.watch(duaCatalogProvider);
+    final themeAsync = ref.watch(themeCatalogProvider);
+
+    if (duaAsync.isLoading || themeAsync.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (duaAsync.hasError) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            AppLocalizations.getDuaLoadError(lang),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+    if (themeAsync.hasError) {
+      return _CatalogLoadError(
+        message: AppLocalizations.getThemeLoadError(lang),
+        onRetry: () => ref.invalidate(themeCatalogProvider),
+        lang: lang,
+      );
+    }
+
+    final duaCatalog = duaAsync.requireValue;
+    final themeCatalog = themeAsync.requireValue;
+    final buckets = buildLifeSituationBuckets(
+      duaCatalog: duaCatalog,
+      themeCatalog: themeCatalog,
+    );
+
+    if (buckets.isEmpty) {
+      return _ExploreTabScrollView.emptyMessage(
+        AppLocalizations.getThemeEmpty(lang),
+      );
+    }
+
+    return _LifeSituationCategoryGrid(
+      buckets: buckets,
+      lang: lang,
+      colorScheme: colorScheme,
+    );
+  }
+}
+
+class _LifeSituationCategoryGrid extends ConsumerWidget {
+  const _LifeSituationCategoryGrid({
+    required this.buckets,
+    required this.lang,
+    required this.colorScheme,
+  });
+
+  final List<LifeSituationBucket> buckets;
+  final String lang;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return _ExploreTabScrollView(
+      lang: lang,
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 1.35,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final bucket = buckets[index];
+                final categoryKey = bucket.categoryKey;
+                return ExploreCategoryCard(
+                  assetPath: ExploreIcons.themeCategoryAsset(categoryKey),
+                  icon: ExploreIcons.themeCategory(categoryKey),
+                  title: AppLocalizations.getThemeCategoryLabel(
+                    categoryKey,
+                    lang,
+                  ),
+                  subtitle: AppLocalizations.getLifeSituationCategorySubtitle(
+                    bucket.duas.length,
+                    bucket.reflections.length,
+                    lang,
+                  ),
+                  onTap: () => _openLifeSituationCategory(
+                    context,
+                    bucket,
+                    lang,
+                    colorScheme,
+                  ),
+                );
+              },
+              childCount: buckets.length,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _openLifeSituationCategory(
+    BuildContext context,
+    LifeSituationBucket bucket,
+    String lang,
+    ColorScheme colorScheme,
+  ) {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExploreSectionScaffold(
+          title: AppLocalizations.getThemeCategoryLabel(
+            bucket.categoryKey,
+            lang,
+          ),
+          subtitle: AppLocalizations.getLifeSituationCategorySubtitle(
+            bucket.duas.length,
+            bucket.reflections.length,
+            lang,
+          ),
+          parentSection: AppLocalizations.getDuaCategoryLabel('life_theme', lang),
+          body: _LifeSituationCategoryBody(
+            bucket: bucket,
+            lang: lang,
+            colorScheme: colorScheme,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LifeSituationCategoryBody extends ConsumerWidget {
+  const _LifeSituationCategoryBody({
+    required this.bucket,
+    required this.lang,
+    required this.colorScheme,
+  });
+
+  final LifeSituationBucket bucket;
+  final String lang;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final slivers = <Widget>[];
+
+    if (bucket.duas.isNotEmpty) {
+      slivers.add(
+        SliverToBoxAdapter(
+          child: _LifeSituationSectionHeader(
+            title: AppLocalizations.getLifeSituationSectionDua(
+              bucket.duas.length,
+              lang,
+            ),
+          ),
+        ),
+      );
+      slivers.add(
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          sliver: SliverList.separated(
+            itemCount: bucket.duas.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final entry = bucket.duas[index];
+              final ayahRef = entry.primaryRef;
+              final refLabel = entry.ayahRefs.length == 1
+                  ? AppLocalizations.formatDuaAyahRef(
+                      ayahRef.surah,
+                      ayahRef.from,
+                      ayahRef.to,
+                      lang,
+                    )
+                  : AppLocalizations.formatThemeAyahLabel(
+                      entry.ayahRefs.length,
+                      lang,
+                    );
+              return ExploreTopicCard(
+                title: entry.title.forLanguage(lang),
+                refLabel: refLabel,
+                onTap: () => _showDuaDetail(context, ref, entry, lang),
+              );
+            },
+          ),
+        ),
+      );
+    }
+
+    if (bucket.reflections.isNotEmpty) {
+      slivers.add(
+        SliverToBoxAdapter(
+          child: _LifeSituationSectionHeader(
+            title: AppLocalizations.getLifeSituationSectionReflection(
+              bucket.reflections.length,
+              lang,
+            ),
+          ),
+        ),
+      );
+      slivers.add(
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          sliver: SliverList.separated(
+            itemCount: bucket.reflections.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final entry = bucket.reflections[index];
+              final ayahRef = entry.primaryRef;
+              final refLabel = entry.ayahRefs.length == 1
+                  ? AppLocalizations.formatDuaAyahRef(
+                      ayahRef.surah,
+                      ayahRef.from,
+                      ayahRef.to,
+                      lang,
+                    )
+                  : AppLocalizations.formatThemeAyahLabel(
+                      entry.ayahCount,
+                      lang,
+                    );
+              return ExploreTopicCard(
+                title: entry.title.forLanguage(lang),
+                refLabel: refLabel,
+                onTap: () => _showThemeDetail(context, ref, entry, lang),
+              );
+            },
+          ),
+        ),
+      );
+    }
+
+    return _ExploreTabScrollView(lang: lang, slivers: slivers);
+  }
+}
+
+class _LifeSituationSectionHeader extends StatelessWidget {
+  const _LifeSituationSectionHeader({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Text(
+        title,
+        style: textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: colorScheme.onSurface,
+        ),
+      ),
+    );
+  }
+}
+
 class _ThemeTabBody extends ConsumerWidget {
   const _ThemeTabBody({
     required this.lang,
@@ -391,141 +893,7 @@ class _ThemeTabBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeAsync = ref.watch(themeCatalogProvider);
-    return themeAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => _CatalogLoadError(
-        message: AppLocalizations.getThemeLoadError(lang),
-        onRetry: () => ref.invalidate(themeCatalogProvider),
-        lang: lang,
-      ),
-      data: (catalog) => _ThemeCategoryListView(
-        grouped: catalog.groupedByCategory(),
-        lang: lang,
-        colorScheme: colorScheme,
-      ),
-    );
-  }
-}
-
-class _ThemeCategoryListView extends ConsumerWidget {
-  const _ThemeCategoryListView({
-    required this.grouped,
-    required this.lang,
-    required this.colorScheme,
-  });
-
-  final Map<String, List<ThemeEntry>> grouped;
-  final String lang;
-  final ColorScheme colorScheme;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (grouped.isEmpty) {
-      return _ExploreTabScrollView.emptyMessage(
-        AppLocalizations.getThemeEmpty(lang),
-      );
-    }
-    return _ExploreTabScrollView(
-      lang: lang,
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final categoryKey = grouped.keys.elementAt(index);
-                final items = grouped[categoryKey]!;
-                return ExpansionTile(
-                  title: Text(
-                    AppLocalizations.getThemeCategoryLabel(categoryKey, lang),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(
-                    AppLocalizations.getThemeTopicCount(items.length, lang),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  children: items
-                      .map(
-                        (entry) => _ThemeListTile(
-                          entry: entry,
-                          lang: lang,
-                          colorScheme: colorScheme,
-                          onTap: () =>
-                              _showThemeDetail(context, ref, entry, lang),
-                        ),
-                      )
-                      .toList(),
-                );
-              },
-              childCount: grouped.length,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ThemeListTile extends StatelessWidget {
-  const _ThemeListTile({
-    required this.entry,
-    required this.lang,
-    required this.colorScheme,
-    required this.onTap,
-  });
-
-  final ThemeEntry entry;
-  final String lang;
-  final ColorScheme colorScheme;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final refLabel = entry.ayahRefs.length == 1
-        ? AppLocalizations.formatDuaAyahRef(
-            entry.primaryRef.surah,
-            entry.primaryRef.from,
-            entry.primaryRef.to,
-            lang,
-          )
-        : AppLocalizations.formatThemeAyahLabel(entry.ayahCount, lang);
-    return Padding(
-      padding: const EdgeInsets.only(left: 8, right: 8, bottom: 4),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Ink(
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              dense: true,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              title: Text(
-                entry.title.forLanguage(lang),
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              subtitle: Text(
-                refLabel,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colorScheme.primary,
-                ),
-              ),
-              trailing: const Icon(Icons.chevron_right),
-            ),
-          ),
-        ),
-      ),
-    );
+    return _LifeSituationTabBody(lang: lang, colorScheme: colorScheme);
   }
 }
 
@@ -548,7 +916,7 @@ class _ScienceTabBody extends ConsumerWidget {
         onRetry: () => ref.invalidate(scienceCatalogProvider),
         lang: lang,
       ),
-      data: (catalog) => _ScienceCategoryListView(
+      data: (catalog) => _ScienceCategoryGrid(
         grouped: catalog.groupedByCategory(),
         lang: lang,
         colorScheme: colorScheme,
@@ -765,10 +1133,16 @@ class _DuaListView extends ConsumerWidget {
             separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               final entry = entries[index];
-              return _DuaListTile(
-                entry: entry,
-                lang: lang,
-                colorScheme: colorScheme,
+              final ayahRef = entry.primaryRef;
+              final refLabel = AppLocalizations.formatDuaAyahRef(
+                ayahRef.surah,
+                ayahRef.from,
+                ayahRef.to,
+                lang,
+              );
+              return ExploreTopicCard(
+                title: entry.title.forLanguage(lang),
+                refLabel: refLabel,
                 onTap: () => _showDuaDetail(context, ref, entry, lang),
               );
             },
@@ -779,8 +1153,8 @@ class _DuaListView extends ConsumerWidget {
   }
 }
 
-class _ScienceCategoryListView extends ConsumerWidget {
-  const _ScienceCategoryListView({
+class _ScienceCategoryGrid extends ConsumerWidget {
+  const _ScienceCategoryGrid({
     required this.grouped,
     required this.lang,
     required this.colorScheme,
@@ -797,101 +1171,62 @@ class _ScienceCategoryListView extends ConsumerWidget {
         AppLocalizations.getScienceEmpty(lang),
       );
     }
+    final keys = grouped.keys.toList();
     return _ExploreTabScrollView(
       lang: lang,
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          sliver: SliverList(
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 1.55,
+            ),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                final categoryKey = grouped.keys.elementAt(index);
+                final categoryKey = keys[index];
                 final items = grouped[categoryKey]!;
-                return ExpansionTile(
-                  title: Text(
-                    AppLocalizations.getScienceCategoryLabel(categoryKey, lang),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                return ExploreCategoryCard(
+                  icon: ExploreIcons.scienceCategory(categoryKey),
+                  title: AppLocalizations.getScienceCategoryLabel(categoryKey, lang),
+                  subtitle: AppLocalizations.getScienceTopicCount(items.length, lang),
+                  onTap: () => _openScienceTopics(
+                    context,
+                    categoryKey,
+                    items,
+                    lang,
+                    colorScheme,
                   ),
-                  subtitle: Text(
-                    AppLocalizations.getScienceTopicCount(items.length, lang),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  children: items
-                      .map(
-                        (entry) => _ScienceListTile(
-                          entry: entry,
-                          lang: lang,
-                          colorScheme: colorScheme,
-                          onTap: () =>
-                              _showScienceDetail(context, ref, entry, lang),
-                        ),
-                      )
-                      .toList(),
                 );
               },
-              childCount: grouped.length,
+              childCount: keys.length,
             ),
           ),
         ),
       ],
     );
   }
-}
 
-class _ScienceListTile extends StatelessWidget {
-  const _ScienceListTile({
-    required this.entry,
-    required this.lang,
-    required this.colorScheme,
-    required this.onTap,
-  });
-
-  final ScienceEntry entry;
-  final String lang;
-  final ColorScheme colorScheme;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final ref = entry.primaryRef;
-    final refLabel = AppLocalizations.formatDuaAyahRef(
-      ref.surah,
-      ref.from,
-      ref.to,
-      lang,
-    );
-    return Padding(
-      padding: const EdgeInsets.only(left: 8, right: 8, bottom: 4),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Ink(
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              dense: true,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              title: Text(
-                entry.title.forLanguage(lang),
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              subtitle: Text(
-                refLabel,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colorScheme.primary,
-                ),
-              ),
-              trailing: const Icon(Icons.chevron_right),
-            ),
+  void _openScienceTopics(
+    BuildContext context,
+    String categoryKey,
+    List<ScienceEntry> items,
+    String lang,
+    ColorScheme colorScheme,
+  ) {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExploreSectionScaffold(
+          title: AppLocalizations.getScienceCategoryLabel(categoryKey, lang),
+          subtitle: AppLocalizations.getScienceTopicCount(items.length, lang),
+          parentSection: AppLocalizations.getDuaCategoryLabel('science', lang),
+          body: _ScienceTopicListView(
+            entries: items,
+            lang: lang,
+            colorScheme: colorScheme,
           ),
         ),
       ),
@@ -899,8 +1234,51 @@ class _ScienceListTile extends StatelessWidget {
   }
 }
 
-class _ProphetDuaListView extends ConsumerWidget {
-  const _ProphetDuaListView({
+class _ScienceTopicListView extends ConsumerWidget {
+  const _ScienceTopicListView({
+    required this.entries,
+    required this.lang,
+    required this.colorScheme,
+  });
+
+  final List<ScienceEntry> entries;
+  final String lang;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return _ExploreTabScrollView(
+      lang: lang,
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          sliver: SliverList.separated(
+            itemCount: entries.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final entry = entries[index];
+              final ayahRef = entry.primaryRef;
+              final refLabel = AppLocalizations.formatDuaAyahRef(
+                ayahRef.surah,
+                ayahRef.from,
+                ayahRef.to,
+                lang,
+              );
+              return ExploreTopicCard(
+                title: entry.title.forLanguage(lang),
+                refLabel: refLabel,
+                onTap: () => _showScienceDetail(context, ref, entry, lang),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProphetCategoryGrid extends ConsumerWidget {
+  const _ProphetCategoryGrid({
     required this.grouped,
     required this.lang,
     required this.colorScheme,
@@ -917,106 +1295,56 @@ class _ProphetDuaListView extends ConsumerWidget {
         AppLocalizations.getDuaEmpty(lang),
       );
     }
+    final keys = grouped.keys.toList();
     return _ExploreTabScrollView(
       lang: lang,
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final prophetKey = grouped.keys.elementAt(index);
-                final items = grouped[prophetKey]!;
-                return ExpansionTile(
-                  title: Text(
-                    AppLocalizations.getDuaProphetName(prophetKey, lang),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(
-                    AppLocalizations.getDuaProphetCount(items.length, lang),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  children: items
-                      .map(
-                        (entry) => _DuaListTile(
-                          entry: entry,
-                          lang: lang,
-                          colorScheme: colorScheme,
-                          dense: true,
-                          onTap: () =>
-                              _showDuaDetail(context, ref, entry, lang),
-                        ),
-                      )
-                      .toList(),
-                );
-              },
-              childCount: grouped.length,
-            ),
+          sliver: SliverList.separated(
+            itemCount: keys.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final prophetKey = keys[index];
+              final items = grouped[prophetKey]!;
+              return ExploreCategoryCard(
+                assetPath: ExploreIcons.prophetAsset(prophetKey),
+                icon: ExploreIcons.prophet(prophetKey),
+                title: AppLocalizations.getDuaProphetName(prophetKey, lang),
+                subtitle: AppLocalizations.getDuaProphetCount(items.length, lang),
+                onTap: () => _openProphetDuas(
+                  context,
+                  prophetKey,
+                  items,
+                  lang,
+                  colorScheme,
+                ),
+              );
+            },
           ),
         ),
       ],
     );
   }
-}
 
-class _DuaListTile extends StatelessWidget {
-  const _DuaListTile({
-    required this.entry,
-    required this.lang,
-    required this.colorScheme,
-    required this.onTap,
-    this.dense = false,
-  });
-
-  final DuaEntry entry;
-  final String lang;
-  final ColorScheme colorScheme;
-  final VoidCallback onTap;
-  final bool dense;
-
-  @override
-  Widget build(BuildContext context) {
-    final ref = entry.primaryRef;
-    final refLabel = AppLocalizations.formatDuaAyahRef(
-      ref.surah,
-      ref.from,
-      ref.to,
-      lang,
-    );
-    return Padding(
-      padding: dense ? const EdgeInsets.only(left: 8, right: 8, bottom: 4) : EdgeInsets.zero,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Ink(
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              dense: dense,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: dense ? 4 : 8,
-              ),
-              title: Text(
-                entry.title.forLanguage(lang),
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              subtitle: Text(
-                refLabel,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colorScheme.primary,
-                ),
-              ),
-              trailing: const Icon(Icons.chevron_right),
-            ),
+  void _openProphetDuas(
+    BuildContext context,
+    String prophetKey,
+    List<DuaEntry> items,
+    String lang,
+    ColorScheme colorScheme,
+  ) {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ExploreSectionScaffold(
+          title: AppLocalizations.getDuaProphetName(prophetKey, lang),
+          subtitle: AppLocalizations.getDuaProphetCount(items.length, lang),
+          parentSection: AppLocalizations.getDuaCategoryLabel('prophet', lang),
+          body: _DuaListView(
+            entries: items,
+            lang: lang,
+            colorScheme: colorScheme,
           ),
         ),
       ),

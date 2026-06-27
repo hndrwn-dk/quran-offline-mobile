@@ -54,6 +54,7 @@ class DuaEntry {
   final String id;
   final String category;
   final String? prophet;
+  final String? theme;
   final int sort;
   final LocalizedText title;
   final LocalizedText summary;
@@ -63,6 +64,7 @@ class DuaEntry {
     required this.id,
     required this.category,
     this.prophet,
+    this.theme,
     required this.sort,
     required this.title,
     required this.summary,
@@ -77,6 +79,7 @@ class DuaEntry {
       id: json['id'] as String,
       category: json['category'] as String,
       prophet: json['prophet'] as String?,
+      theme: json['theme'] as String?,
       sort: json['sort'] as int? ?? 0,
       title: LocalizedText.fromJson(json['title'] as Map<String, dynamic>),
       summary: LocalizedText.fromJson(json['summary'] as Map<String, dynamic>),

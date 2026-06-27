@@ -14,7 +14,19 @@ void main() {
           final label = AppLocalizations.getDuaCategoryLabel(cat, lang);
           expect(label, isNotEmpty, reason: 'category $cat');
           expect(label, isNot(cat), reason: 'untranslated key $cat');
+          expect(
+            AppLocalizations.getExploreHubHint(cat, lang),
+            isNotEmpty,
+            reason: 'hub hint $cat',
+          );
         }
+        expect(AppLocalizations.getAsmaNamesCount(99, lang), contains('99'));
+        expect(
+          AppLocalizations.formatExploreDrillSubtitle('8 topik', 'Sains'),
+          '8 topik · Sains',
+        );
+        expect(AppLocalizations.getExploreSearchHint(lang), isNotEmpty);
+        expect(AppLocalizations.getExploreSearchEmpty(lang), isNotEmpty);
       });
 
       test('science and theme helpers for $lang', () {
@@ -35,18 +47,54 @@ void main() {
           );
         }
         for (final cat in [
+          'forgiveness',
+          'faith',
           'patience',
-          'gratitude',
+          'trials',
+          'protection',
           'provision',
           'family',
-          'trials',
+          'gratitude',
           'hope',
           'character',
+          'world_hereafter',
           'hereafter',
         ]) {
           expect(
             AppLocalizations.getThemeCategoryLabel(cat, lang),
             isNotEmpty,
+          );
+        }
+        if (lang == 'id') {
+          expect(
+            AppLocalizations.getThemeCategoryLabel('hereafter', lang),
+            AppLocalizations.getThemeCategoryLabel('world_hereafter', lang),
+          );
+          expect(
+            AppLocalizations.getLifeSituationHubCount(31, 16, lang),
+            '31 doa · 16 renungan',
+          );
+        }
+        for (final theme in [
+          'forgiveness',
+          'faith',
+          'trials',
+          'protection',
+          'provision',
+          'family',
+          'gratitude',
+          'world_hereafter',
+        ]) {
+          expect(
+            AppLocalizations.getDailyThemeLabel(theme, lang),
+            isNotEmpty,
+            reason: 'daily theme $theme',
+          );
+        }
+        if (lang == 'id') {
+          expect(
+            AppLocalizations.getDailyThemeLabel('world_hereafter', lang),
+            'Kebaikan dunia & akhirat',
           );
         }
       });

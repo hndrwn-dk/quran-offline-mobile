@@ -28,6 +28,36 @@ class DuaCatalog {
       map.entries.toList()..sort((a, b) => a.value.first.sort.compareTo(b.value.first.sort)),
     );
   }
+
+  Map<String, List<DuaEntry>> dailyGroupedByTheme() {
+    final map = <String, List<DuaEntry>>{};
+    for (final e in entries.where((e) => e.category == 'daily')) {
+      final key = e.theme;
+      if (key == null || key.isEmpty) continue;
+      map.putIfAbsent(key, () => []).add(e);
+    }
+    for (final list in map.values) {
+      list.sort((a, b) => a.sort.compareTo(b.sort));
+    }
+    const order = [
+      'forgiveness',
+      'faith',
+      'trials',
+      'protection',
+      'provision',
+      'family',
+      'gratitude',
+      'world_hereafter',
+    ];
+    final sorted = <MapEntry<String, List<DuaEntry>>>[];
+    for (final key in order) {
+      if (map.containsKey(key)) {
+        sorted.add(MapEntry(key, map.remove(key)!));
+      }
+    }
+    sorted.addAll(map.entries);
+    return Map.fromEntries(sorted);
+  }
 }
 
 final duaCatalogProvider = FutureProvider<DuaCatalog>((ref) async {
