@@ -4,7 +4,6 @@ import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
-import 'package:quran_offline/core/utils/transliteration_formatter.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
 /// Layout constants for share-card eligibility (two-path share).
@@ -20,8 +19,7 @@ class VerseShareContent {
     required this.appLanguage,
     required this.contentLanguage,
     required this.showTajweed,
-    required this.useTajweedTransliteration,
-    required this.transliterationStyle,
+    required this.transliterationText,
   });
 
   final Verse verse;
@@ -29,13 +27,13 @@ class VerseShareContent {
   final String appLanguage;
   final String contentLanguage;
   final bool showTajweed;
-  final bool useTajweedTransliteration;
-  final TransliterationStyle transliterationStyle;
+  final String transliterationText;
 
   factory VerseShareContent.from({
     required Verse verse,
     required String surahName,
     required AppSettings settings,
+    String? transliterationText,
   }) {
     return VerseShareContent(
       verse: verse,
@@ -43,8 +41,7 @@ class VerseShareContent {
       appLanguage: settings.appLanguage,
       contentLanguage: settings.language,
       showTajweed: settings.showTajweed,
-      useTajweedTransliteration: settings.useTajweedTransliteration,
-      transliterationStyle: settings.transliterationStyle,
+      transliterationText: transliterationText?.trim() ?? '',
     );
   }
 
@@ -59,20 +56,7 @@ class VerseShareContent {
     return raw != null ? TranslationCleaner.clean(raw) : null;
   }
 
-  String get transliteration {
-    if (useTajweedTransliteration) {
-      return TransliterationFormatter.displayTajweedTransliteration(
-        tlRaw: verse.translit,
-        tlTjRaw: verse.translitTj,
-        tajweedHtml: verse.tajweed,
-      );
-    }
-    return TransliterationFormatter.displayTransliteration(
-      tlRaw: verse.translit,
-      style: transliterationStyle,
-      tajweedHtml: verse.tajweed,
-    );
-  }
+  String get transliteration => transliterationText;
 
   String get plainArabic {
     if (verse.tajweed != null && verse.tajweed!.isNotEmpty) {

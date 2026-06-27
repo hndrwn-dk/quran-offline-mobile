@@ -2,8 +2,6 @@
 
 A production-ready, offline-first Quran reader built with Flutter and Material 3 — Surah, Juz, and Mushaf reading with tajweed, tafsir, recitation, and a personal library.
 
-**Current version:** 1.0.5 (build 31)
-
 ## Features
 
 ### Reading

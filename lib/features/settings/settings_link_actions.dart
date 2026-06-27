@@ -9,12 +9,12 @@ import 'package:url_launcher/url_launcher.dart';
 class SettingsLinkActions {
   SettingsLinkActions._();
 
-  static const String buyMeACoffeeUrl = 'https://buymeacoffee.com/hendrawan';
+  static const String donateUrl = AppLinks.donateUrl;
   static const String privacyUrl = 'https://www.tursinalabs.com/privacy';
   static const String termsUrl = 'https://www.tursinalabs.com/terms';
 
   static Future<void> openDonate(BuildContext context) =>
-      _openUrl(context, Uri.parse(buyMeACoffeeUrl));
+      _openUrl(context, Uri.parse(donateUrl), external: true);
 
   static Future<void> openPrivacy(BuildContext context) =>
       _openUrl(context, Uri.parse(privacyUrl));
@@ -50,10 +50,17 @@ class SettingsLinkActions {
     );
   }
 
-  static Future<void> _openUrl(BuildContext context, Uri uri) async {
+  static Future<void> _openUrl(
+    BuildContext context,
+    Uri uri, {
+    bool external = false,
+  }) async {
     try {
       if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.platformDefault);
+        await launchUrl(
+          uri,
+          mode: external ? LaunchMode.externalApplication : LaunchMode.platformDefault,
+        );
       } else if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not open link')),

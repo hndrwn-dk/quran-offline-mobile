@@ -8,9 +8,9 @@ import 'package:quran_offline/core/providers/highlights_provider.dart';
 import 'package:quran_offline/core/providers/notes_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/providers/transliteration_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
-import 'package:quran_offline/core/utils/transliteration_formatter.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 import 'package:quran_offline/core/share/verse_share.dart';
 import 'package:quran_offline/core/tajweed/tajweed_report.dart';
@@ -83,24 +83,16 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     return rawTranslation != null ? TranslationCleaner.clean(rawTranslation) : null;
   }
 
-  String _getDisplayTransliteration(AppSettings settings) {
-    if (settings.useTajweedTransliteration) {
-      return TransliterationFormatter.displayTajweedTransliteration(
-        tlRaw: widget.verse.translit,
-        tlTjRaw: widget.verse.translitTj,
-        tajweedHtml: widget.verse.tajweed,
-      );
-    }
-    return TransliterationFormatter.displayTransliteration(
-      tlRaw: widget.verse.translit,
-      style: settings.transliterationStyle,
-      tajweedHtml: widget.verse.tajweed,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    final transliterationAsync = ref.watch(
+      ayahTransliterationProvider((
+        surahId: widget.verse.surahId,
+        ayahNo: widget.verse.ayahNo,
+      )),
+    );
+    final displayTransliteration = transliterationAsync.valueOrNull?.trim() ?? '';
     final translation = _getTranslation(settings.language);
     final colorScheme = Theme.of(context).colorScheme;
     
@@ -264,10 +256,10 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               ),
             ),
             if (settings.showTransliteration) ...[
-              if (_getDisplayTransliteration(settings).isNotEmpty) ...[
+              if (displayTransliteration.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 SelectableText(
-                  _getDisplayTransliteration(settings),
+                  displayTransliteration,
                   style: TextStyle(
                   fontSize: settings.translationFontSize * 0.85,
                   fontStyle: FontStyle.italic,
@@ -456,6 +448,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
 
     await VerseShare.share(
       context: context,
+      ref: ref,
       verse: widget.verse,
       surahName: surahName,
       settings: settings,

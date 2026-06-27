@@ -14,19 +14,6 @@ import 'package:quran_offline/features/settings/audio_downloads_screen.dart';
 import 'package:quran_offline/features/settings/settings_link_actions.dart';
 import 'package:quran_offline/features/settings/widgets/about_data_sources_tile.dart';
 
-String settingsTransliterationSubtitle(AppSettings settings, String appLanguage) {
-  if (settings.useTajweedTransliteration) {
-    return AppLocalizations.getSettingsText(
-      'transliteration_source_tajweed_sub',
-      appLanguage,
-    );
-  }
-  return AppLocalizations.getSettingsText(
-    'transliteration_source_simple_sub',
-    appLanguage,
-  );
-}
-
 String settingsLanguageName(String lang) {
   return switch (lang) {
     'id' => 'Indonesian',
@@ -166,72 +153,6 @@ class SettingsQuranSection extends ConsumerWidget {
             onChanged: (value) {
               ref.read(settingsProvider.notifier).updateShowTransliteration(value);
             },
-          ),
-        ),
-        Theme(
-          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            leading: Icon(Icons.record_voice_over, color: colorScheme.primary),
-            title: Text(
-              AppLocalizations.getSettingsText('transliteration_choice_title', appLanguage),
-            ),
-            subtitle: Text(
-              settingsTransliterationSubtitle(settings, appLanguage),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-            ),
-            childrenPadding: EdgeInsets.zero,
-            children: [
-              RadioListTile<bool>(
-                title: Text(
-                  AppLocalizations.getSettingsText(
-                    'transliteration_source_tajweed',
-                    appLanguage,
-                  ),
-                ),
-                subtitle: Text(
-                  AppLocalizations.getSettingsText(
-                    'transliteration_source_tajweed_sub',
-                    appLanguage,
-                  ),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                ),
-                value: true,
-                groupValue: settings.useTajweedTransliteration,
-                onChanged: (v) {
-                  if (v != null) {
-                    ref.read(settingsProvider.notifier).updateUseTajweedTransliteration(v);
-                  }
-                },
-              ),
-              RadioListTile<bool>(
-                title: Text(
-                  AppLocalizations.getSettingsText(
-                    'transliteration_source_simple',
-                    appLanguage,
-                  ),
-                ),
-                subtitle: Text(
-                  AppLocalizations.getSettingsText(
-                    'transliteration_source_simple_sub',
-                    appLanguage,
-                  ),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                ),
-                value: false,
-                groupValue: settings.useTajweedTransliteration,
-                onChanged: (v) {
-                  if (v != null) {
-                    ref.read(settingsProvider.notifier).updateUseTajweedTransliteration(v);
-                  }
-                },
-              ),
-            ],
           ),
         ),
         ListTile(

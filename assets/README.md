@@ -13,6 +13,8 @@ assets/
 │   ├── surah_info/
 │   │   ├── en_surah_info.sqlite
 │   │   └── id_surah_info.sqlite
+│   ├── transliteration/
+│   │   └── transliteration-tajweed.db
 │   └── surah_names/
 │       └── manifest.json
 ├── tafsir/
