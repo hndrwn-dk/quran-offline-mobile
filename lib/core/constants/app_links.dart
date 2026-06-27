@@ -29,4 +29,16 @@ class AppLinks {
       _ => 'en',
     };
   }
+
+  /// Localized one-line invite + Play Store URL for [Share.share].
+  static String shareAppMessage(String appLanguage) {
+    final url = playStoreForLocale(appLanguage);
+    return switch (appLanguage) {
+      'id' =>
+        'Coba Quran Offline — Al-Qur\'an offline, gratis, tanpa iklan.\n$url',
+      'zh' => '试试 Quran Offline — 离线古兰经，免费、无广告。\n$url',
+      'ja' => 'Quran Offline を試してみてください — オフライン、無料、広告なし。\n$url',
+      _ => 'Try Quran Offline — offline Qur\'an, free, no ads.\n$url',
+    };
+  }
 }

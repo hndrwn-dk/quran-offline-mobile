@@ -10,6 +10,8 @@ import 'package:quran_offline/features/home/widgets/home_notes_section.dart';
 import 'package:quran_offline/features/home/widgets/home_quick_actions.dart';
 import 'package:quran_offline/features/read/widgets/last_read_card.dart';
 import 'package:quran_offline/features/read/widgets/weekly_reflection_card.dart';
+import 'package:quran_offline/features/settings/about_screen.dart';
+import 'package:quran_offline/features/settings/settings_link_actions.dart';
 import 'package:quran_offline/features/settings/settings_screen.dart';
 
 class BerandaScreen extends ConsumerWidget {
@@ -22,7 +24,7 @@ class BerandaScreen extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isLargeScreen = Responsive.isLargeScreen(context);
 
-    final phoneBody = const Column(
+    const phoneBody = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         HomeHeroCard(),
@@ -76,19 +78,39 @@ class BerandaScreen extends ConsumerWidget {
         systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
         leadingWidth: 48,
         leading: IconButton(
-          icon: const Icon(Icons.tune_outlined),
+          icon: const Icon(Icons.menu),
           iconSize: 22,
-          tooltip: AppLocalizations.getMenuText('settings', appLanguage),
+          tooltip: AppLocalizations.getSettingsText('about_header', appLanguage),
           onPressed: () {
             Navigator.push<void>(
               context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    const SettingsScreen(showBackButton: true),
+              MaterialPageRoute<void>(
+                builder: (context) => const AboutScreen(),
               ),
             );
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.volunteer_activism_outlined),
+            iconSize: 22,
+            tooltip: AppLocalizations.getSettingsText('support_title', appLanguage),
+            onPressed: () => SettingsLinkActions.openDonate(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            iconSize: 22,
+            tooltip: AppLocalizations.getSettingsText('settings_title', appLanguage),
+            onPressed: () {
+              Navigator.push<void>(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (context) => const SettingsScreen(showBackButton: true),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: HomeBackdrop(
         child: SafeArea(

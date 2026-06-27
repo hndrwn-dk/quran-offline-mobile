@@ -4,10 +4,8 @@ import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/settings/widgets/settings_menu_app_bar.dart';
 import 'package:quran_offline/features/settings/widgets/settings_sections.dart';
 
-class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({super.key, this.showBackButton = false});
-
-  final bool showBackButton;
+class AboutScreen extends ConsumerWidget {
+  const AboutScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -15,15 +13,17 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: topTint,
-      appBar: SettingsMenuAppBar(showBackButton: showBackButton),
+      appBar: const SettingsMenuAppBar(),
       body: HomeBackdrop(
         child: ListView(
           children: const [
-            SettingsQuranSection(),
+            SettingsAboutAppSection(),
             Divider(),
-            SettingsRecitationSection(),
+            SettingsAboutSupportSection(),
             Divider(),
-            SettingsAppSection(),
+            SettingsAboutLegalSection(),
+            Divider(),
+            SettingsAboutFeedbackSection(),
             SizedBox(height: 16),
           ],
         ),

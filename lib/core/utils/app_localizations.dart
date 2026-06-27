@@ -68,6 +68,143 @@ class AppLocalizations {
     };
   }
 
+  static String getExploreHubHint(String section, String language) {
+    return switch (section) {
+      'daily' => switch (language) {
+          'id' => 'Zikir pagi, petang, dan situasi harian',
+          'zh' => '早晚记念与日常祈祷',
+          'ja' => '朝夕のズィクルと日常の祈り',
+          _ => 'Morning, evening, and daily supplications',
+        },
+      'prophet' => switch (language) {
+          'id' => 'Doa para nabi dan rasul',
+          'zh' => '众先知与使者的祈祷',
+          'ja' => '預言者と使徒の祈り',
+          _ => 'Supplications of the prophets',
+        },
+      'science' => switch (language) {
+          'id' => 'Al-Qur\'an dan alam semesta',
+          'zh' => '古兰经与自然界',
+          'ja' => 'クルアーンと自然界',
+          _ => 'Quran and the natural world',
+        },
+      'asma' => switch (language) {
+          'id' => 'Sembilan puluh sembilan nama Allah',
+          'zh' => '真主的九十九个尊名',
+          'ja' => 'アッラーの九十九の御名',
+          _ => 'The ninety-nine names of Allah',
+        },
+      'life_theme' => switch (language) {
+          'id' => 'Doa, zikir, dan renungan ayat',
+          'zh' => '日常祈祷与经文思考',
+          'ja' => '日常の祈りと節の味わい',
+          _ => 'Duas, dhikr, and verse reflections',
+        },
+      _ => section,
+    };
+  }
+
+  static String getAsmaNamesCount(int count, String language) {
+    return switch (language) {
+      'id' => '$count nama',
+      'zh' => '$count 个尊名',
+      'ja' => '御名 $count 件',
+      _ => '$count names',
+    };
+  }
+
+  /// Drill-down app bar subtitle, e.g. "8 topik · Sains".
+  static String formatExploreDrillSubtitle(
+    String countLabel,
+    String parentSection,
+  ) {
+    return '$countLabel · $parentSection';
+  }
+
+  static String getDailyThemeLabel(String theme, String language) {
+    return getThemeCategoryLabel(normalizeLifeSituationCategoryKey(theme), language);
+  }
+
+  /// Maps legacy theme catalog keys to unified Tema hidup keys.
+  static String normalizeLifeSituationCategoryKey(String key) {
+    if (key == 'hereafter') return 'world_hereafter';
+    return key;
+  }
+
+  static String getLifeSituationHubCount(
+    int duaCount,
+    int reflectionCount,
+    String language,
+  ) {
+    return switch (language) {
+      'id' => '$duaCount doa · $reflectionCount renungan',
+      'zh' => '$duaCount 则祈祷 · $reflectionCount 则思考',
+      'ja' => '祈り $duaCount · 味わい $reflectionCount',
+      _ => '$duaCount duas · $reflectionCount reflections',
+    };
+  }
+
+  static String getLifeSituationCategorySubtitle(
+    int duaCount,
+    int reflectionCount,
+    String language,
+  ) {
+    if (duaCount > 0 && reflectionCount > 0) {
+      return switch (language) {
+        'id' => '$duaCount doa · $reflectionCount renungan',
+        'zh' => '$duaCount 则祈祷 · $reflectionCount 则思考',
+        'ja' => '祈り $duaCount · 味わい $reflectionCount',
+        _ => '$duaCount duas · $reflectionCount reflections',
+      };
+    }
+    if (duaCount > 0) {
+      return getDuaProphetCount(duaCount, language);
+    }
+    return getThemeTopicCount(reflectionCount, language);
+  }
+
+  static String getLifeSituationSectionDua(int count, String language) {
+    return switch (language) {
+      'id' => 'Doa ($count)',
+      'zh' => '祈祷 ($count)',
+      'ja' => '祈り ($count)',
+      _ => 'Duas ($count)',
+    };
+  }
+
+  static String getLifeSituationSectionReflection(int count, String language) {
+    return switch (language) {
+      'id' => 'Renungan ($count)',
+      'zh' => '思考 ($count)',
+      'ja' => '味わい ($count)',
+      _ => 'Reflections ($count)',
+    };
+  }
+
+  static String getDailyThemeCount(int count, String language) {
+    return getDuaProphetCount(count, language);
+  }
+
+  static String getExploreSearchHint(String language) {
+    return switch (language) {
+      'id' => 'Cari doa, topik, atau nama...',
+      'en' => 'Search duas, topics, or names...',
+      'zh' => '搜索祈祷、主题或尊名...',
+      'ja' => '祈り、テーマ、御名を検索...',
+      _ => 'Search duas, topics, or names...',
+    };
+  }
+
+  static String getExploreSearchEmpty(String language) {
+    return switch (language) {
+      'id' => 'Tidak ada hasil di Jelajahi',
+      'en' => 'No results in Explore',
+      'zh' => '探索中无结果',
+      'ja' => '探求に結果がありません',
+      _ => 'No results in Explore',
+    };
+  }
+
   static String getScienceCategoryLabel(String category, String language) {
     return switch (category) {
       'cosmos' => switch (language) {
@@ -232,36 +369,55 @@ class AppLocalizations {
   }
 
   static String getThemeCategoryLabel(String category, String language) {
-    return switch (category) {
+    final key = normalizeLifeSituationCategoryKey(category);
+    return switch (key) {
+      'forgiveness' => switch (language) {
+          'id' => 'Ampun & tobat',
+          'zh' => '宽恕与忏悔',
+          'ja' => '赦しと悔い改め',
+          _ => 'Forgiveness & repentance',
+        },
+      'faith' => switch (language) {
+          'id' => 'Iman & hati',
+          'zh' => '信仰与内心',
+          'ja' => '信仰と心',
+          _ => 'Faith & heart',
+        },
       'patience' => switch (language) {
           'id' => 'Sabar & ketenangan',
           'zh' => '忍耐与安宁',
           'ja' => '忍耐と心の平安',
           _ => 'Patience & calm',
         },
+      'trials' => switch (language) {
+          'id' => 'Ujian & cemas',
+          'zh' => '考验与焦虑',
+          'ja' => '試練と不安',
+          _ => 'Trials & anxiety',
+        },
+      'protection' => switch (language) {
+          'id' => 'Perlindungan',
+          'zh' => '护佑',
+          'ja' => '守り',
+          _ => 'Protection',
+        },
+      'provision' => switch (language) {
+          'id' => 'Rezeki & petunjuk',
+          'zh' => '给养与指引',
+          'ja' => '糧と導き',
+          _ => 'Provision & guidance',
+        },
+      'family' => switch (language) {
+          'id' => 'Keluarga & sesama',
+          'zh' => '家庭与众人',
+          'ja' => '家族と仲間',
+          _ => 'Family & others',
+        },
       'gratitude' => switch (language) {
           'id' => 'Syukur',
           'zh' => '感恩',
           'ja' => '感謝',
           _ => 'Gratitude',
-        },
-      'provision' => switch (language) {
-          'id' => 'Rezeki & kecukupan',
-          'zh' => '给养与足用',
-          'ja' => '糧と足りる心',
-          _ => 'Provision',
-        },
-      'family' => switch (language) {
-          'id' => 'Keluarga',
-          'zh' => '家庭',
-          'ja' => '家族',
-          _ => 'Family',
-        },
-      'trials' => switch (language) {
-          'id' => 'Ujian & musibah',
-          'zh' => '考验与灾难',
-          'ja' => '試練と災難',
-          _ => 'Trials & hardship',
         },
       'hope' => switch (language) {
           'id' => 'Harapan & tawakal',
@@ -275,11 +431,11 @@ class AppLocalizations {
           'ja' => '品性と心',
           _ => 'Character & self',
         },
-      'hereafter' => switch (language) {
-          'id' => 'Akhirat',
-          'zh' => '后世',
-          'ja' => '来世',
-          _ => 'The Hereafter',
+      'world_hereafter' => switch (language) {
+          'id' => 'Kebaikan dunia & akhirat',
+          'zh' => '今世与后世的福泽',
+          'ja' => '現世と来世の善',
+          _ => 'Good in this life & the next',
         },
       _ => category,
     };
@@ -1940,6 +2096,7 @@ class AppLocalizations {
   static String getSubtitleText(String key, String language) {
     return switch (key) {
       'settings_subtitle' => _getSettingsSubtitle(language),
+      'about_subtitle' => _getAboutSubtitle(language),
       'home_subtitle' => _getHomeSubtitle(language),
       'read_subtitle' => _getReadSubtitle(language),
       'bookmarks_subtitle' => _getBookmarksSubtitle(language),
@@ -2058,6 +2215,16 @@ class AppLocalizations {
       'zh' => '偏好和显示',
       'ja' => '設定と表示',
       _ => 'Preferences & display',
+    };
+  }
+
+  static String _getAboutSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Versi, dukungan & legal',
+      'en' => 'Version, support & legal',
+      'zh' => '版本、支持与条款',
+      'ja' => 'バージョン・サポート・法的情報',
+      _ => 'Version, support & legal',
     };
   }
 
@@ -2849,6 +3016,14 @@ class AppLocalizations {
       'privacy_subtitle' => _getPrivacySubtitle(language),
       'terms_title' => _getTermsTitle(language),
       'terms_subtitle' => _getTermsSubtitle(language),
+      'rate_app_title' => _getRateAppTitle(language),
+      'rate_app_subtitle' => _getRateAppSubtitle(language),
+      'share_app_title' => _getShareAppTitle(language),
+      'share_app_subtitle' => _getShareAppSubtitle(language),
+      'about_app_section' => _getAboutAppSection(language),
+      'about_support_section' => _getAboutSupportSection(language),
+      'about_legal_section' => _getAboutLegalSection(language),
+      'about_feedback_section' => _getAboutFeedbackSection(language),
       'data_sources_title' => _getDataSourcesTitle(language),
       'credits_line1' => _getCreditsLine1(language),
       'credits_line2' => _getCreditsLine2(language),
@@ -3368,21 +3543,21 @@ class AppLocalizations {
 
   static String _getSupportTitle(String language) {
     return switch (language) {
-      'id' => 'Dukung pengembang',
-      'en' => 'Support the developer',
-      'zh' => '支持开发者',
-      'ja' => '開発者をサポート',
-      _ => 'Support the developer',
+      'id' => 'Dukung Quran Offline',
+      'en' => 'Support Quran Offline',
+      'zh' => '支持 Quran Offline',
+      'ja' => 'Quran Offline をサポート',
+      _ => 'Support Quran Offline',
     };
   }
 
   static String _getSupportSubtitle(String language) {
     return switch (language) {
-      'id' => 'Donasi opsional melalui Buy Me a Coffee',
-      'en' => 'Optional donation via Buy Me a Coffee',
-      'zh' => '通过 Buy Me a Coffee 进行可选捐赠',
-      'ja' => 'Buy Me a Coffee 経由の任意の寄付',
-      _ => 'Optional donation via Buy Me a Coffee',
+      'id' => 'Donasi opsional — bantu app tetap gratis & tanpa iklan',
+      'en' => 'Optional donation — keep the app free & ad-free',
+      'zh' => '可选捐赠 — 帮助应用保持免费且无广告',
+      'ja' => '任意の寄付 — 無料・広告なしのまま維持',
+      _ => 'Optional donation — keep the app free & ad-free',
     };
   }
 
@@ -3423,6 +3598,86 @@ class AppLocalizations {
       'zh' => '查看使用应用的条款。',
       'ja' => 'アプリを使用するための条件を確認。',
       _ => 'Review the terms for using the app.',
+    };
+  }
+
+  static String _getRateAppTitle(String language) {
+    return switch (language) {
+      'id' => 'Beri rating aplikasi',
+      'en' => 'Rate the app',
+      'zh' => '为应用评分',
+      'ja' => 'アプリを評価',
+      _ => 'Rate the app',
+    };
+  }
+
+  static String _getRateAppSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Buka Play Store',
+      'en' => 'Open Play Store',
+      'zh' => '打开 Play 商店',
+      'ja' => 'Play ストアを開く',
+      _ => 'Open Play Store',
+    };
+  }
+
+  static String _getShareAppTitle(String language) {
+    return switch (language) {
+      'id' => 'Bagikan Quran Offline',
+      'en' => 'Share Quran Offline',
+      'zh' => '分享 Quran Offline',
+      'ja' => 'Quran Offline を共有',
+      _ => 'Share Quran Offline',
+    };
+  }
+
+  static String _getShareAppSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Undang teman memakai app ini',
+      'en' => 'Invite friends to use this app',
+      'zh' => '邀请好友使用此应用',
+      'ja' => '友だちにこのアプリを紹介',
+      _ => 'Invite friends to use this app',
+    };
+  }
+
+  static String _getAboutAppSection(String language) {
+    return switch (language) {
+      'id' => 'Aplikasi',
+      'en' => 'App',
+      'zh' => '应用',
+      'ja' => 'アプリ',
+      _ => 'App',
+    };
+  }
+
+  static String _getAboutSupportSection(String language) {
+    return switch (language) {
+      'id' => 'Dukungan',
+      'en' => 'Support',
+      'zh' => '支持',
+      'ja' => 'サポート',
+      _ => 'Support',
+    };
+  }
+
+  static String _getAboutLegalSection(String language) {
+    return switch (language) {
+      'id' => 'Legal',
+      'en' => 'Legal',
+      'zh' => '法律信息',
+      'ja' => '法的情報',
+      _ => 'Legal',
+    };
+  }
+
+  static String _getAboutFeedbackSection(String language) {
+    return switch (language) {
+      'id' => 'Umpan balik',
+      'en' => 'Feedback',
+      'zh' => '反馈',
+      'ja' => 'フィードバック',
+      _ => 'Feedback',
     };
   }
 
