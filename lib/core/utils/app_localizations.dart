@@ -5499,6 +5499,8 @@ class AppLocalizations {
       'delete_all_recitation_q' => _recDeleteAllQuestion(language),
       'selected_for_playback' => _recSelectedForPlayback(language),
       'all_surahs_saved' => _recAllSurahsSaved(language),
+      'selected_reciter_label' => _recSelectedReciterLabel(language),
+      'surahs_section' => _recSurahsSectionLabel(language),
       _ => key,
     };
   }
@@ -5540,6 +5542,55 @@ class AppLocalizations {
       'zh' => '诵读下载',
       'ja' => '朗読のダウンロード',
       _ => 'Recitation Downloads',
+    };
+  }
+
+  static String recAppBarSubtitle(String reciterName, String language) {
+    final section = getRecitationText('recitation_section', language);
+    return '$reciterName · $section';
+  }
+
+  static String _recSelectedReciterLabel(String language) {
+    return switch (language) {
+      'id' => 'QARI TERPILIH',
+      'en' => 'SELECTED RECITER',
+      'zh' => '所选诵读者',
+      'ja' => '選択中の朗読者',
+      _ => 'SELECTED RECITER',
+    };
+  }
+
+  static String _recSurahsSectionLabel(String language) {
+    return switch (language) {
+      'id' => '114 SURAH',
+      'en' => '114 SURAHS',
+      'zh' => '114 章',
+      'ja' => '114 章',
+      _ => '114 SURAHS',
+    };
+  }
+
+  static String recHeroStorageLine(
+    int savedCount,
+    int total,
+    String size,
+    String language,
+  ) {
+    if (savedCount == 0) {
+      return switch (language) {
+        'id' => '$size di perangkat · belum ada surah tersimpan',
+        'en' => '$size on device · no surahs saved yet',
+        'zh' => '设备 $size · 尚未保存章节',
+        'ja' => '端末 $size · 保存済みの章はありません',
+        _ => '$size on device · no surahs saved yet',
+      };
+    }
+    return switch (language) {
+      'id' => '$size di perangkat · $savedCount/$total surah tersimpan',
+      'en' => '$size on device · $savedCount/$total surahs saved',
+      'zh' => '设备 $size · 已保存 $savedCount/$total 章',
+      'ja' => '端末 $size · $savedCount/$total 章を保存済み',
+      _ => '$size on device · $savedCount/$total surahs saved',
     };
   }
 

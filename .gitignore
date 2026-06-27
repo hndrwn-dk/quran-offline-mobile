@@ -91,6 +91,8 @@ assets/quran/index_pages.json
 assets/quran/surah_meanings.json
 assets/quran/surah_info_qul.json
 assets/quran/surah_info/*.sqlite
+assets/quran/transliteration/*.db
+!assets/quran/transliteration/.gitkeep
 assets/quran/surah_names/**
 !assets/quran/surah_names/.gitkeep
 assets/tafsir/*.sqlite

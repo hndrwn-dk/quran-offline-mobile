@@ -10,6 +10,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
+import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 
 /// Type filter for search results (UI-only; applied to provider list).
@@ -116,11 +117,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     });
 
     return Scaffold(
+      backgroundColor: HomeBackdrop.topTint(Theme.of(context).colorScheme),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         toolbarHeight: 54,
         centerTitle: false,
         titleSpacing: 16,
+        backgroundColor: HomeBackdrop.topTint(Theme.of(context).colorScheme),
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -147,7 +152,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Search',
+                  AppLocalizations.getMenuText('search', settings.appLanguage),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.3,
@@ -174,7 +179,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
         ),
       ),
-      body: Column(
+      body: HomeBackdrop(
+        child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -212,17 +218,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         },
                       ),
                     ),
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        shape: BoxShape.circle,
-                      ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4),
                       child: Icon(
                         Icons.search,
-                        color: Theme.of(context).colorScheme.surface,
-                        size: 20,
+                        size: 22,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -236,31 +237,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 if (query.isEmpty) {
                   final colorScheme = Theme.of(context).colorScheme;
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 4, 24, 32),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Icon(
-                          Icons.search,
-                          size: 56,
-                          color: colorScheme.onSurface.withValues(alpha: 0.3),
-                        ),
-                        const SizedBox(height: 16),
                         Text(
-                          AppLocalizations.getSearchText('search_title', settings.appLanguage),
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: colorScheme.onSurface,
-                            fontWeight: FontWeight.w600,
+                          AppLocalizations.getSearchText(
+                            'search_by_label',
+                            settings.appLanguage,
                           ),
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.4,
+                              ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          AppLocalizations.getSearchText('search_by_label', settings.appLanguage),
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _buildSearchHint(
                           context,
                           Icons.book,
@@ -269,7 +261,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           AppLocalizations.getSearchSampleQuery('surah', settings.appLanguage),
                           colorScheme,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         _buildSearchHint(
                           context,
                           Icons.format_list_numbered,
@@ -278,7 +270,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           AppLocalizations.getSearchSampleQuery('juz', settings.appLanguage),
                           colorScheme,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         _buildSearchHint(
                           context,
                           Icons.pages,
@@ -287,7 +279,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           AppLocalizations.getSearchSampleQuery('page', settings.appLanguage),
                           colorScheme,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         _buildSearchHint(
                           context,
                           Icons.numbers,
@@ -296,7 +288,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           AppLocalizations.getSearchSampleQuery('ayat', settings.appLanguage),
                           colorScheme,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         _buildSearchHint(
                           context,
                           Icons.translate,
@@ -305,7 +297,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           AppLocalizations.getSearchSampleQuery('terjemahan', settings.appLanguage),
                           colorScheme,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         _buildSearchHint(
                           context,
                           Icons.language,
@@ -314,10 +306,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           AppLocalizations.getSearchSampleQuery('arabic', settings.appLanguage),
                           colorScheme,
                         ),
-                          const SizedBox(height: 8),
-                        ],
-                      ),
-                    );
+                      ],
+                    ),
+                  );
                 }
 
                 final filtered = _filterResults(results, _selectedTypeFilter);
@@ -604,6 +595,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
@@ -690,24 +682,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () => _applySampleQuery(sampleQuery),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Ink(
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(12),
+            color: colorScheme.surface.withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-              width: 1,
+              color: colorScheme.outlineVariant.withValues(alpha: 0.55),
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  size: 20,
-                  color: colorScheme.onSurfaceVariant,
+                _SearchHintIconBox(
+                  icon: icon,
+                  colorScheme: colorScheme,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -716,25 +706,62 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     children: [
                       Text(
                         title,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Text(
                         example,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                              color: colorScheme.onSurfaceVariant,
+                              height: 1.35,
+                            ),
                       ),
                     ],
                   ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: colorScheme.onSurfaceVariant,
+                  size: 22,
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SearchHintIconBox extends StatelessWidget {
+  const _SearchHintIconBox({
+    required this.icon,
+    required this.colorScheme,
+  });
+
+  final IconData icon;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: colorScheme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.35),
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Icon(
+        icon,
+        size: 18,
+        color: colorScheme.primary,
       ),
     );
   }

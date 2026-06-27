@@ -128,6 +128,26 @@ QUL content is subject to **QUL / Tarteel** terms. Review before use:
 
 ---
 
+## 4b. Transliteration — QUL tajweed (required for Latin under ayat)
+
+Tajweed-aligned Latin transliteration for every ayah.
+
+| Field | Value |
+|-------|--------|
+| **Canonical path** | `data/bundled/quran/transliteration/transliteration-tajweed.db` |
+| **Output path** | `assets/quran/transliteration/transliteration-tajweed.db` |
+| **Source** | [QUL Transliteration resources](https://qul.tarteel.ai/) — tajweed transliteration export |
+| **Runtime table** | `transliterations` with columns `sura`, `ayah`, `ayah_key`, `text` |
+| **Bundle version** | See `TransliterationConfig.bundleVersion` in `lib/core/transliteration/transliteration_config.dart` |
+
+Place the QUL SQLite in `data/bundled/quran/transliteration/`, then run `bash scripts/qo.sh sync` before run or release build. The file is **not** committed to GitHub.
+
+### License
+
+Same as QUL (section 4).
+
+---
+
 ## 5. Tafsir — QUL (required for tafsir panel)
 
 Per-ayah tafsir SQLite bundles.

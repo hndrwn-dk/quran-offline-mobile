@@ -1272,6 +1272,7 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
 
     await VerseShare.share(
       context: context,
+      ref: ref,
       verse: verse,
       surahName: surahName,
       settings: settings,

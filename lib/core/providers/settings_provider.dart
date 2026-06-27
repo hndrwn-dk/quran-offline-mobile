@@ -1,14 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:quran_offline/core/utils/transliteration_formatter.dart';
-
-TransliterationStyle _normalizeTransliterationStyle(String? stored) {
-  if (stored == TransliterationStyle.original.name) {
-    return TransliterationStyle.readable;
-  }
-  return TransliterationStyle.readable;
-}
 
 class AppSettings {
   final String language; // For translation
@@ -17,8 +9,6 @@ class AppSettings {
   final bool showTranslation;
   final bool showTafsir;
   final bool showTajweed;
-  final TransliterationStyle transliterationStyle;
-  final bool useTajweedTransliteration;
   final double arabicFontSize;
   final double translationFontSize;
   final double mushafFontSize;
@@ -31,8 +21,6 @@ class AppSettings {
     this.showTranslation = true, // Default to true since translations are currently always shown
     this.showTafsir = true,
     this.showTajweed = true,
-    this.transliterationStyle = TransliterationStyle.readable,
-    this.useTajweedTransliteration = true,
     this.arabicFontSize = 30.0,
     this.translationFontSize = 16.0,
     this.mushafFontSize = 38.0,
@@ -46,8 +34,6 @@ class AppSettings {
     bool? showTranslation,
     bool? showTafsir,
     bool? showTajweed,
-    TransliterationStyle? transliterationStyle,
-    bool? useTajweedTransliteration,
     double? arabicFontSize,
     double? translationFontSize,
     double? mushafFontSize,
@@ -60,8 +46,6 @@ class AppSettings {
       showTranslation: showTranslation ?? this.showTranslation,
       showTafsir: showTafsir ?? this.showTafsir,
       showTajweed: showTajweed ?? this.showTajweed,
-      transliterationStyle: transliterationStyle ?? this.transliterationStyle,
-      useTajweedTransliteration: useTajweedTransliteration ?? this.useTajweedTransliteration,
       arabicFontSize: arabicFontSize ?? this.arabicFontSize,
       translationFontSize: translationFontSize ?? this.translationFontSize,
       mushafFontSize: mushafFontSize ?? this.mushafFontSize,
@@ -77,8 +61,6 @@ class AppSettings {
       'showTranslation': showTranslation,
       'showTafsir': showTafsir,
       'showTajweed': showTajweed,
-      'transliterationStyle': transliterationStyle.name,
-      'useTajweedTransliteration': useTajweedTransliteration,
       'arabicFontSize': arabicFontSize,
       'translationFontSize': translationFontSize,
       'mushafFontSize': mushafFontSize,
@@ -88,9 +70,6 @@ class AppSettings {
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
     final language = json['language'] as String? ?? 'en';
-    final ts = json['transliterationStyle'] as String?;
-    final transliterationStyle = _normalizeTransliterationStyle(ts);
-    final useTajweedTransliteration = json['useTajweedTransliteration'] as bool? ?? true;
     return AppSettings(
       language: language,
       appLanguage: json['appLanguage'] as String? ?? language, // Default to language for backward compatibility
@@ -98,8 +77,6 @@ class AppSettings {
       showTranslation: json['showTranslation'] as bool? ?? true, // Default to true for backward compatibility
       showTafsir: json['showTafsir'] as bool? ?? true,
       showTajweed: json['showTajweed'] as bool? ?? true,
-      transliterationStyle: transliterationStyle,
-      useTajweedTransliteration: useTajweedTransliteration,
       arabicFontSize: (json['arabicFontSize'] as num?)?.toDouble() ?? 30.0,
       translationFontSize: (json['translationFontSize'] as num?)?.toDouble() ?? 16.0,
       mushafFontSize: (json['mushafFontSize'] as num?)?.toDouble() ?? 38.0,
@@ -132,12 +109,6 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       (e) => e.name == themeModeStr,
       orElse: () => ThemeMode.system,
     );
-    final ts = prefs.getString('transliterationStyle') ?? 'readable';
-    final transliterationStyle = _normalizeTransliterationStyle(ts);
-    final useTajweedTransliteration = prefs.getBool('useTajweedTransliteration') ?? true;
-    if (ts == 'original') {
-      await prefs.setString('transliterationStyle', TransliterationStyle.readable.name);
-    }
 
     final syncedLanguage = language;
     if (appLanguage != syncedLanguage) {
@@ -151,8 +122,6 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       showTranslation: showTranslation,
       showTafsir: showTafsir,
       showTajweed: showTajweed,
-      transliterationStyle: transliterationStyle,
-      useTajweedTransliteration: useTajweedTransliteration,
       arabicFontSize: arabicFontSize,
       translationFontSize: translationFontSize,
       mushafFontSize: mushafFontSize,
@@ -223,28 +192,8 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     await prefs.setDouble('mushafFontSize', size);
     state = state.copyWith(mushafFontSize: size);
   }
-
-  Future<void> updateTransliterationStyle(TransliterationStyle style) async {
-    final normalized = _normalizeTransliterationStyle(style.name);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('transliterationStyle', normalized.name);
-    state = state.copyWith(transliterationStyle: normalized);
-  }
-
-  Future<void> updateUseTajweedTransliteration(bool use) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('useTajweedTransliteration', use);
-    if (!use) {
-      await prefs.setString('transliterationStyle', TransliterationStyle.readable.name);
-    }
-    state = state.copyWith(
-      useTajweedTransliteration: use,
-      transliterationStyle: use ? state.transliterationStyle : TransliterationStyle.readable,
-    );
-  }
 }
 
 final settingsProvider = StateNotifierProvider<SettingsNotifier, AppSettings>((ref) {
   return SettingsNotifier();
 });
-

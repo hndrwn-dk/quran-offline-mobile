@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/share/verse_share_content.dart';
-import 'package:quran_offline/core/utils/transliteration_formatter.dart';
 
 Verse _verse({
   required int surahId,
@@ -26,8 +25,6 @@ void main() {
     language: 'id',
     appLanguage: 'id',
     showTajweed: false,
-    useTajweedTransliteration: false,
-    transliterationStyle: TransliterationStyle.readable,
   );
 
   test('short ayah fits share card', () {
