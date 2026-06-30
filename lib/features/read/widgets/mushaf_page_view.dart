@@ -10,6 +10,7 @@ import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/providers/mushaf_navigation_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/models/bookmark_open_context.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
@@ -23,13 +24,16 @@ import 'package:quran_offline/core/utils/mushaf_layout.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/core/tajweed/tajweed_parser.dart';
-import 'package:quran_offline/core/tajweed/tajweed_report.dart';
+import 'package:quran_offline/core/feedback/feedback_context.dart';
+import 'package:quran_offline/core/feedback/feedback_type.dart';
+import 'package:quran_offline/features/settings/feedback_form_sheet.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 import 'package:quran_offline/features/audio/global_recitation_bar.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_offline_audio_banner.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_gesture_hint_banner.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_number_badge.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
+import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
 import 'package:quran_offline/features/read/widgets/qpc_v2_mushaf_text.dart';
 
 class MushafPageView extends ConsumerStatefulWidget {
@@ -529,166 +533,121 @@ class _MushafPageState extends ConsumerState<MushafPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: Navigator.canPop(context)
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  tooltip: AppLocalizations.getActionTooltip('back', appLanguage),
-                )
-              : null,
+          leading: readerAppBarBackButton(context),
           automaticallyImplyLeading: false,
           toolbarHeight: 54,
           centerTitle: false,
-          titleSpacing: 16,
-        title: FutureBuilder<List<int>>(
-          future: MushafLayout.getSurahIdsForPage(widget.pageNo),
-          builder: (context, surahIdsSnapshot) {
-            return surahsAsync.when(
-              data: (surahs) {
-                final surahIds = surahIdsSnapshot.data ?? [];
-                if (surahIds.isEmpty) {
-                  return Text(
-                    AppLocalizations.getMushafPageText(widget.pageNo, appLanguage),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          height: 1.2,
-                        ),
-                  );
-                }
-
-                final firstSurahId = surahIds.first;
-                final lastSurahId = surahIds.last;
-                
-                final firstSurah = surahs.firstWhere(
-                  (s) => s.id == firstSurahId,
-                  orElse: () => SurahInfo(
-                    id: firstSurahId,
-                    arabicName: '',
-                    englishName: 'Surah $firstSurahId',
-                    englishMeaning: '',
-                  ),
-                );
-                
-                final lastSurah = surahs.firstWhere(
-                  (s) => s.id == lastSurahId,
-                  orElse: () => SurahInfo(
-                    id: lastSurahId,
-                    arabicName: '',
-                    englishName: 'Surah $lastSurahId',
-                    englishMeaning: '',
-                  ),
-                );
-
-                // Format surah names with proper diacritics
-                String formatSurahName(String name) {
-                  final formattedNames = {
-                    'Al-Fatiha': 'Al-Fātiḥah',
-                    'Al-Baqarah': 'Al-Baqarah',
-                    'Ali Imran': 'Āl ʿImrān',
-                    'An-Nisa': 'An-Nisāʾ',
-                    'Al-Maidah': 'Al-Māʾidah',
-                    "Al-An'am": 'Al-Anʿām',
-                    "Al-A'raf": 'Al-Aʿrāf',
-                    'Al-Anfal': 'Al-Anfāl',
-                    'At-Tawbah': 'At-Tawbah',
-                    "Ar-Ra'd": 'Ar-Raʿd',
-                    'Al-Hijr': 'Al-Ḥijr',
-                    "Al-Isra'": 'Al-Isrāʾ',
-                    'Al-Kahf': 'Al-Kahf',
-                    'Al-Anbiya': 'Al-Anbiyāʾ',
-                    "Al-Mu'minun": 'Al-Muʾminūn',
-                    "Ash-Shu'ara": 'Ash-Shuʿarāʾ',
-                    "Al-'Ankabut": 'Al-ʿAnkabūt',
-                    "Al-Jumu'ah": 'Al-Jumuʿah',
-                    "Al-Ma'arij": 'Al-Maʿārij',
-                    "Al-A'la": 'Al-Aʿlā',
-                  };
-                  return formattedNames[name] ?? name;
-                }
-
-                final firstSurahName = formatSurahName(firstSurah.englishName);
-                final lastSurahName = formatSurahName(lastSurah.englishName);
-
-                String subtitle;
-                if (surahIds.length == 1) {
-                  subtitle = 'Surah $firstSurahName';
-                } else {
-                  subtitle = 'Surah $firstSurahName - Surah $lastSurahName';
-                }
-
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      AppLocalizations.getMushafPageText(widget.pageNo, appLanguage),
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            height: 1.2,
-                          ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                            height: 1.2,
-                          ),
-                    ),
-                  ],
-                );
-              },
-              loading: () => Text(
-                AppLocalizations.getMushafPageText(widget.pageNo, appLanguage),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      height: 1.2,
-                    ),
-              ),
-              error: (_, __) => Text(
-                AppLocalizations.getMushafPageText(widget.pageNo, appLanguage),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      height: 1.2,
-                    ),
-              ),
-            );
-          },
-        ),
-        actions: [
-          if (_textSettingsAppBarVisible)
-            IconButton(
-              icon: const Icon(Icons.text_fields),
-              tooltip: AppLocalizations.getSettingsText(
-                'text_settings_title',
+          titleSpacing: 0,
+          title: FutureBuilder<List<int>>(
+            future: MushafLayout.getSurahIdsForPage(widget.pageNo),
+            builder: (context, surahIdsSnapshot) {
+              final pageTitle = AppLocalizations.getMushafPageText(
+                widget.pageNo,
                 appLanguage,
-              ),
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => const MushafTextSettingsDialog(),
-                ).then((_) {
-                  setState(() {
-                    _refreshLines();
-                  });
-                });
-              },
-            ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(
-            height: 1,
-            thickness: 1,
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+              );
+              return surahsAsync.when(
+                data: (surahs) {
+                  final surahIds = surahIdsSnapshot.data ?? [];
+                  if (surahIds.isEmpty) {
+                    return ReaderAppBarTitleColumn(title: pageTitle);
+                  }
+
+                  final firstSurahId = surahIds.first;
+                  final lastSurahId = surahIds.last;
+
+                  final firstSurah = surahs.firstWhere(
+                    (s) => s.id == firstSurahId,
+                    orElse: () => SurahInfo(
+                      id: firstSurahId,
+                      arabicName: '',
+                      englishName: 'Surah $firstSurahId',
+                      englishMeaning: '',
+                    ),
+                  );
+
+                  final lastSurah = surahs.firstWhere(
+                    (s) => s.id == lastSurahId,
+                    orElse: () => SurahInfo(
+                      id: lastSurahId,
+                      arabicName: '',
+                      englishName: 'Surah $lastSurahId',
+                      englishMeaning: '',
+                    ),
+                  );
+
+                  String formatSurahName(String name) {
+                    final formattedNames = {
+                      'Al-Fatiha': 'Al-Fātiḥah',
+                      'Al-Baqarah': 'Al-Baqarah',
+                      'Ali Imran': 'Āl ʿImrān',
+                      'An-Nisa': 'An-Nisāʾ',
+                      'Al-Maidah': 'Al-Māʾidah',
+                      "Al-An'am": 'Al-Anʿām',
+                      "Al-A'raf": 'Al-Aʿrāf',
+                      'Al-Anfal': 'Al-Anfāl',
+                      'At-Tawbah': 'At-Tawbah',
+                      "Ar-Ra'd": 'Ar-Raʿd',
+                      'Al-Hijr': 'Al-Ḥijr',
+                      "Al-Isra'": 'Al-Isrāʾ',
+                      'Al-Kahf': 'Al-Kahf',
+                      'Al-Anbiya': 'Al-Anbiyāʾ',
+                      "Al-Mu'minun": 'Al-Muʾminūn',
+                      "Ash-Shu'ara": 'Ash-Shuʿarāʾ',
+                      "Al-'Ankabut": 'Al-ʿAnkabūt',
+                      "Al-Jumu'ah": 'Al-Jumuʿah',
+                      "Al-Ma'arij": 'Al-Maʿārij',
+                      "Al-A'la": 'Al-Aʿlā',
+                    };
+                    return formattedNames[name] ?? name;
+                  }
+
+                  final firstSurahName = formatSurahName(firstSurah.englishName);
+                  final lastSurahName = formatSurahName(lastSurah.englishName);
+                  final subtitle = surahIds.length == 1
+                      ? AppLocalizations.formatMushafReaderSubtitle(
+                          appLanguage,
+                          firstSurahName,
+                        )
+                      : AppLocalizations.formatMushafReaderSubtitle(
+                          appLanguage,
+                          firstSurahName,
+                          lastSurahName: lastSurahName,
+                        );
+
+                  return ReaderAppBarTitleColumn(
+                    title: pageTitle,
+                    subtitle: subtitle,
+                  );
+                },
+                loading: () => ReaderAppBarTitleColumn(title: pageTitle),
+                error: (_, __) => ReaderAppBarTitleColumn(title: pageTitle),
+              );
+            },
           ),
+          actions: [
+            if (_textSettingsAppBarVisible)
+              IconButton(
+                icon: const Icon(Icons.text_fields),
+                tooltip: AppLocalizations.getSettingsText(
+                  'text_settings_title',
+                  appLanguage,
+                ),
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => const MushafTextSettingsDialog(),
+                  ).then((_) {
+                    setState(() {
+                      _refreshLines();
+                    });
+                  });
+                },
+              ),
+          ],
+          bottom: readerAppBarBottomDivider(colorScheme),
         ),
-      ),
       body: FutureBuilder<_MushafPageSnapshot>(
         future: _pageFuture,
         builder: (context, snapshot) {
@@ -1168,6 +1127,7 @@ class _InlineAyahNumberState extends ConsumerState<_InlineAyahNumber> {
       ref,
       widget.surahId!,
       widget.ayahNo,
+      openContext: BookmarkOpenContext.mushaf,
     );
     
     await _checkBookmark();
@@ -1415,7 +1375,12 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
                       const SizedBox(width: 12),
                       IconButton.filled(
                         onPressed: () async {
-                          await toggleBookmark(ref, widget.surahId, widget.ayahNo);
+                          await toggleBookmark(
+                            ref,
+                            widget.surahId,
+                            widget.ayahNo,
+                            openContext: BookmarkOpenContext.mushaf,
+                          );
                           await _loadBookmark();
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -1453,12 +1418,15 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
                       const SizedBox(width: 12),
                       IconButton.filled(
                         onPressed: () {
-                          TajweedReport.launch(
-                            context: context,
+                          showFeedbackForm(
+                            context,
+                            type: FeedbackType.bug,
                             language: settings.appLanguage,
-                            surahId: widget.surahId,
-                            ayahNo: widget.ayahNo,
-                            arabicSnippet: verse.arabic,
+                            contextData: FeedbackContext(
+                              surahId: widget.surahId,
+                              ayahNo: widget.ayahNo,
+                              arabicSnippet: verse.arabic,
+                            ),
                           );
                         },
                         icon: const Icon(Icons.flag_outlined, size: 22),

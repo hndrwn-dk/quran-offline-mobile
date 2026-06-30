@@ -201,32 +201,56 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                     ),
                   ),
                 ),
-                SliverList.builder(
-                  itemCount: surahs.length,
-                  itemBuilder: (context, index) {
-                    final surah = surahs[index];
-                    final isComplete = downloads.isComplete(reciter.id, surah.id);
-                    final progress = downloads.progressFor(reciter.id, surah.id);
-                    final isLast = index == surahs.length - 1;
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList.builder(
+                    itemCount: surahs.length,
+                    itemBuilder: (context, index) {
+                      final surah = surahs[index];
+                      final isComplete = downloads.isComplete(reciter.id, surah.id);
+                      final progress = downloads.progressFor(reciter.id, surah.id);
+                      final isFirst = index == 0;
+                      final isLast = index == surahs.length - 1;
+                      final outline = colorScheme.outlineVariant.withValues(alpha: 0.55);
 
-                    return _SurahDownloadRow(
-                      surahId: surah.id,
-                      surahName: surah.englishName,
-                      isComplete: isComplete,
-                      progress: progress,
-                      isLast: isLast,
-                      colorScheme: colorScheme,
-                      appLanguage: appLanguage,
-                      trailing: _buildTrailing(
-                        reciter.id,
-                        surah.id,
-                        isComplete,
-                        progress,
-                        colorScheme,
-                        appLanguage,
-                      ),
-                    );
-                  },
+                      return DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          borderRadius: BorderRadius.vertical(
+                            top: isFirst ? const Radius.circular(16) : Radius.zero,
+                            bottom: isLast ? const Radius.circular(16) : Radius.zero,
+                          ),
+                          border: Border(
+                            left: BorderSide(color: outline),
+                            right: BorderSide(color: outline),
+                            top: isFirst ? BorderSide(color: outline) : BorderSide.none,
+                            bottom: BorderSide(
+                              color: colorScheme.outlineVariant.withValues(
+                                alpha: isLast ? 0.55 : 0.45,
+                              ),
+                            ),
+                          ),
+                        ),
+                        child: _SurahDownloadRow(
+                          surahId: surah.id,
+                          surahName: surah.englishName,
+                          isComplete: isComplete,
+                          progress: progress,
+                          isLast: isLast,
+                          colorScheme: colorScheme,
+                          appLanguage: appLanguage,
+                          trailing: _buildTrailing(
+                            reciter.id,
+                            surah.id,
+                            isComplete,
+                            progress,
+                            colorScheme,
+                            appLanguage,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 24)),
               ],
@@ -251,7 +275,7 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
   }) {
     final showTotalAllReciters =
         !_storageLoading && _totalBytes > 0 && otherRecitersWithData > 0;
-    final totalSurahs = AudioOfflinePrompts.totalSurahs;
+    const totalSurahs = AudioOfflinePrompts.totalSurahs;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -631,59 +655,55 @@ class _SurahDownloadRow extends StatelessWidget {
             ? colorScheme.primary
             : colorScheme.onSurfaceVariant;
 
-    return Material(
-      color: colorScheme.surface,
-      child: InkWell(
-        onTap: null,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            border: isLast
-                ? null
-                : Border(
-                    bottom: BorderSide(
-                      color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+    return InkWell(
+      onTap: null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.35),
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '$surahId',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurfaceVariant,
                     ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    surahName,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
-          ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: colorScheme.primaryContainer,
-                foregroundColor: colorScheme.onPrimaryContainer,
-                child: Text(
-                  '$surahId',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: subtitleColor,
+                          fontSize: 11,
+                        ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      surahName,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: subtitleColor,
-                            fontSize: 11,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-              trailing,
-            ],
-          ),
+            ),
+            trailing,
+          ],
         ),
       ),
     );

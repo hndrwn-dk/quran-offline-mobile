@@ -5,6 +5,7 @@ import 'package:quran_offline/core/providers/quick_search_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
@@ -113,59 +114,16 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (_isExpanded)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Material(
-              elevation: 0,
-              color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(28),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.4),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.search,
-                      size: 20,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        controller: _textController,
-                        focusNode: _focusNode,
-                        onChanged: _onQueryChanged,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.getSubtitleText('quick_search_hint', settings.appLanguage),
-                          border: InputBorder.none,
-                          hintStyle: TextStyle(
-                            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                          ),
-                        ),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ),
-                    if (query.isNotEmpty)
-                      IconButton(
-                        icon: Icon(
-                          Icons.close,
-                          size: 20,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: _clearSearch,
-                      ),
-                  ],
-                ),
+          AppSearchFieldInset(
+            child: AppSearchField(
+              controller: _textController,
+              focusNode: _focusNode,
+              hintText: AppLocalizations.getSubtitleText(
+                'quick_search_hint',
+                settings.appLanguage,
               ),
+              onChanged: _onQueryChanged,
+              onClear: _clearSearch,
             ),
           ),
         if (_isExpanded && query.isNotEmpty)
@@ -173,7 +131,12 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
             data: (results) {
               if (results.isEmpty) {
                 return Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  padding: const EdgeInsets.fromLTRB(
+                  kAppContentHorizontalInset,
+                  0,
+                  kAppContentHorizontalInset,
+                  8,
+                ),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -196,7 +159,12 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
                 );
               }
               return Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                padding: const EdgeInsets.fromLTRB(
+                  kAppContentHorizontalInset,
+                  0,
+                  kAppContentHorizontalInset,
+                  8,
+                ),
                 child: Container(
                   constraints: const BoxConstraints(maxHeight: 400),
                   decoration: BoxDecoration(
@@ -312,7 +280,12 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
               );
             },
             loading: () => Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              padding: const EdgeInsets.fromLTRB(
+                kAppContentHorizontalInset,
+                0,
+                kAppContentHorizontalInset,
+                8,
+              ),
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(

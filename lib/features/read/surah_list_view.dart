@@ -6,7 +6,9 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
+import 'package:quran_offline/core/widgets/app_search_field.dart';
+import 'package:quran_offline/features/read/widgets/read_grouped_surah_card.dart';
+import 'package:quran_offline/features/read/widgets/read_surah_list_row.dart';
 import 'package:quran_offline/features/reader/open_reader_screen.dart';
 
 class SurahListView extends ConsumerWidget {
@@ -26,116 +28,58 @@ class SurahListView extends ConsumerWidget {
           slivers: [
             for (final widget in topWidgets) SliverToBoxAdapter(child: widget),
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(
+                horizontal: kAppContentHorizontalInset,
+                vertical: 8,
+              ),
               sliver: SliverList.separated(
                 itemCount: surahs.length,
                 separatorBuilder: (context, index) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
                   final surah = surahs[index];
 
-                  return InkWell(
-              key: Key('surah_list_${surah.id}'),
-              onTap: () {
-                final source = SurahSource(surah.id);
-                ref.read(readerSourceProvider.notifier).state = source;
-                // Save last read (without ayahNo, will be updated when user scrolls)
-                ref.read(lastReadProvider.notifier).saveLastRead(source);
-                openReaderScreen(context, ref);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colorScheme.shadow.withValues(alpha: 0.08),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                      spreadRadius: 0,
-                    ),
-                  ],
-                ),
-                child: FutureBuilder<int>(
-                  future: ref.read(databaseProvider).getAyahCountForSurah(surah.id),
-                  builder: (context, snapshot) {
-                    final ayahCount = snapshot.data ?? 0;
-                    
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Surah number
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: colorScheme.surfaceVariant,
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            '${surah.id}',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      key: Key('surah_list_${surah.id}'),
+                      onTap: () {
+                        final source = SurahSource(surah.id);
+                        ref.read(readerSourceProvider.notifier).state = source;
+                        ref.read(lastReadProvider.notifier).saveLastRead(source);
+                        openReaderScreen(context, ref);
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Ink(
+                        decoration: ReadGroupedSurahCard.standaloneDecoration(
+                          colorScheme,
                         ),
-                        const SizedBox(width: 12),
-                        // English name and meaning
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                surah.englishName,
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: colorScheme.onSurface,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
+                          child: FutureBuilder<int>(
+                            future: ref
+                                .read(databaseProvider)
+                                .getAyahCountForSurah(surah.id),
+                            builder: (context, snapshot) {
+                              final ayahCount = snapshot.data ?? 0;
+                              final meaning =
+                                  surah.getMeaning(settings.appLanguage);
+
+                              return ReadSurahListRow(
+                                surahId: surah.id,
+                                name: surah.englishName,
+                                meaning:
+                                    meaning.isEmpty ? null : meaning,
+                                trailingDetail:
+                                    AppLocalizations.formatSurahVerseCount(
+                                  settings.appLanguage,
+                                  ayahCount,
                                 ),
-                              ),
-                              Builder(
-                                builder: (context) {
-                                  final meaning = surah.getMeaning(settings.appLanguage);
-                                  if (meaning.isEmpty) return const SizedBox.shrink();
-                                  return Column(
-                                    children: [
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        meaning,
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: colorScheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ],
+                              );
+                            },
                           ),
                         ),
-                        // Arabic name and ayah count
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            SurahNameListGlyph(surahId: surah.id),
-                            const SizedBox(height: 4),
-                            Text(
-                              AppLocalizations.formatSurahVerseCount(
-                                settings.appLanguage,
-                                ayahCount,
-                              ),
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
+                      ),
+                    ),
                   );
                 },
               ),
@@ -150,4 +94,3 @@ class SurahListView extends ConsumerWidget {
     );
   }
 }
-

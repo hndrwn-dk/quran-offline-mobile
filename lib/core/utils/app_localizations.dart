@@ -244,6 +244,33 @@ class AppLocalizations {
     };
   }
 
+  static String getExploreFeaturedBadge(String language) {
+    return switch (language) {
+      'id' => 'Unggulan',
+      'zh' => '精选',
+      'ja' => 'おすすめ',
+      _ => 'Featured',
+    };
+  }
+
+  static String getScienceFeaturedCategoryHint(String language) {
+    return switch (language) {
+      'id' => 'Mulai jelajahi dari kategori ini',
+      'zh' => '从此分类开始浏览',
+      'ja' => 'このカテゴリから始める',
+      _ => 'Start exploring from this category',
+    };
+  }
+
+  static String getLifeThemeFeaturedCategoryHint(String language) {
+    return switch (language) {
+      'id' => 'Doa dan renungan seputar rezeki & petunjuk',
+      'zh' => '有关给养与指引的祈祷与思考',
+      'ja' => '糧と導きに関する祈りと黙想',
+      _ => 'Duas and reflections on provision & guidance',
+    };
+  }
+
   static String getScienceNoteHeading(String language) {
     return switch (language) {
       'id' => 'Catatan ilmiah',
@@ -544,6 +571,22 @@ class AppLocalizations {
       'zh' => '第$juzNo卷',
       'ja' => '第$juzNoジュズ',
       _ => 'Juz $juzNo',
+    };
+  }
+
+  static String formatJuzReaderSubtitle(
+    String language,
+    int ayahCount,
+    String firstSurahName,
+    String lastSurahName,
+  ) {
+    final range = '$firstSurahName → $lastSurahName';
+    if (ayahCount <= 0) return range;
+    return switch (language) {
+      'id' => '$ayahCount ayah · $range',
+      'zh' => '$ayahCount 节 · $range',
+      'ja' => '$ayahCount 節 · $range',
+      _ => '$ayahCount ayah · $range',
     };
   }
 
@@ -2062,6 +2105,29 @@ class AppLocalizations {
     return '$mushafLabel - $pageLabel $pageNo';
   }
 
+  /// Subtitle under "Mushaf - Page N" in mushaf reader AppBar.
+  static String formatMushafReaderSubtitle(
+    String language,
+    String firstSurahName, {
+    String? lastSurahName,
+  }) {
+    final last = lastSurahName ?? firstSurahName;
+    if (last == firstSurahName) {
+      return switch (language) {
+        'id' => 'Surah $firstSurahName',
+        'zh' => '苏拉 $firstSurahName',
+        'ja' => 'スーラ $firstSurahName',
+        _ => 'Surah $firstSurahName',
+      };
+    }
+    return switch (language) {
+      'id' => 'Surah $firstSurahName — Surah $last',
+      'zh' => '苏拉 $firstSurahName — $last',
+      'ja' => 'スーラ $firstSurahName — $last',
+      _ => 'Surah $firstSurahName — Surah $last',
+    };
+  }
+
   static String getMushafGestureHint(String language) {
     return switch (language) {
       'id' => 'Ketuk ayat untuk putar. Tahan untuk arti & bookmark.',
@@ -2099,6 +2165,7 @@ class AppLocalizations {
       'about_subtitle' => _getAboutSubtitle(language),
       'home_subtitle' => _getHomeSubtitle(language),
       'read_subtitle' => _getReadSubtitle(language),
+      'read_title' => _getReadTitle(language),
       'bookmarks_subtitle' => _getBookmarksSubtitle(language),
       'bookmarks_empty' => _getBookmarksEmpty(language),
       'search_subtitle' => _getSearchSubtitle(language),
@@ -2184,17 +2251,14 @@ class AppLocalizations {
   }
 
   static String _getSurah(String language) {
-    // Surah is the same in all languages (it's an Arabic term)
     return 'Surah';
   }
 
   static String _getJuz(String language) {
-    // Juz is the same in all languages (it's an Arabic term)
     return 'Juz';
   }
 
   static String _getMushaf(String language) {
-    // Mushaf is the same in all languages (it's an Arabic term)
     return 'Mushaf';
   }
 
@@ -2232,11 +2296,21 @@ class AppLocalizations {
 
   static String _getReadSubtitle(String language) {
     return switch (language) {
-      'id' => 'Surah, Juz, dan Mushaf',
-      'en' => 'Surah, Juz, and Mushaf',
-      'zh' => '章节、卷与穆沙夫',
-      'ja' => 'スーラ、ジュズ、ムシャフ',
-      _ => 'Surah, Juz, and Mushaf',
+      'id' => 'Surah, juz, atau mushaf — pilih cara baca Anda',
+      'en' => 'Surah, juz, or mushaf — choose how you read',
+      'zh' => 'Surah、Juz 或 Mushaf — 选择您的阅读方式',
+      'ja' => 'Surah、Juz、Mushaf — 読み方を選びましょう',
+      _ => 'Surah, juz, or mushaf — choose how you read',
+    };
+  }
+
+  static String _getReadTitle(String language) {
+    return switch (language) {
+      'id' => 'Al-Qur\'an',
+      'en' => 'Al-Qur\'an',
+      'zh' => '古兰经',
+      'ja' => 'アル・クルアーン',
+      _ => 'Al-Qur\'an',
     };
   }
 
@@ -3061,20 +3135,38 @@ class AppLocalizations {
       'tajweed_rule_madd_lazim_desc' => _getTajweedRuleMaddLazimDesc(language),
       'tajweed_rule_ham_wasl' => _getTajweedRuleHamWasl(language),
       'tajweed_rule_ham_wasl_desc' => _getTajweedRuleHamWaslDesc(language),
-      'report_tajweed_title' => _getReportTajweedTitle(language),
-      'report_tajweed_action' => _getReportTajweedAction(language),
-      'report_tajweed_email_subject' => _getReportTajweedEmailSubject(language),
-      'report_tajweed_email_subject_generic' =>
-          _getReportTajweedEmailSubjectGeneric(language),
-      'report_tajweed_body_header' => _getReportTajweedBodyHeader(language),
-      'report_tajweed_body_verse' => _getReportTajweedBodyVerse(language),
-      'report_tajweed_body_verse_unknown' =>
-          _getReportTajweedBodyVerseUnknown(language),
-      'report_tajweed_body_reference' => _getReportTajweedBodyReference(language),
-      'report_tajweed_body_arabic' => _getReportTajweedBodyArabic(language),
-      'report_tajweed_body_meta' => _getReportTajweedBodyMeta(language),
-      'report_tajweed_body_prompt' => _getReportTajweedBodyPrompt(language),
-      'report_tajweed_launch_failed' => _getReportTajweedLaunchFailed(language),
+      'suggest_feature_title' => _getSuggestFeatureTitle(language),
+      'suggest_feature_subtitle' => _getSuggestFeatureSubtitle(language),
+      'report_bug_title' => _getReportBugTitle(language),
+      'report_bug_subtitle' => _getReportBugSubtitle(language),
+      'report_problem_action' => _getReportProblemAction(language),
+      'feedback_form_title_feature' => _getFeedbackFormTitleFeature(language),
+      'feedback_form_title_bug' => _getFeedbackFormTitleBug(language),
+      'feedback_title_label' => _getFeedbackTitleLabel(language),
+      'feedback_title_hint_feature' => _getFeedbackTitleHintFeature(language),
+      'feedback_title_hint_bug' => _getFeedbackTitleHintBug(language),
+      'feedback_description_label' => _getFeedbackDescriptionLabel(language),
+      'feedback_description_hint' => _getFeedbackDescriptionHint(language),
+      'feedback_submit' => _getFeedbackSubmit(language),
+      'feedback_submitting' => _getFeedbackSubmitting(language),
+      'feedback_success' => _getFeedbackSuccess(language),
+      'feedback_success_email_fallback' =>
+          _getFeedbackSuccessEmailFallback(language),
+      'feedback_error' => _getFeedbackError(language),
+      'feedback_error_rate_limited' => _getFeedbackErrorRateLimited(language),
+      'feedback_title_required' => _getFeedbackTitleRequired(language),
+      'feedback_description_required' => _getFeedbackDescriptionRequired(language),
+      'feedback_body_verse' => _getFeedbackBodyVerse(language),
+      'feedback_body_reference' => _getFeedbackBodyReference(language),
+      'feedback_body_arabic' => _getFeedbackBodyArabic(language),
+      'feedback_body_meta' => _getFeedbackBodyMeta(language),
+      'feedback_email_subject_bug_verse' =>
+          _getFeedbackEmailSubjectBugVerse(language),
+      'feedback_email_subject_bug' => _getFeedbackEmailSubjectBug(language),
+      'feedback_email_subject_feature' => _getFeedbackEmailSubjectFeature(language),
+      'feedback_email_header_feature' => _getFeedbackEmailHeaderFeature(language),
+      'feedback_email_header_bug' => _getFeedbackEmailHeaderBug(language),
+      'feedback_email_failed' => _getFeedbackEmailFailed(language),
       // Highlight Guide
       'highlight_guide_title' => _getHighlightGuideTitle(language),
       'highlight_guide_intro' => _getHighlightGuideIntro(language),
@@ -3816,57 +3908,212 @@ class AppLocalizations {
     };
   }
 
-  static String _getReportTajweedTitle(String language) {
+  static String _getSuggestFeatureTitle(String language) {
     return switch (language) {
-      'id' => 'Laporkan tajweed salah',
-      'en' => 'Report tajweed issue',
-      'zh' => '报告泰吉维德颜色问题',
-      'ja' => 'タジウィードの色を報告',
-      _ => 'Report tajweed issue',
+      'id' => 'Ajukan fitur baru',
+      'en' => 'Suggest a feature',
+      'zh' => '建议新功能',
+      'ja' => '新機能を提案',
+      _ => 'Suggest a feature',
     };
   }
 
-  static String _getReportTajweedAction(String language) {
+  static String _getSuggestFeatureSubtitle(String language) {
     return switch (language) {
-      'id' => 'Laporkan tajweed salah',
-      'en' => 'Report tajweed issue',
-      'zh' => '报告泰吉维德问题',
-      'ja' => 'タジウィードを報告',
-      _ => 'Report tajweed issue',
+      'id' => 'Kirim ide fitur ke tim pengembang',
+      'en' => 'Send a feature idea to the team',
+      'zh' => '向开发团队发送功能建议',
+      'ja' => '開発チームに機能アイデアを送る',
+      _ => 'Send a feature idea to the team',
     };
   }
 
-  static String _getReportTajweedEmailSubject(String language) {
+  static String _getReportBugTitle(String language) {
     return switch (language) {
-      'id' => 'Laporan tajweed — QS {surah}:{ayah}',
-      'en' => 'Tajweed report — QS {surah}:{ayah}',
-      'zh' => '泰吉维德报告 — {surah}:{ayah}',
-      'ja' => 'タジウィード報告 — {surah}:{ayah}',
-      _ => 'Tajweed report — QS {surah}:{ayah}',
+      'id' => 'Laporkan masalah',
+      'en' => 'Report a problem',
+      'zh' => '报告问题',
+      'ja' => '問題を報告',
+      _ => 'Report a problem',
     };
   }
 
-  static String _getReportTajweedEmailSubjectGeneric(String language) {
+  static String _getReportBugSubtitle(String language) {
     return switch (language) {
-      'id' => 'Laporan tajweed — Quran Offline',
-      'en' => 'Tajweed report — Quran Offline',
-      'zh' => '泰吉维德报告 — Quran Offline',
-      'ja' => 'タジウィード報告 — Quran Offline',
-      _ => 'Tajweed report — Quran Offline',
+      'id' => 'Bug, tampilan salah, atau perilaku tidak wajar',
+      'en' => 'Bugs, display issues, or unexpected behavior',
+      'zh' => '错误、显示异常或意外行为',
+      'ja' => 'バグ、表示の問題、想定外の動作',
+      _ => 'Bugs, display issues, or unexpected behavior',
     };
   }
 
-  static String _getReportTajweedBodyHeader(String language) {
+  static String _getReportProblemAction(String language) {
     return switch (language) {
-      'id' => 'Laporan warna tajweed — Quran Offline',
-      'en' => 'Tajweed color issue report — Quran Offline',
-      'zh' => '泰吉维德颜色问题报告 — Quran Offline',
-      'ja' => 'タジウィード色の報告 — Quran Offline',
-      _ => 'Tajweed color issue report — Quran Offline',
+      'id' => 'Laporkan masalah',
+      'en' => 'Report a problem',
+      'zh' => '报告问题',
+      'ja' => '問題を報告',
+      _ => 'Report a problem',
     };
   }
 
-  static String _getReportTajweedBodyVerse(String language) {
+  static String _getFeedbackFormTitleFeature(String language) {
+    return switch (language) {
+      'id' => 'Ajukan fitur baru',
+      'en' => 'Suggest a feature',
+      'zh' => '建议新功能',
+      'ja' => '新機能を提案',
+      _ => 'Suggest a feature',
+    };
+  }
+
+  static String _getFeedbackFormTitleBug(String language) {
+    return switch (language) {
+      'id' => 'Laporkan masalah',
+      'en' => 'Report a problem',
+      'zh' => '报告问题',
+      'ja' => '問題を報告',
+      _ => 'Report a problem',
+    };
+  }
+
+  static String _getFeedbackTitleLabel(String language) {
+    return switch (language) {
+      'id' => 'Judul',
+      'en' => 'Title',
+      'zh' => '标题',
+      'ja' => 'タイトル',
+      _ => 'Title',
+    };
+  }
+
+  static String _getFeedbackTitleHintFeature(String language) {
+    return switch (language) {
+      'id' => 'Mis. mode malam untuk Mushaf',
+      'en' => 'e.g. Night mode for Mushaf',
+      'zh' => '例如： Mushaf 夜间模式',
+      'ja' => '例： Mushaf のナイトモード',
+      _ => 'e.g. Night mode for Mushaf',
+    };
+  }
+
+  static String _getFeedbackTitleHintBug(String language) {
+    return switch (language) {
+      'id' => 'Mis. Warna tajweed salah di QS 56:91',
+      'en' => 'e.g. Wrong tajweed color on QS 56:91',
+      'zh' => '例如： 56:91 泰吉维德颜色错误',
+      'ja' => '例： 56:91 のタジウィード色が誤り',
+      _ => 'e.g. Wrong tajweed color on QS 56:91',
+    };
+  }
+
+  static String _getFeedbackDescriptionLabel(String language) {
+    return switch (language) {
+      'id' => 'Deskripsi',
+      'en' => 'Description',
+      'zh' => '描述',
+      'ja' => '説明',
+      _ => 'Description',
+    };
+  }
+
+  static String _getFeedbackDescriptionHint(String language) {
+    return switch (language) {
+      'id' =>
+        'Jelaskan detailnya. Untuk bug, sebutkan langkah untuk memunculkannya.',
+      'en' =>
+        'Describe in detail. For bugs, include steps to reproduce.',
+      'zh' => '请详细说明。如是错误，请附上重现步骤。',
+      'ja' => '詳しく記入してください。バグの場合は再現手順も。',
+      _ => 'Describe in detail. For bugs, include steps to reproduce.',
+    };
+  }
+
+  static String _getFeedbackSubmit(String language) {
+    return switch (language) {
+      'id' => 'Kirim',
+      'en' => 'Submit',
+      'zh' => '提交',
+      'ja' => '送信',
+      _ => 'Submit',
+    };
+  }
+
+  static String _getFeedbackSubmitting(String language) {
+    return switch (language) {
+      'id' => 'Mengirim…',
+      'en' => 'Submitting…',
+      'zh' => '提交中…',
+      'ja' => '送信中…',
+      _ => 'Submitting…',
+    };
+  }
+
+  static String _getFeedbackSuccess(String language) {
+    return switch (language) {
+      'id' => 'Terima kasih! Laporan Anda telah dikirim.',
+      'en' => 'Thank you! Your report was submitted.',
+      'zh' => '谢谢！您的反馈已提交。',
+      'ja' => 'ありがとうございます。報告を送信しました。',
+      _ => 'Thank you! Your report was submitted.',
+    };
+  }
+
+  static String _getFeedbackSuccessEmailFallback(String language) {
+    return switch (language) {
+      'id' =>
+        'Tidak bisa mengirim otomatis. Aplikasi email dibuka sebagai cadangan.',
+      'en' =>
+        'Could not submit automatically. Your email app was opened as a fallback.',
+      'zh' => '无法自动提交。已打开邮件应用作为备用方式。',
+      'ja' =>
+        '自動送信できませんでした。メールアプリをフォールバックとして開きました。',
+      _ => 'Could not submit automatically. Your email app was opened as a fallback.',
+    };
+  }
+
+  static String _getFeedbackError(String language) {
+    return switch (language) {
+      'id' => 'Gagal mengirim. Periksa koneksi internet lalu coba lagi.',
+      'en' => 'Could not submit. Check your connection and try again.',
+      'zh' => '提交失败。请检查网络连接后重试。',
+      'ja' => '送信に失敗しました。接続を確認して再試行してください。',
+      _ => 'Could not submit. Check your connection and try again.',
+    };
+  }
+
+  static String _getFeedbackErrorRateLimited(String language) {
+    return switch (language) {
+      'id' => 'Terlalu banyak pengiriman. Coba lagi nanti.',
+      'en' => 'Too many submissions. Please try again later.',
+      'zh' => '提交次数过多，请稍后再试。',
+      'ja' => '送信回数が多すぎます。しばらくしてから再試行してください。',
+      _ => 'Too many submissions. Please try again later.',
+    };
+  }
+
+  static String _getFeedbackTitleRequired(String language) {
+    return switch (language) {
+      'id' => 'Judul wajib diisi',
+      'en' => 'Title is required',
+      'zh' => '请填写标题',
+      'ja' => 'タイトルは必須です',
+      _ => 'Title is required',
+    };
+  }
+
+  static String _getFeedbackDescriptionRequired(String language) {
+    return switch (language) {
+      'id' => 'Deskripsi wajib diisi',
+      'en' => 'Description is required',
+      'zh' => '请填写描述',
+      'ja' => '説明は必須です',
+      _ => 'Description is required',
+    };
+  }
+
+  static String _getFeedbackBodyVerse(String language) {
     return switch (language) {
       'id' => 'Ayat: QS {surah}:{ayah}',
       'en' => 'Verse: QS {surah}:{ayah}',
@@ -3876,17 +4123,7 @@ class AppLocalizations {
     };
   }
 
-  static String _getReportTajweedBodyVerseUnknown(String language) {
-    return switch (language) {
-      'id' => 'Ayat: (isi surat:ayat, mis. 56:91)',
-      'en' => 'Verse: (fill in surah:ayah, e.g. 56:91)',
-      'zh' => '经文: (请填写章:节，如 56:91)',
-      'ja' => '節: (章:節を記入、例 56:91)',
-      _ => 'Verse: (fill in surah:ayah, e.g. 56:91)',
-    };
-  }
-
-  static String _getReportTajweedBodyReference(String language) {
+  static String _getFeedbackBodyReference(String language) {
     return switch (language) {
       'id' => 'Referensi quran.com: {url}',
       'en' => 'quran.com reference: {url}',
@@ -3896,7 +4133,7 @@ class AppLocalizations {
     };
   }
 
-  static String _getReportTajweedBodyArabic(String language) {
+  static String _getFeedbackBodyArabic(String language) {
     return switch (language) {
       'id' => 'Teks Arab (di aplikasi):',
       'en' => 'Arabic text (in app):',
@@ -3906,7 +4143,7 @@ class AppLocalizations {
     };
   }
 
-  static String _getReportTajweedBodyMeta(String language) {
+  static String _getFeedbackBodyMeta(String language) {
     return switch (language) {
       'id' => 'Aplikasi: {version}\nData: {dataVersion}',
       'en' => 'App: {version}\nData: {dataVersion}',
@@ -3916,26 +4153,63 @@ class AppLocalizations {
     };
   }
 
-  static String _getReportTajweedBodyPrompt(String language) {
+  static String _getFeedbackEmailSubjectBugVerse(String language) {
     return switch (language) {
-      'id' =>
-        'Jelaskan masalahnya (huruf mana, warna yang salah vs yang diharapkan sesuai quran.com):',
-      'en' =>
-        'Describe the issue (which letters, wrong color vs expected on quran.com):',
-      'zh' => '请描述问题（哪些字母、错误颜色、quran.com 上应有的颜色）:',
-      'ja' =>
-        '問題を記述してください（どの文字、誤った色、quran.com で期待される色）:',
-      _ => 'Describe the issue (which letters, wrong color vs expected on quran.com):',
+      'id' => 'Laporan masalah — QS {surah}:{ayah}',
+      'en' => 'Problem report — QS {surah}:{ayah}',
+      'zh' => '问题报告 — {surah}:{ayah}',
+      'ja' => '問題報告 — {surah}:{ayah}',
+      _ => 'Problem report — QS {surah}:{ayah}',
     };
   }
 
-  static String _getReportTajweedLaunchFailed(String language) {
+  static String _getFeedbackEmailSubjectBug(String language) {
     return switch (language) {
-      'id' => 'Tidak bisa membuka aplikasi email',
-      'en' => 'Could not open email app',
-      'zh' => '无法打开邮件应用',
-      'ja' => 'メールアプリを開けませんでした',
-      _ => 'Could not open email app',
+      'id' => 'Laporan masalah — Quran Offline',
+      'en' => 'Problem report — Quran Offline',
+      'zh' => '问题报告 — Quran Offline',
+      'ja' => '問題報告 — Quran Offline',
+      _ => 'Problem report — Quran Offline',
+    };
+  }
+
+  static String _getFeedbackEmailSubjectFeature(String language) {
+    return switch (language) {
+      'id' => 'Usulan fitur — Quran Offline',
+      'en' => 'Feature request — Quran Offline',
+      'zh' => '功能建议 — Quran Offline',
+      'ja' => '機能提案 — Quran Offline',
+      _ => 'Feature request — Quran Offline',
+    };
+  }
+
+  static String _getFeedbackEmailHeaderFeature(String language) {
+    return switch (language) {
+      'id' => 'Usulan fitur — Quran Offline',
+      'en' => 'Feature request — Quran Offline',
+      'zh' => '功能建议 — Quran Offline',
+      'ja' => '機能提案 — Quran Offline',
+      _ => 'Feature request — Quran Offline',
+    };
+  }
+
+  static String _getFeedbackEmailHeaderBug(String language) {
+    return switch (language) {
+      'id' => 'Laporan masalah — Quran Offline',
+      'en' => 'Problem report — Quran Offline',
+      'zh' => '问题报告 — Quran Offline',
+      'ja' => '問題報告 — Quran Offline',
+      _ => 'Problem report — Quran Offline',
+    };
+  }
+
+  static String _getFeedbackEmailFailed(String language) {
+    return switch (language) {
+      'id' => 'Tidak bisa mengirim atau membuka aplikasi email',
+      'en' => 'Could not submit or open email app',
+      'zh' => '无法提交或打开邮件应用',
+      'ja' => '送信またはメールアプリを開けませんでした',
+      _ => 'Could not submit or open email app',
     };
   }
 

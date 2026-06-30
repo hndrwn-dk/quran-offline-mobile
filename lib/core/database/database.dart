@@ -33,6 +33,7 @@ class Bookmarks extends Table {
   TextColumn get tag => text().nullable()();
   IntColumn get color => integer().nullable()(); // Color value as int
   TextColumn get note => text().nullable()(); // Notes for bookmark
+  TextColumn get openContext => text().withDefault(const Constant('surah'))();
 
   @override
   Set<Column> get primaryKey => {surahId, ayahNo};
@@ -73,7 +74,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase() => openAppDatabase();
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -108,6 +109,12 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 4) {
           await m.addColumn(verses, verses.translitTj);
+        }
+        if (from < 5) {
+          await m.addColumn(bookmarks, bookmarks.openContext);
+          await customStatement(
+            "UPDATE bookmarks SET open_context = 'surah' WHERE open_context IS NULL",
+          );
         }
       },
     );
@@ -233,7 +240,11 @@ class AppDatabase extends _$AppDatabase {
         .getSingleOrNull();
   }
 
-  Future<void> toggleBookmark(int surahId, int ayahNo) async {
+  Future<void> toggleBookmark(
+    int surahId,
+    int ayahNo, {
+    String openContext = 'surah',
+  }) async {
     final existing = await getBookmark(surahId, ayahNo);
     if (existing != null) {
       await (delete(bookmarks)
@@ -244,6 +255,7 @@ class AppDatabase extends _$AppDatabase {
         BookmarksCompanion.insert(
           surahId: surahId,
           ayahNo: ayahNo,
+          openContext: Value(openContext),
         ),
       );
     }

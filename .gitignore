@@ -127,6 +127,10 @@ assets/qpc-v4-tajweed-15-lines.db.zip
 docs/
 assets/quran/*.json
 
+# Vercel feedback API (Node)
+node_modules/
+package-lock.json
+
 # Local dev artifacts
 backup/
 assets/icon/backup/

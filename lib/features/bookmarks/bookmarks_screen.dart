@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
-import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
-import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/features/notes/notes_screen.dart';
-import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
-import 'package:quran_offline/features/reader/reader_screen.dart';
+import 'package:quran_offline/features/bookmarks/open_bookmark.dart';
 
 class BookmarksScreen extends ConsumerStatefulWidget {
   const BookmarksScreen({super.key});
@@ -255,76 +253,18 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
         children: [
           // Search bar (shown when _searchMode is true)
           if (_searchMode)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Material(
-                elevation: 0,
-                color: colorScheme.surface,
-                borderRadius: BorderRadius.circular(28),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(
-                      color: colorScheme.outlineVariant.withValues(alpha: 0.4),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          autofocus: true,
-                          onChanged: (_) => setState(() {}),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                          decoration: InputDecoration(
-                            hintText: 'Search bookmarks...',
-                            hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                      if (_searchController.text.isNotEmpty)
-                        IconButton(
-                          icon: Icon(
-                            Icons.close,
-                            color: colorScheme.onSurfaceVariant,
-                            size: 20,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _searchController.clear();
-                            });
-                          },
-                        ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _searchController.clear();
-                            _searchMode = false;
-                          });
-                        },
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: colorScheme.onSurface,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.search,
-                            color: colorScheme.surface,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            AppSearchFieldInset(
+              padding: const EdgeInsets.fromLTRB(
+                kAppContentHorizontalInset,
+                16,
+                kAppContentHorizontalInset,
+                8,
+              ),
+              child: AppSearchField(
+                controller: _searchController,
+                autofocus: true,
+                hintText: 'Search bookmarks...',
+                onChanged: (_) => setState(() {}),
               ),
             ),
           // Bookmarks list
@@ -391,33 +331,11 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                             if (_selectionMode) {
                               _toggleSelection(bookmark);
                             } else {
-                              // Get page number for this ayah
-                              final db = ref.read(databaseProvider);
-                              final pageNo = await db.getPageForAyah(bookmark.surahId, bookmark.ayahNo);
-                              
-                              if (pageNo != null) {
-                                // Navigate to Mushaf mode with pageNo + surahId + ayahNo
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MushafPageView(
-                                      initialPage: pageNo,
-                                      targetSurahId: bookmark.surahId,
-                                      targetAyahNo: bookmark.ayahNo,
-                                    ),
-                                  ),
-                                );
-                              } else {
-                                // Fallback to Surah mode if page not found
-                                ref.read(readerSourceProvider.notifier).state = SurahSource(bookmark.surahId, targetAyahNo: bookmark.ayahNo);
-                                ref.read(targetAyahProvider.notifier).state = bookmark.ayahNo;
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const ReaderScreen(),
-                                  ),
-                                );
-                              }
+                              await openBookmarkLocation(
+                                context,
+                                ref,
+                                bookmark,
+                              );
                             }
                           },
                           onLongPress: () {

@@ -10,6 +10,7 @@ import 'package:quran_offline/core/providers/science_catalog_provider.dart';
 import 'package:quran_offline/core/providers/theme_catalog_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/core/widgets/explore_detail_sheet.dart';
 import 'package:quran_offline/features/dua/life_situation.dart';
 import 'package:quran_offline/features/dua/explore_icons.dart';
@@ -118,6 +119,14 @@ class DuaScreen extends ConsumerWidget {
               ],
             ),
           ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
         ),
       ),
       body: catalogAsync.when(
@@ -269,17 +278,30 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-            child: ExploreHubSearchBar(
-              lang: lang,
-              controller: _searchController,
-              focusNode: _searchFocusNode,
-              onChanged: _onSearchChanged,
-              onClear: _clearSearch,
+            child: AppSearchFieldInset(
+              padding: const EdgeInsets.fromLTRB(
+                kAppContentHorizontalInset,
+                kAppBodyTopInset,
+                kAppContentHorizontalInset,
+                12,
+              ),
+              child: ExploreHubSearchBar(
+                lang: lang,
+                controller: _searchController,
+                focusNode: _searchFocusNode,
+                onChanged: _onSearchChanged,
+                onClear: _clearSearch,
+              ),
             ),
           ),
           if (!isSearching) ...[
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              padding: const EdgeInsets.fromLTRB(
+                kAppContentHorizontalInset,
+                0,
+                kAppContentHorizontalInset,
+                24,
+              ),
               sliver: SliverList.separated(
                 itemCount: sections.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
@@ -314,7 +336,12 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
             ),
           ] else ...[
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              padding: const EdgeInsets.fromLTRB(
+                kAppContentHorizontalInset,
+                0,
+                kAppContentHorizontalInset,
+                24,
+              ),
               sliver: SliverList.separated(
                 itemCount: searchHits.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 8),
@@ -681,34 +708,46 @@ class _LifeSituationCategoryGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final orderedBuckets = <LifeSituationBucket>[];
+    LifeSituationBucket? featured;
+    for (final bucket in buckets) {
+      if (bucket.categoryKey == kLifeThemeFeaturedCategoryKey) {
+        featured = bucket;
+      } else {
+        orderedBuckets.add(bucket);
+      }
+    }
+    if (featured != null) {
+      orderedBuckets.insert(0, featured);
+    }
+
     return _ExploreTabScrollView(
       lang: lang,
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-              childAspectRatio: 1.35,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final bucket = buckets[index];
-                final categoryKey = bucket.categoryKey;
-                return ExploreCategoryCard(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          sliver: SliverList.separated(
+            itemCount: orderedBuckets.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, index) {
+              final bucket = orderedBuckets[index];
+              final categoryKey = bucket.categoryKey;
+              final countLabel = AppLocalizations.getLifeSituationCategorySubtitle(
+                bucket.duas.length,
+                bucket.reflections.length,
+                lang,
+              );
+              if (categoryKey == kLifeThemeFeaturedCategoryKey) {
+                return ExploreFeaturedCategoryCard(
                   assetPath: ExploreIcons.themeCategoryAsset(categoryKey),
                   icon: ExploreIcons.themeCategory(categoryKey),
                   title: AppLocalizations.getThemeCategoryLabel(
                     categoryKey,
                     lang,
                   ),
-                  subtitle: AppLocalizations.getLifeSituationCategorySubtitle(
-                    bucket.duas.length,
-                    bucket.reflections.length,
-                    lang,
-                  ),
+                  countLabel: countLabel,
+                  hint: AppLocalizations.getLifeThemeFeaturedCategoryHint(lang),
+                  featuredLabel: AppLocalizations.getExploreFeaturedBadge(lang),
                   onTap: () => _openLifeSituationCategory(
                     context,
                     bucket,
@@ -716,9 +755,23 @@ class _LifeSituationCategoryGrid extends ConsumerWidget {
                     colorScheme,
                   ),
                 );
-              },
-              childCount: buckets.length,
-            ),
+              }
+              return ExploreCategoryCard(
+                assetPath: ExploreIcons.themeCategoryAsset(categoryKey),
+                icon: ExploreIcons.themeCategory(categoryKey),
+                title: AppLocalizations.getThemeCategoryLabel(
+                  categoryKey,
+                  lang,
+                ),
+                subtitle: countLabel,
+                onTap: () => _openLifeSituationCategory(
+                  context,
+                  bucket,
+                  lang,
+                  colorScheme,
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -1172,26 +1225,40 @@ class _ScienceCategoryGrid extends ConsumerWidget {
       );
     }
     final keys = grouped.keys.toList();
+    final orderedKeys = <String>[];
+    if (grouped.containsKey(kScienceFeaturedCategoryKey)) {
+      orderedKeys.add(kScienceFeaturedCategoryKey);
+    }
+    for (final key in keys) {
+      if (key != kScienceFeaturedCategoryKey) {
+        orderedKeys.add(key);
+      }
+    }
+
     return _ExploreTabScrollView(
       lang: lang,
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-              childAspectRatio: 1.55,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final categoryKey = keys[index];
-                final items = grouped[categoryKey]!;
-                return ExploreCategoryCard(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          sliver: SliverList.separated(
+            itemCount: orderedKeys.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, index) {
+              final categoryKey = orderedKeys[index];
+              final items = grouped[categoryKey]!;
+              if (categoryKey == kScienceFeaturedCategoryKey) {
+                return ExploreFeaturedCategoryCard(
                   icon: ExploreIcons.scienceCategory(categoryKey),
-                  title: AppLocalizations.getScienceCategoryLabel(categoryKey, lang),
-                  subtitle: AppLocalizations.getScienceTopicCount(items.length, lang),
+                  title: AppLocalizations.getScienceCategoryLabel(
+                    categoryKey,
+                    lang,
+                  ),
+                  countLabel: AppLocalizations.getScienceTopicCount(
+                    items.length,
+                    lang,
+                  ),
+                  hint: AppLocalizations.getScienceFeaturedCategoryHint(lang),
+                  featuredLabel: AppLocalizations.getExploreFeaturedBadge(lang),
                   onTap: () => _openScienceTopics(
                     context,
                     categoryKey,
@@ -1200,9 +1267,20 @@ class _ScienceCategoryGrid extends ConsumerWidget {
                     colorScheme,
                   ),
                 );
-              },
-              childCount: keys.length,
-            ),
+              }
+              return ExploreCategoryCard(
+                icon: ExploreIcons.scienceCategory(categoryKey),
+                title: AppLocalizations.getScienceCategoryLabel(categoryKey, lang),
+                subtitle: AppLocalizations.getScienceTopicCount(items.length, lang),
+                onTap: () => _openScienceTopics(
+                  context,
+                  categoryKey,
+                  items,
+                  lang,
+                  colorScheme,
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -1300,10 +1378,10 @@ class _ProphetCategoryGrid extends ConsumerWidget {
       lang: lang,
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
           sliver: SliverList.separated(
             itemCount: keys.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final prophetKey = keys[index];
               final items = grouped[prophetKey]!;

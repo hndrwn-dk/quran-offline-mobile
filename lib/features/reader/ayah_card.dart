@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/audio/playback_actions.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
+import 'package:quran_offline/core/models/bookmark_open_context.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/highlights_provider.dart';
 import 'package:quran_offline/core/providers/notes_provider.dart';
@@ -13,7 +14,9 @@ import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 import 'package:quran_offline/core/share/verse_share.dart';
-import 'package:quran_offline/core/tajweed/tajweed_report.dart';
+import 'package:quran_offline/core/feedback/feedback_context.dart';
+import 'package:quran_offline/core/feedback/feedback_type.dart';
+import 'package:quran_offline/features/settings/feedback_form_sheet.dart';
 import 'package:quran_offline/features/reader/widgets/ayah_tafsir_panel.dart';
 import 'package:quran_offline/features/reader/widgets/highlight_color_picker.dart';
 import 'package:quran_offline/features/reader/widgets/note_editor_dialog.dart';
@@ -234,6 +237,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                           ref,
                           widget.verse.surahId,
                           widget.verse.ayahNo,
+                          openContext: BookmarkOpenContext.surah,
                         );
                         await _checkBookmark();
                       },
@@ -330,18 +334,21 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               leading: const Icon(Icons.flag_outlined),
               title: Text(
                 AppLocalizations.getSettingsText(
-                  'report_tajweed_action',
+                  'report_problem_action',
                   settings.appLanguage,
                 ),
               ),
               onTap: () {
                 Navigator.pop(context);
-                TajweedReport.launch(
-                  context: context,
+                showFeedbackForm(
+                  context,
+                  type: FeedbackType.bug,
                   language: settings.appLanguage,
-                  surahId: widget.verse.surahId,
-                  ayahNo: widget.verse.ayahNo,
-                  arabicSnippet: widget.verse.arabic,
+                  contextData: FeedbackContext(
+                    surahId: widget.verse.surahId,
+                    ayahNo: widget.verse.ayahNo,
+                    arabicSnippet: widget.verse.arabic,
+                  ),
                 );
               },
             ),
@@ -354,6 +361,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                   ref,
                   widget.verse.surahId,
                   widget.verse.ayahNo,
+                  openContext: BookmarkOpenContext.surah,
                 );
                 await _checkBookmark();
               },
