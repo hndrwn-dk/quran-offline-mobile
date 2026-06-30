@@ -6,6 +6,7 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 import 'package:quran_offline/features/reader/widgets/note_editor_dialog.dart';
 
@@ -140,55 +141,21 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         children: [
           // Search bar
           if (_searchMode)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Material(
-                elevation: 0,
-                color: colorScheme.surface,
-                borderRadius: BorderRadius.circular(28),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(
-                      color: colorScheme.outlineVariant.withValues(alpha: 0.4),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          autofocus: true,
-                          onChanged: (_) => setState(() {}),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                          decoration: InputDecoration(
-                            hintText: AppLocalizations.getSubtitleText('notes_search_hint', settings.appLanguage),
-                            hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                      if (_searchController.text.isNotEmpty)
-                        IconButton(
-                          icon: Icon(
-                            Icons.close,
-                            color: colorScheme.onSurfaceVariant,
-                            size: 20,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _searchController.clear();
-                            });
-                          },
-                        ),
-                    ],
-                  ),
+            AppSearchFieldInset(
+              padding: const EdgeInsets.fromLTRB(
+                kAppContentHorizontalInset,
+                16,
+                kAppContentHorizontalInset,
+                8,
+              ),
+              child: AppSearchField(
+                controller: _searchController,
+                autofocus: true,
+                hintText: AppLocalizations.getSubtitleText(
+                  'notes_search_hint',
+                  settings.appLanguage,
                 ),
+                onChanged: (_) => setState(() {}),
               ),
             ),
           // Notes list

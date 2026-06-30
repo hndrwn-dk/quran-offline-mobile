@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cari — mockup premium</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: #eef2ea; color: #1a2418; padding: 24px; }
+    h1 { font-size: 1.35rem; margin: 0 0 8px; }
+    .lead { color: #4a5c46; max-width: 720px; line-height: 1.5; margin-bottom: 16px; }
+    .toggle { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .toggle button { border: 1px solid #b8c4b0; background: #fff; padding: 8px 14px; border-radius: 999px; cursor: pointer; font-size: 13px; }
+    .toggle button.active { background: #4a5f3a; color: #fff; border-color: #4a5f3a; }
+    .layout { display: grid; grid-template-columns: 320px 1fr; gap: 28px; max-width: 960px; align-items: start; }
+    @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+    .phone-label { text-align: center; font-weight: 600; margin-bottom: 10px; }
+    .phone {
+      width: 320px; height: 640px; margin: 0 auto; border-radius: 28px;
+      border: 1px solid #c5d0bc; background: #f7faf5; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .status { padding: 10px 20px 4px; font-size: 12px; font-weight: 600; display: flex; justify-content: space-between; }
+    .tab-header {
+      display: flex; align-items: center; gap: 10px; padding: 4px 16px 10px;
+      border-bottom: 1px solid #dde5d6;
+    }
+    .tab-icon {
+      width: 28px; height: 28px; border-radius: 50%; border: 1px solid #c5d0bc;
+      background: #eef2ea; display: flex; align-items: center; justify-content: center; font-size: 12px;
+    }
+    .tab-title { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+    .tab-sub { font-size: 11px; color: #5a6b55; margin-top: 2px; }
+    .search-wrap { padding: 10px 16px 8px; }
+    .search-bar {
+      display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 16px;
+      border-radius: 999px; border: 1px solid #dde5d6; background: #fff;
+    }
+    .search-bar span { flex: 1; font-size: 12px; color: #7a8a72; }
+    .search-btn {
+      width: 36px; height: 36px; border-radius: 50%; background: #1a2418; color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .body { flex: 1; overflow: auto; }
+    .body-current { padding: 16px 22px 24px; text-align: center; }
+    .big-icon { font-size: 52px; opacity: 0.28; margin-bottom: 12px; }
+    .dup-title { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
+    .body-proposed { padding: 4px 16px 20px; background: #e8efe3; }
+    .section-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #7a8a72;
+      margin: 8px 0 10px;
+    }
+    .hint {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+      border-radius: 16px; background: #fff; border: 1px solid #dde5d6; margin-bottom: 8px;
+    }
+    .hint-icon {
+      width: 36px; height: 36px; border-radius: 10px; background: #dce8d4;
+      display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+    }
+    .hint-title { font-size: 14px; font-weight: 600; }
+    .hint-sub { font-size: 11px; color: #5a6b55; margin-top: 2px; line-height: 1.35; }
+    .hint-chev { color: #9aa892; font-size: 18px; }
+    .hint-plain {
+      text-align: left; padding: 12px; border-radius: 12px; background: #eef2ea;
+      border: 1px solid #dde5d6; margin-bottom: 10px; display: flex; gap: 12px;
+    }
+    .nav { border-top: 1px solid #c5d0bc; padding: 8px 12px 14px; display: flex; justify-content: space-between; font-size: 9px; color: #7a8a72; }
+    .nav .active { color: #4a5f3a; font-weight: 600; }
+    .spec h2 { font-size: 1.1rem; margin: 0 0 12px; }
+    .spec-box { background: #fff; border: 1px solid #dde5d6; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; font-size: 13px; color: #4a5c46; }
+    .spec-box h3 { margin: 0 0 8px; font-size: 14px; color: #1a2418; }
+    .spec-box ul { margin: 0; padding-left: 18px; line-height: 1.5; }
+    .ok { background: #e8f3e4; border: 1px solid #b8d4ae; padding: 12px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 12px; }
+    .warn { background: #f5eed8; border: 1px solid #e0d0a0; }
+    .hidden { display: none !important; }
+    .strike { text-decoration: line-through; color: #9aa892; }
+  </style>
+</head>
+<body>
+  <h1>Cari — mockup premium</h1>
+  <p class="lead">Hilangkan icon lens besar dan judul &quot;Cari Al-Qur'an&quot; (duplikat header). Body langsung ke petunjuk pencarian premium.</p>
+
+  <div class="toggle">
+    <button type="button" id="btn-current">Saat ini</button>
+    <button type="button" id="btn-proposed" class="active">Usulan premium</button>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="phone-label" id="phone-label">Usulan</div>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>▭</span></div>
+        <div class="tab-header">
+          <div class="tab-icon">◎</div>
+          <div>
+            <div class="tab-title">Cari</div>
+            <div class="tab-sub">Cari di seluruh Al-Qur'an</div>
+          </div>
+        </div>
+        <div class="search-wrap">
+          <div class="search-bar">
+            <span>Surah, Juz, halaman, 2:255, teks Arab...</span>
+            <div class="search-btn">⌕</div>
+          </div>
+        </div>
+
+        <div class="body body-current hidden" id="body-current">
+          <div class="big-icon">⌕</div>
+          <p class="dup-title">Cari Al-Qur'an</p>
+          <p style="color:#5a6b55;font-size:14px;margin:0 0 16px;">Anda dapat mencari berdasarkan:</p>
+          <div class="hint-plain"><span>📖</span><div><div class="hint-title">Surah</div><div class="hint-sub">Al-Fatihah, Al-Baqarah, dll.</div></div></div>
+          <div class="hint-plain"><span>≡</span><div><div class="hint-title">Juz</div><div class="hint-sub">Juz 1, Juz 2, dll.</div></div></div>
+          <p style="font-size:11px;color:#9aa892;margin-top:8px;">+ 4 kartu lagi...</p>
+        </div>
+
+        <div class="body body-proposed" id="body-proposed">
+          <div class="section-label">ANDA DAPAT MENCARI BERDASARKAN</div>
+          <div class="hint"><div class="hint-icon">📖</div><div style="flex:1"><div class="hint-title">Surah</div><div class="hint-sub">Al-Fatihah, Al-Baqarah, dll.</div></div><span class="hint-chev">›</span></div>
+          <div class="hint"><div class="hint-icon">≡</div><div style="flex:1"><div class="hint-title">Juz</div><div class="hint-sub">Juz 1, Juz 2, dll.</div></div><span class="hint-chev">›</span></div>
+          <div class="hint"><div class="hint-icon">▢</div><div style="flex:1"><div class="hint-title">Halaman</div><div class="hint-sub">Halaman 604, Halaman 1, dll.</div></div><span class="hint-chev">›</span></div>
+          <div class="hint"><div class="hint-icon">#</div><div style="flex:1"><div class="hint-title">Ayat</div><div class="hint-sub">2:255, 3:190, dll.</div></div><span class="hint-chev">›</span></div>
+          <div class="hint"><div class="hint-icon">A</div><div style="flex:1"><div class="hint-title">Terjemahan</div><div class="hint-sub">Kata apa pun dalam teks terjemahan</div></div><span class="hint-chev">›</span></div>
+          <div class="hint"><div class="hint-icon">ع</div><div style="flex:1"><div class="hint-title">Teks Arab ayat</div><div class="hint-sub">Fragmen seperti الرحمن (tanpa harakat juga bisa)</div></div><span class="hint-chev">›</span></div>
+        </div>
+
+        <div class="nav">
+          <span>Beranda</span><span>Baca</span><span class="active">Cari</span><span>Jelajahi</span><span>Koleksi</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec">
+      <h2>Spesifikasi</h2>
+      <div class="ok" id="banner">Header tab sudah cukup — body langsung ke section + kartu petunjuk.</div>
+      <div class="spec-box">
+        <h3>Dihapus</h3>
+        <ul>
+          <li class="strike" id="rm-icon">Icon search 56px di body</li>
+          <li class="strike" id="rm-title">Judul &quot;Cari Al-Qur'an&quot;</li>
+        </ul>
+      </div>
+      <div class="spec-box">
+        <h3>Ditambah / diperbaiki</h3>
+        <ul>
+          <li>HomeBackdrop cream</li>
+          <li>Section label kecil (search_by_label)</li>
+          <li>Kartu elevated + icon box + chevron</li>
+          <li>Header: getMenuText('cari') bukan "Search"</li>
+        </ul>
+      </div>
+      <div class="spec-box">
+        <h3>File</h3>
+        <code>lib/features/search/search_screen.dart</code>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const btnCurrent = document.getElementById('btn-current');
+    const btnProposed = document.getElementById('btn-proposed');
+    const bodyCurrent = document.getElementById('body-current');
+    const bodyProposed = document.getElementById('body-proposed');
+    const phoneLabel = document.getElementById('phone-label');
+    const banner = document.getElementById('banner');
+
+    function show(mode) {
+      const proposed = mode === 'proposed';
+      btnProposed.classList.toggle('active', proposed);
+      btnCurrent.classList.toggle('active', !proposed);
+      bodyProposed.classList.toggle('hidden', !proposed);
+      bodyCurrent.classList.toggle('hidden', proposed);
+      phoneLabel.textContent = proposed ? 'Usulan' : 'Saat ini';
+      banner.className = proposed ? 'ok' : 'ok warn';
+      banner.textContent = proposed
+        ? 'Header tab sudah cukup — body langsung ke section + kartu petunjuk.'
+        : 'Duplikat: icon lens besar + judul Cari Al-Qur\'an di bawah search bar.';
+    }
+    btnProposed.addEventListener('click', () => show('proposed'));
+    btnCurrent.addEventListener('click', () => show('current'));
+  </script>
+</body>
+</html>

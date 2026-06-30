@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/models/bookmark_open_context.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 
@@ -9,9 +10,14 @@ final bookmarksProvider = FutureProvider<List<Bookmark>>((ref) async {
 
 final bookmarkRefreshProvider = StateProvider<int>((ref) => 0);
 
-Future<void> toggleBookmark(WidgetRef ref, int surahId, int ayahNo) async {
+Future<void> toggleBookmark(
+  WidgetRef ref,
+  int surahId,
+  int ayahNo, {
+  String openContext = BookmarkOpenContext.surah,
+}) async {
   final db = ref.read(databaseProvider);
-  await db.toggleBookmark(surahId, ayahNo);
+  await db.toggleBookmark(surahId, ayahNo, openContext: openContext);
   ref.read(bookmarkRefreshProvider.notifier).state++;
   ref.invalidate(bookmarksProvider);
 }

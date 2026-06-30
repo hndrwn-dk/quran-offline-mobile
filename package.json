@@ -1,0 +1,13 @@
+{
+  "name": "quran-offline-feedback-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@vercel/node": "^5.0.0",
+    "typescript": "^5.7.0"
+  }
+}

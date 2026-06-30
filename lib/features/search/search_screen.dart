@@ -10,6 +10,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
+import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 
@@ -182,53 +183,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       body: HomeBackdrop(
         child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Material(
-              elevation: 0,
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(28),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.4),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        key: const Key('search_field'),
-                        controller: _searchController,
-                        focusNode: _searchFocusNode,
-                        style: Theme.of(context).textTheme.bodyLarge,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.getSearchText('search_placeholder', settings.appLanguage),
-                          hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                          border: InputBorder.none,
-                        ),
-                        onChanged: (value) {
-                          ref.read(searchQueryProvider.notifier).state = value;
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 4),
-                      child: Icon(
-                        Icons.search,
-                        size: 22,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
+          AppSearchFieldInset(
+            child: AppSearchField(
+              textFieldKey: const Key('search_field'),
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              hintText: AppLocalizations.getSearchText(
+                'search_placeholder',
+                settings.appLanguage,
               ),
+              onChanged: (value) {
+                ref.read(searchQueryProvider.notifier).state = value;
+              },
             ),
           ),
           Expanded(

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Unduhan Tilawah — mockup premium</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #eef2ea;
+      color: #1a2418;
+      padding: 24px;
+    }
+    h1 { font-size: 1.35rem; margin: 0 0 8px; }
+    .lead { color: #4a5c46; max-width: 720px; line-height: 1.5; margin-bottom: 16px; }
+    .toggle {
+      display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .toggle button {
+      border: 1px solid #b8c4b0; background: #fff; padding: 8px 14px;
+      border-radius: 999px; cursor: pointer; font-size: 13px;
+    }
+    .toggle button.active {
+      background: #4a5f3a; color: #fff; border-color: #4a5f3a;
+    }
+    .layout {
+      display: grid; grid-template-columns: 320px 1fr; gap: 28px;
+      align-items: start; max-width: 960px;
+    }
+    @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+    .phone-label { text-align: center; font-weight: 600; margin-bottom: 10px; }
+    .phone {
+      width: 320px; height: 640px; margin: 0 auto;
+      border-radius: 28px; border: 1px solid #c5d0bc;
+      background: #f7faf5; overflow: hidden; display: flex; flex-direction: column;
+    }
+    .status { padding: 10px 20px 4px; font-size: 12px; font-weight: 600; display: flex; justify-content: space-between; }
+    .appbar {
+      display: flex; align-items: center; min-height: 56px;
+      border-bottom: 1px solid #dde5d6; padding-right: 16px; background: #f0f4ec;
+    }
+    .back { width: 48px; text-align: center; font-size: 20px; flex-shrink: 0; }
+    .appbar-title-lg { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+    .appbar-title-sm { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+    .appbar-sub { font-size: 12px; color: #5a6b55; margin-top: 2px; }
+    .body { flex: 1; overflow: auto; background: #e8efe3; }
+    .hero-plain { padding: 12px 16px 14px; }
+    .hero-plain h2 { margin: 0; font-size: 22px; font-weight: 600; }
+    .chip {
+      display: inline-block; margin-top: 10px; padding: 4px 10px;
+      border-radius: 999px; background: #dce8d4; font-size: 12px; color: #3d5232;
+    }
+    .card {
+      margin: 12px 16px 8px; padding: 14px 16px 16px;
+      background: #fff; border-radius: 16px; border: 1px solid #dde5d6;
+    }
+    .card-label { font-size: 10px; letter-spacing: 0.06em; color: #7a8a72; font-weight: 600; }
+    .card-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .card h2 { margin: 6px 0 0; font-size: 17px; font-weight: 600; }
+    .card-meta { font-size: 12px; color: #5a6b55; margin-top: 8px; }
+    .cta {
+      margin-top: 14px; width: 100%; padding: 12px; border: none; border-radius: 12px;
+      background: #4a5f3a; color: #fff; font-size: 14px; font-weight: 600; cursor: default;
+    }
+    .section-label {
+      padding: 14px 16px 6px; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.05em; color: #7a8a72;
+    }
+    .row {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+      border-bottom: 1px solid #e4ebe0;
+    }
+    .row.elevated { background: #fff; }
+    .num {
+      width: 32px; height: 32px; border-radius: 50%; background: #dce8d4;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: #4a5f3a; flex-shrink: 0;
+    }
+    .row-main { flex: 1; min-width: 0; }
+    .row-title { font-size: 14px; font-weight: 600; }
+    .row-sub { font-size: 11px; color: #5a6b55; margin-top: 2px; }
+    .row-sub.saved { color: #4a5f3a; }
+    .dl {
+      width: 36px; height: 36px; border-radius: 50%; border: 1px solid #dde5d6;
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+      background: #f4f7f1; flex-shrink: 0;
+    }
+    .spec h2 { font-size: 1.1rem; margin: 0 0 12px; }
+    .spec-box {
+      background: #fff; border: 1px solid #dde5d6; border-radius: 12px;
+      padding: 14px 16px; margin-bottom: 12px;
+    }
+    .spec-box h3 { margin: 0 0 8px; font-size: 14px; }
+    .spec-box p, .spec-box li { font-size: 13px; color: #4a5c46; line-height: 1.45; margin: 0; }
+    .spec-box ul { margin: 8px 0 0; padding-left: 18px; }
+    .ok { background: #e8f3e4; border-color: #b8d4ae; padding: 12px 14px; border-radius: 10px; font-size: 13px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <h1>Unduhan Tilawah — mockup premium</h1>
+  <p class="lead">
+    Child screen header mengikuti pola Doa/Jelajahi: judul layar lebih kecil di AppBar,
+    nama qari di subtitle. Toggle untuk bandingkan dengan UI saat ini.
+  </p>
+
+  <div class="toggle">
+    <button type="button" id="btn-current">Saat ini</button>
+    <button type="button" id="btn-proposed" class="active">Usulan premium</button>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="phone-label" id="phone-label">Usulan</div>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>▭</span></div>
+
+        <div id="screen-current" class="hidden">
+          <div class="appbar">
+            <div class="back">←</div>
+            <div class="appbar-title-lg">Unduhan Tilawah</div>
+          </div>
+          <div class="body">
+            <div class="hero-plain">
+              <h2>Mishary Rashid Alafasy</h2>
+              <span class="chip">0/114 surah · 0 B</span>
+              <button class="cta" type="button">Unduh semua surah</button>
+            </div>
+            <div class="row"><div class="num">1</div><div class="row-main"><div class="row-title">Al-Fatihah</div><div class="row-sub">Belum tersimpan</div></div><div class="dl">↓</div></div>
+            <div class="row"><div class="num">2</div><div class="row-main"><div class="row-title">Al-Baqarah</div><div class="row-sub">Belum tersimpan</div></div><div class="dl">↓</div></div>
+            <div class="row"><div class="num">3</div><div class="row-main"><div class="row-title">Ali 'Imran</div><div class="row-sub">Belum tersimpan</div></div><div class="dl">↓</div></div>
+          </div>
+        </div>
+
+        <div id="screen-proposed">
+          <div class="appbar">
+            <div class="back">←</div>
+            <div>
+              <div class="appbar-title-sm">Unduhan Tilawah</div>
+              <div class="appbar-sub">Mishary Rashid Alafasy · Tilawah</div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="card">
+              <div class="card-row">
+                <div>
+                  <div class="card-label">QARI TERPILIH</div>
+                  <h2>Mishary Rashid Alafasy</h2>
+                </div>
+                <span class="chip">0/114</span>
+              </div>
+              <div class="card-meta">0 B di perangkat · belum ada surah tersimpan</div>
+              <button class="cta" type="button">Unduh semua surah</button>
+            </div>
+            <div class="section-label">114 SURAH</div>
+            <div class="row elevated"><div class="num">1</div><div class="row-main"><div class="row-title">Al-Fatihah</div><div class="row-sub">Belum tersimpan</div></div><div class="dl">↓</div></div>
+            <div class="row elevated"><div class="num">2</div><div class="row-main"><div class="row-title">Al-Baqarah</div><div class="row-sub">Belum tersimpan</div></div><div class="dl">↓</div></div>
+            <div class="row elevated"><div class="num">3</div><div class="row-main"><div class="row-title">Ali 'Imran</div><div class="row-sub">Belum tersimpan</div></div><div class="dl">↓</div></div>
+            <div class="row elevated"><div class="num">5</div><div class="row-main"><div class="row-title">Al-Ma'idah</div><div class="row-sub saved">Tersimpan</div></div><div class="dl">↓</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec">
+      <h2>Spesifikasi</h2>
+      <div class="ok" id="spec-banner">AppBar titleMedium (16px) + subtitle qari — sama pola ExploreSectionScaffold di Doa.</div>
+      <div class="spec-box">
+        <h3>AppBar</h3>
+        <ul>
+          <li>Judul: <strong>Unduhan Tilawah</strong> — titleMedium, bukan titleLarge</li>
+          <li>Subtitle: nama qari + konteks (Tilawah)</li>
+          <li>Back arrow standar child screen</li>
+        </ul>
+      </div>
+      <div class="spec-box">
+        <h3>Body premium</h3>
+        <ul>
+          <li>HomeBackdrop cream (selaras Doa)</li>
+          <li>Hero card: stat chip, storage, CTA</li>
+          <li>Label section &quot;114 SURAH&quot;</li>
+          <li>Row elevated + tombol download bulat</li>
+        </ul>
+      </div>
+      <div class="spec-box">
+        <h3>Implementasi</h3>
+        <p><code>lib/features/settings/audio_downloads_screen.dart</code></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const btnCurrent = document.getElementById("btn-current");
+    const btnProposed = document.getElementById("btn-proposed");
+    const screenCurrent = document.getElementById("screen-current");
+    const screenProposed = document.getElementById("screen-proposed");
+    const phoneLabel = document.getElementById("phone-label");
+    const specBanner = document.getElementById("spec-banner");
+
+    function show(mode) {
+      const isProposed = mode === "proposed";
+      btnProposed.classList.toggle("active", isProposed);
+      btnCurrent.classList.toggle("active", !isProposed);
+      screenProposed.classList.toggle("hidden", !isProposed);
+      screenCurrent.classList.toggle("hidden", isProposed);
+      phoneLabel.textContent = isProposed ? "Usulan" : "Saat ini";
+      specBanner.textContent = isProposed
+        ? "AppBar titleMedium (16px) + subtitle qari — sama pola ExploreSectionScaffold di Doa."
+        : "Masalah: AppBar ~20px + titleLarge qari di body = hierarki ganda, terasa generic.";
+      specBanner.style.background = isProposed ? "#e8f3e4" : "#f5eed8";
+      specBanner.style.borderColor = isProposed ? "#b8d4ae" : "#e0d0a0";
+    }
+    btnProposed.addEventListener("click", () => show("proposed"));
+    btnCurrent.addEventListener("click", () => show("current"));
+  </script>
+</body>
+</html>

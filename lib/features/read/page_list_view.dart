@@ -8,8 +8,10 @@ import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
+import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
+import 'package:quran_offline/features/read/widgets/read_grouped_surah_card.dart';
+import 'package:quran_offline/features/read/widgets/read_surah_list_row.dart';
 
 class PageListView extends ConsumerWidget {
   const PageListView({super.key, this.topWidgets = const []});
@@ -44,206 +46,150 @@ class PageListView extends ConsumerWidget {
       slivers: [
         for (final widget in topWidgets) SliverToBoxAdapter(child: widget),
         SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+            horizontal: kAppContentHorizontalInset,
+            vertical: 8,
+          ),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-        final pageNo = index + 1;
-        final pageSurahsAsync = ref.watch(pageSurahsProvider(pageNo));
+                final pageNo = index + 1;
+                final pageSurahsAsync = ref.watch(pageSurahsProvider(pageNo));
 
-        return surahsAsync.when(
-          data: (surahs) {
-            return pageSurahsAsync.when(
-              data: (pageSurahs) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Page Header with "Read Page" link
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              onTap: () => _openMushafPage(context, ref, pageNo),
-                              child: Text(
-                                AppLocalizations.getPageText(pageNo, settings.appLanguage),
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () => _openMushafPage(context, ref, pageNo),
-                            child: Text(
-                              AppLocalizations.getReadPage(settings.appLanguage),
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.primary,
-                                decoration: TextDecoration.underline,
-                                decorationColor: colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Surah List Card
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: colorScheme.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: colorScheme.shadow.withValues(alpha: 0.08),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                              spreadRadius: 0,
-                            ),
-                          ],
-                        ),
-                        child: Column(
+                return surahsAsync.when(
+                  data: (surahs) {
+                    return pageSurahsAsync.when(
+                      data: (pageSurahs) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ...pageSurahs.surahIds.asMap().entries.map((entry) {
-                              final index = entry.key;
-                              final surahId = entry.value;
-                              final surahInfo = surahs.firstWhere(
-                                (s) => s.id == surahId,
-                                orElse: () => SurahInfo(
-                                  id: surahId,
-                                  arabicName: '',
-                                  englishName: 'Surah $surahId',
-                                  englishMeaning: '',
-                                ),
-                              );
-                              final isLast = index == pageSurahs.surahIds.length - 1;
-
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                decoration: BoxDecoration(
-                                  border: isLast
-                                      ? null
-                                      : Border(
-                                          bottom: BorderSide(
-                                            color: colorScheme.outlineVariant.withValues(alpha: 0.1),
-                                            width: 1,
-                                          ),
-                                        ),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Surah number
-                                    Container(
-                                      width: 36,
-                                      height: 36,
-                                      decoration: BoxDecoration(
-                                        color: colorScheme.surfaceVariant,
-                                        shape: BoxShape.circle,
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () => _openMushafPage(
+                                        context,
+                                        ref,
+                                        pageNo,
                                       ),
-                                      alignment: Alignment.center,
                                       child: Text(
-                                        '${surahInfo.id}',
-                                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                          color: colorScheme.onSurfaceVariant,
-                                          fontWeight: FontWeight.w600,
+                                        AppLocalizations.getPageText(
+                                          pageNo,
+                                          settings.appLanguage,
                                         ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    // English name and meaning
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            surahInfo.englishName,
-                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge
+                                            ?.copyWith(
                                               fontWeight: FontWeight.w600,
                                               color: colorScheme.onSurface,
                                             ),
-                                          ),
-                                          Builder(
-                                            builder: (context) {
-                                              final meaning = surahInfo.getMeaning(settings.appLanguage);
-                                              if (meaning.isEmpty) return const SizedBox.shrink();
-                                              return Column(
-                                                children: [
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    meaning,
-                                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                      color: colorScheme.onSurfaceVariant,
-                                                    ),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          ),
-                                        ],
                                       ),
                                     ),
-                                    // Arabic name
-                                    SurahNameListGlyph(surahId: surahInfo.id),
+                                  ),
+                                  InkWell(
+                                    onTap: () => _openMushafPage(
+                                      context,
+                                      ref,
+                                      pageNo,
+                                    ),
+                                    child: Text(
+                                      AppLocalizations.getReadPage(
+                                        settings.appLanguage,
+                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: colorScheme.primary,
+                                            decoration:
+                                                TextDecoration.underline,
+                                            decorationColor:
+                                                colorScheme.primary,
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: ReadGroupedSurahCard(
+                                child: Column(
+                                  children: [
+                                    for (final entry in pageSurahs.surahIds
+                                        .asMap()
+                                        .entries) ...[
+                                      if (entry.key > 0)
+                                        const ReadGroupedSurahDivider(),
+                                      _PageSurahRow(
+                                        surahId: entry.value,
+                                        surahs: surahs,
+                                        appLanguage: settings.appLanguage,
+                                      ),
+                                    ],
                                   ],
                                 ),
-                              );
-                            }).toList(),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                      loading: () => Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              child: Text(
+                                AppLocalizations.getPageText(
+                                  pageNo,
+                                  settings.appLanguage,
+                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: colorScheme.onSurface,
+                                    ),
+                              ),
+                            ),
+                            Container(
+                              height: 72,
+                              decoration: BoxDecoration(
+                                color: colorScheme.surfaceContainerHighest
+                                    .withValues(alpha: 0.35),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                );
-              },
-              loading: () => Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Text(
-                        AppLocalizations.getPageText(pageNo, settings.appLanguage),
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurface,
-                            ),
+                      error: (error, stack) => Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          AppLocalizations.formatPageLoadError(
+                            settings.appLanguage,
+                            pageNo,
+                            error,
+                          ),
+                          style: TextStyle(color: colorScheme.error),
+                        ),
                       ),
-                    ),
-                    Container(
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceVariant.withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              error: (error, stack) => Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  AppLocalizations.formatPageLoadError(
-                    settings.appLanguage,
-                    pageNo,
-                    error,
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, stack) => Center(
+                    child: Text('Error: $error'),
                   ),
-                  style: TextStyle(color: colorScheme.error),
-                ),
-              ),
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(
-            child: Text('Error: $error'),
-          ),
-        );
+                );
               },
               childCount: 604,
             ),
@@ -254,3 +200,38 @@ class PageListView extends ConsumerWidget {
   }
 }
 
+class _PageSurahRow extends StatelessWidget {
+  const _PageSurahRow({
+    required this.surahId,
+    required this.surahs,
+    required this.appLanguage,
+  });
+
+  final int surahId;
+  final List<SurahInfo> surahs;
+  final String appLanguage;
+
+  @override
+  Widget build(BuildContext context) {
+    final surahInfo = surahs.firstWhere(
+      (s) => s.id == surahId,
+      orElse: () => SurahInfo(
+        id: surahId,
+        arabicName: '',
+        englishName: 'Surah $surahId',
+        englishMeaning: '',
+      ),
+    );
+    final meaning = surahInfo.getMeaning(appLanguage);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
+      child: ReadSurahListRow(
+        surahId: surahInfo.id,
+        name: surahInfo.englishName,
+        meaning: meaning.isEmpty ? null : meaning,
+        trailingDetail: null,
+      ),
+    );
+  }
+}

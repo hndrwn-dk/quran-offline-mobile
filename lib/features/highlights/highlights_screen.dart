@@ -7,6 +7,9 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_search_field.dart';
+import 'package:quran_offline/features/library/widgets/library_empty_state.dart';
+import 'package:quran_offline/features/library/widgets/library_item_card.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 import 'package:quran_offline/features/reader/widgets/highlight_color_picker.dart';
 
@@ -32,7 +35,12 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
       children: [
         // Color filter chips with info icon (no search button - use global search in AppBar)
         Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: const EdgeInsets.fromLTRB(
+              kAppContentHorizontalInset,
+              8,
+              kAppContentHorizontalInset,
+              8,
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -104,17 +112,27 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                   });
 
                   if (filtered.isEmpty) {
-                    return Center(
-                      child: Text(
-                        highlights.isEmpty
-                            ? AppLocalizations.getSubtitleText('highlights_empty', settings.appLanguage)
-                            : AppLocalizations.getSubtitleText('highlights_no_results', settings.appLanguage),
-                      ),
+                    return LibraryEmptyState(
+                      message: highlights.isEmpty
+                          ? AppLocalizations.getSubtitleText(
+                              'highlights_empty',
+                              settings.appLanguage,
+                            )
+                          : AppLocalizations.getSubtitleText(
+                              'highlights_no_results',
+                              settings.appLanguage,
+                            ),
+                      icon: Icons.format_color_fill_outlined,
                     );
                   }
 
                   return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    padding: const EdgeInsets.fromLTRB(
+                      kAppContentHorizontalInset,
+                      0,
+                      kAppContentHorizontalInset,
+                      24,
+                    ),
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final highlight = filtered[index];
@@ -127,148 +145,63 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                           englishMeaning: '',
                         ),
                       );
-                      final highlightColor = highlightDisplayColor(highlight.color);
+                      final highlightColor =
+                          highlightDisplayColor(highlight.color);
 
                       return FutureBuilder<Verse?>(
-                        future: ref.read(databaseProvider).getVerse(highlight.surahId, highlight.ayahNo),
+                        future: ref
+                            .read(databaseProvider)
+                            .getVerse(highlight.surahId, highlight.ayahNo),
                         builder: (context, verseSnapshot) {
                           final verse = verseSnapshot.data;
                           final arabicText = verse?.arabic ?? '';
-                          final translation = _getTranslation(verse, settings.language);
-                          
-                          return InkWell(
+                          final translation =
+                              _getTranslation(verse, settings.language);
+
+                          return LibraryItemCard(
+                            surahId: highlight.surahId,
+                            surahName: surahInfo.englishName,
+                            ayahNo: highlight.ayahNo,
+                            arabicText: arabicText,
+                            translation: translation,
+                            accentColor: highlightColor,
+                            marginBottom: index == filtered.length - 1 ? 0 : 8,
+                            showChevron: false,
+                            trailingAction: IconButton(
+                              icon: Icon(
+                                Icons.edit_outlined,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              tooltip: AppLocalizations.getActionTooltip(
+                                'change_color',
+                                settings.appLanguage,
+                              ),
+                              onPressed: () {
+                                showDialog<void>(
+                                  context: context,
+                                  builder: (context) => HighlightColorPicker(
+                                    surahId: highlight.surahId,
+                                    ayahNo: highlight.ayahNo,
+                                    currentColor: highlight.color,
+                                  ),
+                                );
+                              },
+                            ),
                             onTap: () {
-                              ref.read(readerSourceProvider.notifier).state = SurahSource(
+                              ref.read(readerSourceProvider.notifier).state =
+                                  SurahSource(
                                 highlight.surahId,
                                 targetAyahNo: highlight.ayahNo,
                               );
-                              ref.read(targetAyahProvider.notifier).state = highlight.ayahNo;
-                              Navigator.push(
+                              ref.read(targetAyahProvider.notifier).state =
+                                  highlight.ayahNo;
+                              Navigator.push<void>(
                                 context,
-                                MaterialPageRoute(
+                                MaterialPageRoute<void>(
                                   builder: (context) => const ReaderScreen(),
                                 ),
                               );
                             },
-                            child: Card(
-                              margin: EdgeInsets.only(
-                                bottom: index == filtered.length - 1 ? 0 : 12,
-                              ),
-                              elevation: 1,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: BorderSide(
-                                  color: highlightColor.withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Color indicator
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: highlightColor.withValues(alpha: 0.2),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: highlightColor,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        '${highlight.surahId}',
-                                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                              color: highlightColor,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    // Content
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  surahInfo.englishName,
-                                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                                        fontWeight: FontWeight.w600,
-                                                        color: colorScheme.onSurface,
-                                                      ),
-                                                ),
-                                              ),
-                                              Text(
-                                                'Ayah ${highlight.ayahNo}',
-                                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                      color: colorScheme.onSurfaceVariant,
-                                                      fontWeight: FontWeight.w500,
-                                                    ),
-                                              ),
-                                            ],
-                                          ),
-                                          if (arabicText.isNotEmpty) ...[
-                                            const SizedBox(height: 8),
-                                            Directionality(
-                                              textDirection: TextDirection.rtl,
-                                              child: Text(
-                                                arabicText,
-                                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                                      fontFamily: 'UthmanicHafsV22',
-                                                      fontFamilyFallback: const ['UthmanicHafs'],
-                                                      color: colorScheme.onSurface,
-                                                      height: 1.6,
-                                                    ),
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                                textAlign: TextAlign.right,
-                                              ),
-                                            ),
-                                          ],
-                                          if (translation.isNotEmpty) ...[
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              translation,
-                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                    color: colorScheme.onSurfaceVariant,
-                                                    height: 1.4,
-                                                  ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    IconButton(
-                                      icon: Icon(Icons.edit_outlined, color: colorScheme.onSurfaceVariant),
-                                      tooltip: AppLocalizations.getActionTooltip(
-                                        'change_color',
-                                        settings.appLanguage,
-                                      ),
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => HighlightColorPicker(
-                                            surahId: highlight.surahId,
-                                            ayahNo: highlight.ayahNo,
-                                            currentColor: highlight.color,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
                           );
                         },
                       );

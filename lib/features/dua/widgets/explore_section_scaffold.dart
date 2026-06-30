@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 
 /// Sub-screen shell for a Jelajahi hub section (back + title + optional drill context).
@@ -55,8 +56,21 @@ class ExploreSectionScaffold extends StatelessWidget {
             ],
           ],
         ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
+        ),
       ),
-      body: HomeBackdrop(child: body),
+      body: HomeBackdrop(
+        child: Padding(
+          padding: const EdgeInsets.only(top: kAppBodyTopInset),
+          child: body,
+        ),
+      ),
     );
   }
 

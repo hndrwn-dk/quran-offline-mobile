@@ -18,6 +18,9 @@ const lifeSituationCategoryOrder = [
   'world_hereafter',
 ];
 
+/// Editorial hero on the Tema hidup category screen (static, not rotated).
+const kLifeThemeFeaturedCategoryKey = 'provision';
+
 String normalizeLifeSituationCategory(String key) {
   if (key == 'hereafter') return 'world_hereafter';
   return key;

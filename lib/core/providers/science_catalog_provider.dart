@@ -38,6 +38,9 @@ class ScienceCatalog {
   }
 }
 
+/// Editorial hero on the Sains category screen (static, not rotated).
+const kScienceFeaturedCategoryKey = 'cosmos';
+
 final scienceCatalogProvider = FutureProvider<ScienceCatalog>((ref) async {
   String raw;
   try {

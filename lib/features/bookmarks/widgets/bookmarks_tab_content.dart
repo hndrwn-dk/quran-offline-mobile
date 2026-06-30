@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
-import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
-import 'package:quran_offline/features/reader/reader_screen.dart';
+import 'package:quran_offline/core/widgets/app_search_field.dart';
+import 'package:quran_offline/features/library/widgets/library_empty_state.dart';
+import 'package:quran_offline/features/library/widgets/library_item_card.dart';
+import 'package:quran_offline/features/bookmarks/open_bookmark.dart';
 
 // Extract from BookmarksScreen for use in TabBarView
 class BookmarksTabContent extends ConsumerStatefulWidget {
@@ -21,7 +22,6 @@ class BookmarksTabContent extends ConsumerStatefulWidget {
 enum BookmarkSortBy { date, surah }
 
 class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
-  final TextEditingController _searchController = TextEditingController();
   bool _selectionMode = false;
   final Set<String> _selectedKeys = {};
   BookmarkSortBy _sortBy = BookmarkSortBy.date;
@@ -80,12 +80,6 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
         ..addAll(items.map(_keyFor));
       _selectionMode = items.isNotEmpty;
     });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 
   @override
@@ -190,220 +184,144 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
                   });
 
                   if (filtered.isEmpty) {
-                    return Center(
-                      child: Text(
-                        AppLocalizations.getSubtitleText('bookmarks_empty', settings.appLanguage),
+                    return LibraryEmptyState(
+                      message: AppLocalizations.getSubtitleText(
+                        'bookmarks_empty',
+                        settings.appLanguage,
                       ),
+                      icon: Icons.bookmark_outline,
                     );
                   }
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final bookmark = filtered[index];
-                      final surahInfo = surahs.firstWhere(
-                        (s) => s.id == bookmark.surahId,
-                        orElse: () => SurahInfo(id: bookmark.surahId, arabicName: '', englishName: 'Surah ${bookmark.surahId}', englishMeaning: ''),
-                      );
-                      final selected = _selectedKeys.contains(_keyFor(bookmark));
+                  final sortLabel = _sortBy == BookmarkSortBy.date
+                      ? AppLocalizations.getSettingsText('sort_date', appLanguage)
+                      : AppLocalizations.getSettingsText('sort_surah', appLanguage);
 
-                      return FutureBuilder<Verse?>(
-                        future: ref.read(databaseProvider).getVerse(bookmark.surahId, bookmark.ayahNo),
-                        builder: (context, verseSnapshot) {
-                          final verse = verseSnapshot.data;
-                          final arabicText = verse?.arabic ?? '';
-                          final translation = _getTranslation(verse, settings.language);
-                          
-                          return InkWell(
-                            onTap: () async {
-                              if (_selectionMode) {
-                                _toggleSelection(bookmark);
-                              } else {
-                                final db = ref.read(databaseProvider);
-                                final pageNo = await db.getPageForAyah(bookmark.surahId, bookmark.ayahNo);
-                                
-                                if (pageNo != null) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MushafPageView(
-                                        initialPage: pageNo,
-                                        targetSurahId: bookmark.surahId,
-                                        targetAyahNo: bookmark.ayahNo,
-                                      ),
-                                    ),
-                                  );
-                                } else {
-                                  ref.read(readerSourceProvider.notifier).state = SurahSource(bookmark.surahId, targetAyahNo: bookmark.ayahNo);
-                                  ref.read(targetAyahProvider.notifier).state = bookmark.ayahNo;
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const ReaderScreen(),
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                            onLongPress: () {
-                              if (!_selectionMode) {
-                                // Enter selection mode and select this bookmark
-                                setState(() {
-                                  _selectionMode = true;
-                                  _selectedKeys.add(_keyFor(bookmark));
-                                });
-                              } else {
-                                _toggleSelection(bookmark);
-                              }
-                            },
-                            child: Card(
-                              margin: EdgeInsets.only(
-                                bottom: index == filtered.length - 1 ? 0 : 12,
-                              ),
-                              elevation: selected ? 4 : 1,
-                              color: selected
-                                  ? colorScheme.primaryContainer.withValues(alpha: 0.5)
-                                  : null,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: selected
-                                    ? BorderSide(
-                                        color: colorScheme.primary.withValues(alpha: 0.5),
-                                        width: 2,
-                                      )
-                                    : BorderSide.none,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (_selectionMode) ...[
-                                      Checkbox(
-                                        value: selected,
-                                        onChanged: (_) => _toggleSelection(bookmark),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                        visualDensity: VisualDensity.compact,
-                                      ),
-                                      const SizedBox(width: 12),
-                                    ],
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: colorScheme.surfaceVariant,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        '${bookmark.surahId}',
-                                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                          color: colorScheme.onSurfaceVariant,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  surahInfo.englishName,
-                                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                                        fontWeight: FontWeight.w600,
-                                                        color: colorScheme.onSurface,
-                                                      ),
-                                                ),
-                                              ),
-                                              Text(
-                                                'Ayah ${bookmark.ayahNo}',
-                                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                      color: colorScheme.onSurfaceVariant,
-                                                      fontWeight: FontWeight.w500,
-                                                    ),
-                                              ),
-                                            ],
-                                          ),
-                                          Builder(
-                                            builder: (context) {
-                                              final meaning = surahInfo.getMeaning(settings.appLanguage);
-                                              if (meaning.isEmpty) return const SizedBox.shrink();
-                                              return Padding(
-                                                padding: const EdgeInsets.only(top: 2),
-                                                child: Text(
-                                                  meaning,
-                                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                        color: colorScheme.onSurfaceVariant,
-                                                      ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                          if (arabicText.isNotEmpty) ...[
-                                            const SizedBox(height: 8),
-                                            Directionality(
-                                              textDirection: TextDirection.rtl,
-                                              child: Text(
-                                                arabicText,
-                                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                                      fontFamily: 'UthmanicHafsV22',
-                                                      fontFamilyFallback: const ['UthmanicHafs'],
-                                                      color: colorScheme.onSurface,
-                                                      height: 1.6,
-                                                    ),
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                                textAlign: TextAlign.right,
-                                              ),
-                                            ),
-                                          ],
-                                          if (translation.isNotEmpty) ...[
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              translation,
-                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                    color: colorScheme.onSurfaceVariant,
-                                                    height: 1.4,
-                                                  ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    ),
-                                    if (!_selectionMode) ...[
-                                      const SizedBox(width: 8),
-                                      IconButton(
-                                        icon: Icon(Icons.delete_outline, color: colorScheme.onSurfaceVariant),
-                                        tooltip: AppLocalizations.getActionTooltip(
-                                          'delete_bookmark',
-                                          appLanguage,
-                                        ),
-                                        onPressed: () async {
-                                          final confirmed = await _confirmDelete(
-                                            context,
-                                            message: 'Delete this bookmark?',
-                                          );
-                                          if (!confirmed) return;
-                                          await toggleBookmark(ref, bookmark.surahId, bookmark.ayahNo);
-                                          setState(() {});
-                                        },
-                                      ),
-                                    ],
-                                  ],
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (!_selectionMode)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            kAppContentHorizontalInset,
+                            8,
+                            kAppContentHorizontalInset,
+                            0,
+                          ),
+                          child: Text(
+                            '${AppLocalizations.getSettingsText('sort_by', appLanguage).toUpperCase()}: ${sortLabel.toUpperCase()}',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
                                 ),
+                          ),
+                        ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(
+                            kAppContentHorizontalInset,
+                            8,
+                            kAppContentHorizontalInset,
+                            24,
+                          ),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final bookmark = filtered[index];
+                            final surahInfo = surahs.firstWhere(
+                              (s) => s.id == bookmark.surahId,
+                              orElse: () => SurahInfo(
+                                id: bookmark.surahId,
+                                arabicName: '',
+                                englishName: 'Surah ${bookmark.surahId}',
+                                englishMeaning: '',
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    },
+                            );
+                            final selected =
+                                _selectedKeys.contains(_keyFor(bookmark));
+
+                            return FutureBuilder<Verse?>(
+                              future: ref
+                                  .read(databaseProvider)
+                                  .getVerse(bookmark.surahId, bookmark.ayahNo),
+                              builder: (context, verseSnapshot) {
+                                final verse = verseSnapshot.data;
+                                final arabicText = verse?.arabic ?? '';
+                                final translation =
+                                    _getTranslation(verse, settings.language);
+
+                                return LibraryItemCard(
+                                  surahId: bookmark.surahId,
+                                  surahName: surahInfo.englishName,
+                                  ayahNo: bookmark.ayahNo,
+                                  arabicText: arabicText,
+                                  translation: translation,
+                                  accentColor: bookmark.color != null
+                                      ? Color(bookmark.color!)
+                                      : null,
+                                  selected: selected,
+                                  selectionMode: _selectionMode,
+                                  onSelectionChanged: (_) =>
+                                      _toggleSelection(bookmark),
+                                  showChevron: !_selectionMode,
+                                  trailingAction: _selectionMode
+                                      ? null
+                                      : IconButton(
+                                          icon: Icon(
+                                            Icons.delete_outline,
+                                            color: colorScheme.onSurfaceVariant,
+                                          ),
+                                          tooltip:
+                                              AppLocalizations.getActionTooltip(
+                                            'delete_bookmark',
+                                            appLanguage,
+                                          ),
+                                          onPressed: () async {
+                                            final confirmed =
+                                                await _confirmDelete(
+                                              context,
+                                              message:
+                                                  'Delete this bookmark?',
+                                            );
+                                            if (!confirmed) return;
+                                            await toggleBookmark(
+                                              ref,
+                                              bookmark.surahId,
+                                              bookmark.ayahNo,
+                                            );
+                                            setState(() {});
+                                          },
+                                        ),
+                                  marginBottom:
+                                      index == filtered.length - 1 ? 0 : 8,
+                                  onTap: () async {
+                                    if (_selectionMode) {
+                                      _toggleSelection(bookmark);
+                                    } else {
+                                      await openBookmarkLocation(
+                                        context,
+                                        ref,
+                                        bookmark,
+                                      );
+                                    }
+                                  },
+                                  onLongPress: () {
+                                    if (!_selectionMode) {
+                                      setState(() {
+                                        _selectionMode = true;
+                                        _selectedKeys.add(_keyFor(bookmark));
+                                      });
+                                    } else {
+                                      _toggleSelection(bookmark);
+                                    }
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
@@ -418,27 +336,8 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
         ),
       ],
     ),
-    // Floating action button for selection mode (shown when not in selection mode)
-    if (!_selectionMode && bookmarksAsync.valueOrNull?.isNotEmpty == true)
-      Positioned(
-        bottom: 16,
-        right: 16,
-        child: FloatingActionButton(
-          mini: true,
-          onPressed: () {
-            setState(() {
-              _selectionMode = true;
-            });
-          },
-          tooltip: AppLocalizations.getActionTooltip(
-            'select_bookmarks',
-            appLanguage,
-          ),
-          child: const Icon(Icons.checklist),
-        ),
-      ),
-    ],
-    );
+  ],
+);
   }
 
   String _getTranslation(Verse? verse, String language) {

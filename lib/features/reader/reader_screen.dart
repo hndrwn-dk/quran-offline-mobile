@@ -20,6 +20,7 @@ import 'package:quran_offline/features/reader/surah_header_card.dart';
 import 'package:quran_offline/features/reader/widgets/reader_bismillah_block.dart';
 import 'package:quran_offline/features/reader/widgets/reader_loading_placeholder.dart';
 import 'package:quran_offline/features/reader/widgets/go_to_ayah_sheet.dart';
+import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
 import 'package:quran_offline/features/reader/text_settings_dialog.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
@@ -373,42 +374,25 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
 
     return AppBar(
+      leading: readerAppBarBackButton(context),
       automaticallyImplyLeading: false,
       toolbarHeight: 54,
       centerTitle: false,
-      titleSpacing: 16,
-      title: Row(
-        children: [
-          if (Navigator.canPop(context)) ...[
-            IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.maybePop(context),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(
-                minWidth: 36,
-                minHeight: 36,
-              ),
-              visualDensity: VisualDensity.compact,
-            ),
-            const SizedBox(width: 2),
-          ],
-          if (progressLabel != null)
-            Flexible(
-              child: GoToAyahAppBarChip(
-                label: progressLabel,
-                tooltip: AppLocalizations.getGoToAyahTooltip(lang),
-                onPressed: verseCount > 0
-                    ? () => _openGoToAyahSheet(
-                          context,
-                          surahId: surahId,
-                          surahName: surahName,
-                          verseCount: verseCount,
-                        )
-                    : null,
-              ),
-            ),
-        ],
-      ),
+      titleSpacing: 0,
+      title: progressLabel != null
+          ? GoToAyahAppBarChip(
+              label: progressLabel,
+              tooltip: AppLocalizations.getGoToAyahTooltip(lang),
+              onPressed: verseCount > 0
+                  ? () => _openGoToAyahSheet(
+                        context,
+                        surahId: surahId,
+                        surahName: surahName,
+                        verseCount: verseCount,
+                      )
+                  : null,
+            )
+          : null,
       actions: [
         IconButton(
           icon: const Icon(Icons.text_fields),
@@ -427,14 +411,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           },
         ),
       ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Divider(
-          height: 1,
-          thickness: 1,
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-        ),
-      ),
+      bottom: readerAppBarBottomDivider(colorScheme),
     );
   }
 
@@ -474,28 +451,22 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final totalAyah = JuzInfo.getTotalAyah(juzNo) ?? 0;
 
     return AppBar(
-      leading: Navigator.canPop(context) ? const BackButton() : null,
+      leading: readerAppBarBackButton(context),
       automaticallyImplyLeading: false,
       toolbarHeight: 54,
       centerTitle: false,
-      titleSpacing: 16,
+      titleSpacing: 0,
       title: juzSurahsAsync.when(
         data: (juzSurahs) {
           return surahsAsync.when(
             data: (surahs) {
               if (juzSurahs.surahIds.isEmpty) {
-                return Text(
-                  juzTitle,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                );
+                return ReaderAppBarTitleColumn(title: juzTitle);
               }
 
-              // Get first and last surah names
               final firstSurahId = juzSurahs.surahIds.first;
               final lastSurahId = juzSurahs.surahIds.last;
-              
+
               final firstSurah = surahs.firstWhere(
                 (s) => s.id == firstSurahId,
                 orElse: () => SurahInfo(
@@ -505,7 +476,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   englishMeaning: '',
                 ),
               );
-              
+
               final lastSurah = surahs.firstWhere(
                 (s) => s.id == lastSurahId,
                 orElse: () => SurahInfo(
@@ -516,7 +487,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 ),
               );
 
-              // Format surah names with proper diacritics for common surahs
               String formatSurahName(String name) {
                 final formattedNames = {
                   'Al-Fatiha': 'Al-Fātiḥah',
@@ -543,71 +513,24 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 return formattedNames[name] ?? name;
               }
 
-              final firstSurahName = formatSurahName(firstSurah.englishName);
-              final lastSurahName = formatSurahName(lastSurah.englishName);
-              
-              // Build subtitle: "148 ayah • Al-Fātiḥah → Al-Baqarah"
-              final subtitle = totalAyah > 0
-                  ? '$totalAyah ayah • $firstSurahName → $lastSurahName'
-                  : '$firstSurahName → $lastSurahName';
+              final subtitle = AppLocalizations.formatJuzReaderSubtitle(
+                lang,
+                totalAyah,
+                formatSurahName(firstSurah.englishName),
+                formatSurahName(lastSurah.englishName),
+              );
 
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Line 1: juz title (titleLarge, bold)
-                  Text(
-                    juzTitle,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          height: 1.2,
-                        ),
-                  ),
-                  const SizedBox(height: 2),
-                  // Line 2: "148 ayah • Al-Fātiḥah → Al-Baqarah" (labelMedium/bodySmall, muted)
-                  Text(
-                    subtitle,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          height: 1.2,
-                        ) ??
-                        Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              height: 1.2,
-                            ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+              return ReaderAppBarTitleColumn(
+                title: juzTitle,
+                subtitle: subtitle,
               );
             },
-            loading: () => Text(
-              juzTitle,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            error: (_, __) => Text(
-              juzTitle,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
+            loading: () => ReaderAppBarTitleColumn(title: juzTitle),
+            error: (_, __) => ReaderAppBarTitleColumn(title: juzTitle),
           );
         },
-        loading: () => Text(
-          juzTitle,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        error: (_, __) => Text(
-          juzTitle,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
+        loading: () => ReaderAppBarTitleColumn(title: juzTitle),
+        error: (_, __) => ReaderAppBarTitleColumn(title: juzTitle),
       ),
       actions: [
         IconButton(
@@ -627,14 +550,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           },
         ),
       ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Divider(
-          height: 1,
-          thickness: 1,
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-        ),
-      ),
+      bottom: readerAppBarBottomDivider(colorScheme),
     );
   }
 
@@ -740,12 +656,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 versesAsync: versesAsync,
               ),
             PageSource(:final pageNo) => AppBar(
-                leading: Navigator.canPop(context) ? const BackButton() : null,
+                leading: readerAppBarBackButton(context),
                 automaticallyImplyLeading: false,
                 toolbarHeight: 54,
                 centerTitle: false,
-                titleSpacing: 16,
-                title: Text(AppLocalizations.getPageText(pageNo, appLanguage)),
+                titleSpacing: 0,
+                title: ReaderAppBarTitleColumn(
+                  title: AppLocalizations.getPageText(pageNo, appLanguage),
+                ),
                 actions: [
                   IconButton(
                     icon: const Icon(Icons.text_fields),
@@ -764,16 +682,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     },
                   ),
                 ],
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(1),
-                  child: Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .outlineVariant
-                        .withValues(alpha: 0.3),
-                  ),
+                bottom: readerAppBarBottomDivider(
+                  Theme.of(context).colorScheme,
                 ),
               ),
           };

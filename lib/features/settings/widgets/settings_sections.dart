@@ -7,9 +7,12 @@ import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/package_info_provider.dart';
 import 'package:quran_offline/core/providers/reciter_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
-import 'package:quran_offline/core/tajweed/tajweed_report.dart';
+import 'package:quran_offline/core/feedback/feedback_context.dart';
+import 'package:quran_offline/core/feedback/feedback_email_fallback.dart';
+import 'package:quran_offline/core/feedback/feedback_type.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/tajweed_color_guide.dart';
+import 'package:quran_offline/features/settings/feedback_form_sheet.dart';
 import 'package:quran_offline/features/settings/audio_downloads_screen.dart';
 import 'package:quran_offline/features/settings/settings_link_actions.dart';
 import 'package:quran_offline/features/settings/widgets/about_data_sources_tile.dart';
@@ -519,15 +522,42 @@ class SettingsAboutFeedbackSection extends ConsumerWidget {
           title: AppLocalizations.getSettingsText('about_feedback_section', appLanguage),
         ),
         ListTile(
-          leading: Icon(Icons.bug_report, color: colorScheme.primary),
-          title: Text(AppLocalizations.getSettingsText('report_tajweed_title', appLanguage)),
+          leading: Icon(Icons.lightbulb_outline, color: colorScheme.primary),
+          title: Text(
+            AppLocalizations.getSettingsText('suggest_feature_title', appLanguage),
+          ),
+          subtitle: Text(
+            AppLocalizations.getSettingsText('suggest_feature_subtitle', appLanguage),
+          ),
           onTap: () {
-            final lastAyah = TajweedReport.ayahFromLastRead(ref.read(lastReadProvider));
-            TajweedReport.launch(
-              context: context,
+            showFeedbackForm(
+              context,
+              type: FeedbackType.feature,
               language: appLanguage,
-              surahId: lastAyah?.surahId,
-              ayahNo: lastAyah?.ayahNo,
+            );
+          },
+        ),
+        ListTile(
+          leading: Icon(Icons.bug_report, color: colorScheme.primary),
+          title: Text(
+            AppLocalizations.getSettingsText('report_bug_title', appLanguage),
+          ),
+          subtitle: Text(
+            AppLocalizations.getSettingsText('report_bug_subtitle', appLanguage),
+          ),
+          onTap: () {
+            final lastAyah =
+                FeedbackEmailFallback.ayahFromLastRead(ref.read(lastReadProvider));
+            showFeedbackForm(
+              context,
+              type: FeedbackType.bug,
+              language: appLanguage,
+              contextData: lastAyah == null
+                  ? null
+                  : FeedbackContext(
+                      surahId: lastAyah.surahId,
+                      ayahNo: lastAyah.ayahNo,
+                    ),
             );
           },
         ),
