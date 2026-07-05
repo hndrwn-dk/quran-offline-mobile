@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_beranda_label">Quran Offline — Beranda</string>
+    <string name="widget_beranda_description">Renungan harian dan lanjutkan baca Al-Qur\'an offline.</string>
+</resources>

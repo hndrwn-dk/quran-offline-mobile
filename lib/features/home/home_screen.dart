@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quran_offline/core/providers/tab_provider.dart';
+import 'package:quran_offline/core/providers/last_read_provider.dart';
+import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/home_widget_navigation.dart';
+import 'package:quran_offline/core/widgets/home_widget_sync.dart';
 import 'package:quran_offline/features/dua/dua_screen.dart';
 import 'package:quran_offline/features/home/beranda_screen.dart';
 import 'package:quran_offline/features/library/my_library_screen.dart';
@@ -11,11 +15,52 @@ import 'package:quran_offline/features/search/search_screen.dart';
 import 'package:quran_offline/features/audio/global_recitation_bar.dart';
 import 'package:quran_offline/features/audio/audio_download_notifications.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      HomeWidgetNavigation.register(context, ref);
+      HomeWidgetSync.updateFromRef(ref);
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    HomeWidgetNavigation.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      HomeWidgetSync.updateFromRef(ref);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen(lastReadProvider, (_, __) {
+      HomeWidgetSync.updateFromRef(ref);
+    });
+    ref.listen(settingsProvider, (_, __) {
+      HomeWidgetSync.updateFromRef(ref);
+    });
+    ref.listen(reflectionPickProvider, (_, __) {
+      HomeWidgetSync.updateFromRef(ref);
+    });
+
     final currentIndex = ref.watch(currentTabProvider);
     final settings = ref.watch(settingsProvider);
     final appLanguage = settings.appLanguage;

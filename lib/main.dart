@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:quran_offline/core/widgets/home_widget_keys.dart';
 import 'package:quran_offline/app/app.dart';
 
 Future<void> main() async {
@@ -17,6 +19,11 @@ Future<void> main() async {
     // Audio background service failed to initialise; the app should still run.
     // Recitation playback may fall back to foreground-only behaviour.
     debugPrint('JustAudioBackground.init failed: $e');
+  }
+  try {
+    await HomeWidget.setAppGroupId(HomeWidgetKeys.appGroupId);
+  } catch (e) {
+    debugPrint('HomeWidget.setAppGroupId failed: $e');
   }
   runApp(
     const ProviderScope(
