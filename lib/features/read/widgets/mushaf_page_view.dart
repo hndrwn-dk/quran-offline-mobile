@@ -13,6 +13,7 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/models/bookmark_open_context.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
+import 'package:quran_offline/core/reading/reading_activity_service.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
@@ -392,6 +393,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
             ayahNo: word.ayah,
             surahId: word.surah,
           );
+          logReadingActivityDay();
           return;
         }
         return;
@@ -419,6 +421,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
           ayahNo: visibleBlock!.ayahNo,
           surahId: visibleBlock.surahId,
         );
+        logReadingActivityDay();
       }
     });
   }

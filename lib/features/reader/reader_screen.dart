@@ -6,6 +6,7 @@ import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/providers/juz_surahs_provider.dart';
+import 'package:quran_offline/core/reading/reading_activity_service.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
@@ -148,15 +149,18 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         
         if (source is SurahSource && currentSource is SurahSource && currentSource.surahId == source.surahId) {
           ref.read(lastReadProvider.notifier).saveLastRead(currentSource, ayahNo: visibleAyah);
+          logReadingActivityDay();
         } else if (source is JuzSource && currentSource is JuzSource && currentSource.juzNo == source.juzNo) {
           ref.read(lastReadProvider.notifier).saveLastRead(
             currentSource,
             ayahNo: visibleAyah,
             surahId: verses[verseIndex].surahId,
           );
+          logReadingActivityDay();
         } else if (source is SurahInJuzSource && currentSource is SurahInJuzSource && 
                    currentSource.juzNo == source.juzNo && currentSource.surahId == source.surahId) {
           ref.read(lastReadProvider.notifier).saveLastRead(currentSource, ayahNo: visibleAyah);
+          logReadingActivityDay();
         }
       }
     });

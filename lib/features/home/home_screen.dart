@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/notifications/notification_navigation_handler.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
@@ -30,6 +31,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      registerNotificationNavigationHandler(context, ref);
       HomeWidgetNavigation.register(context, ref);
       HomeWidgetSync.updateFromRef(ref);
     });

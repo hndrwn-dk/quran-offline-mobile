@@ -405,6 +405,99 @@ class SettingsAppSection extends ConsumerWidget {
   }
 }
 
+class SettingsRemindersSection extends ConsumerWidget {
+  const SettingsRemindersSection({super.key});
+
+  String _formatTime(BuildContext context, int hour, int minute) {
+    final dt = DateTime(2000, 1, 1, hour, minute);
+    return MaterialLocalizations.of(context).formatTimeOfDay(
+      TimeOfDay.fromDateTime(dt),
+    );
+  }
+
+  Future<void> _pickTime(
+    BuildContext context,
+    WidgetRef ref,
+    AppSettings settings,
+  ) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(
+        hour: settings.weeklyReminderHour,
+        minute: settings.weeklyReminderMinute,
+      ),
+    );
+    if (picked == null || !context.mounted) return;
+    await ref.read(settingsProvider.notifier).updateWeeklyReminderTime(
+          hour: picked.hour,
+          minute: picked.minute,
+        );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+    final appLanguage = settings.appLanguage;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SettingsSectionHeader(
+          title: AppLocalizations.getSettingsText('reminders_header', appLanguage),
+        ),
+        SwitchListTile(
+          secondary: Icon(Icons.notifications_outlined, color: colorScheme.primary),
+          title: Text(AppLocalizations.getSettingsText('weekly_reminder_title', appLanguage)),
+          subtitle: Text(
+            AppLocalizations.getSettingsText('weekly_reminder_subtitle', appLanguage),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+          ),
+          value: settings.weeklyReminderEnabled,
+          onChanged: (enabled) async {
+            final granted = await ref
+                .read(settingsProvider.notifier)
+                .updateWeeklyReminderEnabled(enabled);
+            if (!enabled || granted || !context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  AppLocalizations.getSettingsText(
+                    'weekly_reminder_permission_denied',
+                    appLanguage,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        if (settings.weeklyReminderEnabled)
+          ListTile(
+            leading: Icon(Icons.schedule, color: colorScheme.primary),
+            title: Text(AppLocalizations.getSettingsText('weekly_reminder_time_title', appLanguage)),
+            subtitle: Text(
+              AppLocalizations.getSettingsText('weekly_reminder_time_hint', appLanguage),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+            ),
+            trailing: Text(
+              _formatTime(
+                context,
+                settings.weeklyReminderHour,
+                settings.weeklyReminderMinute,
+              ),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            onTap: () => _pickTime(context, ref, settings),
+          ),
+      ],
+    );
+  }
+}
+
 class SettingsAboutAppSection extends ConsumerWidget {
   const SettingsAboutAppSection({super.key});
 

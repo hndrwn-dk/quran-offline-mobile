@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/notifications/weekly_reminder_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 class AppSettings {
   final String language; // For translation
   final String appLanguage; // For UI/menu
@@ -13,6 +13,9 @@ class AppSettings {
   final double translationFontSize;
   final double mushafFontSize;
   final ThemeMode themeMode;
+  final bool weeklyReminderEnabled;
+  final int weeklyReminderHour;
+  final int weeklyReminderMinute;
 
   AppSettings({
     this.language = 'en',
@@ -25,6 +28,9 @@ class AppSettings {
     this.translationFontSize = 16.0,
     this.mushafFontSize = 38.0,
     this.themeMode = ThemeMode.system,
+    this.weeklyReminderEnabled = false,
+    this.weeklyReminderHour = 15,
+    this.weeklyReminderMinute = 30,
   });
 
   AppSettings copyWith({
@@ -38,6 +44,9 @@ class AppSettings {
     double? translationFontSize,
     double? mushafFontSize,
     ThemeMode? themeMode,
+    bool? weeklyReminderEnabled,
+    int? weeklyReminderHour,
+    int? weeklyReminderMinute,
   }) {
     return AppSettings(
       language: language ?? this.language,
@@ -50,6 +59,9 @@ class AppSettings {
       translationFontSize: translationFontSize ?? this.translationFontSize,
       mushafFontSize: mushafFontSize ?? this.mushafFontSize,
       themeMode: themeMode ?? this.themeMode,
+      weeklyReminderEnabled: weeklyReminderEnabled ?? this.weeklyReminderEnabled,
+      weeklyReminderHour: weeklyReminderHour ?? this.weeklyReminderHour,
+      weeklyReminderMinute: weeklyReminderMinute ?? this.weeklyReminderMinute,
     );
   }
 
@@ -65,6 +77,9 @@ class AppSettings {
       'translationFontSize': translationFontSize,
       'mushafFontSize': mushafFontSize,
       'themeMode': themeMode.name,
+      'weeklyReminderEnabled': weeklyReminderEnabled,
+      'weeklyReminderHour': weeklyReminderHour,
+      'weeklyReminderMinute': weeklyReminderMinute,
     };
   }
 
@@ -72,9 +87,9 @@ class AppSettings {
     final language = json['language'] as String? ?? 'en';
     return AppSettings(
       language: language,
-      appLanguage: json['appLanguage'] as String? ?? language, // Default to language for backward compatibility
+      appLanguage: json['appLanguage'] as String? ?? language,
       showTransliteration: json['showTransliteration'] as bool? ?? true,
-      showTranslation: json['showTranslation'] as bool? ?? true, // Default to true for backward compatibility
+      showTranslation: json['showTranslation'] as bool? ?? true,
       showTafsir: json['showTafsir'] as bool? ?? true,
       showTajweed: json['showTajweed'] as bool? ?? true,
       arabicFontSize: (json['arabicFontSize'] as num?)?.toDouble() ?? 30.0,
@@ -84,6 +99,9 @@ class AppSettings {
         (e) => e.name == json['themeMode'],
         orElse: () => ThemeMode.system,
       ),
+      weeklyReminderEnabled: json['weeklyReminderEnabled'] as bool? ?? false,
+      weeklyReminderHour: json['weeklyReminderHour'] as int? ?? 15,
+      weeklyReminderMinute: json['weeklyReminderMinute'] as int? ?? 30,
     );
   }
 }
@@ -109,6 +127,9 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       (e) => e.name == themeModeStr,
       orElse: () => ThemeMode.system,
     );
+    final weeklyReminderEnabled = prefs.getBool('weeklyReminderEnabled') ?? false;
+    final weeklyReminderHour = prefs.getInt('weeklyReminderHour') ?? 15;
+    final weeklyReminderMinute = prefs.getInt('weeklyReminderMinute') ?? 30;
 
     final syncedLanguage = language;
     if (appLanguage != syncedLanguage) {
@@ -126,6 +147,20 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       translationFontSize: translationFontSize,
       mushafFontSize: mushafFontSize,
       themeMode: themeMode,
+      weeklyReminderEnabled: weeklyReminderEnabled,
+      weeklyReminderHour: weeklyReminderHour,
+      weeklyReminderMinute: weeklyReminderMinute,
+    );
+
+    await _applyWeeklyReminderSchedule();
+  }
+
+  Future<void> _applyWeeklyReminderSchedule() async {
+    await WeeklyReminderService.instance.rescheduleIfEnabled(
+      enabled: state.weeklyReminderEnabled,
+      hour: state.weeklyReminderHour,
+      minute: state.weeklyReminderMinute,
+      language: state.appLanguage,
     );
   }
 
@@ -135,6 +170,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     await prefs.setString('language', locale);
     await prefs.setString('appLanguage', locale);
     state = state.copyWith(language: locale, appLanguage: locale);
+    await _applyWeeklyReminderSchedule();
   }
 
   Future<void> updateLanguage(String language) async {
@@ -191,6 +227,35 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('mushafFontSize', size);
     state = state.copyWith(mushafFontSize: size);
+  }
+
+  Future<bool> updateWeeklyReminderEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (enabled) {
+      await WeeklyReminderService.instance.initialize();
+      final granted = await WeeklyReminderService.instance.requestPermission();
+      if (!granted) {
+        return false;
+      }
+    }
+    await prefs.setBool('weeklyReminderEnabled', enabled);
+    state = state.copyWith(weeklyReminderEnabled: enabled);
+    await _applyWeeklyReminderSchedule();
+    return true;
+  }
+
+  Future<void> updateWeeklyReminderTime({
+    required int hour,
+    required int minute,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('weeklyReminderHour', hour);
+    await prefs.setInt('weeklyReminderMinute', minute);
+    state = state.copyWith(
+      weeklyReminderHour: hour,
+      weeklyReminderMinute: minute,
+    );
+    await _applyWeeklyReminderSchedule();
   }
 }
 

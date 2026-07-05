@@ -23,6 +23,8 @@ class SettingsScreen extends ConsumerWidget {
             Divider(),
             SettingsRecitationSection(),
             Divider(),
+            SettingsRemindersSection(),
+            Divider(),
             SettingsAppSection(),
             SizedBox(height: 16),
           ],
