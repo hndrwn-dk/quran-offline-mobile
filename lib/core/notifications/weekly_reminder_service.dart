@@ -88,7 +88,6 @@ class WeeklyReminderService {
       if (notificationsGranted == false) {
         return false;
       }
-      await android.requestExactAlarmsPermission();
       return true;
     }
 
@@ -163,7 +162,7 @@ class WeeklyReminderService {
         id: notificationId,
         scheduledDate: scheduled,
         notificationDetails: details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
         title: content.title,
         body: content.body,
