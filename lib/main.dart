@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:quran_offline/core/notifications/weekly_reminder_service.dart';
 import 'package:quran_offline/core/widgets/home_widget_keys.dart';
 import 'package:quran_offline/app/app.dart';
 
@@ -19,6 +20,11 @@ Future<void> main() async {
     // Audio background service failed to initialise; the app should still run.
     // Recitation playback may fall back to foreground-only behaviour.
     debugPrint('JustAudioBackground.init failed: $e');
+  }
+  try {
+    await WeeklyReminderService.instance.initialize();
+  } catch (e) {
+    debugPrint('WeeklyReminderService.initialize failed: $e');
   }
   try {
     await HomeWidget.setAppGroupId(HomeWidgetKeys.appGroupId);

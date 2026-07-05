@@ -2387,6 +2387,56 @@ class AppLocalizations {
     };
   }
 
+  static String getWeeklyReminderNotifTitleNotRead(String language) {
+    return switch (language) {
+      'id' => 'Sudah baca Qur\'an minggu ini?',
+      'en' => 'Have you read the Qur\'an this week?',
+      'zh' => '本周读过古兰经了吗？',
+      'ja' => '今週クルアーンを読みましたか？',
+      _ => 'Have you read the Qur\'an this week?',
+    };
+  }
+
+  static String getWeeklyReminderNotifBodyNotRead(String language) {
+    return switch (language) {
+      'id' => 'Luangkan waktu sore ini — lanjutkan dari posisi terakhir.',
+      'en' => 'Take a moment this afternoon — continue from where you left off.',
+      'zh' => '今天下午抽空继续阅读，从上次位置接着读。',
+      'ja' => '午後の時間に、前回の続きから読みましょう。',
+      _ => 'Take a moment this afternoon — continue from where you left off.',
+    };
+  }
+
+  static String getWeeklyReminderNotifTitleRead(String language) {
+    return switch (language) {
+      'id' => 'Alhamdulillah, sudah membaca minggu ini',
+      'en' => 'Alhamdulillah — you\'ve read this week',
+      'zh' => 'Alhamdulillah — 本周已阅读',
+      'ja' => 'Alhamdulillah — 今週は読みました',
+      _ => 'Alhamdulillah — you\'ve read this week',
+    };
+  }
+
+  static String getWeeklyReminderNotifBodyRead(String language) {
+    return switch (language) {
+      'id' => 'Hari Jumat — renungan Al-Kahfi menanti di Beranda.',
+      'en' => 'Friday — Al-Kahf reflection awaits on Home.',
+      'zh' => '周五 — 首页有洞穴章默想等你。',
+      'ja' => '金曜日 — ホームでカーフの黙想が待っています。',
+      _ => 'Friday — Al-Kahf reflection awaits on Home.',
+    };
+  }
+
+  static String getWeeklyReminderChannelName(String language) {
+    return switch (language) {
+      'id' => 'Pengingat baca mingguan',
+      'en' => 'Weekly reading reminders',
+      'zh' => '每周阅读提醒',
+      'ja' => '週間読書リマインダー',
+      _ => 'Weekly reading reminders',
+    };
+  }
+
   static String getHomeContinueCta(String language) {
     return switch (language) {
       'id' => 'Lanjutkan membaca',
@@ -3067,6 +3117,12 @@ class AppLocalizations {
       'show_tajweed_title' => _getShowTajweedTitle(language),
       'show_tajweed_subtitle' => _getShowTajweedSubtitle(language),
       'app_settings_header' => _getAppSettingsHeader(language),
+      'reminders_header' => _getRemindersHeader(language),
+      'weekly_reminder_title' => _getWeeklyReminderTitle(language),
+      'weekly_reminder_subtitle' => _getWeeklyReminderSubtitle(language),
+      'weekly_reminder_time_title' => _getWeeklyReminderTimeTitle(language),
+      'weekly_reminder_time_hint' => _getWeeklyReminderTimeHint(language),
+      'weekly_reminder_permission_denied' => _getWeeklyReminderPermissionDenied(language),
       'app_language_title' => _getAppLanguageTitle(language),
       'app_language_subtitle' => _getAppLanguageSubtitle(language),
       'theme_title' => _getThemeTitle(language),
@@ -3457,6 +3513,66 @@ class AppLocalizations {
       'zh' => '应用设置',
       'ja' => 'アプリ設定',
       _ => 'App Settings',
+    };
+  }
+
+  static String _getRemindersHeader(String language) {
+    return switch (language) {
+      'id' => 'Pengingat',
+      'en' => 'Reminders',
+      'zh' => '提醒',
+      'ja' => 'リマインダー',
+      _ => 'Reminders',
+    };
+  }
+
+  static String _getWeeklyReminderTitle(String language) {
+    return switch (language) {
+      'id' => 'Pengingat baca mingguan',
+      'en' => 'Weekly reading reminder',
+      'zh' => '每周阅读提醒',
+      'ja' => '週間読書リマインダー',
+      _ => 'Weekly reading reminder',
+    };
+  }
+
+  static String _getWeeklyReminderSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Setiap Jumat sore — cek apakah Anda sudah membaca minggu ini.',
+      'en' => 'Every Friday afternoon — check if you\'ve read this week.',
+      'zh' => '每周五下午 — 检查本周是否已阅读。',
+      'ja' => '毎週金曜午後 — 今週読んだか確認します。',
+      _ => 'Every Friday afternoon — check if you\'ve read this week.',
+    };
+  }
+
+  static String _getWeeklyReminderTimeTitle(String language) {
+    return switch (language) {
+      'id' => 'Waktu pengingat',
+      'en' => 'Reminder time',
+      'zh' => '提醒时间',
+      'ja' => 'リマインダー時刻',
+      _ => 'Reminder time',
+    };
+  }
+
+  static String _getWeeklyReminderTimeHint(String language) {
+    return switch (language) {
+      'id' => 'Waktu Ashar bervariasi — sesuaikan jika perlu.',
+      'en' => 'Asr time varies — adjust if needed.',
+      'zh' => '晡礼时间因地区而异 — 可按需调整。',
+      'ja' => 'アスルの時間は地域により異なります — 必要に応じて調整してください。',
+      _ => 'Asr time varies — adjust if needed.',
+    };
+  }
+
+  static String _getWeeklyReminderPermissionDenied(String language) {
+    return switch (language) {
+      'id' => 'Izin notifikasi ditolak. Aktifkan di pengaturan perangkat untuk menerima pengingat.',
+      'en' => 'Notification permission denied. Enable it in device settings to receive reminders.',
+      'zh' => '通知权限被拒绝。请在设备设置中启用以接收提醒。',
+      'ja' => '通知の許可が拒否されました。リマインダーを受け取るには端末設定で有効にしてください。',
+      _ => 'Notification permission denied. Enable it in device settings to receive reminders.',
     };
   }
 

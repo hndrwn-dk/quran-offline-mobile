@@ -82,6 +82,29 @@ class HomeHeroCard extends ConsumerWidget {
                   height: 1.4,
                 ),
               ),
+              if (AppLocalizations.getHomeFridayHint(lang) case final hint?) ...[
+                const SizedBox(height: 10),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: colorScheme.primaryContainer.withValues(alpha: 0.35),
+                    border: Border.all(
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    child: Text(
+                      hint,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.primary,
+                        height: 1.4,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
