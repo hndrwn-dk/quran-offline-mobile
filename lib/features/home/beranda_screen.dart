@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
+import 'package:quran_offline/core/widgets/coachmark/support_coachmark.dart';
 import 'package:quran_offline/features/home/widgets/home_activity_section.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/home/widgets/home_hero_card.dart';
@@ -14,11 +16,37 @@ import 'package:quran_offline/features/settings/about_screen.dart';
 import 'package:quran_offline/features/settings/settings_link_actions.dart';
 import 'package:quran_offline/features/settings/settings_screen.dart';
 
-class BerandaScreen extends ConsumerWidget {
+class BerandaScreen extends ConsumerStatefulWidget {
   const BerandaScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BerandaScreen> createState() => _BerandaScreenState();
+}
+
+class _BerandaScreenState extends ConsumerState<BerandaScreen> {
+  final _supportIconKey = GlobalKey();
+  bool _coachmarkScheduled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowSupportCoachmark());
+  }
+
+  Future<void> _maybeShowSupportCoachmark() async {
+    if (_coachmarkScheduled || !mounted) return;
+    if (ref.read(currentTabProvider) != AppTab.home) return;
+
+    _coachmarkScheduled = true;
+    await SupportCoachmark.maybeShow(
+      context: context,
+      ref: ref,
+      supportIconKey: _supportIconKey,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final appLanguage = settings.appLanguage;
     final colorScheme = Theme.of(context).colorScheme;
@@ -92,6 +120,7 @@ class BerandaScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
+            key: _supportIconKey,
             icon: const Icon(Icons.volunteer_activism_outlined),
             iconSize: 22,
             tooltip: AppLocalizations.getSettingsText('support_title', appLanguage),
