@@ -381,6 +381,8 @@ class _IconBox extends StatelessWidget {
                 assetPath!,
                 fit: BoxFit.contain,
                 filterQuality: FilterQuality.high,
+                color: colorScheme.primary,
+                colorBlendMode: BlendMode.srcIn,
                 errorBuilder: (_, __, ___) => Icon(
                   icon,
                   size: size * 0.5,
