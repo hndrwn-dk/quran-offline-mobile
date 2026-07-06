@@ -2138,6 +2138,48 @@ class AppLocalizations {
     };
   }
 
+  static String getSupportCoachmarkTitle(String language) {
+    return switch (language) {
+      'id' => 'Suka aplikasinya? 🤍',
+      'en' => 'Enjoying the app? 🤍',
+      'zh' => '喜欢这个应用吗？🤍',
+      'ja' => 'アプリは気に入りましたか？🤍',
+      _ => 'Enjoying the app? 🤍',
+    };
+  }
+
+  static String getSupportCoachmarkBody(String language) {
+    return switch (language) {
+      'id' =>
+        'Dukung pengembangan Quran Offline di sini, yuk. App ini gratis selamanya & tanpa iklan.',
+      'en' =>
+        'Support Quran Offline development here. The app is free forever with no ads.',
+      'zh' => '在这里支持 Quran Offline 的开发。应用永久免费，无广告。',
+      'ja' => 'こちらから Quran Offline の開発をサポートしてください。アプリは永久無料・広告なしです。',
+      _ => 'Support Quran Offline development here. The app is free forever with no ads.',
+    };
+  }
+
+  static String getSupportCoachmarkDismiss(String language) {
+    return switch (language) {
+      'id' => 'Nanti',
+      'en' => 'Later',
+      'zh' => '稍后',
+      'ja' => 'あとで',
+      _ => 'Later',
+    };
+  }
+
+  static String getSupportCoachmarkCta(String language) {
+    return switch (language) {
+      'id' => 'Lihat →',
+      'en' => 'View →',
+      'zh' => '查看 →',
+      'ja' => '見る →',
+      _ => 'View →',
+    };
+  }
+
   static String getMushafAudioHint(String language) {
     return switch (language) {
       'id' => 'Unduh audio untuk putar offline.',

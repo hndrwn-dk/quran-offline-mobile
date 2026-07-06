@@ -9,6 +9,7 @@ import 'package:quran_offline/core/providers/import_progress_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/widgets/nav_read_icon.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
+import 'package:quran_offline/core/utils/coachmark_prefs.dart';
 import 'package:quran_offline/features/onboarding/language_selection_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -41,6 +42,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   Future<void> _initializeApp() async {
     try {
+      await CoachmarkPrefs.incrementAppOpenCount();
       final prefs = await SharedPreferences.getInstance();
       final lastMushafPage = MushafWarmup.readLastMushafPageFromPrefs(prefs);
       unawaited(MushafWarmup.beginSession(priorityPage: lastMushafPage));
