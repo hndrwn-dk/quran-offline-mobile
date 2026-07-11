@@ -20,4 +20,25 @@ void main() {
     expect(AppLinks.donateUrl, 'https://ko-fi.com/hendrawandaryonokarso');
     expect(AppLinks.donateUrl, isNot(contains('buymeacoffee')));
   });
+
+  group('AppLinks.ramadanTrackerPlayStoreForLocale', () {
+    test('includes Ramadan Tracker package id', () {
+      final url = AppLinks.ramadanTrackerPlayStoreForLocale('id');
+      expect(url, contains(AppLinks.ramadanTrackerPackageId));
+      expect(url, contains('hl=id'));
+    });
+
+    test('uses English locale hint for en', () {
+      final url = AppLinks.ramadanTrackerPlayStoreForLocale('en');
+      expect(url, contains('hl=en'));
+    });
+  });
+
+  group('AppLinks.ramadanTrackerMarketUrl', () {
+    test('uses market scheme with package id', () {
+      final url = AppLinks.ramadanTrackerMarketUrl();
+      expect(url, startsWith('market://'));
+      expect(url, contains(AppLinks.ramadanTrackerPackageId));
+    });
+  });
 }
