@@ -3193,6 +3193,13 @@ class AppLocalizations {
       'share_app_title' => _getShareAppTitle(language),
       'share_app_subtitle' => _getShareAppSubtitle(language),
       'about_app_section' => _getAboutAppSection(language),
+      'ramadan_promo_badge_days' => _getRamadanPromoBadgeDays(language),
+      'ramadan_promo_badge_today' => _getRamadanPromoBadgeToday(language),
+      'ramadan_promo_badge_active' => _getRamadanPromoBadgeActive(language),
+      'ramadan_promo_title' => _getRamadanPromoTitle(language),
+      'ramadan_promo_body' => _getRamadanPromoBody(language),
+      'ramadan_promo_cta_try' => _getRamadanPromoCtaTry(language),
+      'ramadan_promo_cta_open' => _getRamadanPromoCtaOpen(language),
       'about_support_section' => _getAboutSupportSection(language),
       'about_legal_section' => _getAboutLegalSection(language),
       'about_feedback_section' => _getAboutFeedbackSection(language),
@@ -3899,6 +3906,86 @@ class AppLocalizations {
       'ja' => 'アプリ',
       _ => 'App',
     };
+  }
+
+  static String _getRamadanPromoBadgeDays(String language) {
+    return switch (language) {
+      'id' => 'Ramadan %d hari lagi',
+      'en' => 'Ramadan in %d days',
+      'zh' => '距斋月还有 %d 天',
+      'ja' => 'ラマダーンまであと %d 日',
+      _ => 'Ramadan in %d days',
+    };
+  }
+
+  static String _getRamadanPromoBadgeToday(String language) {
+    return switch (language) {
+      'id' => 'Ramadan dimulai hari ini',
+      'en' => 'Ramadan starts today',
+      'zh' => '斋月今天开始',
+      'ja' => 'ラマダーン開始',
+      _ => 'Ramadan starts today',
+    };
+  }
+
+  static String _getRamadanPromoBadgeActive(String language) {
+    return switch (language) {
+      'id' => 'Sedang Ramadan',
+      'en' => 'Ramadan is here',
+      'zh' => '斋月进行中',
+      'ja' => 'ラマダーン中',
+      _ => 'Ramadan is here',
+    };
+  }
+
+  static String _getRamadanPromoTitle(String language) {
+    return switch (language) {
+      'id' => 'Siap sambut Ramadan?',
+      'en' => 'Ready for Ramadan?',
+      'zh' => '准备好迎接斋月了吗？',
+      'ja' => 'ラマダーンの準備はできましたか？',
+      _ => 'Ready for Ramadan?',
+    };
+  }
+
+  static String _getRamadanPromoBody(String language) {
+    return switch (language) {
+      'id' => 'Lacak puasa, tarawih, dan tadarus dalam satu app.',
+      'en' => 'Track fasting, tarawih, and Quran reading in one app.',
+      'zh' => '在一个应用中记录斋戒、塔拉威和古兰经诵读。',
+      'ja' => '断食・タラウィーフ・クルアーン読誦を一つのアプリで。',
+      _ => 'Track fasting, tarawih, and Quran reading in one app.',
+    };
+  }
+
+  static String _getRamadanPromoCtaTry(String language) {
+    return switch (language) {
+      'id' => 'Coba Ramadan Tracker',
+      'en' => 'Try Ramadan Tracker',
+      'zh' => '试试 Ramadan Tracker',
+      'ja' => 'Ramadan Tracker を試す',
+      _ => 'Try Ramadan Tracker',
+    };
+  }
+
+  static String _getRamadanPromoCtaOpen(String language) {
+    return switch (language) {
+      'id' => 'Buka Ramadan Tracker',
+      'en' => 'Open Ramadan Tracker',
+      'zh' => '打开 Ramadan Tracker',
+      'ja' => 'Ramadan Tracker を開く',
+      _ => 'Open Ramadan Tracker',
+    };
+  }
+
+  static String getRamadanPromoBadge(String language, int daysUntil, bool inRamadan) {
+    if (inRamadan) {
+      return _getRamadanPromoBadgeActive(language);
+    }
+    if (daysUntil <= 0) {
+      return _getRamadanPromoBadgeToday(language);
+    }
+    return _getRamadanPromoBadgeDays(language).replaceFirst('%d', '$daysUntil');
   }
 
   static String _getAboutSupportSection(String language) {

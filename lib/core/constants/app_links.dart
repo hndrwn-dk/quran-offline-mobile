@@ -4,6 +4,11 @@ class AppLinks {
 
   static const String _playStorePackageId = 'com.tursinalabs.quranoffline';
 
+  /// Sister app — must match Play Store / installed package on device.
+  static const String ramadanTrackerPackageId = 'com.tursinalabs.ramadan.tracker';
+
+  static const String ramadanTrackerDeepLink = 'ramadantracker://open';
+
   static const String productPage =
       'https://www.tursinalabs.com/products/quranoffline';
 
@@ -21,6 +26,16 @@ class AppLinks {
     final hl = _playStoreHl(locale);
     return 'play.google.com/store/apps/details?id=$_playStorePackageId&hl=$hl';
   }
+
+  /// Ramadan Tracker sister app — Play Store listing with locale hint.
+  static String ramadanTrackerPlayStoreForLocale(String locale) {
+    final hl = _playStoreHl(locale);
+    return 'https://play.google.com/store/apps/details?id=$ramadanTrackerPackageId&hl=$hl';
+  }
+
+  /// Play Store app deep link (Android); falls back to [ramadanTrackerPlayStoreForLocale].
+  static String ramadanTrackerMarketUrl() =>
+      'market://details?id=$ramadanTrackerPackageId';
 
   static String _playStoreHl(String locale) {
     return switch (locale) {

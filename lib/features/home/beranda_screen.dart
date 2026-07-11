@@ -10,6 +10,7 @@ import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/home/widgets/home_hero_card.dart';
 import 'package:quran_offline/features/home/widgets/home_notes_section.dart';
 import 'package:quran_offline/features/home/widgets/home_quick_actions.dart';
+import 'package:quran_offline/features/home/widgets/ramadan_promo_banner.dart';
 import 'package:quran_offline/features/read/widgets/last_read_card.dart';
 import 'package:quran_offline/features/read/widgets/weekly_reflection_card.dart';
 import 'package:quran_offline/features/settings/about_screen.dart';
@@ -26,6 +27,7 @@ class BerandaScreen extends ConsumerStatefulWidget {
 class _BerandaScreenState extends ConsumerState<BerandaScreen> {
   final _supportIconKey = GlobalKey();
   bool _coachmarkScheduled = false;
+  bool _ramadanPromoDismissed = false;
 
   @override
   void initState() {
@@ -45,6 +47,13 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
     );
   }
 
+  Widget _ramadanPromoBanner() {
+    if (_ramadanPromoDismissed) return const SizedBox.shrink();
+    return RamadanPromoBanner(
+      onDismiss: () => setState(() => _ramadanPromoDismissed = true),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
@@ -52,16 +61,17 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final isLargeScreen = Responsive.isLargeScreen(context);
 
-    const phoneBody = Column(
+    final phoneBody = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        HomeHeroCard(),
-        WeeklyReflectionCard(forHome: true),
-        HomeQuickActions(),
-        LastReadCard(forHome: true),
-        HomeNotesSection(),
-        HomeActivitySection(),
-        SizedBox(height: 8),
+        const HomeHeroCard(),
+        _ramadanPromoBanner(),
+        const WeeklyReflectionCard(forHome: true),
+        const HomeQuickActions(),
+        const LastReadCard(forHome: true),
+        const HomeNotesSection(),
+        const HomeActivitySection(),
+        const SizedBox(height: 8),
       ],
     );
 
@@ -69,18 +79,19 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                HomeHeroCard(),
-                WeeklyReflectionCard(forHome: true),
-                HomeQuickActions(),
+                const HomeHeroCard(),
+                _ramadanPromoBanner(),
+                const WeeklyReflectionCard(forHome: true),
+                const HomeQuickActions(),
               ],
             ),
           ),
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

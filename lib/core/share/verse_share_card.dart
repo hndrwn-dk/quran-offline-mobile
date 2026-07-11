@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/core/constants/app_colors.dart';
 import 'package:quran_offline/core/share/verse_share_content.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
@@ -17,8 +18,20 @@ class VerseShareCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Card is always cream/white; ignore app dark mode for text colors.
+    return Theme(
+      data: Theme.of(context).copyWith(
+        brightness: Brightness.light,
+        colorScheme: AppColors.lightColorScheme(),
+      ),
+      child: Builder(
+        builder: (context) => _buildCard(context),
+      ),
+    );
+  }
+
+  Widget _buildCard(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isLight = colorScheme.brightness == Brightness.light;
     final translation = content.translation;
     final primary = colorScheme.primary;
 
@@ -77,10 +90,7 @@ class VerseShareCard extends StatelessWidget {
                               color: primary.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: _ArabicBlock(
-                              content: content,
-                              isLight: isLight,
-                            ),
+                            child: _ArabicBlock(content: content),
                           ),
                           const SizedBox(height: 14),
                           Container(
@@ -250,13 +260,9 @@ class _Footer extends StatelessWidget {
 }
 
 class _ArabicBlock extends StatelessWidget {
-  const _ArabicBlock({
-    required this.content,
-    required this.isLight,
-  });
+  const _ArabicBlock({required this.content});
 
   final VerseShareContent content;
-  final bool isLight;
 
   @override
   Widget build(BuildContext context) {
@@ -290,7 +296,7 @@ class _ArabicBlock extends StatelessWidget {
           fontSize: fontSize,
           color: defaultColor,
           height: 1.85,
-          isLightTheme: isLight,
+          isLightTheme: true,
         ),
         textDirection: TextDirection.rtl,
         textAlign: TextAlign.center,
