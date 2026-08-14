@@ -33,7 +33,6 @@ Future<void> logReadingActivityDay() async {
   try {
     final service = await ReadingActivityService.create();
     await service.logReadingDay();
-    await WeeklyReminderCoordinator.rescheduleFromActivity?.call();
   } catch (_) {
     // Non-critical; reading position still saved elsewhere.
   }

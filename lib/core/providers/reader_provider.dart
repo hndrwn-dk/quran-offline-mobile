@@ -9,6 +9,7 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 
 final readerSourceProvider = StateProvider<ReaderSource?>((ref) => null);
 final targetAyahProvider = StateProvider<int?>((ref) => null);
+final targetSurahIdProvider = StateProvider<int?>((ref) => null);
 
 /// True while [ReaderScreen] is mounted (pushed route or tablet split pane).
 final readerScreenVisibleProvider = StateProvider<bool>((ref) => false);
@@ -49,6 +50,7 @@ void requestReaderJump(
   ref.read(readerSourceProvider.notifier).state =
       SurahSource(surahId, targetAyahNo: ayahNo);
   ref.read(targetAyahProvider.notifier).state = ayahNo;
+  ref.read(targetSurahIdProvider.notifier).state = surahId;
   ref.read(readerJumpRequestProvider.notifier).state = ReaderJumpRequest(
     surahId: surahId,
     ayahNo: ayahNo,

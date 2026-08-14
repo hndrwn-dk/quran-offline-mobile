@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/last_read_progress_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
+import 'package:quran_offline/core/providers/last_read_resolve.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
@@ -73,6 +74,10 @@ class LastReadCard extends ConsumerWidget {
 
     final progressAsync = forHome ? ref.watch(lastReadProgressProvider) : null;
 
+    if (!lastReadCardHandlesType(lastRead.type)) {
+      return const SizedBox.shrink();
+    }
+
     return surahsAsync.when(
       data: (surahs) {
         String title;
@@ -103,6 +108,7 @@ class LastReadCard extends ConsumerWidget {
               final source = SurahSource(lastRead.id, targetAyahNo: lastRead.ayahNo);
               ref.read(readerSourceProvider.notifier).state = source;
               ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
+              ref.read(targetSurahIdProvider.notifier).state = null;
               openReaderScreen(context, ref);
             };
             break;
@@ -132,6 +138,7 @@ class LastReadCard extends ConsumerWidget {
               if (lastRead.ayahNo != null) {
                 ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
               }
+              ref.read(targetSurahIdProvider.notifier).state = lastRead.surahId;
               openReaderScreen(context, ref);
             };
             break;
@@ -164,6 +171,30 @@ class LastReadCard extends ConsumerWidget {
                   ),
                 ),
               );
+            };
+            break;
+          case 'surah_in_juz':
+            final surah = surahs.firstWhere(
+              (s) => s.id == lastRead.id,
+              orElse: () => surahs[0],
+            );
+            title = surah.englishName;
+            subtitle = lastRead.ayahNo != null
+                ? AppLocalizations.formatMiniPlayerTitle(
+                    language: appLanguage,
+                    surahLabel: surah.englishName,
+                    ayahNo: lastRead.ayahNo,
+                    isBismillah: false,
+                  )
+                : surah.englishName;
+            homeScopeKey = 'surah';
+            icon = Icons.menu_book_outlined;
+            onTap = () {
+              final source = lastRead.toReaderSource();
+              ref.read(readerSourceProvider.notifier).state = source;
+              ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
+              ref.read(targetSurahIdProvider.notifier).state = null;
+              openReaderScreen(context, ref);
             };
             break;
           default:

@@ -1,5 +1,6 @@
 import 'package:quran_offline/core/notifications/notification_payload.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WeeklyReminderNotificationContent {
   const WeeklyReminderNotificationContent({
@@ -15,19 +16,22 @@ class WeeklyReminderNotificationContent {
 
 WeeklyReminderNotificationContent buildWeeklyReminderContent({
   required String language,
-  required bool hasReadThisWeek,
 }) {
-  if (hasReadThisWeek) {
-    return WeeklyReminderNotificationContent(
-      title: AppLocalizations.getWeeklyReminderNotifTitleRead(language),
-      body: AppLocalizations.getWeeklyReminderNotifBodyRead(language),
-      payload: NotificationPayload.beranda,
-    );
-  }
   return WeeklyReminderNotificationContent(
     title: AppLocalizations.getWeeklyReminderNotifTitleNotRead(language),
     body: AppLocalizations.getWeeklyReminderNotifBodyNotRead(language),
     payload: NotificationPayload.continueReading,
+  );
+}
+
+({bool enabled, int hour, int minute, String language}) readWeeklyReminderSchedule(
+  SharedPreferences prefs,
+) {
+  return (
+    enabled: prefs.getBool('weeklyReminderEnabled') ?? false,
+    hour: prefs.getInt('weeklyReminderHour') ?? 15,
+    minute: prefs.getInt('weeklyReminderMinute') ?? 30,
+    language: prefs.getString('appLanguage') ?? prefs.getString('language') ?? 'en',
   );
 }
 

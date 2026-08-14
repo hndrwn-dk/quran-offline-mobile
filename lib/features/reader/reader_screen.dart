@@ -8,6 +8,7 @@ import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/providers/juz_surahs_provider.dart';
 import 'package:quran_offline/core/reading/reading_activity_service.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
+import 'package:quran_offline/core/providers/last_read_resolve.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
@@ -208,6 +209,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     if (newSource != null) {
       ref.read(readerSourceProvider.notifier).state = newSource;
       ref.read(targetAyahProvider.notifier).state = null;
+      ref.read(targetSurahIdProvider.notifier).state = null;
     }
   }
   
@@ -250,6 +252,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     if (newSource != null && mounted) {
       ref.read(readerSourceProvider.notifier).state = newSource;
       ref.read(targetAyahProvider.notifier).state = null;
+      ref.read(targetSurahIdProvider.notifier).state = null;
     }
   }
   
@@ -298,17 +301,22 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 
-  void _scrollToAyah(List<Verse> verses, int targetAyahNo, bool isSurahSource, bool hasHeader) {
+  void _scrollToAyah(
+    List<Verse> verses,
+    int targetAyahNo,
+    bool isSurahSource,
+    bool hasHeader, {
+    int? targetSurahId,
+    bool requireSurahId = false,
+  }) {
     if (_hasScrolledToTarget) return;
     
-    // Find the index of the target ayah in the verses list
-    int? targetIndex;
-    for (int i = 0; i < verses.length; i++) {
-      if (verses[i].ayahNo == targetAyahNo) {
-        targetIndex = i;
-        break;
-      }
-    }
+    final targetIndex = indexOfTargetVerse(
+      verses,
+      ayahNo: targetAyahNo,
+      surahId: targetSurahId,
+      requireSurahId: requireSurahId,
+    );
     
     if (targetIndex == null) return;
     
@@ -335,6 +343,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             if (mounted) {
               _hasScrolledToTarget = true;
               ref.read(targetAyahProvider.notifier).state = null;
+              ref.read(targetSurahIdProvider.notifier).state = null;
             }
           });
         } catch (e) {
@@ -342,6 +351,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           if (mounted) {
             _hasScrolledToTarget = true;
             ref.read(targetAyahProvider.notifier).state = null;
+            ref.read(targetSurahIdProvider.notifier).state = null;
           }
         }
       });
@@ -437,6 +447,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           _hasScrolledToTarget = false;
         });
         ref.read(targetAyahProvider.notifier).state = ayahNo;
+        ref.read(targetSurahIdProvider.notifier).state = surahId;
       },
     );
   }
@@ -761,13 +772,21 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
                   // Scroll to target ayah if needed - trigger as soon as verses are loaded
                   final targetAyah = ref.watch(targetAyahProvider);
+                  final targetSurahId = ref.watch(targetSurahIdProvider);
                   final isJuzSource = source is JuzSource;
                   
                   // Trigger scroll immediately when conditions are met (for both Surah and Juz)
                   if (targetAyah != null && (isSurahSource || isJuzSource) && !_hasScrolledToTarget) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted && !_hasScrolledToTarget) {
-                        _scrollToAyah(verses, targetAyah, isSurahSource, currentSurahInfo != null);
+                        _scrollToAyah(
+                          verses,
+                          targetAyah,
+                          isSurahSource,
+                          currentSurahInfo != null,
+                          targetSurahId: targetSurahId,
+                          requireSurahId: isJuzSource,
+                        );
                       }
                     });
                   }

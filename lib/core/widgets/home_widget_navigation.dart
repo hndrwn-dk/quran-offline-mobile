@@ -79,6 +79,8 @@ class HomeWidgetNavigation {
           if (lastRead.ayahNo != null) {
             ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
           }
+          ref.read(targetSurahIdProvider.notifier).state =
+              lastRead.type == 'juz' ? lastRead.surahId : null;
           await openReaderScreen(context, ref);
           return;
         }
