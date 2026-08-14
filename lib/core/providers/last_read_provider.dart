@@ -7,7 +7,7 @@ class LastReadPosition {
   final String type; // 'surah', 'juz', 'page', or 'surah_in_juz'
   final int id; // surahId, juzNo, or pageNo
   final int? ayahNo; // For surah/juz: ayahNo, for page: ayahNo (with surahId)
-  final int? surahId; // For page: surahId of the ayah, for surah_in_juz: juzNo, null for surah/juz
+  final int? surahId; // For page: surah of the ayah; for juz: visible surah; for surah_in_juz: juzNo
   final DateTime timestamp;
 
   LastReadPosition({
@@ -48,6 +48,45 @@ class LastReadPosition {
   }
 }
 
+LastReadPosition buildLastReadPosition(
+  ReaderSource source, {
+  int? ayahNo,
+  int? surahId,
+  DateTime? timestamp,
+}) {
+  final at = timestamp ?? DateTime.now();
+  return switch (source) {
+    SurahSource(:final surahId) => LastReadPosition(
+        type: 'surah',
+        id: surahId,
+        ayahNo: ayahNo,
+        surahId: null,
+        timestamp: at,
+      ),
+    JuzSource(:final juzNo) => LastReadPosition(
+        type: 'juz',
+        id: juzNo,
+        ayahNo: ayahNo,
+        surahId: surahId,
+        timestamp: at,
+      ),
+    PageSource(:final pageNo) => LastReadPosition(
+        type: 'page',
+        id: pageNo,
+        ayahNo: ayahNo,
+        surahId: surahId,
+        timestamp: at,
+      ),
+    SurahInJuzSource(:final juzNo, :final surahId) => LastReadPosition(
+        type: 'surah_in_juz',
+        id: surahId,
+        ayahNo: ayahNo,
+        surahId: juzNo,
+        timestamp: at,
+      ),
+  };
+}
+
 class LastReadNotifier extends StateNotifier<LastReadPosition?> {
   LastReadNotifier() : super(null) {
     _loadLastRead();
@@ -82,36 +121,11 @@ class LastReadNotifier extends StateNotifier<LastReadPosition?> {
   Future<void> saveLastRead(ReaderSource source, {int? ayahNo, int? surahId}) async {
     final prefs = await SharedPreferences.getInstance();
     
-    final lastRead = switch (source) {
-      SurahSource(:final surahId) => LastReadPosition(
-          type: 'surah',
-          id: surahId,
-          ayahNo: ayahNo,
-          surahId: null, // Not needed for surah
-          timestamp: DateTime.now(),
-        ),
-      JuzSource(:final juzNo) => LastReadPosition(
-          type: 'juz',
-          id: juzNo,
-          ayahNo: ayahNo,
-          surahId: null, // Not needed for juz
-          timestamp: DateTime.now(),
-        ),
-      PageSource(:final pageNo) => LastReadPosition(
-          type: 'page',
-          id: pageNo,
-          ayahNo: ayahNo,
-          surahId: surahId, // Needed for page to identify which surah
-          timestamp: DateTime.now(),
-        ),
-      SurahInJuzSource(:final juzNo, :final surahId) => LastReadPosition(
-          type: 'surah_in_juz',
-          id: surahId,
-          ayahNo: ayahNo,
-          surahId: juzNo, // Store juzNo in surahId field for SurahInJuzSource
-          timestamp: DateTime.now(),
-        ),
-    };
+    final lastRead = buildLastReadPosition(
+      source,
+      ayahNo: ayahNo,
+      surahId: surahId,
+    );
 
     // Save to SharedPreferences
     await prefs.setString('${_key}_type', lastRead.type);

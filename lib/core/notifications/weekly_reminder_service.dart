@@ -5,6 +5,7 @@ import 'package:quran_offline/core/notifications/notification_navigation.dart';
 import 'package:quran_offline/core/notifications/weekly_reminder_content.dart';
 import 'package:quran_offline/core/reading/reading_activity_service.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -76,6 +77,22 @@ class WeeklyReminderService {
 
     _initialized = true;
     registerCoordinator();
+    await _rescheduleFromPrefs();
+  }
+
+  Future<void> _rescheduleFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final schedule = readWeeklyReminderSchedule(prefs);
+      await rescheduleIfEnabled(
+        enabled: schedule.enabled,
+        hour: schedule.hour,
+        minute: schedule.minute,
+        language: schedule.language,
+      );
+    } catch (e) {
+      debugPrint('WeeklyReminderService: reschedule from prefs failed: $e');
+    }
   }
 
   Future<bool> requestPermission() async {
@@ -124,11 +141,8 @@ class WeeklyReminderService {
     await cancel();
     if (!enabled) return;
 
-    final activity = await ReadingActivityService.create();
-    final hasRead = activity.hasReadThisWeek();
     final content = buildWeeklyReminderContent(
       language: language,
-      hasReadThisWeek: hasRead,
     );
 
     final channelName = AppLocalizations.getWeeklyReminderChannelName(language);

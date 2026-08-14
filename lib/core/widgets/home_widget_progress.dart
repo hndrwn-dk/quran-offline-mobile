@@ -1,5 +1,6 @@
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
+import 'package:quran_offline/core/providers/last_read_resolve.dart';
 
 /// Dual-layer reading progress for the home screen widget (surah + juz).
 class WidgetReadingProgress {
@@ -59,20 +60,7 @@ Future<({int surahId, int ayahNo})?> resolveSurahAyahFromLastRead(
     case 'juz':
       final verses = await db.getVersesByJuz(lastRead.id);
       if (verses.isEmpty) return null;
-      if (lastRead.ayahNo != null) {
-        final targetAyah = lastRead.ayahNo!;
-        final targetSurah = lastRead.surahId;
-        for (final verse in verses) {
-          final matchesAyah = verse.ayahNo == targetAyah;
-          final matchesSurah =
-              targetSurah == null || verse.surahId == targetSurah;
-          if (matchesAyah && matchesSurah) {
-            return (surahId: verse.surahId, ayahNo: verse.ayahNo);
-          }
-        }
-      }
-      final first = verses.first;
-      return (surahId: first.surahId, ayahNo: first.ayahNo);
+      return resolveJuzSurahAyah(verses, lastRead);
     default:
       return null;
   }
