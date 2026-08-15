@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quran_offline/core/constants/quran_fonts.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_fatihah_page.dart';
+import 'package:quran_offline/core/mushaf/qpc_v2_glyph_fit.dart';
 
 /// Dev spike: Mushaf sample — app Unicode vs QPC V2 Madinah glyphs.
 class MushafFontCompareScreen extends StatelessWidget {
@@ -232,7 +233,7 @@ class _MushafLineView extends StatelessWidget {
     }
 
     final text = useGlyphs ? line.glyphText : line.unicodeText;
-    final textAlign = line.centered ? TextAlign.center : TextAlign.justify;
+    final textAlign = qpcV2GlyphLineAlign(isCentered: line.centered);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),

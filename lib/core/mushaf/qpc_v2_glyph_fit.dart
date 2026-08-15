@@ -5,6 +5,11 @@ import 'package:quran_offline/core/utils/bismillah.dart';
 /// User [mushafFontSize] at this value = "fill page width" for glyph Mushaf lines.
 const kMushafGlyphReferenceFontSize = 38.0;
 
+/// QPC page fonts already include printed spacing. Justify + clip drops end words.
+TextAlign qpcV2GlyphLineAlign({required bool isCentered}) {
+  return isCentered ? TextAlign.center : TextAlign.start;
+}
+
 /// Mirrors spacing in [QpcV2MushafText] — keep in sync when layout changes.
 const _glyphLineHeightFactor = 1.55;
 const _glyphLineVerticalPad = 4.0;
@@ -193,7 +198,7 @@ double measureQpcV2GlyphLineWidth({
       ),
     ),
     textDirection: TextDirection.rtl,
-    textAlign: TextAlign.center,
+    textAlign: TextAlign.start,
     textWidthBasis: TextWidthBasis.parent,
     maxLines: 1,
   )..layout(maxWidth: fitWidth);
@@ -240,7 +245,7 @@ bool _glyphLineFitsAtSize(
       ),
     ),
     textDirection: TextDirection.rtl,
-    textAlign: TextAlign.center,
+    textAlign: TextAlign.start,
     textWidthBasis: TextWidthBasis.parent,
     maxLines: 1,
   )..layout(maxWidth: fitWidth);
