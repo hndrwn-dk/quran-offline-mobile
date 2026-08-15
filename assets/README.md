@@ -34,7 +34,14 @@ assets/
 │   ├── calendar_lenses_catalog.json
 │   └── weekly_rotation_catalog.json
 ├── icon/
+├── mushaf/
+│   ├── layout/
+│   │   └── qpc_v2_15_lines.sqlite
+│   └── script/
+│       └── qpc_v2_words.sqlite
 └── fonts/
+    ├── qpc_v2/
+    │   └── p1.ttf … p604.ttf
     ├── uthmanic_hafs_v22.ttf
     ├── KFGQPC Uthmanic Script HAFS Regular.otf
     ├── ScheherazadeNew-Regular.ttf
