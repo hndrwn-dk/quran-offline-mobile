@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/audio/playback_actions.dart';
+import 'package:quran_offline/core/audio/recitation_primary_action.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
@@ -113,18 +114,19 @@ class SurahRecitationControls extends ConsumerWidget {
                       ),
                     )
                   : Icon(
-                      isPlaying ? Icons.stop_circle : Icons.play_circle,
+                      isPlaying ? Icons.pause_circle : Icons.play_circle,
                       color: colorScheme.primary,
                     ),
-              tooltip: isPlaying
-                  ? AppLocalizations.getActionTooltip('stop', lang)
-                  : AppLocalizations.getActionTooltip('play', lang),
+              tooltip: AppLocalizations.getActionTooltip(
+                recitationPrimaryAction(isPlaying: isPlaying).tooltipKey,
+                lang,
+              ),
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
               onPressed: audio.isLoading
                   ? null
-                  : (isPlaying ? notifier.stop : notifier.restart),
+                  : (isPlaying ? notifier.pause : notifier.restart),
             ),
             IconButton(
               icon: const Icon(Icons.skip_next, size: 22),
@@ -189,14 +191,15 @@ class MushafRecitationAppBarActions extends ConsumerWidget {
         ),
         IconButton(
           icon: Icon(
-            audio.isPlaying ? Icons.stop : Icons.play_arrow,
+            audio.isPlaying ? Icons.pause : Icons.play_arrow,
           ),
-          tooltip: audio.isPlaying
-              ? AppLocalizations.getActionTooltip('stop', lang)
-              : AppLocalizations.getActionTooltip('play', lang),
+          tooltip: AppLocalizations.getActionTooltip(
+            recitationPrimaryAction(isPlaying: audio.isPlaying).tooltipKey,
+            lang,
+          ),
           onPressed: audio.isLoading
               ? null
-              : (audio.isPlaying ? notifier.stop : notifier.restart),
+              : (audio.isPlaying ? notifier.pause : notifier.restart),
         ),
         IconButton(
           icon: const Icon(Icons.skip_next),

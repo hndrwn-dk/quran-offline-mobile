@@ -5802,6 +5802,13 @@ class AppLocalizations {
           'ja' => '再生',
           _ => 'Play',
         },
+      'pause' => switch (language) {
+          'id' => 'Jeda',
+          'en' => 'Pause',
+          'zh' => '暂停',
+          'ja' => '一時停止',
+          _ => 'Pause',
+        },
       'stop' => switch (language) {
           'id' => 'Berhenti',
           'en' => 'Stop',

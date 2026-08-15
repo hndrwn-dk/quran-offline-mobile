@@ -1334,7 +1334,7 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
                                 final notifier =
                                     ref.read(audioPlayerProvider.notifier);
                                 if (audio.isPlaying) {
-                                  notifier.stop();
+                                  notifier.pause();
                                 } else {
                                   notifier.restart();
                                 }
@@ -1356,7 +1356,7 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
                               }
                             },
                             icon: Icon(
-                              isPlayingThis ? Icons.stop : Icons.play_arrow,
+                              isPlayingThis ? Icons.pause : Icons.play_arrow,
                               size: 22,
                             ),
                             style: IconButton.styleFrom(

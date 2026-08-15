@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/audio/recitation_primary_action.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
@@ -176,16 +177,17 @@ class GlobalRecitationBar extends ConsumerWidget {
                           ),
                         )
                       : Icon(
-                          isPlaying ? Icons.stop_circle : Icons.play_circle,
+                          isPlaying ? Icons.pause_circle : Icons.play_circle,
                           color: colorScheme.primary,
                         ),
-                  tooltip: isPlaying
-                      ? AppLocalizations.getActionTooltip('stop', lang)
-                      : AppLocalizations.getActionTooltip('play', lang),
+                  tooltip: AppLocalizations.getActionTooltip(
+                    recitationPrimaryAction(isPlaying: isPlaying).tooltipKey,
+                    lang,
+                  ),
                   visualDensity: VisualDensity.compact,
                   onPressed: audio.isLoading
                       ? null
-                      : (isPlaying ? notifier.stop : notifier.restart),
+                      : (isPlaying ? notifier.pause : notifier.restart),
                 ),
                 IconButton(
                   icon: const Icon(Icons.skip_next, size: 22),

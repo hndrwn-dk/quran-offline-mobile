@@ -17,7 +17,7 @@ class ReaderBismillahBlock extends ConsumerWidget {
     final notifier = ref.read(audioPlayerProvider.notifier);
     if (audio.surahId == surahId && audio.isPlayingBismillah) {
       if (audio.isPlaying) {
-        notifier.stop();
+        notifier.pause();
       } else {
         notifier.restart();
       }
@@ -84,7 +84,7 @@ class ReaderBismillahBlock extends ConsumerWidget {
                 IconButton(
                   icon: Icon(
                     isPlayingThis
-                        ? Icons.stop_circle_outlined
+                        ? Icons.pause_circle_outline
                         : Icons.play_circle_outline,
                     size: 20,
                   ),
