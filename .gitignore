@@ -144,3 +144,5 @@ lib/features/read/widgets/mushaf_page_view_flowing_improved.dart
 .regression_shots/
 .tmp_*
 .tmp_api_*
+.vercel
+.env*
