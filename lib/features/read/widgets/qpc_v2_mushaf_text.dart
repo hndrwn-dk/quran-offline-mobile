@@ -427,7 +427,7 @@ class _QpcV2GlyphLineRowState extends ConsumerState<_QpcV2GlyphLineRow> {
       fontSize: widget.fontSize,
       lineMaxWidth: widget.lineMaxWidth,
       color: widget.colorScheme.onSurface,
-      textAlign: widget.line.isCentered ? TextAlign.center : TextAlign.justify,
+      textAlign: qpcV2GlyphLineAlign(isCentered: widget.line.isCentered),
     );
 
     final anchorKey = widget.ayahAnchorKey;
@@ -478,7 +478,7 @@ class _QpcV2GlyphLine extends StatelessWidget {
             textAlign: textAlign,
             textDirection: TextDirection.rtl,
             maxLines: 1,
-            overflow: TextOverflow.clip,
+            overflow: TextOverflow.visible,
           ),
         ),
       ),
