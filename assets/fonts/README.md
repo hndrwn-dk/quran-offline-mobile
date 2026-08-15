@@ -22,6 +22,5 @@ To add proper Quran fonts, download and place these files:
 ## Current Status
 
 - Font configuration is active in `pubspec.yaml`
-- Using 'UthmaniHafs' and 'UthmanicHafsV22' for Arabic text
-- RTL direction and proper styling are implemented
-- Quran fonts are properly configured and working
+- Using 'UthmaniHafs' and 'UthmanicHafsV22' for Arabic text in Reader
+- Mushaf pages use QPC V2 page fonts in `qpc_v2/` (`p1.ttf` … `p604.ttf`). QPC V4 is not used.
