@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:quran_offline/core/constants/feedback_api.dart';
-import 'package:quran_offline/core/feedback/feedback_proof_of_work.dart';
 import 'package:quran_offline/core/feedback/feedback_type.dart';
+import 'package:quran_offline/core/feedback/play_integrity_attestation.dart';
 
 class FeedbackSubmitResult {
   const FeedbackSubmitResult.success({
@@ -24,9 +24,17 @@ class FeedbackSubmitResult {
 
 /// Submits in-app feedback to the Vercel proxy that creates GitHub Issues.
 class GitHubFeedbackService {
-  GitHubFeedbackService({http.Client? client}) : _client = client ?? http.Client();
+  GitHubFeedbackService({
+    http.Client? client,
+    PlayIntegrityAttestation? attestation,
+    String Function()? nonceFactory,
+  })  : _client = client ?? http.Client(),
+        _attestation = attestation ?? const MethodChannelPlayIntegrityAttestation(),
+        _nonceFactory = nonceFactory ?? generatePlayIntegrityNonce;
 
   final http.Client _client;
+  final PlayIntegrityAttestation _attestation;
+  final String Function() _nonceFactory;
 
   Future<FeedbackSubmitResult> submit({
     required FeedbackType type,
@@ -34,14 +42,22 @@ class GitHubFeedbackService {
     required String description,
     required Map<String, dynamic> metadata,
   }) async {
+    final nonce = _nonceFactory();
+    final integrityToken = await _attestation
+        .requestToken(nonce)
+        .timeout(const Duration(seconds: 15), onTimeout: () => null);
+    if (integrityToken == null || integrityToken.isEmpty) {
+      return const FeedbackSubmitResult.failure('integrity_unavailable');
+    }
+
     final uri = Uri.parse(FeedbackApi.endpoint);
-    final timestampMs = DateTime.now().millisecondsSinceEpoch;
-    final nonce = solveFeedbackProofOfWork(timestampMs: timestampMs);
     final payload = jsonEncode({
       'type': type.apiValue,
       'title': title.trim(),
       'description': description.trim(),
       'metadata': metadata,
+      'integrityToken': integrityToken,
+      'nonce': nonce,
     });
 
     try {
@@ -50,8 +66,6 @@ class GitHubFeedbackService {
             uri,
             headers: {
               'Content-Type': 'application/json',
-              feedbackTsHeader: '$timestampMs',
-              feedbackNonceHeader: '$nonce',
             },
             body: payload,
           )

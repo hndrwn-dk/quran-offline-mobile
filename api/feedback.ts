@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { isBrowserOrigin, neutralizeGithubMentions } from '../server/feedback_guard.js';
 import {
-  isBrowserOrigin,
-  neutralizeGithubMentions,
-  verifyFeedbackProofOfWork,
-} from '../server/feedback_guard';
+  decodePlayIntegrityToken,
+  evaluatePlayIntegrityVerdict,
+} from '../server/play_integrity.js';
 
 type FeedbackType = 'bug' | 'feature';
 
@@ -21,6 +21,8 @@ interface FeedbackBody {
   title?: string;
   description?: string;
   metadata?: FeedbackMetadata;
+  integrityToken?: string;
+  nonce?: string;
 }
 
 interface RateLimitEntry {
@@ -31,6 +33,34 @@ interface RateLimitEntry {
 const RATE_LIMIT_WINDOW_SEC = 60 * 60;
 const RATE_LIMIT_MAX = 5;
 const rateLimitStore = new Map<string, RateLimitEntry>();
+
+const usedNonces = new Set<string>();
+
+async function consumeNonce(nonce: string): Promise<boolean> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) {
+    if (usedNonces.has(nonce)) return false;
+    usedNonces.add(nonce);
+    return true;
+  }
+
+  try {
+    const response = await fetch(`${url}/pipeline`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify([['SET', `feedback:nonce:${nonce}`, '1', 'NX', 'EX', '300']]),
+    });
+    if (!response.ok) return false;
+    const json: unknown = await response.json();
+    return pipelineSetNxStored(json);
+  } catch {
+    return false;
+  }
+}
 
 function clientIp(req: VercelRequest): string {
   const forwarded = req.headers['x-forwarded-for'];
@@ -92,26 +122,36 @@ async function isRateLimited(ip: string): Promise<boolean> {
   }
 }
 
-function pipelineFirstCount(json: unknown): number | null {
-  if (Array.isArray(json) && typeof json[0] === 'number') {
-    return json[0];
+function firstPipelineResult(json: unknown): unknown {
+  if (Array.isArray(json)) {
+    const first = json[0];
+    if (first != null && typeof first === 'object' && 'result' in first) {
+      return (first as { result: unknown }).result;
+    }
+    return first;
   }
   if (json != null && typeof json === 'object' && 'result' in json) {
     const result = (json as { result: unknown }).result;
-    if (Array.isArray(result) && typeof result[0] === 'number') {
-      return result[0];
+    if (Array.isArray(result)) {
+      const inner = result[0];
+      if (inner != null && typeof inner === 'object' && 'result' in inner) {
+        return (inner as { result: unknown }).result;
+      }
+      return inner;
     }
-    if (
-      Array.isArray(result) &&
-      result[0] != null &&
-      typeof result[0] === 'object' &&
-      'result' in result[0]
-    ) {
-      const inner = (result[0] as { result: unknown }).result;
-      if (typeof inner === 'number') return inner;
-    }
+    return result;
   }
   return null;
+}
+
+function pipelineFirstCount(json: unknown): number | null {
+  const first = firstPipelineResult(json);
+  return typeof first === 'number' ? first : null;
+}
+
+function pipelineSetNxStored(json: unknown): boolean {
+  const first = firstPipelineResult(json);
+  return first === 'OK' || first === 1 || first === true;
 }
 
 function trimText(value: unknown, maxLen: number): string | null {
@@ -188,12 +228,6 @@ function buildIssueBody(
   return lines.join('\n');
 }
 
-function firstHeader(value: string | string[] | undefined): string | undefined {
-  if (typeof value === 'string') return value;
-  if (Array.isArray(value) && value.length > 0) return value[0];
-  return undefined;
-}
-
 function parseBody(req: VercelRequest): FeedbackBody | null {
   if (req.body == null) return null;
   if (typeof req.body === 'string') {
@@ -228,12 +262,21 @@ export default async function handler(
     return;
   }
 
-  const tsRaw = firstHeader(req.headers['x-feedback-ts']);
-  const nonceRaw = firstHeader(req.headers['x-feedback-nonce']);
-  const ts = tsRaw != null ? Number(tsRaw) : NaN;
-  const nonce = nonceRaw != null ? Number(nonceRaw) : NaN;
-  if (!verifyFeedbackProofOfWork(ts, nonce)) {
-    res.status(401).json({ error: 'Invalid proof of work' });
+  const body = parseBody(req);
+  if (!body) {
+    res.status(400).json({ error: 'Invalid JSON body' });
+    return;
+  }
+
+  const integrityToken = trimText(body.integrityToken, 65536);
+  const nonce = trimText(body.nonce, 512);
+  if (!integrityToken || !nonce) {
+    res.status(401).json({ error: 'Play Integrity required' });
+    return;
+  }
+
+  if (!process.env.PLAY_INTEGRITY_SERVICE_ACCOUNT_JSON) {
+    res.status(503).json({ error: 'Play Integrity not configured' });
     return;
   }
 
@@ -251,9 +294,24 @@ export default async function handler(
     return;
   }
 
-  const body = parseBody(req);
-  if (!body) {
-    res.status(400).json({ error: 'Invalid JSON body' });
+  const payload = await decodePlayIntegrityToken(integrityToken);
+  if (payload == null) {
+    res.status(401).json({ error: 'Invalid Play Integrity token' });
+    return;
+  }
+
+  const verdict = evaluatePlayIntegrityVerdict({
+    payload,
+    expectedNonce: nonce,
+    nowMs: Date.now(),
+  });
+  if (verdict !== 'ok') {
+    res.status(403).json({ error: 'Play Integrity rejected', reason: verdict });
+    return;
+  }
+
+  if (!(await consumeNonce(nonce))) {
+    res.status(401).json({ error: 'Replay rejected' });
     return;
   }
 
