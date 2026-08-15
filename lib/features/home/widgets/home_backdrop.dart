@@ -14,10 +14,11 @@ class HomeBackdrop extends StatelessWidget {
         : const Color(0xFFE8EDE3);
   }
 
+  /// Icon contrast only. Android 15 deprecated bar colours, and the app bar
+  /// already paints [topTint] behind the status bar in edge-to-edge.
   static SystemUiOverlayStyle overlayStyle(ColorScheme colorScheme) {
     final isDark = colorScheme.brightness == Brightness.dark;
     return SystemUiOverlayStyle(
-      statusBarColor: topTint(colorScheme),
       statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
     );
