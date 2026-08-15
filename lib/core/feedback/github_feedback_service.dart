@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:quran_offline/core/constants/feedback_api.dart';
+import 'package:quran_offline/core/feedback/feedback_proof_of_work.dart';
 import 'package:quran_offline/core/feedback/feedback_type.dart';
 
 class FeedbackSubmitResult {
@@ -34,6 +35,8 @@ class GitHubFeedbackService {
     required Map<String, dynamic> metadata,
   }) async {
     final uri = Uri.parse(FeedbackApi.endpoint);
+    final timestampMs = DateTime.now().millisecondsSinceEpoch;
+    final nonce = solveFeedbackProofOfWork(timestampMs: timestampMs);
     final payload = jsonEncode({
       'type': type.apiValue,
       'title': title.trim(),
@@ -45,7 +48,11 @@ class GitHubFeedbackService {
       final response = await _client
           .post(
             uri,
-            headers: const {'Content-Type': 'application/json'},
+            headers: {
+              'Content-Type': 'application/json',
+              feedbackTsHeader: '$timestampMs',
+              feedbackNonceHeader: '$nonce',
+            },
             body: payload,
           )
           .timeout(const Duration(seconds: 30));

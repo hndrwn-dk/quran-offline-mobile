@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:quran_offline/core/feedback/feedback_proof_of_work.dart';
 import 'package:quran_offline/core/feedback/feedback_type.dart';
 import 'package:quran_offline/core/feedback/github_feedback_service.dart';
 
@@ -11,6 +12,8 @@ void main() {
     test('submit returns success on 201 response', () async {
       final client = MockClient((request) async {
         expect(request.method, 'POST');
+        expect(request.headers[feedbackTsHeader.toLowerCase()], isNotNull);
+        expect(request.headers[feedbackNonceHeader.toLowerCase()], isNotNull);
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['type'], 'bug');
         expect(body['title'], 'Test title');

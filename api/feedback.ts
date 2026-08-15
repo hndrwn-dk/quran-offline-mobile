@@ -1,4 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import {
+  isBrowserOrigin,
+  neutralizeGithubMentions,
+  verifyFeedbackProofOfWork,
+} from '../server/feedback_guard';
 
 type FeedbackType = 'bug' | 'feature';
 
@@ -23,7 +28,7 @@ interface RateLimitEntry {
   resetAt: number;
 }
 
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const RATE_LIMIT_WINDOW_SEC = 60 * 60;
 const RATE_LIMIT_MAX = 5;
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
@@ -38,11 +43,12 @@ function clientIp(req: VercelRequest): string {
   return req.socket.remoteAddress ?? 'unknown';
 }
 
-function isRateLimited(ip: string): boolean {
+function isRateLimitedMemory(ip: string): boolean {
   const now = Date.now();
+  const windowMs = RATE_LIMIT_WINDOW_SEC * 1000;
   const entry = rateLimitStore.get(ip);
   if (!entry || now >= entry.resetAt) {
-    rateLimitStore.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    rateLimitStore.set(ip, { count: 1, resetAt: now + windowMs });
     return false;
   }
   if (entry.count >= RATE_LIMIT_MAX) {
@@ -50,6 +56,62 @@ function isRateLimited(ip: string): boolean {
   }
   entry.count += 1;
   return false;
+}
+
+async function isRateLimited(ip: string): Promise<boolean> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) {
+    return isRateLimitedMemory(ip);
+  }
+
+  const key = `feedback:${ip}`;
+  try {
+    const response = await fetch(`${url}/pipeline`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify([
+        ['INCR', key],
+        ['EXPIRE', key, RATE_LIMIT_WINDOW_SEC, 'NX'],
+      ]),
+    });
+    if (!response.ok) {
+      return true;
+    }
+    const json: unknown = await response.json();
+    const count = pipelineFirstCount(json);
+    if (typeof count !== 'number') {
+      return true;
+    }
+    return count > RATE_LIMIT_MAX;
+  } catch {
+    return true;
+  }
+}
+
+function pipelineFirstCount(json: unknown): number | null {
+  if (Array.isArray(json) && typeof json[0] === 'number') {
+    return json[0];
+  }
+  if (json != null && typeof json === 'object' && 'result' in json) {
+    const result = (json as { result: unknown }).result;
+    if (Array.isArray(result) && typeof result[0] === 'number') {
+      return result[0];
+    }
+    if (
+      Array.isArray(result) &&
+      result[0] != null &&
+      typeof result[0] === 'object' &&
+      'result' in result[0]
+    ) {
+      const inner = (result[0] as { result: unknown }).result;
+      if (typeof inner === 'number') return inner;
+    }
+  }
+  return null;
 }
 
 function trimText(value: unknown, maxLen: number): string | null {
@@ -114,10 +176,22 @@ function buildIssueBody(
     lines.push(`- quran.com: ${quranComUrl(metadata.surahId, metadata.ayahNo)}`);
   }
   if (metadata.arabicSnippet) {
-    lines.push('', '**Arabic text (in app):**', '```', metadata.arabicSnippet, '```');
+    lines.push(
+      '',
+      '**Arabic text (in app):**',
+      '```',
+      neutralizeGithubMentions(metadata.arabicSnippet),
+      '```',
+    );
   }
 
   return lines.join('\n');
+}
+
+function firstHeader(value: string | string[] | undefined): string | undefined {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value) && value.length > 0) return value[0];
+  return undefined;
 }
 
 function parseBody(req: VercelRequest): FeedbackBody | null {
@@ -139,17 +213,27 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse,
 ): Promise<void> {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   if (req.method === 'OPTIONS') {
-    res.status(204).end();
+    res.status(405).json({ error: 'Method not allowed' });
     return;
   }
 
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  if (isBrowserOrigin(req.headers.origin)) {
+    res.status(403).json({ error: 'Forbidden' });
+    return;
+  }
+
+  const tsRaw = firstHeader(req.headers['x-feedback-ts']);
+  const nonceRaw = firstHeader(req.headers['x-feedback-nonce']);
+  const ts = tsRaw != null ? Number(tsRaw) : NaN;
+  const nonce = nonceRaw != null ? Number(nonceRaw) : NaN;
+  if (!verifyFeedbackProofOfWork(ts, nonce)) {
+    res.status(401).json({ error: 'Invalid proof of work' });
     return;
   }
 
@@ -162,7 +246,7 @@ export default async function handler(
   }
 
   const ip = clientIp(req);
-  if (isRateLimited(ip)) {
+  if (await isRateLimited(ip)) {
     res.status(429).json({ error: 'Too many requests. Try again later.' });
     return;
   }
@@ -179,8 +263,10 @@ export default async function handler(
     return;
   }
 
-  const title = trimText(body.title, 120);
-  const description = trimText(body.description, 8000);
+  const title = neutralizeGithubMentions(trimText(body.title, 120) ?? '');
+  const description = neutralizeGithubMentions(
+    trimText(body.description, 8000) ?? '',
+  );
   if (!title) {
     res.status(400).json({ error: 'title is required (max 120 chars)' });
     return;

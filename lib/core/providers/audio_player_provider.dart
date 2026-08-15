@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran_offline/core/audio/audio_paths.dart';
+import 'package:quran_offline/core/audio/sparse_playlist.dart';
 import 'package:quran_offline/core/models/reciter.dart';
 import 'package:quran_offline/core/providers/audio_download_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
@@ -84,6 +85,7 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
   final AudioPlayer _player = AudioPlayer();
 
   int? _sessionSurahId;
+  SparsePlaylist _playlist = const SparsePlaylist([]);
 
   /// True while building/attaching a surah playlist (avoids isLoading flicker).
   bool _preparingPlaylist = false;
@@ -119,9 +121,8 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
   }
 
   void _syncAyahFromPlaylistIndex(int index) {
-    final surahId = _sessionSurahId;
-    if (surahId == null) return;
-    final ayah = Bismillah.ayahFromPlaylistIndex(surahId, index);
+    final ayah = _playlist.ayahAt(index);
+    if (ayah == null) return;
     if (state.ayahNo != ayah) {
       state = state.copyWith(ayahNo: ayah);
     }
@@ -249,23 +250,25 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
         !_singleAyahMode;
 
     if (canSeekInPlaylist) {
-      final index = Bismillah.playlistIndex(surahId, startAyah);
-      // Block index echoes only while seeking; clear before play (play() does
-      // not resolve until playback ends, so it must not gate the index stream).
-      _preparingPlaylist = true;
-      try {
-        await _player.seek(Duration.zero, index: index);
-      } finally {
-        _preparingPlaylist = false;
+      final index = _playlist.indexOfAyah(startAyah);
+      if (index != null) {
+        // Block index echoes only while seeking; clear before play (play() does
+        // not resolve until playback ends, so it must not gate the index stream).
+        _preparingPlaylist = true;
+        try {
+          await _player.seek(Duration.zero, index: index);
+        } finally {
+          _preparingPlaylist = false;
+        }
+        state = state.copyWith(
+          surahId: surahId,
+          ayahNo: startAyah,
+          surahLabel: surahName ?? state.surahLabel ?? 'Surah $surahId',
+          clearError: true,
+        );
+        await _player.play();
+        return;
       }
-      state = state.copyWith(
-        surahId: surahId,
-        ayahNo: startAyah,
-        surahLabel: surahName ?? state.surahLabel ?? 'Surah $surahId',
-        clearError: true,
-      );
-      await _player.play();
-      return;
     }
 
     if (_sessionSurahId != surahId || _singleAyahMode) {
@@ -349,7 +352,7 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
       return;
     }
 
-    final sources = await _buildSources(
+    final built = await _buildSources(
       reciter,
       surahId,
       ayahCount,
@@ -357,9 +360,10 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
       localOnly: surahDownloaded || !allowStreaming,
       allowStreaming: allowStreaming,
     );
-    if (sources.isEmpty) {
+    if (built.sources.isEmpty) {
       _preparingPlaylist = false;
       _sessionSurahId = null;
+      _playlist = const SparsePlaylist([]);
       state = state.copyWith(
         isLoading: false,
         isPlaying: false,
@@ -371,13 +375,13 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
       return;
     }
 
-    final initialIndex = Bismillah.playlistIndex(surahId, startAyah)
-        .clamp(0, sources.length - 1);
+    _playlist = built.playlist;
+    final initialIndex = _playlist.initialIndexFor(startAyah);
 
     try {
       _sessionSurahId = surahId;
       await _player.setAudioSources(
-        sources,
+        built.sources,
         initialIndex: initialIndex,
         initialPosition: Duration.zero,
       );
@@ -403,7 +407,7 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
     return '$label - Ayah $ayahNo';
   }
 
-  Future<List<AudioSource>> _buildSources(
+  Future<({List<AudioSource> sources, SparsePlaylist playlist})> _buildSources(
     Reciter reciter,
     int surahId,
     int ayahCount,
@@ -413,33 +417,27 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
   }) async {
     final label = surahName ?? 'Surah $surahId';
     final sources = <AudioSource>[];
+    final ayahNos = <int>[];
+    final logical = logicalAyahSequence(
+      hasBismillah: Bismillah.hasBismillahAudio(surahId),
+      ayahCount: ayahCount,
+    );
 
-    if (Bismillah.hasBismillahAudio(surahId)) {
-      final bismillah = await _sourceFor(
-        reciter,
-        surahId,
-        Bismillah.audioAyahNo,
-        label,
-        '$label - Bismillah',
-        localOnly: localOnly,
-        allowStreaming: allowStreaming,
-      );
-      if (bismillah != null) sources.add(bismillah);
-    }
-
-    for (var ayah = 1; ayah <= ayahCount; ayah++) {
+    for (final ayah in logical) {
       final source = await _sourceFor(
         reciter,
         surahId,
         ayah,
         label,
-        '$label - Ayah $ayah',
+        _trackTitle(label, ayah),
         localOnly: localOnly,
         allowStreaming: allowStreaming,
       );
-      if (source != null) sources.add(source);
+      if (source == null) continue;
+      sources.add(source);
+      ayahNos.add(ayah);
     }
-    return sources;
+    return (sources: sources, playlist: SparsePlaylist(ayahNos));
   }
 
   Future<AudioSource?> _sourceForLocal(
@@ -556,6 +554,7 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
 
   Future<void> stop() async {
     _sessionSurahId = null;
+    _playlist = const SparsePlaylist([]);
     _singleAyahMode = false;
     _preparingPlaylist = false;
     await _player.stop();
