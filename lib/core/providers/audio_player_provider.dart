@@ -72,6 +72,13 @@ class AudioPlayerState {
   static const idle = AudioPlayerState();
 }
 
+/// Seek-to-start only after the clip/playlist completed.
+/// A media-session pause leaves [ProcessingState.ready]; seeking index 0
+/// would restart a full-surah playlist from ayah 1.
+bool audioRestartShouldSeekToStart(ProcessingState processingState) {
+  return processingState == ProcessingState.completed;
+}
+
 /// Wraps a single [AudioPlayer] and drives per-ayah / full-surah recitation.
 ///
 /// For surahs with a separate Bismillah, the playlist is:
@@ -497,10 +504,12 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
     }
   }
 
-  /// Replays the current track from its start (used when a track has finished).
+  /// Resumes in place, or replays from the start after the clip/playlist ended.
   Future<void> restart() async {
     try {
-      await _player.seek(Duration.zero, index: _singleAyahMode ? null : 0);
+      if (audioRestartShouldSeekToStart(_player.processingState)) {
+        await _player.seek(Duration.zero, index: _singleAyahMode ? null : 0);
+      }
     } catch (_) {}
     await _player.play();
   }
