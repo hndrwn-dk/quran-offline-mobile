@@ -175,7 +175,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                   children: [
                     IconButton(
                       icon: Icon(
-                        isPlayingThis ? Icons.stop_circle_outlined : Icons.play_circle_outline,
+                        isPlayingThis ? Icons.pause_circle_outline : Icons.play_circle_outline,
                         size: 20,
                       ),
                       color: isCurrentAyah
