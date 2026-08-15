@@ -1,8 +1,6 @@
 package com.tursinalabs.quranoffline
 
 import android.content.pm.PackageManager
-import android.os.Bundle
-import androidx.core.view.WindowCompat
 import com.google.android.play.core.integrity.IntegrityManagerFactory
 import com.google.android.play.core.integrity.IntegrityTokenRequest
 import com.ryanheise.audioservice.AudioServiceActivity
@@ -70,10 +68,5 @@ class MainActivity : AudioServiceActivity() {
         } catch (_: PackageManager.NameNotFoundException) {
             false
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        super.onCreate(savedInstanceState)
     }
 }
