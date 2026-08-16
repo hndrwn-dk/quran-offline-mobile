@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Tajweed colors aligned with Quran.com / Dar Al-Marifa legend.
+/// Tajweed colors aligned with Quran Foundation markup / Dar Al-Marifa legend.
 ///
 /// Legend (quran.com): grey silent · yellow/orange/red madd · green ghunnah/ikhfa
 /// · light blue qalqalah · dark blue tafkhim · idgham with ghunnah uses blue.

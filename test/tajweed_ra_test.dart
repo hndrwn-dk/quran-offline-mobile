@@ -2,15 +2,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/tajweed/tajweed_html.dart';
 
 void main() {
-  test('ra with fatha in rabbika is tagged tafkhim', () {
-    const input = 'رَبِّكَ';
-    final prepared = TajweedHtml.prepareForParsing(input);
-    expect(prepared, contains('<tajweed class=tafkhim>رَ</tajweed>'));
+  test('untagged ra with fatha is not given a homemade tafkhim rule', () {
+    expect(TajweedHtml.prepareForParsing('رَبِّكَ'), 'رَبِّكَ');
   });
 
-  test('ra with kasra stays plain (tarqeeq)', () {
+  test('ra with kasra stays untagged', () {
     const input = 'الرِّجَال';
-    final prepared = TajweedHtml.prepareForParsing(input);
-    expect(prepared, isNot(contains('<tajweed class=tafkhim>رِ')));
+    expect(
+      TajweedHtml.prepareForParsing(input),
+      isNot(contains('class=tafkhim')),
+    );
   });
 }

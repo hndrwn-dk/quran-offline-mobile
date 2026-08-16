@@ -166,7 +166,7 @@ flutter build ipa
 
 ## Credits
 
-- **Quran text & translations:** Quran Foundation / [Quran.com](https://quran.com/) API v4
+- **Quran text & translations:** Quran Foundation Content API 4.0 / [Quran.com](https://quran.com/)
 - **Surah info & tafsir:** [QUL](https://qul.tarteel.ai/) (Quranic Universal Library)
 - **Recitation audio:** [EveryAyah](https://everyayah.com/)
 - **Surah name font:** QUL SurahNameV2

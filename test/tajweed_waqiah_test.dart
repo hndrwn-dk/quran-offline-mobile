@@ -9,14 +9,14 @@ import 'package:quran_offline/core/tajweed/tajweed_parser.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
 void main() {
-  test('Al-Waqiah 56:8 enriched tj renders tafkhim on sad', () {
+  test('Al-Waqiah 56:8 paints Foundation tags only (no homemade tafkhim)', () {
     final raw = File('assets/quran/s056.json').readAsStringSync();
     final verses = jsonDecode(raw) as List<dynamic>;
     final ayah8 = verses.firstWhere((v) => v['a'] == 8) as Map<String, dynamic>;
     final tj = ayah8['tj'] as String;
     final prepared = TajweedHtml.prepareForParsing(tj);
 
-    expect(prepared, contains('class=tafkhim'));
+    expect(prepared, isNot(contains('class=tafkhim')));
     expect(prepared, contains('madda_obligatory'));
 
     const colorScheme = ColorScheme.light();
@@ -47,6 +47,6 @@ void main() {
     final hasTafkhim = merged.any(
       (s) => s.style?.color == tafkhimBlue && (s.text ?? '').contains('ص'),
     );
-    expect(hasTafkhim, isTrue);
+    expect(hasTafkhim, isFalse);
   });
 }

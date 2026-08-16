@@ -15,8 +15,8 @@ Core reading data: Arabic Uthmani text, tajweed markup, transliteration, and tra
 | Field | Value |
 |-------|--------|
 | **Output paths** | `assets/quran/s001.json` … `s114.json`, plus `manifest_multi.json`, `index_juz.json`, `index_pages.json` |
-| **Primary API** | [Quran.com API v4](https://api.quran.com/api/v4) (Quran Foundation) |
-| **Docs** | https://api-docs.quran.com/ |
+| **Primary API** | [Quran Foundation Content API 4.0](https://apis.quran.foundation/content/api/v4) |
+| **Docs** | https://api-docs.quran.foundation/docs/content_apis_versioned/4.0.0/quran-verses-uthmani-tajweed/ |
 | **Compatible import version** | See `DataImporter.currentVersion` in `lib/core/database/importer.dart` |
 
 ### Per-surah JSON (`s###.json`)
@@ -28,7 +28,7 @@ Each file is a JSON **array** of verse objects. Fields used by the app:
 | `s` | Surah id (1–114) |
 | `a` | Ayah number |
 | `ar` | Arabic text (`text_uthmani`) |
-| `tj` | Tajweed HTML (optional; from `uthmani_tajweed` endpoint) |
+| `tj` | Tajweed HTML from Quran Foundation `text_uthmani_tajweed` |
 | `tl` | Transliteration (optional) |
 | `tl_tj` | Tajweed-aligned transliteration (optional) |
 | `tr` | Map of translation codes: `en`, `id`, `zh`, `ja` |
@@ -43,17 +43,19 @@ Each file is a JSON **array** of verse objects. Fields used by the app:
 | `zh` | 109 | Muhammad Makin |
 | `ja` | 35 | Ryoichi Mita |
 
-Use the Quran.com v4 API to fetch verses and translations per surah, then shape files to match the schema above.
+Use the Quran Foundation Content API 4.0 (or the public `api.quran.com` mirror) to fetch verses and translations per surah, then shape files to match the schema above.
 
-**Tajweed** is fetched from the **words API** (richer than verse-level `uthmani_tajweed`):
+**Tajweed** (Reader, Juz, and Mushaf color markup) is **Quran Foundation Uthmani tajweed**, not QUL V4 glyphs or QPC Hafs font-tajweed:
 
-`GET https://api.quran.com/api/v4/verses/by_chapter/{surah}?words=true&word_fields=text_uthmani_tajweed`
+`GET /content/api/v4/quran/verses/uthmani_tajweed?chapter_number={surah}`
 
-Run `python scripts/fetch_tajweed_data.py --overwrite` to refresh the `tj` field in all surah JSON files. Rule class names and markup follow Quran.com; colors in the app follow the [Quran.com Tajweed Mushaf legend](https://quran.com) (Dar Al-Marifa palette). Runtime augmentation adds tafkhim on isti'laa letters and Ra with fatha/damma where the API omits markers.
+Docs: https://api-docs.quran.foundation/docs/content_apis_versioned/4.0.0/quran-verses-uthmani-tajweed/
 
-Legacy verse endpoint (less complete):
+Public mirror (no OAuth): `GET https://api.quran.com/api/v4/quran/verses/uthmani_tajweed?chapter_number={surah}`
 
-`GET https://api.quran.com/api/v4/quran/verses/uthmani_tajweed?verse_key={surah}:{ayah}`
+Run `python scripts/fetch_tajweed_data.py --overwrite` to copy `text_uthmani_tajweed` into the `tj` field. Rule class names follow Foundation HTML (`<tajweed class=ham_wasl>`, etc.). Colors in the app follow the [Quran.com Tajweed Mushaf legend](https://quran.com) (Dar Al-Marifa palette). The app does **not** add extra tajweed rules at runtime; it only paints the Foundation tags.
+
+QUL Quran-script resources [#47 V4 Glyphs + Tajweed](https://qul.tarteel.ai/resources/quran-script/47) and [#58 QPC Hafs + Tajweed](https://qul.tarteel.ai/resources/quran-script/58) are **not** used for Reader/Juz `tj`. Mushaf page layout still ships QPC V2 glyphs (see section 6).
 
 ### Index files
 

@@ -51,15 +51,15 @@ void main() {
     return null;
   }
 
-  test('56:92 in kana — nun green, kaf black', () {
+  test('56:92 in kana — Foundation ikhafa covers nun and kaf', () {
     final spans = spansForAyah(92);
     expect(colorOfLetter(spans, 'ن'), ikhfaGreen);
-    expect(colorOfLetter(spans, 'ك'), defaultColor);
+    expect(colorOfLetter(spans, 'ك'), ikhfaGreen);
   });
 
-  test('56:93 fanuzulun min — lam black, mim green', () {
+  test('56:93 fanuzulun min — Foundation idgham_ghunnah covers lam and mim', () {
     final spans = spansForAyah(93);
-    expect(colorOfLetter(spans, 'ل'), defaultColor);
+    expect(colorOfLetter(spans, 'ل'), idghamBlue);
     expect(colorOfLetter(spans, 'م'), idghamBlue);
   });
 }

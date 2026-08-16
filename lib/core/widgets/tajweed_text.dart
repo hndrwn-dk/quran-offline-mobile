@@ -86,7 +86,7 @@ class TajweedText extends StatelessWidget {
     );
   }
 
-  /// Get color for tajweed class (Quran.com-aligned palette).
+  /// Get color for tajweed class (Foundation / Dar Al-Marifa palette).
   Color getTajweedColor(String tajweedClass, BuildContext context) {
     return TajweedColors.colorForClass(
       tajweedClass,

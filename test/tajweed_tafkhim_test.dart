@@ -5,11 +5,11 @@ import 'package:quran_offline/core/tajweed/tajweed_parser.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
 void main() {
-  test('U+06E1 tafkhim marker becomes tafkhim tag', () {
+  test('U+06E1 marker is stripped without inventing a tafkhim tag', () {
     const input = 'أَص\u06e1حَ';
     final prepared = TajweedHtml.prepareForParsing(input);
-    expect(prepared, contains('class=tafkhim'));
-    expect(prepared, isNot(contains('\u06e1')));
+    expect(prepared, 'أَصحَ');
+    expect(prepared, isNot(contains('class=tafkhim')));
   });
 
   testWidgets('tafkhim span uses dark blue, not default black', (tester) async {

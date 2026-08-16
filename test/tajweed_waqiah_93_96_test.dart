@@ -47,19 +47,9 @@ void main() {
     return null;
   }
 
-  test('56:95 حقّ qaf is tafkhim blue, yaqeen qaf not whole-word blue', () {
+  test('56:95 qaf is untagged in Foundation HTML so stays default', () {
     final spans = spansForAyah(95);
-    final haqqColor = colorOfLetter(spans, 'ق');
-    expect(haqqColor, colorForClass('tafkhim'));
-
-    final blue = colorForClass('tafkhim');
-    final yaqeenBlue = spans.where(
-      (s) =>
-          (s.text ?? '').contains('يَق') &&
-          s.style?.color == blue &&
-          (s.text ?? '').contains('نِ'),
-    );
-    expect(yaqeenBlue, isEmpty);
+    expect(colorOfLetter(spans, 'ق'), defaultColor);
 
     final maddYa = spans.where(
       (s) =>
@@ -69,10 +59,10 @@ void main() {
     expect(maddYa, isNotEmpty);
   });
 
-  test('56:96 rabbika ra and azeem za are tafkhim blue', () {
+  test('56:96 rabbika ra and azeem za stay default unless Foundation tagged them', () {
     final spans = spansForAyah(96);
-    expect(colorOfLetter(spans, 'ر'), colorForClass('tafkhim'));
-    expect(colorOfLetter(spans, 'ظ'), colorForClass('tafkhim'));
+    expect(colorOfLetter(spans, 'ر'), defaultColor);
+    expect(colorOfLetter(spans, 'ظ'), defaultColor);
   });
 
   test('56:93 min nun is not tafkhim blue', () {
@@ -85,8 +75,8 @@ void main() {
     }
   });
 
-  test('56:94 sad is tafkhim blue', () {
+  test('56:94 sad is untagged in Foundation HTML so stays default', () {
     final spans = spansForAyah(94);
-    expect(colorOfLetter(spans, 'ص'), colorForClass('tafkhim'));
+    expect(colorOfLetter(spans, 'ص'), defaultColor);
   });
 }
