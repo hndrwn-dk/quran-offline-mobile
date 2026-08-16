@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:quran_offline/core/constants/quran_fonts.dart';
-import 'package:quran_offline/core/tajweed/tajweed_parser.dart';
-import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
 /// Dev spike: compare tanwin/idgham rendering (Ali 'Imran 3:3) across fonts.
 class FontCompareScreen extends StatelessWidget {
   const FontCompareScreen({super.key});
 
-  /// From assets/quran/s003.json ayah 3 — `tj` field.
-  static const _verse3Tj =
-      'نَزَّلَ عَلَيْكَ <tajweed class=ham_wasl>ٱ</tajweed>لْكِتَ<tajweed class=madda_normal>ـٰ</tajweed>بَ بِ<tajweed class=ham_wasl>ٱ</tajweed>لْحَقِّ مُصَدِّ<tajweed class=idgham_wo_ghunnah>قًا ل</tajweed>ِّمَا بَيْنَ يَدَيْهِ وَأَ<tajweed class=ikhafa>نز</tajweed>َلَ <tajweed class=ham_wasl>ٱ</tajweed><tajweed class=laam_shamsiyah>ل</tajweed>تَّوْرَ<tajweed class=madda_normal>ٮٰ</tajweed>ةَ وَ<tajweed class=ham_wasl>ٱ</tajweed>لْإِ<tajweed class=ikhafa>نج</tajweed><tajweed class=madda_permissible>ِي</tajweed>لَ';
+  static const _verse3Ar =
+      'نَزَّلَ عَلَيْكَ ٱلْكِتَـٰبَ بِٱلْحَقِّ مُصَدِّقًا لِّمَا بَيْنَ يَدَيْهِ وَأَنزَلَ ٱلتَّوْرَٮٰةَ وَٱلْإِنجِيلَ';
 
-  static const _focusSnippetTj =
-      'مُصَدِّ<tajweed class=idgham_wo_ghunnah>قًا ل</tajweed>ِّمَا';
+  static const _focusSnippetAr = 'مُصَدِّقًا لِّمَا';
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +53,7 @@ class FontCompareScreen extends StatelessWidget {
             _FontSampleCard(
               fontFamily: entry.key,
               label: entry.value,
-              tajweedHtml: _focusSnippetTj,
+              arabic: _focusSnippetAr,
               fontSize: 36,
               emphasized: true,
             ),
@@ -75,7 +71,7 @@ class FontCompareScreen extends StatelessWidget {
             _FontSampleCard(
               fontFamily: entry.key,
               label: entry.value,
-              tajweedHtml: _verse3Tj,
+              arabic: _verse3Ar,
               fontSize: 22,
             ),
         ],
@@ -118,7 +114,7 @@ class _QulFontNote extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               'QPC V2 (#249) memakai 604 font ligatur per halaman Mushaf Madinah — '
-              'bukan Unicode ayat, jadi tidak bisa dipakai di reader tajweed ini.\n'
+              'bukan Unicode ayat, jadi tidak bisa dipakai di reader Unicode ini.\n'
               'Untuk Unicode Madinah 1421H, QUL menawarkan Digital Khatt V2 (#247) '
               '(ditambahkan di bawah). QPC Hafs (#245) sama dengan Uthmanic Hafs V22 '
               'yang sudah dipakai app.',
@@ -138,14 +134,14 @@ class _FontSampleCard extends StatelessWidget {
   const _FontSampleCard({
     required this.fontFamily,
     required this.label,
-    required this.tajweedHtml,
+    required this.arabic,
     required this.fontSize,
     this.emphasized = false,
   });
 
   final String fontFamily;
   final String label;
-  final String tajweedHtml;
+  final String arabic;
   final double fontSize;
   final bool emphasized;
 
@@ -171,8 +167,8 @@ class _FontSampleCard extends StatelessWidget {
             Localizations.override(
               context: context,
               locale: const Locale('ar'),
-              child: _TajweedWithFont(
-                tajweedHtml: tajweedHtml,
+              child: _ArabicWithFont(
+                arabic: arabic,
                 fontFamily: fontFamily,
                 fontSize: fontSize,
                 color: colorScheme.onSurface,
@@ -186,16 +182,16 @@ class _FontSampleCard extends StatelessWidget {
   }
 }
 
-class _TajweedWithFont extends StatelessWidget {
-  const _TajweedWithFont({
-    required this.tajweedHtml,
+class _ArabicWithFont extends StatelessWidget {
+  const _ArabicWithFont({
+    required this.arabic,
     required this.fontFamily,
     required this.fontSize,
     required this.color,
     this.emphasized = false,
   });
 
-  final String tajweedHtml;
+  final String arabic;
   final String fontFamily;
   final double fontSize;
   final Color color;
@@ -216,19 +212,8 @@ class _TajweedWithFont extends StatelessWidget {
       locale: const Locale('ar'),
     );
 
-    var spans = TajweedParser.parseToSpans(
-      context: context,
-      tajweedHtml: tajweedHtml,
-      baseStyle: baseStyle,
-      defaultColor: color,
-    );
-    spans = TajweedText.coalesceSpansForArabicLayout(
-      spans,
-      defaultStyle: baseStyle,
-    );
-
-    final text = SelectableText.rich(
-      TextSpan(children: spans),
+    final text = SelectableText(
+      arabic,
       textDirection: TextDirection.rtl,
       textAlign: TextAlign.right,
       style: baseStyle,

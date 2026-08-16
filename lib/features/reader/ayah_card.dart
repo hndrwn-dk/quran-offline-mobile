@@ -12,7 +12,7 @@ import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/providers/transliteration_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
-import 'package:quran_offline/core/widgets/tajweed_text.dart';
+import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 import 'package:quran_offline/core/share/verse_share.dart';
 import 'package:quran_offline/core/feedback/feedback_context.dart';
 import 'package:quran_offline/core/feedback/feedback_type.dart';
@@ -253,9 +253,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                 textDirection: TextDirection.rtl,
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: settings.showTajweed
-                      ? _buildTajweedText(settings, colorScheme)
-                      : _buildPlainArabicText(settings, colorScheme),
+                  child: _buildPlainArabicText(settings, colorScheme),
                 ),
               ),
             ),
@@ -395,46 +393,14 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     );
   }
 
-  /// Renders JSON `ar` with no letter rewriting (tajweed off).
   Widget _buildPlainArabicText(AppSettings settings, ColorScheme colorScheme) {
-    final textToShow = widget.verse.arabic;
-    final isLightTheme = Theme.of(context).brightness == Brightness.light;
-    return Localizations.override(
-      context: context,
-      locale: const Locale('ar'),
-      child: SelectableText(
-        textToShow,
-        style: TajweedText.arabicDisplayStyle(
-          fontSize: settings.arabicFontSize * 1.15,
-          color: colorScheme.onSurface,
-          height: 1.7,
-          isLightTheme: isLightTheme,
-        ),
-        textDirection: TextDirection.rtl,
-        textAlign: TextAlign.right,
-      ),
-    );
-  }
-
-  Widget _buildTajweedText(AppSettings settings, ColorScheme colorScheme) {
-    final tajweedHtml = widget.verse.tajweed;
-    
-    if (tajweedHtml == null || tajweedHtml.isEmpty) {
-      // Fallback to plain Arabic with same normalization when no tajweed data
-      return _buildPlainArabicText(settings, colorScheme);
-    }
-    
-    final isLightTheme = Theme.of(context).brightness == Brightness.light;
-    return TajweedText(
-      tajweedHtml: tajweedHtml,
-      arabicLetters: widget.verse.arabic,
-      verseKey: '${widget.verse.surahId}:${widget.verse.ayahNo}',
+    return QuranArabicText(
+      arabic: widget.verse.arabic,
       fontSize: settings.arabicFontSize * 1.15,
       defaultColor: colorScheme.onSurface,
       textDirection: TextDirection.rtl,
       textAlign: TextAlign.right,
       height: 1.7,
-      isLightTheme: isLightTheme,
     );
   }
 

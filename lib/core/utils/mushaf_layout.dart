@@ -37,13 +37,11 @@ class MushafAyahBlock {
   final int? surahId;
   final int? ayahNo;
   final String text;
-  final String? tajweed;
   final bool isSurahHeader;
   final bool isBismillah;
 
   const MushafAyahBlock({
     required this.text,
-    this.tajweed,
     this.surahId,
     this.ayahNo,
     this.isSurahHeader = false,
@@ -137,7 +135,6 @@ class MushafLayout {
           surahId: v.surahId,
           ayahNo: v.ayahNo,
           text: v.arabic,
-          tajweed: v.tajweed,
         ),
       );
     }

@@ -159,35 +159,6 @@ class _MushafTextSettingsDialogState
                         ),
                   ),
                 ),
-              if (!isGlyphMushaf)
-                SwitchListTile(
-                  value: settings.showTajweed,
-                  onChanged: (value) async {
-                    await ref
-                        .read(settingsProvider.notifier)
-                        .updateShowTajweed(value);
-                  },
-                  title: Text(
-                    AppLocalizations.getSettingsText(
-                      'show_tajweed_title',
-                      appLanguage,
-                    ),
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
-                  ),
-                  subtitle: Text(
-                    AppLocalizations.getSettingsText(
-                      'text_settings_tajweed_subtitle',
-                      appLanguage,
-                    ),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(16),

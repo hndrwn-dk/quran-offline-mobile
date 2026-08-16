@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quran_offline/core/constants/app_colors.dart';
 import 'package:quran_offline/core/share/verse_share_content.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/widgets/tajweed_text.dart';
+import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
 /// Branded share card (RepaintBoundary → PNG). Cream backdrop, white inset, Play link.
 class VerseShareCard extends StatelessWidget {
@@ -270,38 +270,14 @@ class _ArabicBlock extends StatelessWidget {
     const fontSize = kVerseShareCardArabicFontSize;
     final defaultColor = colorScheme.onSurface;
 
-    if (content.showTajweed && content.tajweedHtml != null) {
-      return Localizations.override(
-        context: context,
-        locale: const Locale('ar'),
-        child: TajweedText(
-          tajweedHtml: content.tajweedHtml!,
-          arabicLetters: content.plainArabic,
-          verseKey: '${content.verse.surahId}:${content.verse.ayahNo}',
-          fontSize: fontSize,
-          defaultColor: defaultColor,
-          textDirection: TextDirection.rtl,
-          textAlign: TextAlign.center,
-          height: 1.85,
-          isLightTheme: true,
-        ),
-      );
-    }
-
-    return Localizations.override(
-      context: context,
-      locale: const Locale('ar'),
-      child: Text(
-        content.plainArabic,
-        style: TajweedText.arabicDisplayStyle(
-          fontSize: fontSize,
-          color: defaultColor,
-          height: 1.85,
-          isLightTheme: true,
-        ),
-        textDirection: TextDirection.rtl,
-        textAlign: TextAlign.center,
-      ),
+    return QuranArabicText(
+      arabic: content.plainArabic,
+      fontSize: fontSize,
+      defaultColor: defaultColor,
+      textDirection: TextDirection.rtl,
+      textAlign: TextAlign.center,
+      height: 1.85,
+      selectable: false,
     );
   }
 }
