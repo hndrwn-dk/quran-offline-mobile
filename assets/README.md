@@ -57,12 +57,9 @@ Array of objects:
   "s": 1,
   "a": 1,
   "ar": "…",
-  "tj": "…",
-  "tl": "…",
-  "tl_tj": "…",
   "tr": { "en": "…", "id": "…", "zh": "…", "ja": "…" },
   "m": { "juz": 1, "page": 1, "hizb": 1, "ruku": 1 }
 }
 ```
 
-`tj` is Quran Foundation Uthmani tajweed HTML (`text_uthmani_tajweed`). See [DATA_SOURCES.md](../DATA_SOURCES.md).
+`ar` is Quran Foundation `text_uthmani`. See [DATA_SOURCES.md](../DATA_SOURCES.md) and [docs/QURAN_TEXT_INTEGRITY.md](../docs/QURAN_TEXT_INTEGRITY.md).

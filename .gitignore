@@ -125,7 +125,9 @@ assets/qpc-v4-tajweed-15-lines.db.zip
 
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
-docs/
+# Local docs stay untracked except text-integrity note.
+docs/*
+!docs/QURAN_TEXT_INTEGRITY.md
 assets/quran/*.json
 
 # Vercel feedback API (Node)
