@@ -3,14 +3,18 @@ class TranslationCleaner {
   /// Removes footnote tags and leading numbers from translation text
   static String clean(String? text) {
     if (text == null || text.isEmpty) return text ?? '';
-    
-    // Remove <sup foot_note=xxx>...</sup> tags
-    // Pattern matches: <sup foot_note=any_number>any_content</sup>
+
+    // Quran.com API v4 uses <sup foot_note=195932>1</sup> (unquoted),
+    // plus quoted attrs and footnote/foot_note spelling.
     String cleaned = text.replaceAll(
-      RegExp(r'<sup\s+foot_note=\d+>.*?</sup>', caseSensitive: false),
+      RegExp(
+        r'<sup\b[^>]*>.*?</sup>',
+        caseSensitive: false,
+        dotAll: true,
+      ),
       '',
     );
-    
+
     // Remove leading numbers with period and space at the start of the string
     // Pattern: one or more digits followed by period and one or more whitespace characters
     // This handles: "1. ", "2. ", "123. Text", etc.
@@ -24,8 +28,7 @@ class TranslationCleaner {
       // Fallback: try without space requirement
       cleaned = cleaned.replaceFirst(RegExp(r'^\d+\.\s*'), '');
     }
-    
+
     return cleaned.trim();
   }
 }
-
