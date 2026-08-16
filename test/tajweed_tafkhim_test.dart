@@ -5,11 +5,16 @@ import 'package:quran_offline/core/tajweed/tajweed_parser.dart';
 import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
 void main() {
-  test('U+06E1 marker is stripped without inventing a tafkhim tag', () {
+  test('U+06E1 Uthmani sukun is preserved, not treated as a tafkhim marker', () {
     const input = 'أَص\u06e1حَ';
     final prepared = TajweedHtml.prepareForParsing(input);
-    expect(prepared, 'أَصحَ');
+    expect(prepared, 'أَص\u06e1حَ');
     expect(prepared, isNot(contains('class=tafkhim')));
+  });
+
+  test('prepareForParsing is a no-op on untagged text containing U+06E1', () {
+    const input = 'عَلَيْهِ\u06e1مْ';
+    expect(TajweedHtml.prepareForParsing(input), input);
   });
 
   testWidgets('tafkhim span uses dark blue, not default black', (tester) async {

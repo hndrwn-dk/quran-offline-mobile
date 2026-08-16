@@ -20,10 +20,10 @@ void main() {
     expect(TajweedHtml.prepareForParsing(input), input);
   });
 
-  test('strips U+06E1 without turning it into a homemade tafkhim tag', () {
+  test('keeps U+06E1 Uthmani sukun without inventing a tafkhim tag', () {
     const input = 'أَص\u06e1حَ';
     final prepared = TajweedHtml.prepareForParsing(input);
-    expect(prepared, 'أَصحَ');
+    expect(prepared, 'أَص\u06e1حَ');
     expect(prepared, isNot(contains('class=tafkhim')));
   });
 
