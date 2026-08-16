@@ -7,6 +7,7 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/features/library/widgets/library_empty_state.dart';
 import 'package:quran_offline/features/library/widgets/library_item_card.dart';
@@ -468,13 +469,14 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
 
   String _getTranslation(Verse? verse, String language) {
     if (verse == null) return '';
-    return switch (language) {
+    final raw = switch (language) {
       'en' => verse.trEn ?? '',
       'id' => verse.trId ?? '',
       'zh' => verse.trZh ?? '',
       'ja' => verse.trJa ?? '',
       _ => verse.trId ?? verse.trEn ?? '',
     };
+    return TranslationCleaner.clean(raw);
   }
 }
 
