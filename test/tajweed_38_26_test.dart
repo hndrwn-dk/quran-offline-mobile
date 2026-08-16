@@ -34,12 +34,11 @@ void main() {
     );
   }
 
-  test('ikhafa shafawi split keeps damma on meem (38:26 فَٱحْكُم)', () {
+  test('ikhafa shafawi keeps Foundation tag spanning meem and ba (38:26)', () {
     const raw =
         'حْك<tajweed class=ikhafa_shafawi>ُم ب</tajweed>َيْنَ';
     final prepared = TajweedHtml.prepareForParsing(raw);
-    expect(prepared, contains('<tajweed class=ikhafa_shafawi>ُم</tajweed>'));
-    expect(prepared, isNot(contains('مم')));
+    expect(prepared, contains('<tajweed class=ikhafa_shafawi>ُم ب</tajweed>'));
 
     final spans = spansForVerse(raw);
     final joined = spans.map((s) => s.text).join();

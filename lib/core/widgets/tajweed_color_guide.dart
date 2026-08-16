@@ -4,7 +4,7 @@ import 'package:quran_offline/core/utils/app_localizations.dart';
 
 typedef TajweedGuideRule = ({String nameKey, String descKey, String colorClass});
 
-/// Tajweed color legend aligned with [TajweedColors] / Quran.com markup.
+/// Tajweed color legend aligned with [TajweedColors] / Quran Foundation markup.
 class TajweedColorGuide {
   TajweedColorGuide._();
 

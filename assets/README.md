@@ -64,3 +64,5 @@ Array of objects:
   "m": { "juz": 1, "page": 1, "hizb": 1, "ruku": 1 }
 }
 ```
+
+`tj` is Quran Foundation Uthmani tajweed HTML (`text_uthmani_tajweed`). See [DATA_SOURCES.md](../DATA_SOURCES.md).
