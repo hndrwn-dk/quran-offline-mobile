@@ -419,6 +419,7 @@ class ExploreVersePassage extends StatelessWidget {
                       verse.tajweed!.isNotEmpty
                   ? TajweedText(
                       tajweedHtml: verse.tajweed!,
+                      arabicLetters: verse.arabic,
                       fontSize: arabicSize,
                       defaultColor: colorScheme.onSurface,
                       isLightTheme: isLightTheme,

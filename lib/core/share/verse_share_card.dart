@@ -276,6 +276,7 @@ class _ArabicBlock extends StatelessWidget {
         locale: const Locale('ar'),
         child: TajweedText(
           tajweedHtml: content.tajweedHtml!,
+          arabicLetters: content.plainArabic,
           fontSize: fontSize,
           defaultColor: defaultColor,
           textDirection: TextDirection.rtl,
