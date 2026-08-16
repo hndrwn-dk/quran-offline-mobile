@@ -1,12 +1,9 @@
 /// Preprocessing for Quran Foundation uthmani_tajweed HTML before span parsing.
 ///
-/// Does not invent tajweed rules. Only aliases legacy `<rule>` tags and strips
-/// a non-display marker. Coloring follows Foundation `<tajweed class=…>` tags.
+/// Does not invent tajweed rules. Only aliases legacy `<rule>` tags to
+/// `<tajweed>`. Coloring follows Foundation `<tajweed class=…>` tags.
 class TajweedHtml {
   TajweedHtml._();
-
-  /// U+06E1 appears in some word-level dumps; it is not a Foundation rule tag.
-  static const String tafkhimMarker = '\u06E1';
 
   /// Identity for Reader/Juz: on-screen Arabic must match JSON `ar`.
   /// Search still uses [ArabicSearchNormalizer], not this.
@@ -22,7 +19,7 @@ class TajweedHtml {
   }
 
   /// Single global preprocessing pipeline for every verse `tj` field.
-  /// Used by Surah reader, Juz reader, Mushaf, and explore sheet via [TajweedParser].
+  /// Used by Surah reader, Juz reader, and explore sheet via [TajweedParser].
   static String prepareForParsing(String html) {
     var text = html;
     text = text.replaceAllMapped(
@@ -33,7 +30,6 @@ class TajweedHtml {
       RegExp(r'</rule>', caseSensitive: false),
       '</tajweed>',
     );
-    text = text.replaceAll(tafkhimMarker, '');
     return text;
   }
 }
