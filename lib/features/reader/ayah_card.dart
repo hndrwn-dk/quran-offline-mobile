@@ -427,6 +427,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     final isLightTheme = Theme.of(context).brightness == Brightness.light;
     return TajweedText(
       tajweedHtml: tajweedHtml,
+      arabicLetters: widget.verse.arabic,
       fontSize: settings.arabicFontSize * 1.15,
       defaultColor: colorScheme.onSurface,
       textDirection: TextDirection.rtl,
