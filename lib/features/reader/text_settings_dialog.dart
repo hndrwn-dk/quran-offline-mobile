@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
-import 'package:quran_offline/core/widgets/tajweed_color_guide.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 
 class TextSettingsDialog extends ConsumerStatefulWidget {
@@ -17,7 +16,6 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
   bool _showTransliteration = false;
   bool _showTranslation = true;
   bool _showTafsir = false;
-  bool _showTajweed = false;
   String _currentLanguage = 'en';
 
   @override
@@ -29,7 +27,6 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
     _showTransliteration = settings.showTransliteration;
     _showTranslation = settings.showTranslation;
     _showTafsir = settings.showTafsir;
-    _showTajweed = settings.showTajweed;
     _currentLanguage = settings.language;
   }
 
@@ -41,38 +38,6 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
       'ja' => AppLocalizations.getSettingsText('language_name_japanese', appLanguage),
       _ => lang,
     };
-  }
-
-  void _showTajweedGuide(BuildContext context, ColorScheme colorScheme) {
-    final settings = ref.read(settingsProvider);
-    final appLanguage = settings.appLanguage;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.getSettingsText('tajweed_guide_title', appLanguage)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.getSettingsText('tajweed_guide_intro', appLanguage),
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 16),
-              TajweedColorGuideContent(appLanguage: appLanguage),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.getSettingsText('tajweed_guide_got_it', appLanguage)),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _applySettings() async {
@@ -91,9 +56,6 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
     }
     if (_showTafsir != settings.showTafsir) {
       await ref.read(settingsProvider.notifier).updateShowTafsir(_showTafsir);
-    }
-    if (_showTajweed != settings.showTajweed) {
-      await ref.read(settingsProvider.notifier).updateShowTajweed(_showTajweed);
     }
     if (_currentLanguage != settings.language) {
       await ref.read(settingsProvider.notifier).updateLocale(_currentLanguage);
@@ -325,31 +287,6 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                             value: _showTafsir,
                             compact: layout.compactToggles,
                             onChanged: (value) => setState(() => _showTafsir = value),
-                          ),
-                          _SettingsDivider(colorScheme: colorScheme),
-                          _CompactSwitchTile(
-                            title: AppLocalizations.getSettingsText(
-                              'show_tajweed_title',
-                              appLanguage,
-                            ),
-                            value: _showTajweed,
-                            compact: layout.compactToggles,
-                            trailing: IconButton(
-                              icon: const Icon(Icons.info_outline, size: 20),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 32,
-                              ),
-                              visualDensity: VisualDensity.compact,
-                              color: colorScheme.primary,
-                              onPressed: () => _showTajweedGuide(context, colorScheme),
-                              tooltip: AppLocalizations.getSettingsText(
-                                'tajweed_guide_title',
-                                appLanguage,
-                              ),
-                            ),
-                            onChanged: (value) => setState(() => _showTajweed = value),
                           ),
                         ],
                       ),

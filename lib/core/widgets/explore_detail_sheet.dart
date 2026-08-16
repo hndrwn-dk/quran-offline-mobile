@@ -9,7 +9,7 @@ import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
-import 'package:quran_offline/core/widgets/tajweed_text.dart';
+import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
 void openReaderFromAyahRefs(WidgetRef ref, List<DuaAyahRef> ayahRefs) {
   final primary = ayahRefs.first;
@@ -393,8 +393,6 @@ class ExploreVersePassage extends StatelessWidget {
     final translation = exploreVerseTranslation(verse, translationLang);
     final arabicSize = settings.arabicFontSize;
     final translationSize = settings.translationFontSize;
-    final isLightTheme = Theme.of(context).brightness == Brightness.light;
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -414,32 +412,12 @@ class ExploreVersePassage extends StatelessWidget {
             textDirection: TextDirection.rtl,
             child: Align(
               alignment: Alignment.centerRight,
-              child: settings.showTajweed &&
-                      verse.tajweed != null &&
-                      verse.tajweed!.isNotEmpty
-                  ? TajweedText(
-                      tajweedHtml: verse.tajweed!,
-                      arabicLetters: verse.arabic,
-                      verseKey: '${verse.surahId}:${verse.ayahNo}',
-                      fontSize: arabicSize,
-                      defaultColor: colorScheme.onSurface,
-                      isLightTheme: isLightTheme,
-                    )
-                  : Localizations.override(
-                      context: context,
-                      locale: const Locale('ar'),
-                      child: SelectableText(
-                        verse.arabic,
-                        style: TajweedText.arabicDisplayStyle(
-                          fontSize: arabicSize,
-                          color: colorScheme.onSurface,
-                          height: 1.75,
-                          isLightTheme: isLightTheme,
-                        ),
-                        textDirection: TextDirection.rtl,
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
+              child: QuranArabicText(
+                arabic: verse.arabic,
+                fontSize: arabicSize,
+                defaultColor: colorScheme.onSurface,
+                height: 1.75,
+              ),
             ),
           ),
           if (translation != null) ...[

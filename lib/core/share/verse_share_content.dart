@@ -4,7 +4,7 @@ import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
-import 'package:quran_offline/core/widgets/tajweed_text.dart';
+import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
 /// Layout constants for share-card eligibility (two-path share).
 const double kVerseShareCardWidth = 340;
@@ -18,7 +18,6 @@ class VerseShareContent {
     required this.surahName,
     required this.appLanguage,
     required this.contentLanguage,
-    required this.showTajweed,
     required this.transliterationText,
   });
 
@@ -26,7 +25,6 @@ class VerseShareContent {
   final String surahName;
   final String appLanguage;
   final String contentLanguage;
-  final bool showTajweed;
   final String transliterationText;
 
   factory VerseShareContent.from({
@@ -40,7 +38,6 @@ class VerseShareContent {
       surahName: surahName,
       appLanguage: settings.appLanguage,
       contentLanguage: settings.language,
-      showTajweed: settings.showTajweed,
       transliterationText: transliterationText?.trim() ?? '',
     );
   }
@@ -59,12 +56,6 @@ class VerseShareContent {
   String get transliteration => transliterationText;
 
   String get plainArabic => verse.arabic;
-
-  String? get tajweedHtml {
-    final html = verse.tajweed;
-    if (html == null || html.isEmpty) return null;
-    return html;
-  }
 
   String get referenceLine {
     final ayahLabel = AppLocalizations.getAyahLabel(appLanguage);
@@ -126,7 +117,7 @@ class VerseShareContent {
     final painter = TextPainter(
       text: TextSpan(
         text: text,
-        style: TajweedText.arabicDisplayStyle(
+        style: QuranArabicText.arabicDisplayStyle(
           fontSize: fontSize,
           color: Colors.black,
           isLightTheme: true,

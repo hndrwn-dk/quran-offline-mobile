@@ -24,11 +24,9 @@ import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
-import 'package:quran_offline/core/tajweed/tajweed_ar_aligner.dart';
 import 'package:quran_offline/core/feedback/feedback_context.dart';
 import 'package:quran_offline/core/feedback/feedback_type.dart';
 import 'package:quran_offline/features/settings/feedback_form_sheet.dart';
-import 'package:quran_offline/core/widgets/tajweed_text.dart';
 import 'package:quran_offline/features/audio/global_recitation_bar.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_offline_audio_banner.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_gesture_hint_banner.dart';
@@ -493,7 +491,6 @@ class _MushafPageState extends ConsumerState<MushafPage> {
     final settings = ref.watch(settingsProvider);
     final fontSize = settings.mushafFontSize;
     final appLanguage = settings.appLanguage;
-    ref.watch(settingsProvider.select((s) => s.showTajweed));
     final surahsAsync = ref.watch(surahNamesProvider);
     
     return GestureDetector(
@@ -807,8 +804,6 @@ class _FlowingMushafText extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider);
-    final showTajweed = settings.showTajweed;
     final audio = ref.watch(audioPlayerProvider);
 
     final List<Widget> children = [];
@@ -980,45 +975,19 @@ class _FlowingMushafText extends ConsumerWidget {
       }
 
       final ayahSpans = <InlineSpan>[];
-      final defaultSpanStyle = TextStyle(
-        fontFamily: 'UthmanicHafsV22',
-        fontFamilyFallback: const ['UthmanicHafs'],
-        fontSize: fontSize,
-        color: colorScheme.onSurface,
-      );
-      if (showTajweed && block.tajweed != null && block.tajweed!.isNotEmpty) {
-        var parsedSpans = TajweedArAligner.spansFor(
-          context: context,
-          arabic: block.text,
-          tajweedHtml: block.tajweed!,
-          verseKey: block.surahId != null && block.ayahNo != null
-              ? '${block.surahId}:${block.ayahNo}'
-              : null,
-          baseStyle: defaultSpanStyle,
-          defaultColor: colorScheme.onSurface,
-          recognizer: recognizer,
-          backgroundColor: recitationHighlight,
-        );
-        parsedSpans = TajweedText.coalesceSpansForArabicLayout(
-          parsedSpans,
-          defaultStyle: defaultSpanStyle,
-        );
-        ayahSpans.addAll(parsedSpans);
-      } else {
-        ayahSpans.add(
-          TextSpan(
-            text: block.text,
-            style: TextStyle(
-              fontFamily: 'UthmanicHafsV22',
-              fontFamilyFallback: const ['UthmanicHafs'],
-              fontSize: fontSize,
-              color: colorScheme.onSurface,
-              backgroundColor: recitationHighlight,
-            ),
-            recognizer: recognizer,
+      ayahSpans.add(
+        TextSpan(
+          text: block.text,
+          style: TextStyle(
+            fontFamily: 'UthmanicHafsV22',
+            fontFamilyFallback: const ['UthmanicHafs'],
+            fontSize: fontSize,
+            color: colorScheme.onSurface,
+            backgroundColor: recitationHighlight,
           ),
-        );
-      }
+          recognizer: recognizer,
+        ),
+      );
 
       if (block.ayahNo != null) {
         ayahSpans.add(

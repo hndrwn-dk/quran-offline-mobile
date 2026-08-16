@@ -11,7 +11,6 @@ import 'package:quran_offline/core/feedback/feedback_context.dart';
 import 'package:quran_offline/core/feedback/feedback_email_fallback.dart';
 import 'package:quran_offline/core/feedback/feedback_type.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/widgets/tajweed_color_guide.dart';
 import 'package:quran_offline/features/settings/feedback_form_sheet.dart';
 import 'package:quran_offline/features/settings/audio_downloads_screen.dart';
 import 'package:quran_offline/features/settings/settings_link_actions.dart';
@@ -190,51 +189,6 @@ class SettingsQuranSection extends ConsumerWidget {
             onChanged: (value) {
               ref.read(settingsProvider.notifier).updateShowTafsir(value);
             },
-          ),
-        ),
-        Theme(
-          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            leading: Icon(Icons.color_lens, color: colorScheme.primary),
-            title: Text(AppLocalizations.getSettingsText('show_tajweed_title', appLanguage)),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppLocalizations.getSettingsText('show_tajweed_subtitle', appLanguage),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.info_outline, size: 16, color: colorScheme.primary),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        AppLocalizations.getSettingsText('tajweed_guide_intro', appLanguage),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              fontSize: 12,
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            trailing: Switch(
-              value: settings.showTajweed,
-              onChanged: (value) {
-                ref.read(settingsProvider.notifier).updateShowTajweed(value);
-              },
-            ),
-            childrenPadding: const EdgeInsets.fromLTRB(72, 8, 16, 16),
-            children: [
-              TajweedColorGuideContent(appLanguage: appLanguage),
-            ],
           ),
         ),
       ],
