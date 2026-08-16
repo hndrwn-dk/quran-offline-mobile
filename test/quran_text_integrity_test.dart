@@ -32,10 +32,13 @@ Iterable<String> _allArabic() sync* {
 
 void main() {
   final s001 = File('assets/quran/s001.json');
-  final skipMissing =
-      s001.existsSync() ? null : 'assets/quran s001.json missing';
+  final missing = !s001.existsSync();
 
   test('corpus has no dotted-circle or wavy-hamza-alef; expected marks present', () {
+    if (missing) {
+      markTestSkipped('assets/quran s001.json missing');
+      return;
+    }
     var count0670 = 0;
     var count0640 = 0;
     var count06D6 = 0;
@@ -57,18 +60,26 @@ void main() {
     expect(count0640, greaterThan(0));
     expect(count06D6, greaterThan(0));
     expect(count06DA, greaterThan(0));
-  }, skip: skipMissing);
+  });
 
   test('golden ayahs load ar from assets', () {
+    if (missing) {
+      markTestSkipped('assets/quran s001.json missing');
+      return;
+    }
     expect(_verseAr(1, 1), isNotNull);
     expect(_verseAr(1, 6), isNotNull);
     expect(_verseAr(2, 1), isNotNull);
     expect(_verseAr(6, 44), isNotNull);
     expect(_verseAr(1, 1)!.isNotEmpty, isTrue);
     expect(_verseAr(1, 6)!.contains('\u0672'), isFalse);
-  }, skip: skipMissing);
+  });
 
   testWidgets('QuranArabicText 1:1 equals ar', (tester) async {
+    if (missing) {
+      markTestSkipped('assets/quran s001.json missing');
+      return;
+    }
     final ar = _verseAr(1, 1)!;
     await tester.pumpWidget(
       MaterialApp(
@@ -82,5 +93,5 @@ void main() {
       ),
     );
     expect(find.text(ar), findsOneWidget);
-  }, skip: skipMissing);
+  });
 }
