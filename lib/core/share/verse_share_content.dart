@@ -58,12 +58,7 @@ class VerseShareContent {
 
   String get transliteration => transliterationText;
 
-  String get plainArabic {
-    if (verse.tajweed != null && verse.tajweed!.isNotEmpty) {
-      return TajweedText.plainArabicFromTajweedHtml(verse.tajweed!);
-    }
-    return TajweedText.normalizeArabicForDisplay(verse.arabic);
-  }
+  String get plainArabic => verse.arabic;
 
   String? get tajweedHtml {
     final html = verse.tajweed;

@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'tajweed_colors.dart';
 import 'tajweed_html.dart';
 
-/// Shared tajweed HTML → [TextSpan] parser for reader, juz, and mushaf.
+/// Shared tajweed HTML → [TextSpan] parser for Surah and Juz readers.
+/// QPC V2 Mushaf paints 15-line page fonts, not this HTML.
 class TajweedParser {
   TajweedParser._();
 
@@ -15,7 +16,7 @@ class TajweedParser {
     Color? defaultColor,
     GestureRecognizer? recognizer,
     Color? backgroundColor,
-    bool normalizeArabic = true,
+    bool normalizeArabic = false,
   }) {
     final resolvedDefault = defaultColor ?? baseStyle.color ?? Colors.black;
 
@@ -39,7 +40,7 @@ class TajweedParser {
     required Color Function(String tajweedClass) colorForClass,
     GestureRecognizer? recognizer,
     Color? backgroundColor,
-    bool normalizeArabic = true,
+    bool normalizeArabic = false,
   }) {
     return _parse(
       tajweedHtml: tajweedHtml,

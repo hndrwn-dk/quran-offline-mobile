@@ -8,7 +8,6 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_mushaf_layout.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
-import 'package:quran_offline/core/widgets/tajweed_text.dart';
 
 /// Page range definition from `index_pages.json`.
 class PageRange {
@@ -131,16 +130,14 @@ class MushafLayout {
         }
       }
 
-      // One ayah = one visual block. Normalize so problematic Unicode (e.g. U+065F, U+06A0)
-      // does not render as circle/tofu across all surahs.
+      // Legacy ayah-block fallback only. Production Mushaf uses QPC V2
+      // 15-line glyph fonts (`qpc_v2_15_lines.sqlite` + page fonts), not JSON `ar`.
       blocks.add(
         MushafAyahBlock(
           surahId: v.surahId,
           ayahNo: v.ayahNo,
-          text: TajweedText.normalizeArabicForDisplay(v.arabic),
-          tajweed: v.tajweed != null && v.tajweed!.isNotEmpty
-              ? TajweedText.normalizeArabicForDisplay(v.tajweed!)
-              : null,
+          text: v.arabic,
+          tajweed: v.tajweed,
         ),
       );
     }

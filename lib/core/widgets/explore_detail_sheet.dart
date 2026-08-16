@@ -427,13 +427,7 @@ class ExploreVersePassage extends StatelessWidget {
                       context: context,
                       locale: const Locale('ar'),
                       child: SelectableText(
-                        verse.tajweed != null && verse.tajweed!.isNotEmpty
-                            ? TajweedText.plainArabicFromTajweedHtml(
-                                verse.tajweed!,
-                              )
-                            : TajweedText.normalizeArabicForDisplay(
-                                verse.arabic,
-                              ),
+                        verse.arabic,
                         style: TajweedText.arabicDisplayStyle(
                           fontSize: arabicSize,
                           color: colorScheme.onSurface,
