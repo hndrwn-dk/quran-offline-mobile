@@ -59,6 +59,17 @@ void main() {
       );
     });
 
+    test('accepts nonce when token uses standard Base64 padding', () {
+      expect(
+        evaluatePlayIntegrityVerdict(
+          payload: payload(nonce: 'abc123nonce=='),
+          expectedNonce: 'abc123nonce',
+          nowMs: 1780000000000,
+        ),
+        PlayIntegrityVerdict.ok,
+      );
+    });
+
     test('rejects stale tokens', () {
       expect(
         evaluatePlayIntegrityVerdict(

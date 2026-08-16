@@ -36,6 +36,31 @@ const rateLimitStore = new Map<string, RateLimitEntry>();
 
 const usedNonces = new Set<string>();
 
+async function recordIntegrityRejection(detail: Record<string, unknown>): Promise<void> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return;
+  const payload = JSON.stringify({
+    ...detail,
+    recordedAt: new Date().toISOString(),
+  });
+  try {
+    await fetch(`${url}/pipeline`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify([
+        ['SET', 'feedback:last_integrity_rejection', payload],
+        ['EXPIRE', 'feedback:last_integrity_rejection', 86400],
+      ]),
+    });
+  } catch {
+    // best-effort diagnostic only
+  }
+}
+
 async function consumeNonce(nonce: string): Promise<boolean> {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -146,7 +171,12 @@ function firstPipelineResult(json: unknown): unknown {
 
 function pipelineFirstCount(json: unknown): number | null {
   const first = firstPipelineResult(json);
-  return typeof first === 'number' ? first : null;
+  if (typeof first === 'number') return first;
+  if (typeof first === 'string') {
+    const parsed = Number(first);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
 }
 
 function pipelineSetNxStored(json: unknown): boolean {
@@ -296,6 +326,8 @@ export default async function handler(
 
   const payload = await decodePlayIntegrityToken(integrityToken);
   if (payload == null) {
+    console.error('feedback_integrity_decode_failed', { ip });
+    await recordIntegrityRejection({ stage: 'decode_failed', ip });
     res.status(401).json({ error: 'Invalid Play Integrity token' });
     return;
   }
@@ -306,11 +338,34 @@ export default async function handler(
     nowMs: Date.now(),
   });
   if (verdict !== 'ok') {
-    res.status(403).json({ error: 'Play Integrity rejected', reason: verdict });
+    const root = payload as Record<string, unknown>;
+    const app = root.appIntegrity as Record<string, unknown> | undefined;
+    const device = root.deviceIntegrity as Record<string, unknown> | undefined;
+    const appRecognitionVerdict = app?.appRecognitionVerdict;
+    console.error('feedback_integrity_rejected', {
+      reason: verdict,
+      appRecognitionVerdict,
+      deviceVerdicts: device?.deviceRecognitionVerdict,
+      ip,
+    });
+    await recordIntegrityRejection({
+      stage: 'verdict_rejected',
+      reason: verdict,
+      appRecognitionVerdict,
+      deviceVerdicts: device?.deviceRecognitionVerdict,
+      ip,
+    });
+    res.status(403).json({
+      error: 'Play Integrity rejected',
+      reason: verdict,
+      appRecognitionVerdict,
+    });
     return;
   }
 
   if (!(await consumeNonce(nonce))) {
+    console.error('feedback_integrity_replay_rejected', { ip });
+    await recordIntegrityRejection({ stage: 'replay_rejected', ip });
     res.status(401).json({ error: 'Replay rejected' });
     return;
   }
