@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/models/verse_model.dart';
 
 void main() {
-  test('VerseModel parses when tj, tl, and tl_tj keys are omitted', () {
+  test('VerseModel parses uthmani JSON without tj, tl, or tl_tj keys', () {
     final verse = VerseModel.fromJson({
       's': 1,
       'a': 6,
@@ -24,9 +24,6 @@ void main() {
     expect(verse.s, 1);
     expect(verse.a, 6);
     expect(verse.ar, 'صِرَٰطَ');
-    expect(verse.tj, isNull);
-    expect(verse.tl, isNull);
-    expect(verse.tlTj, isNull);
     expect(verse.tr?['en'], 'the path');
     expect(verse.m?.juz, 1);
     expect(verse.m?.page, 1);

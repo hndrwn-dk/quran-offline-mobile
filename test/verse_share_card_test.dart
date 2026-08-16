@@ -25,7 +25,6 @@ void main() {
   final settings = AppSettings(
     language: 'id',
     appLanguage: 'id',
-    showTajweed: false,
   );
 
   VerseShareContent sampleContent() {
