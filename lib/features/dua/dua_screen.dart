@@ -67,17 +67,17 @@ class DuaScreen extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: HomeBackdrop.topTint(colorScheme),
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        toolbarHeight: 54,
+        toolbarHeight: 68,
         centerTitle: false,
         titleSpacing: 16,
         backgroundColor: HomeBackdrop.topTint(colorScheme),
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 28,
@@ -98,25 +98,32 @@ class DuaScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppLocalizations.getMenuText('dua', lang),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
-                        color: colorScheme.onSurface,
-                      ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  AppLocalizations.getSubtitleText('dua_subtitle', lang),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.getMenuText('dua', lang),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.3,
+                          color: colorScheme.onSurface,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    AppLocalizations.getSubtitleText('dua_subtitle', lang),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
