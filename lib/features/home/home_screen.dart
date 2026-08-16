@@ -66,9 +66,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final currentIndex = ref.watch(currentTabProvider);
     final settings = ref.watch(settingsProvider);
     final appLanguage = settings.appLanguage;
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
 
     return AudioDownloadNotifications(
       child: Scaffold(
+      resizeToAvoidBottomInset: true,
       body: IndexedStack(
         index: currentIndex,
         children: const [
@@ -79,7 +81,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           MyLibraryScreen(),
         ],
       ),
-      bottomNavigationBar: SafeArea(
+      bottomNavigationBar: keyboardOpen
+          ? null
+          : SafeArea(
         top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
