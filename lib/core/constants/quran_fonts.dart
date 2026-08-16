@@ -10,6 +10,10 @@ class QuranFonts {
 
   static const kfgqpcUthmanic = 'KFGQPCUthmanic';
 
+  /// QUL #247 Digital Khatt V2 (SIL OFL 1.1). Used by Surah/Juz Reader AyahCard.
+  /// Local GPOS: small-high waqf/saktah (U+06D6–06DC) and 06E8/06EC attach to space at Y=1100.
+  /// After saktah (smallhighseen) the following space is widened so a nearby qala/waqf
+  /// sits beside it instead of overlapping (e.g. 36:52). Harakat unchanged. Mushaf unused.
   static const digitalKhattV2 = 'DigitalKhattV2';
 
   static const qpcV2Page50 = 'QpcV2Page50';

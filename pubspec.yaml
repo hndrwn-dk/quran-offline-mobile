@@ -88,6 +88,9 @@ flutter:
     - assets/fonts/qpc_v2/
   
   fonts:
+    - family: DigitalKhattV2
+      fonts:
+        - asset: assets/fonts/DigitalKhattV2.otf
     - family: UthmanicHafsV22
       fonts:
         - asset: assets/fonts/uthmanic_hafs_v22.ttf

@@ -118,7 +118,6 @@ assets/fonts/qpc_v2/**
 assets/V2/
 assets/fonts/QPC V2 Font.ttf
 assets/fonts/qpc_v2_p*.ttf
-assets/fonts/DigitalKhattV2.otf
 # Unused QUL V4 zip name kept ignored so a mistaken download is never committed
 assets/qpc-v2-15-lines.db.zip
 assets/qpc-v4-tajweed-15-lines.db.zip
