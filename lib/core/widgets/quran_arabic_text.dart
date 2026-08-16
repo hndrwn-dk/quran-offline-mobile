@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/core/constants/quran_fonts.dart';
 
 /// Renders Quran Arabic (`ar`) codepoint-for-codepoint.
 ///
@@ -11,6 +12,8 @@ class QuranArabicText extends StatelessWidget {
   final TextAlign textAlign;
   final double height;
   final bool selectable;
+  /// Reader (Surah/Juz AyahCard) only. Null keeps UthmanicHafsV22 for share/mushaf callers.
+  final String? fontFamily;
 
   const QuranArabicText({
     super.key,
@@ -21,6 +24,7 @@ class QuranArabicText extends StatelessWidget {
     this.textAlign = TextAlign.right,
     this.height = 1.7,
     this.selectable = true,
+    this.fontFamily,
   });
 
   static TextStyle arabicDisplayStyle({
@@ -28,15 +32,23 @@ class QuranArabicText extends StatelessWidget {
     required Color color,
     double height = 1.7,
     bool isLightTheme = false,
+    String? fontFamily,
   }) {
     return TextStyle(
       fontSize: fontSize,
-      fontFamily: 'UthmanicHafsV22',
-      fontFamilyFallback: const [
-        'UthmanicHafs',
-        'KFGQPCUthmanic',
-        'ScheherazadeNew',
-      ],
+      fontFamily: fontFamily ?? QuranFonts.uthmanicHafsV22,
+      fontFamilyFallback: fontFamily == QuranFonts.digitalKhattV2
+          ? const [
+              QuranFonts.uthmanicHafsV22,
+              'UthmanicHafs',
+              'KFGQPCUthmanic',
+              'ScheherazadeNew',
+            ]
+          : const [
+              'UthmanicHafs',
+              'KFGQPCUthmanic',
+              'ScheherazadeNew',
+            ],
       height: height,
       color: color,
       locale: const Locale('ar'),
@@ -52,6 +64,7 @@ class QuranArabicText extends StatelessWidget {
       fontSize: fontSize ?? this.fontSize,
       color: color ?? defaultColor,
       height: height ?? this.height,
+      fontFamily: fontFamily,
     );
   }
 
