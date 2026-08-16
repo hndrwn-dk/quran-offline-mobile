@@ -36,10 +36,7 @@ class TajweedText extends StatelessWidget {
     this.isLightTheme = false,
   });
   
-  /// Normalizes Arabic text for display only (font rendering). See docs/QURAN_TEXT_INTEGRITY.md:
-  /// principle: Al-Quran — jangan menambahkan atau menghilangkan.
-  /// - Unify equivalent forms only: U+06DF → U+06E0 so أَنَا۠ displays consistently (no removal).
-  /// - Replace/remove only for display when font has no glyph (tofu) or char is redundant with UI.
+  /// Pass-through: Reader/Juz must show JSON `ar` without rewriting letters.
   static String normalizeArabicForDisplay(String arabic) =>
       TajweedHtml.normalizeArabicForDisplay(arabic);
 
@@ -342,8 +339,6 @@ class TajweedText extends StatelessWidget {
     if (replaceWaslaWithAlif) {
       processedHtml = processedHtml.replaceAll('\u0671', '\u0627').replaceAll('\u0672', '\u0627');
     }
-    // Normalize so U+065F, U+06A0 etc. don't render as circle (e.g. 6:56, 6:44)
-    processedHtml = normalizeArabicForDisplay(processedHtml);
 
     List<TextSpan> spans = TajweedParser.parseToSpans(
       context: context,

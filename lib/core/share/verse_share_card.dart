@@ -281,7 +281,7 @@ class _ArabicBlock extends StatelessWidget {
           textDirection: TextDirection.rtl,
           textAlign: TextAlign.center,
           height: 1.85,
-          replaceWaslaWithAlif: true,
+          replaceWaslaWithAlif: false,
           isLightTheme: true,
         ),
       );

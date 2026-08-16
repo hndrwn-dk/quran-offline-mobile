@@ -57,7 +57,7 @@ void main() {
     final normalizedPlain =
         plain.replaceAll(RegExp(r'\s*٢٦\s*$'), '').trim();
     expect(joined, normalizedPlain);
-    expect(joined, contains('فَاحْكُم بَيْنَ'));
+    expect(joined, contains('فَٱحْكُم بَيْنَ'));
     expect(joined, isNot(contains('مم')));
   });
 

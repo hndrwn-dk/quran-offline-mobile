@@ -38,4 +38,16 @@ void main() {
     expect(normalized, contains('ـٰ'));
     expect(normalized, contains('\u0670'));
   });
+
+  test('keeps alef wasla from Foundation HTML', () {
+    const html = '<tajweed class=ham_wasl>ٱ</tajweed>للَّهِ';
+    final normalized = TajweedHtml.normalizeArabicForDisplay(html);
+    expect(normalized, contains('\u0671'));
+    expect(normalized, isNot(contains('اللَّهِ')));
+  });
+
+  test('display path does not rewrite JSON ar letters', () {
+    const ar = 'أَنَا\u06df \u065f\u06a0';
+    expect(TajweedHtml.normalizeArabicForDisplay(ar), ar);
+  });
 }

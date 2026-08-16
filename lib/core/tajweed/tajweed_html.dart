@@ -8,28 +8,17 @@ class TajweedHtml {
   /// U+06E1 appears in some word-level dumps; it is not a Foundation rule tag.
   static const String tafkhimMarker = '\u06E1';
 
-  /// Normalizes Arabic text for display only (font rendering).
-  ///
-  /// Keeps U+0670 (superscript alef) — Foundation madda tags use `ـٰ`.
-  static String normalizeArabicForDisplay(String arabic) {
-    return arabic
-        .replaceAll('\u0671', '\u0627')
-        .replaceAll('\u0672', '\u0627')
-        .replaceAll('\u065F', '')
-        .replaceAll('\u06A0', '')
-        .replaceAll('\u06DD', '')
-        .replaceAll('\u06D9', '')
-        .replaceAll('\u06DA', '')
-        .replaceAll('\u06DF', '\u06E0');
-  }
+  /// Identity for Reader/Juz: on-screen Arabic must match JSON `ar`.
+  /// Search still uses [ArabicSearchNormalizer], not this.
+  /// Mushaf pages use QPC V2 15-line glyph fonts, not this path.
+  static String normalizeArabicForDisplay(String arabic) => arabic;
 
-  /// Strips tags and normalizes for plain display.
+  /// Strips tags only. Does not rewrite letters.
   static String plainArabicFromHtml(String tajweedHtml) {
-    final stripped = tajweedHtml
+    return tajweedHtml
         .replaceAll(RegExp(r'<[^>]+>'), '')
         .replaceAll('&nbsp;', ' ')
         .trim();
-    return normalizeArabicForDisplay(stripped);
   }
 
   /// Single global preprocessing pipeline for every verse `tj` field.

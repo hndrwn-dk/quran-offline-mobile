@@ -395,15 +395,9 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     );
   }
 
-  /// Renders plain Arabic (tajweed off). Uses the same source as tajweed ON when
-  /// available: strip tags from verse.tajweed and normalize, so ٱ/ٲ never become circles.
+  /// Renders JSON `ar` with no letter rewriting (tajweed off).
   Widget _buildPlainArabicText(AppSettings settings, ColorScheme colorScheme) {
-    final String textToShow;
-    if (widget.verse.tajweed != null && widget.verse.tajweed!.isNotEmpty) {
-      textToShow = TajweedText.plainArabicFromTajweedHtml(widget.verse.tajweed!);
-    } else {
-      textToShow = TajweedText.normalizeArabicForDisplay(widget.verse.arabic);
-    }
+    final textToShow = widget.verse.arabic;
     final isLightTheme = Theme.of(context).brightness == Brightness.light;
     return Localizations.override(
       context: context,
@@ -438,7 +432,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
       textDirection: TextDirection.rtl,
       textAlign: TextAlign.right,
       height: 1.7,
-      replaceWaslaWithAlif: true,
+      replaceWaslaWithAlif: false,
       isLightTheme: isLightTheme,
     );
   }
