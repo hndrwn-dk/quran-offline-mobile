@@ -10,12 +10,6 @@ class VerseModel {
   final int a;
   @JsonKey(name: 'ar')
   final String ar;
-  @JsonKey(name: 'tj')
-  final String? tj;
-  @JsonKey(name: 'tl')
-  final String? tl;
-  @JsonKey(name: 'tl_tj')
-  final String? tlTj;
   @JsonKey(name: 'tr')
   final Map<String, String>? tr;
   @JsonKey(name: 'm')
@@ -25,9 +19,6 @@ class VerseModel {
     required this.s,
     required this.a,
     required this.ar,
-    this.tj,
-    this.tl,
-    this.tlTj,
     this.tr,
     this.m,
   });
@@ -35,9 +26,6 @@ class VerseModel {
   int get surahId => s;
   int get ayahNo => a;
   String get arabic => ar;
-  String? get tajweed => tj;
-  String? get translit => tl;
-  String? get translitTj => tlTj;
   Map<String, String>? get translations => tr;
   VerseMetadata? get metadata => m;
 

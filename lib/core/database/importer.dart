@@ -66,9 +66,6 @@ class DataImporter {
                   page: metadata?.page ?? 0,
                   juz: metadata?.juz ?? 0,
                   arabic: verse.arabic,
-                  tajweed: Value(verse.tajweed),
-                  translit: Value(verse.translit),
-                  translitTj: Value(verse.translitTj),
                   trEn: Value(verse.translations?['en'] != null 
                       ? TranslationCleaner.clean(verse.translations!['en']) 
                       : null),
