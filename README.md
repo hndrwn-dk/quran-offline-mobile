@@ -1,6 +1,6 @@
 # Quran Offline
 
-A production-ready, offline-first Quran reader built with Flutter and Material 3 — Surah, Juz, and Mushaf reading with tajweed, tafsir, recitation, and a personal library.
+A production-ready, offline-first Quran reader built with Flutter and Material 3 — Surah, Juz, and Mushaf reading with tafsir, recitation, and a personal library.
 
 ## Features
 
@@ -8,9 +8,9 @@ A production-ready, offline-first Quran reader built with Flutter and Material 3
 
 - **Surah / Juz / Mushaf (604 pages)** with swipe between modes
 - **Last read** resume across Surah, Juz, and page
-- **Reader** with per-ayah translation, transliteration, and tajweed
+- **Reader** with per-ayah translation and transliteration
 - **QUL surah header** — decorative SurahNameV2 glyph plus **Tentang surat** (QUL surah info, EN/ID)
-- **Mushaf** flowing layout with tajweed, tap-to-play ayah, long-press for meaning/bookmark/share
+- **Mushaf** flowing layout with tap-to-play ayah, long-press for meaning/bookmark/share
 - **QUL surah titles** in Mushaf (SurahNameV2 font, sized for page layout)
 
 ### Audio recitation
@@ -24,11 +24,10 @@ A production-ready, offline-first Quran reader built with Flutter and Material 3
 - Inline **tafsir panel** per ayah (toggle in text settings)
 - Bundled QUL SQLite: Ibn Kathir (EN), As-Sa'di (ID), Mokhtasar (ZH/JA)
 
-### Tajweed
+### Arabic text
 
-- Eight color-coded rules (Ikhfa, Idgham, Iqlab, Ghunnah, Qalqalah, Laam Shamsiyah, Madd, Ham Wasl)
-- Interactive guide (localized)
-- Toggle from Settings or reader text settings
+- Bundled Uthmani `ar` is shown as stored (no letter rewriting)
+- See [docs/QURAN_TEXT_INTEGRITY.md](docs/QURAN_TEXT_INTEGRITY.md)
 
 ### Search
 
@@ -51,7 +50,7 @@ A production-ready, offline-first Quran reader built with Flutter and Material 3
 
 - **4 UI languages:** Indonesian, English, Chinese, Japanese
 - **Single Bahasa setting** — menu, terjemahan, tafsir, and surah info follow one locale
-- Transliteration, tajweed, tafsir, and font size toggles
+- Transliteration, tafsir, and font size toggles
 - System / light / dark theme
 - **Data sources** credits (Quran Foundation, QUL, EveryAyah)
 
@@ -106,7 +105,7 @@ lib/
 │   ├── tafsir/         # QUL tafsir SQLite
 │   ├── providers/
 │   ├── utils/
-│   └── widgets/        # TajweedText, SurahNameGlyph, NavReadIcon, …
+│   └── widgets/        # QuranArabicText, SurahNameGlyph, NavReadIcon, …
 └── features/
     ├── audio/          # Global recitation bar, offline downloads
     ├── read/           # Surah / Juz / Mushaf lists + page view
