@@ -13,9 +13,6 @@ class Verses extends Table {
   IntColumn get page => integer()();
   IntColumn get juz => integer()();
   TextColumn get arabic => text()();
-  TextColumn get tajweed => text().nullable()();
-  TextColumn get translit => text().nullable()();
-  TextColumn get translitTj => text().nullable()();
   TextColumn get trEn => text().nullable()();
   TextColumn get trId => text().nullable()();
   TextColumn get trZh => text().nullable()();
@@ -74,7 +71,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase() => openAppDatabase();
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -91,8 +88,7 @@ class AppDatabase extends _$AppDatabase {
       },
       onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
-          // Add tajweed column
-          await m.addColumn(verses, verses.tajweed);
+          await customStatement('ALTER TABLE verses ADD COLUMN tajweed TEXT NULL');
         }
         if (from < 3) {
           // Add notes, highlights tables and bookmark organization fields
@@ -108,13 +104,26 @@ class AppDatabase extends _$AppDatabase {
           await customStatement('CREATE INDEX IF NOT EXISTS idx_bookmarks_tag ON bookmarks(tag)');
         }
         if (from < 4) {
-          await m.addColumn(verses, verses.translitTj);
+          await customStatement('ALTER TABLE verses ADD COLUMN translit_tj TEXT NULL');
         }
         if (from < 5) {
           await m.addColumn(bookmarks, bookmarks.openContext);
           await customStatement(
             "UPDATE bookmarks SET open_context = 'surah' WHERE open_context IS NULL",
           );
+        }
+        if (from < 6) {
+          final cols = await customSelect('PRAGMA table_info(verses)').get();
+          final names = cols.map((r) => r.read<String>('name')).toSet();
+          if (names.contains('tajweed')) {
+            await customStatement('ALTER TABLE verses DROP COLUMN tajweed');
+          }
+          if (names.contains('translit')) {
+            await customStatement('ALTER TABLE verses DROP COLUMN translit');
+          }
+          if (names.contains('translit_tj')) {
+            await customStatement('ALTER TABLE verses DROP COLUMN translit_tj');
+          }
         }
       },
     );
