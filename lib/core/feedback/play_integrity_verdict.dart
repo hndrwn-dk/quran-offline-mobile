@@ -11,6 +11,17 @@ enum PlayIntegrityVerdict {
   malformed,
 }
 
+/// Compare nonces regardless of URL-safe vs standard Base64 padding.
+String normalizeIntegrityNonce(String value) {
+  return value.replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
+}
+
+bool integrityNoncesMatch(Object? tokenNonce, String expectedNonce) {
+  if (tokenNonce is! String) return false;
+  return normalizeIntegrityNonce(tokenNonce) ==
+      normalizeIntegrityNonce(expectedNonce);
+}
+
 PlayIntegrityVerdict evaluatePlayIntegrityVerdict({
   required Map<String, dynamic> payload,
   required String expectedNonce,
@@ -28,8 +39,7 @@ PlayIntegrityVerdict evaluatePlayIntegrityVerdict({
     return PlayIntegrityVerdict.wrongPackage;
   }
 
-  final nonce = request['nonce'];
-  if (nonce != expectedNonce) {
+  if (!integrityNoncesMatch(request['nonce'], expectedNonce)) {
     return PlayIntegrityVerdict.nonceMismatch;
   }
 

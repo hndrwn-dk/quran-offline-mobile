@@ -12,6 +12,22 @@ export type PlayIntegrityVerdict =
   | 'weakDevice'
   | 'malformed';
 
+/** Compare nonces regardless of URL-safe vs standard Base64 padding. */
+export function normalizeIntegrityNonce(value: string): string {
+  return value.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+export function integrityNoncesMatch(
+  tokenNonce: unknown,
+  expectedNonce: string,
+): boolean {
+  if (typeof tokenNonce !== 'string') return false;
+  return (
+    normalizeIntegrityNonce(tokenNonce) ===
+    normalizeIntegrityNonce(expectedNonce)
+  );
+}
+
 export function evaluatePlayIntegrityVerdict(args: {
   payload: unknown;
   expectedNonce: string;
@@ -42,7 +58,7 @@ export function evaluatePlayIntegrityVerdict(args: {
   if (req.requestPackageName !== FEEDBACK_ANDROID_PACKAGE) {
     return 'wrongPackage';
   }
-  if (req.nonce !== args.expectedNonce) {
+  if (!integrityNoncesMatch(req.nonce, args.expectedNonce)) {
     return 'nonceMismatch';
   }
 
@@ -153,7 +169,15 @@ export async function decodePlayIntegrityToken(
     },
     body: JSON.stringify({ integrityToken }),
   });
-  if (!response.ok) return null;
+  if (!response.ok) {
+    const detail = await response.text();
+    console.error(
+      'play_integrity_decode_http_error',
+      response.status,
+      detail.slice(0, 500),
+    );
+    return null;
+  }
   const json = (await response.json()) as { tokenPayloadExternal?: unknown };
   return json.tokenPayloadExternal ?? null;
 }

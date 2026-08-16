@@ -15,8 +15,9 @@ Serverless endpoint used by the Quran Offline app to create GitHub Issues.
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL. Durable 5/hour rate limit + nonce replay |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token |
 
-3. Deploy. Note the production URL (e.g. `https://your-project.vercel.app`).
-4. Update `lib/core/constants/feedback_api.dart` in the Flutter app with  
+3. In Play Console, link the Cloud project under **Protected with Play → Play Integrity API settings** (the legacy **Setup → API access** page no longer exists).
+4. Deploy. Note the production URL (e.g. `https://your-project.vercel.app`).
+5. Update `lib/core/constants/feedback_api.dart` in the Flutter app with  
    `https://your-project.vercel.app/api/feedback`.
 
 ## Endpoint

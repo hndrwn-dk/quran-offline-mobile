@@ -44,6 +44,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="com.google.android.gms.cloudProjectNumber"
+            android:value="975063804069" />
 
         <!-- just_audio_background: media playback service + media button receiver -->
         <service

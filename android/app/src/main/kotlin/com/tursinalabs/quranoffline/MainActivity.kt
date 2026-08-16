@@ -11,6 +11,7 @@ class MainActivity : AudioServiceActivity() {
     companion object {
         private const val APP_CHECK_CHANNEL = "com.tursinalabs.quran_offline/app_check"
         private const val PLAY_INTEGRITY_CHANNEL = "com.tursinalabs.quran_offline/play_integrity"
+        private const val PLAY_INTEGRITY_CLOUD_PROJECT_NUMBER = 975063804069L
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -49,6 +50,7 @@ class MainActivity : AudioServiceActivity() {
     private fun requestPlayIntegrityToken(nonce: String, result: MethodChannel.Result) {
         val request = IntegrityTokenRequest.builder()
             .setNonce(nonce)
+            .setCloudProjectNumber(PLAY_INTEGRITY_CLOUD_PROJECT_NUMBER)
             .build()
         IntegrityManagerFactory.create(applicationContext)
             .requestIntegrityToken(request)
