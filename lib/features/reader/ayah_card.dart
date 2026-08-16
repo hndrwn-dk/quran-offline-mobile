@@ -428,12 +428,12 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     return TajweedText(
       tajweedHtml: tajweedHtml,
       arabicLetters: widget.verse.arabic,
+      verseKey: '${widget.verse.surahId}:${widget.verse.ayahNo}',
       fontSize: settings.arabicFontSize * 1.15,
       defaultColor: colorScheme.onSurface,
       textDirection: TextDirection.rtl,
       textAlign: TextAlign.right,
       height: 1.7,
-      replaceWaslaWithAlif: false,
       isLightTheme: isLightTheme,
     );
   }

@@ -24,7 +24,7 @@ import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
-import 'package:quran_offline/core/tajweed/tajweed_parser.dart';
+import 'package:quran_offline/core/tajweed/tajweed_ar_aligner.dart';
 import 'package:quran_offline/core/feedback/feedback_context.dart';
 import 'package:quran_offline/core/feedback/feedback_type.dart';
 import 'package:quran_offline/features/settings/feedback_form_sheet.dart';
@@ -987,9 +987,13 @@ class _FlowingMushafText extends ConsumerWidget {
         color: colorScheme.onSurface,
       );
       if (showTajweed && block.tajweed != null && block.tajweed!.isNotEmpty) {
-        var parsedSpans = TajweedParser.parseToSpans(
+        var parsedSpans = TajweedArAligner.spansFor(
           context: context,
+          arabic: block.text,
           tajweedHtml: block.tajweed!,
+          verseKey: block.surahId != null && block.ayahNo != null
+              ? '${block.surahId}:${block.ayahNo}'
+              : null,
           baseStyle: defaultSpanStyle,
           defaultColor: colorScheme.onSurface,
           recognizer: recognizer,

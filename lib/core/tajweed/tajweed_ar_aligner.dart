@@ -61,6 +61,8 @@ class _TjTok {
 class TajweedArAligner {
   TajweedArAligner._();
 
+  static final Map<String, TajweedArAlignResult> _cache = {};
+
   static const int _zwnj = 0x200C;
   static const int _tatweel = 0x0640;
   static const int _daggerAlif = 0x0670;
@@ -70,6 +72,20 @@ class TajweedArAligner {
   static const int _hamzaAbove = 0x0654;
 
   static TajweedArAlignResult align({
+    required String arabic,
+    required String tajweedHtml,
+    String? verseKey,
+  }) {
+    final key = verseKey ??
+        '${arabic.length}:${tajweedHtml.length}:${arabic.hashCode}:${tajweedHtml.hashCode}';
+    final cached = _cache[key];
+    if (cached != null) return cached;
+    final result = _alignUncached(arabic: arabic, tajweedHtml: tajweedHtml);
+    _cache[key] = result;
+    return result;
+  }
+
+  static TajweedArAlignResult _alignUncached({
     required String arabic,
     required String tajweedHtml,
   }) {
@@ -91,7 +107,8 @@ class TajweedArAligner {
       if (a == t) return true;
       if (a == _daggerAlif && t == _wavyHamzaAlef) return true;
       if (a == _wavyHamzaAlef && t == _daggerAlif) return true;
-      // Uthmani silent mark vs sukun inside Foundation <tajweed class=slnt>.
+      // Color-position only. Painted letters still come from `ar` (U+06DF).
+      // Do not alias U+06DF with U+06E0 (different waqf rules).
       if (a == 0x06DF && t == 0x0652) return true;
       if (a == 0x0652 && t == 0x06DF) return true;
       return false;
@@ -208,10 +225,15 @@ class TajweedArAligner {
     required String tajweedHtml,
     required TextStyle baseStyle,
     required Color defaultColor,
+    String? verseKey,
     GestureRecognizer? recognizer,
     Color? backgroundColor,
   }) {
-    final result = align(arabic: arabic, tajweedHtml: tajweedHtml);
+    final result = align(
+      arabic: arabic,
+      tajweedHtml: tajweedHtml,
+      verseKey: verseKey,
+    );
     if (!result.ok || result.runs.isEmpty) {
       return [
         TextSpan(

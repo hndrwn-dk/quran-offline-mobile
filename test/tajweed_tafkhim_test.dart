@@ -54,6 +54,7 @@ void main() {
             const defaultColor = Colors.black;
             final tajweed = TajweedText(
               tajweedHtml: '',
+              arabicLetters: '',
               fontSize: 24,
               defaultColor: defaultColor,
             );

@@ -420,6 +420,7 @@ class ExploreVersePassage extends StatelessWidget {
                   ? TajweedText(
                       tajweedHtml: verse.tajweed!,
                       arabicLetters: verse.arabic,
+                      verseKey: '${verse.surahId}:${verse.ayahNo}',
                       fontSize: arabicSize,
                       defaultColor: colorScheme.onSurface,
                       isLightTheme: isLightTheme,

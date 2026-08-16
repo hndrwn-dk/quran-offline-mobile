@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../tajweed/tajweed_ar_aligner.dart';
 import '../tajweed/tajweed_colors.dart';
 import '../tajweed/tajweed_html.dart';
-import '../tajweed/tajweed_parser.dart';
 
 /// Widget to render tajweed text with color coding
 /// Parses HTML tajweed tags and applies appropriate colors
@@ -13,17 +12,13 @@ import '../tajweed/tajweed_parser.dart';
 /// from each span into the previous span so no span starts with a diacritic.
 class TajweedText extends StatelessWidget {
   final String tajweedHtml;
-  /// When set, letters come from JSON `ar`; colors are mapped from [tajweedHtml].
-  /// Alignment failure paints this string with no tajweed colors.
-  final String? arabicLetters;
+  final String arabicLetters;
+  final String? verseKey;
   final double fontSize;
   final Color defaultColor;
   final TextDirection textDirection;
   final TextAlign textAlign;
   final double height;
-  
-  /// Optional: If true, replace problematic Arabic characters with regular alif as fallback.
-  final bool replaceWaslaWithAlif;
 
   /// When true (light theme), use UthmanicHafsV22 as primary font so lam/lam-alif render correctly on light background.
   final bool isLightTheme;
@@ -31,13 +26,13 @@ class TajweedText extends StatelessWidget {
   const TajweedText({
     super.key,
     required this.tajweedHtml,
-    this.arabicLetters,
+    required this.arabicLetters,
+    this.verseKey,
     required this.fontSize,
     this.defaultColor = Colors.black,
     this.textDirection = TextDirection.rtl,
     this.textAlign = TextAlign.right,
     this.height = 1.7,
-    this.replaceWaslaWithAlif = false,
     this.isLightTheme = false,
   });
   
@@ -340,29 +335,14 @@ class TajweedText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final baseStyle = quranArabicStyle();
-    List<TextSpan> spans;
-    final letters = arabicLetters;
-    if (letters != null && letters.isNotEmpty) {
-      spans = TajweedArAligner.spansFor(
-        context: context,
-        arabic: letters,
-        tajweedHtml: tajweedHtml,
-        baseStyle: baseStyle,
-        defaultColor: defaultColor,
-      );
-    } else {
-      String processedHtml = tajweedHtml;
-      if (replaceWaslaWithAlif) {
-        processedHtml =
-            processedHtml.replaceAll('\u0671', '\u0627').replaceAll('\u0672', '\u0627');
-      }
-      spans = TajweedParser.parseToSpans(
-        context: context,
-        tajweedHtml: processedHtml,
-        baseStyle: baseStyle,
-        defaultColor: defaultColor,
-      );
-    }
+    var spans = TajweedArAligner.spansFor(
+      context: context,
+      arabic: arabicLetters,
+      tajweedHtml: tajweedHtml,
+      verseKey: verseKey,
+      baseStyle: baseStyle,
+      defaultColor: defaultColor,
+    );
     spans = coalesceSpansForArabicLayout(spans, defaultStyle: baseStyle);
 
     // Wrap with Localizations.override to set Arabic locale for proper text shaping
