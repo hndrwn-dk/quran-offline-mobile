@@ -7,7 +7,6 @@ Verse _verse({
   required int surahId,
   required int ayahNo,
   required String arabic,
-  String? tajweed,
 }) {
   return Verse(
     surahId: surahId,
@@ -15,7 +14,6 @@ Verse _verse({
     page: 1,
     juz: 1,
     arabic: arabic,
-    tajweed: tajweed,
     trId: 'Terjemahan',
   );
 }
@@ -24,7 +22,6 @@ void main() {
   final settings = AppSettings(
     language: 'id',
     appLanguage: 'id',
-    showTajweed: false,
   );
 
   test('short ayah fits share card', () {
