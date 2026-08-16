@@ -9,12 +9,13 @@ class TajweedHtml {
   static const String tafkhimMarker = '\u06E1';
 
   /// Normalizes Arabic text for display only (font rendering).
+  ///
+  /// Keeps U+0670 (superscript alef) — Foundation madda tags use `ـٰ`.
   static String normalizeArabicForDisplay(String arabic) {
     return arabic
         .replaceAll('\u0671', '\u0627')
         .replaceAll('\u0672', '\u0627')
         .replaceAll('\u065F', '')
-        .replaceAll('\u0670', '')
         .replaceAll('\u06A0', '')
         .replaceAll('\u06DD', '')
         .replaceAll('\u06D9', '')

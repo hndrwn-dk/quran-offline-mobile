@@ -31,4 +31,11 @@ void main() {
     const input = 'حْك<tajweed class=ikhafa_shafawi>ُم ب</tajweed>َيْنَ';
     expect(TajweedHtml.prepareForParsing(input), input);
   });
+
+  test('keeps madda tatweel and dagger alif from Foundation HTML', () {
+    const html = 'عَ<tajweed class=madda_normal>ـٰ</tajweed>لَ';
+    final normalized = TajweedHtml.normalizeArabicForDisplay(html);
+    expect(normalized, contains('ـٰ'));
+    expect(normalized, contains('\u0670'));
+  });
 }
