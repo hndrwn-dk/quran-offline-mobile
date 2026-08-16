@@ -277,12 +277,12 @@ class _ArabicBlock extends StatelessWidget {
         child: TajweedText(
           tajweedHtml: content.tajweedHtml!,
           arabicLetters: content.plainArabic,
+          verseKey: '${content.verse.surahId}:${content.verse.ayahNo}',
           fontSize: fontSize,
           defaultColor: defaultColor,
           textDirection: TextDirection.rtl,
           textAlign: TextAlign.center,
           height: 1.85,
-          replaceWaslaWithAlif: false,
           isLightTheme: true,
         ),
       );

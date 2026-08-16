@@ -24,6 +24,7 @@ void main() {
     expect(result.paintedText, ar);
     expect(result.paintedText, isNot(contains('\u0672')));
     expect(result.paintedText, contains('\u0670'));
+    expect(result.paintedText, isNot(contains('\u25cc')));
     expect(result.runs.any((r) => r.tajweedClass == 'madda_normal'), isTrue);
   });
 
@@ -35,7 +36,9 @@ void main() {
     expect(result.ok, isTrue, reason: result.failureReason);
     expect(result.paintedText, ar);
     expect(result.paintedText, isNot(contains('\u0672')));
-    expect(ar, contains('\u0670'));
+    expect(result.paintedText, contains('\u0670'));
+    expect(result.paintedText, isNot(contains('\u25cc')));
+    expect(result.runs.any((r) => r.tajweedClass == 'madda_normal'), isTrue);
   });
 
   test('align failure keeps ar and does not use tj letters', () {
@@ -98,6 +101,8 @@ void main() {
             expect(colored, isNotEmpty);
             final joined = spans.map((s) => s.text).join();
             expect(joined, v['ar']);
+            expect(joined, isNot(contains('\u25cc')));
+            expect(joined, isNot(contains('\u0672')));
             return const SizedBox.shrink();
           },
         ),
