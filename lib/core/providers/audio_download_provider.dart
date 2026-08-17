@@ -110,6 +110,12 @@ class AudioDownloadsState {
 
   bool isDownloading(String reciterId, int surahId) =>
       active.containsKey(downloadKey(reciterId, surahId));
+
+  /// True while a surah download is running (not a failed leftover).
+  bool isDownloadInFlight(String reciterId, int surahId) {
+    final progress = progressFor(reciterId, surahId);
+    return progress != null && !progress.failed;
+  }
 }
 
 /// Downloads and manages locally cached per-ayah recitation files.
@@ -157,12 +163,18 @@ class AudioDownloadNotifier extends StateNotifier<AudioDownloadsState> {
   /// Downloads every ayah of [surahId] for [reciter] that is not already cached.
   Future<void> downloadSurah(Reciter reciter, int surahId) async {
     final key = downloadKey(reciter.id, surahId);
-    if (state.isDownloading(reciter.id, surahId)) return;
+    final existing = state.progressFor(reciter.id, surahId);
+    if (existing != null && !existing.failed) return;
 
     _cancelRequested.remove(key);
+    // Mark active immediately so playback snackbars do not reappear over Save.
+    _setActive(key, const DownloadProgress(done: 0, total: 1));
     final db = _ref.read(databaseProvider);
     final ayahCount = await db.getAyahCountForSurah(surahId);
-    if (ayahCount <= 0) return;
+    if (ayahCount <= 0) {
+      _removeActive(key);
+      return;
+    }
 
     final withBismillah = Bismillah.hasBismillahAudio(surahId);
     final total = ayahCount + (withBismillah ? 1 : 0);

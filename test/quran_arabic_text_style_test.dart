@@ -4,32 +4,26 @@ import 'package:quran_offline/core/constants/quran_fonts.dart';
 import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
 void main() {
-  test('share/mushaf arabicDisplayStyle stays UthmanicHafsV22', () {
+  test('arabicDisplayStyle defaults to DigitalKhattV2', () {
     final style = QuranArabicText.arabicDisplayStyle(
       fontSize: 24,
       color: Colors.black,
     );
-    expect(style.fontFamily, QuranFonts.uthmanicHafsV22);
-    expect(style.fontFamily, isNot(QuranFonts.digitalKhattV2));
+    expect(style.fontFamily, QuranFonts.digitalKhattV2);
+    expect(style.fontFamilyFallback, QuranFonts.digitalKhattFallbacks);
   });
 
-  testWidgets('QuranArabicText default family is UthmanicHafsV22', (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: QuranArabicText(
-            arabic: 'بِسْمِ',
-            fontSize: 24,
-            defaultColor: Colors.black,
-          ),
-        ),
-      ),
+  test('arabicDisplayStyle can still request UthmanicHafsV22', () {
+    final style = QuranArabicText.arabicDisplayStyle(
+      fontSize: 24,
+      color: Colors.black,
+      fontFamily: QuranFonts.uthmanicHafsV22,
     );
-    final selectable = tester.widget<SelectableText>(find.byType(SelectableText));
-    expect(selectable.style?.fontFamily, QuranFonts.uthmanicHafsV22);
+    expect(style.fontFamily, QuranFonts.uthmanicHafsV22);
+    expect(style.fontFamilyFallback, QuranFonts.uthmanicFallbacks);
   });
 
-  testWidgets('QuranArabicText fontFamily override uses DigitalKhattV2', (tester) async {
+  testWidgets('QuranArabicText default family is DigitalKhattV2', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -37,7 +31,6 @@ void main() {
             arabic: 'بِسْمِ',
             fontSize: 24,
             defaultColor: Colors.black,
-            fontFamily: QuranFonts.digitalKhattV2,
           ),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
 /// Premium flat card for Koleksi list rows (bookmarks, notes, highlights).
 class LibraryItemCard extends StatelessWidget {
@@ -136,9 +137,8 @@ class LibraryItemCard extends StatelessWidget {
                             textDirection: TextDirection.rtl,
                             child: Text(
                               arabicText!,
-                              style: textTheme.bodyMedium?.copyWith(
-                                fontFamily: 'UthmanicHafsV22',
-                                fontFamilyFallback: const ['UthmanicHafs'],
+                              style: QuranArabicText.arabicDisplayStyle(
+                                fontSize: textTheme.bodyMedium?.fontSize ?? 14,
                                 color: colorScheme.onSurface,
                                 height: 1.55,
                               ),

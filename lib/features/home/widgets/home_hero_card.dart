@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/day_period.dart';
+import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
 /// Unified home hero (layout C): section label, time-of-day salam, tagline.
 class HomeHeroCard extends ConsumerWidget {
@@ -63,13 +64,11 @@ class HomeHeroCard extends ConsumerWidget {
                     textDirection: TextDirection.rtl,
                     child: Text(
                       AppLocalizations.homeWelcomeArabic,
-                      style: textTheme.titleMedium?.copyWith(
-                        fontFamily: 'UthmanicHafsV22',
-                        fontFamilyFallback: const ['UthmanicHafs'],
-                        fontWeight: FontWeight.w700,
-                        height: 1.25,
+                      style: QuranArabicText.arabicDisplayStyle(
+                        fontSize: textTheme.titleMedium?.fontSize ?? 16,
                         color: colorScheme.primary,
-                      ),
+                        height: 1.25,
+                      ).copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
                 ],

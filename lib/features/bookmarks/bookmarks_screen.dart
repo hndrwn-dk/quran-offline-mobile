@@ -6,6 +6,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
+import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 import 'package:quran_offline/features/notes/notes_screen.dart';
 import 'package:quran_offline/features/bookmarks/open_bookmark.dart';
 
@@ -438,12 +439,12 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                                       textDirection: TextDirection.rtl,
                                       child: Text(
                                         surahInfo.arabicName,
-                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                              fontFamily: 'UthmanicHafsV22',
-                                              fontFamilyFallback: const ['UthmanicHafs'],
-                                              color: colorScheme.onSurface,
-                                              height: 1.4,
-                                            ),
+                                        style: QuranArabicText.arabicDisplayStyle(
+                                          fontSize:
+                                              Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14,
+                                          color: colorScheme.onSurface,
+                                          height: 1.4,
+                                        ),
                                         textDirection: TextDirection.rtl,
                                         textAlign: TextAlign.right,
                                       ),

@@ -12,6 +12,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/core/widgets/explore_detail_sheet.dart';
+import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 import 'package:quran_offline/features/dua/life_situation.dart';
 import 'package:quran_offline/features/dua/explore_icons.dart';
 import 'package:quran_offline/features/dua/explore_search.dart';
@@ -206,6 +207,8 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
   }
 
   void _openSearchHit(ExploreSearchHit hit) {
+    _searchFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
     switch (hit.kind) {
       case ExploreSearchKind.dua:
         final entry = hit.dua;
@@ -618,13 +621,11 @@ class _AsmaListTile extends StatelessWidget {
                     textDirection: TextDirection.rtl,
                     child: Text(
                       entry.arabic,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontFamily: 'UthmanicHafsV22',
-                            fontFamilyFallback: const ['UthmanicHafs'],
-                            fontSize: 26,
-                            fontWeight: FontWeight.w600,
-                            height: 1.45,
-                          ),
+                      style: QuranArabicText.arabicDisplayStyle(
+                        fontSize: 26,
+                        color: colorScheme.onSurface,
+                        height: 1.45,
+                      ).copyWith(fontWeight: FontWeight.w600),
                       textAlign: TextAlign.right,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
@@ -1450,8 +1451,8 @@ Future<void> _showDuaDetail(
     title: entry.title,
     summary: entry.summary,
     ayahRefs: entry.ayahRefs,
-    onOpenReader: () {
-      _openInReader(ref, entry);
+    onOpenReader: (ayahRef) {
+      openReaderFromAyahRef(ref, ayahRef);
       openReaderScreen(context, ref);
     },
   );
@@ -1472,8 +1473,8 @@ Future<void> _showScienceDetail(
     sectionNote: entry.scienceNote,
     sectionHeading: AppLocalizations.getScienceNoteHeading(lang),
     ayahRefs: entry.ayahRefs,
-    onOpenReader: () {
-      _openInReaderScience(ref, entry);
+    onOpenReader: (ayahRef) {
+      openReaderFromAyahRef(ref, ayahRef);
       openReaderScreen(context, ref);
     },
   );
@@ -1495,8 +1496,8 @@ Future<void> _showAsmaDetail(
     sectionHeading: AppLocalizations.getAsmaReflectionHeading(lang),
     headerArabic: entry.arabic,
     ayahRefs: entry.ayahRefs,
-    onOpenReader: () {
-      _openInReaderAsma(ref, entry);
+    onOpenReader: (ayahRef) {
+      openReaderFromAyahRef(ref, ayahRef);
       openReaderScreen(context, ref);
     },
   );
@@ -1517,8 +1518,8 @@ Future<void> _showThemeDetail(
     sectionNote: entry.reflection,
     sectionHeading: AppLocalizations.getThemeReflectionHeading(lang),
     ayahRefs: entry.ayahRefs,
-    onOpenReader: () {
-      _openInReaderTheme(ref, entry);
+    onOpenReader: (ayahRef) {
+      openReaderFromAyahRef(ref, ayahRef);
       openReaderScreen(context, ref);
     },
   );
@@ -1531,7 +1532,7 @@ Future<void> _showExploreDetail({
   required LocalizedText title,
   required LocalizedText summary,
   required List<DuaAyahRef> ayahRefs,
-  required VoidCallback onOpenReader,
+  required void Function(DuaAyahRef ayahRef) onOpenReader,
   LocalizedText? sectionNote,
   String? sectionHeading,
   String? headerArabic,
@@ -1548,20 +1549,4 @@ Future<void> _showExploreDetail({
     ayahRefs: ayahRefs,
     onOpenReader: onOpenReader,
   );
-}
-
-void _openInReader(WidgetRef ref, DuaEntry entry) {
-  openReaderFromAyahRefs(ref, [entry.primaryRef]);
-}
-
-void _openInReaderScience(WidgetRef ref, ScienceEntry entry) {
-  openReaderFromAyahRefs(ref, entry.ayahRefs);
-}
-
-void _openInReaderTheme(WidgetRef ref, ThemeEntry entry) {
-  openReaderFromAyahRefs(ref, entry.ayahRefs);
-}
-
-void _openInReaderAsma(WidgetRef ref, AsmaEntry entry) {
-  openReaderFromAyahRefs(ref, entry.ayahRefs);
 }

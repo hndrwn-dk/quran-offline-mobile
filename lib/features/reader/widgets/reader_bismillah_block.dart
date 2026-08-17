@@ -6,6 +6,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
+import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
 /// Bismillah block shown before ayah 1 (surahs other than 1 and 9).
 class ReaderBismillahBlock extends ConsumerWidget {
@@ -109,12 +110,10 @@ class ReaderBismillahBlock extends ConsumerWidget {
                 alignment: Alignment.centerRight,
                 child: SelectableText(
                   Bismillah.arabic,
-                  style: TextStyle(
+                  style: QuranArabicText.arabicDisplayStyle(
                     fontSize: settings.arabicFontSize * 1.1,
-                    fontFamily: 'UthmanicHafsV22',
-                    fontFamilyFallback: const ['UthmanicHafs'],
-                    height: 1.7,
                     color: colorScheme.onSurface,
+                    height: 1.7,
                   ),
                   textDirection: TextDirection.rtl,
                   textAlign: TextAlign.right,
