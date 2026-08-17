@@ -5,9 +5,8 @@ import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/transliteration_provider.dart';
 import 'package:quran_offline/core/share/verse_share_content.dart';
-import 'package:quran_offline/core/share/verse_share_sheet.dart';
 
-/// Two-path verse share: card PNG (short/medium) or text-only (long ayah).
+/// Shares a verse as plain text (Arabic, translation, Play Store URL).
 class VerseShare {
   VerseShare._();
 
@@ -29,10 +28,6 @@ class VerseShare {
       transliterationText: transliteration,
     );
 
-    if (content.fitsShareCard) {
-      await showVerseShareCardSheet(context, content: content);
-    } else {
-      await Share.share(content.buildShareCaption(includeArabicInText: true));
-    }
+    await Share.share(content.buildShareCaption());
   }
 }
