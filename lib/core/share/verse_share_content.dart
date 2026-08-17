@@ -78,16 +78,15 @@ class VerseShareContent {
 
   String get playStoreDisplay => AppLinks.playStoreDisplayForLocale(contentLanguage);
 
-  /// Caption for text-only share (long ayah). Card path shares PNG without caption.
-  String buildShareCaption({bool includeArabicInText = false}) {
+  /// Text shared to WhatsApp and others. Always includes Arabic so the
+  /// Play Store URL stays a tap-able line of text (PNG cannot carry links).
+  String buildShareCaption() {
     final buffer = StringBuffer();
     buffer.writeln(AppLocalizations.getShareHeader(appLanguage));
     buffer.writeln('');
 
-    if (includeArabicInText) {
-      buffer.writeln(plainArabic);
-      buffer.writeln('');
-    }
+    buffer.writeln(plainArabic);
+    buffer.writeln('');
 
     final translit = transliteration;
     if (translit.isNotEmpty) {

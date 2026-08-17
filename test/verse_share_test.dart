@@ -7,6 +7,7 @@ Verse _verse({
   required int surahId,
   required int ayahNo,
   required String arabic,
+  String? trId,
 }) {
   return Verse(
     surahId: surahId,
@@ -14,7 +15,7 @@ Verse _verse({
     page: 1,
     juz: 1,
     arabic: arabic,
-    trId: 'Terjemahan',
+    trId: trId ?? 'Terjemahan',
   );
 }
 
@@ -24,7 +25,42 @@ void main() {
     appLanguage: 'id',
   );
 
-  test('short ayah fits share card', () {
+  const longTranslation =
+      'Mereka berkata, "Celakalah kami! Siapakah yang membangkitkan kami dari tempat tidur kami (kubur)?" Inilah yang dijanjikan (Allah) Yang Maha Pengasih dan benarlah rasul-rasul(-Nya).';
+
+  test('share caption includes Arabic, full translation, and clickable Play URL',
+      () {
+    final content = VerseShareContent.from(
+      verse: _verse(
+        surahId: 36,
+        ayahNo: 52,
+        arabic:
+            'قَالُوا يَا وَيْلَنَا مَن بَعَثَنَا مِن مَّرْقَدِنَا',
+        trId: longTranslation,
+      ),
+      surahName: 'Ya-Sin',
+      settings: settings,
+    );
+
+    final caption = content.buildShareCaption();
+    expect(caption, contains('قَالُوا'));
+    expect(caption, contains(longTranslation));
+    expect(caption, isNot(contains('…')));
+    expect(
+      caption,
+      contains(
+        'https://play.google.com/store/apps/details?id=com.tursinalabs.quranoffline&hl=id',
+      ),
+    );
+    expect(
+      caption,
+      contains(
+        '\n\nhttps://play.google.com/store/apps/details?id=com.tursinalabs.quranoffline&hl=id',
+      ),
+    );
+  });
+
+  test('short ayah caption also includes Arabic', () {
     final content = VerseShareContent.from(
       verse: _verse(
         surahId: 112,
@@ -35,43 +71,10 @@ void main() {
       settings: settings,
     );
 
-    expect(content.fitsShareCard, isTrue);
-    expect(content.estimateArabicLineCount(), lessThanOrEqualTo(5));
-  });
-
-  test('long ayah uses text-only path', () {
-    final longArabic = List.filled(40, 'وَاللَّهُ عَلِيمٌ حَكِيمٌ ').join();
-    final content = VerseShareContent.from(
-      verse: _verse(
-        surahId: 2,
-        ayahNo: 286,
-        arabic: longArabic,
-      ),
-      surahName: 'Al-Baqarah',
-      settings: settings,
-    );
-
-    expect(content.fitsShareCard, isFalse);
-    expect(content.estimateArabicLineCount(), greaterThan(5));
-  });
-
-  test('text-only caption includes Arabic', () {
-    final content = VerseShareContent.from(
-      verse: _verse(
-        surahId: 2,
-        ayahNo: 286,
-        arabic: 'لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا',
-      ),
-      surahName: 'Al-Baqarah',
-      settings: settings,
-    );
-
-    final caption = content.buildShareCaption(includeArabicInText: true);
-    expect(caption, contains('لَا يُكَلِّفُ'));
+    final caption = content.buildShareCaption();
+    expect(caption, contains('قُلْ هُوَ'));
     expect(caption, contains('Terjemahan'));
-    expect(caption, contains('play.google.com'));
-    expect(caption, contains('id=com.tursinalabs.quranoffline'));
-    expect(caption, contains('hl=id'));
+    expect(caption, contains('https://play.google.com'));
   });
 
   test('play store URL follows translation locale', () {
@@ -89,21 +92,5 @@ void main() {
       settings: enSettings,
     );
     expect(enContent.playStoreUrl, contains('hl=en'));
-  });
-
-  test('card caption omits Arabic when image carries it', () {
-    final content = VerseShareContent.from(
-      verse: _verse(
-        surahId: 112,
-        ayahNo: 1,
-        arabic: 'قُلْ هُوَ اللَّهُ أَحَدٌ',
-      ),
-      surahName: 'Al-Ikhlas',
-      settings: settings,
-    );
-
-    final caption = content.buildShareCaption(includeArabicInText: false);
-    expect(caption, isNot(contains('قُلْ هُوَ')));
-    expect(caption, contains('Terjemahan'));
   });
 }

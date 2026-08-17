@@ -82,7 +82,7 @@ Future<void> _shareFromSheet(
 }
 
 Future<void> _shareTextOnly(VerseShareContent content) async {
-  await Share.share(content.buildShareCaption(includeArabicInText: true));
+  await Share.share(content.buildShareCaption());
 }
 
 Future<void> _deleteQuietly(File file) async {
