@@ -2018,6 +2018,16 @@ class AppLocalizations {
     };
   }
 
+  static String getExploreChooseAyah(String language) {
+    return switch (language) {
+      'id' => 'Pilih ayat',
+      'en' => 'Choose ayah',
+      'zh' => '选择经文',
+      'ja' => '节を選ぶ',
+      _ => 'Choose ayah',
+    };
+  }
+
   static String getDuaLoadError(String language) {
     return switch (language) {
       'id' => 'Katalog doa tidak dapat dimuat.',
@@ -5696,6 +5706,7 @@ class AppLocalizations {
       'saved_on_device' => _recSavedOnDevice(language),
       'not_saved' => _recNotSaved(language),
       'failed_retry' => _recFailedRetry(language),
+      'save_retry' => _recSaveRetry(language),
       'cancel' => _getCancel(language),
       'delete' => _getDelete(language),
       'save' => _getSave(language),
@@ -5839,6 +5850,26 @@ class AppLocalizations {
       'zh' => '失败 - 点按重试',
       'ja' => '失敗 - タップして再試行',
       _ => 'Failed - tap to retry',
+    };
+  }
+
+  static String _recSaveRetry(String language) {
+    return switch (language) {
+      'id' => 'Coba lagi',
+      'en' => 'Retry',
+      'zh' => '重试',
+      'ja' => '再試行',
+      _ => 'Retry',
+    };
+  }
+
+  static String recSaveFailed(String label, String language) {
+    return switch (language) {
+      'id' => 'Gagal menyimpan $label. Periksa koneksi, lalu coba lagi atau tutup.',
+      'en' => 'Could not save $label. Check your connection, then retry or dismiss.',
+      'zh' => '无法保存 $label。请检查网络后重试或关闭。',
+      'ja' => '$label を保存できませんでした。接続を確認して再試行するか閉じてください。',
+      _ => 'Could not save $label. Check your connection, then retry or dismiss.',
     };
   }
 

@@ -11,11 +11,77 @@ import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
-void openReaderFromAyahRefs(WidgetRef ref, List<DuaAyahRef> ayahRefs) {
-  final primary = ayahRefs.first;
+void openReaderFromAyahRef(WidgetRef ref, DuaAyahRef ayahRef) {
   ref.read(readerSourceProvider.notifier).state =
-      SurahSource(primary.surah, targetAyahNo: primary.from);
-  ref.read(targetAyahProvider.notifier).state = primary.from;
+      SurahSource(ayahRef.surah, targetAyahNo: ayahRef.from);
+  ref.read(targetAyahProvider.notifier).state = ayahRef.from;
+}
+
+void openReaderFromAyahRefs(WidgetRef ref, List<DuaAyahRef> ayahRefs) {
+  openReaderFromAyahRef(ref, ayahRefs.first);
+}
+
+String exploreAyahRefPickerLabel(
+  DuaAyahRef ayahRef,
+  String lang,
+  List<SurahInfo> surahNames,
+) {
+  String? surahName;
+  for (final s in surahNames) {
+    if (s.id == ayahRef.surah) {
+      surahName = s.englishName;
+      break;
+    }
+  }
+  final qs = AppLocalizations.formatDuaAyahRef(
+    ayahRef.surah,
+    ayahRef.from,
+    ayahRef.to,
+    lang,
+  );
+  if (surahName == null || surahName.isEmpty) {
+    return qs;
+  }
+  return '$surahName · $qs';
+}
+
+Future<DuaAyahRef?> showExploreAyahRefPicker({
+  required BuildContext context,
+  required String lang,
+  required List<DuaAyahRef> ayahRefs,
+  required List<SurahInfo> surahNames,
+}) {
+  return showModalBottomSheet<DuaAyahRef>(
+    context: context,
+    showDragHandle: true,
+    builder: (pickerContext) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+              child: Text(
+                AppLocalizations.getExploreChooseAyah(lang),
+                style: Theme.of(pickerContext).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ),
+            for (final ayahRef in ayahRefs)
+              ListTile(
+                title: Text(
+                  exploreAyahRefPickerLabel(ayahRef, lang, surahNames),
+                ),
+                onTap: () => Navigator.pop(pickerContext, ayahRef),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      );
+    },
+  );
 }
 
 Future<void> showExploreDetailSheet({
@@ -25,7 +91,7 @@ Future<void> showExploreDetailSheet({
   required LocalizedText title,
   required LocalizedText summary,
   required List<DuaAyahRef> ayahRefs,
-  required VoidCallback onOpenReader,
+  required void Function(DuaAyahRef ayahRef) onOpenReader,
   LocalizedText? sectionNote,
   String? sectionHeading,
   String? headerArabic,
@@ -41,19 +107,24 @@ Future<void> showExploreDetailSheet({
   }
   if (!context.mounted) return;
 
+  // Avoid a flash overflow when opening from search with the IME still up.
+  FocusManager.instance.primaryFocus?.unfocus();
+
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
     builder: (sheetContext) {
-      final viewHeight = MediaQuery.sizeOf(sheetContext).height;
-      final maxHeight = viewHeight * 0.88;
+      final media = MediaQuery.of(sheetContext);
+      // Usable height after keyboard + safe area — not full screen.
+      final availableHeight = media.size.height -
+          media.viewInsets.bottom -
+          media.padding.vertical;
+      final maxSheetHeight = (availableHeight * 0.88).clamp(160.0, media.size.height);
       return Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
-        ),
+        padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
         child: ExploreDetailSheet(
-          maxBodyHeight: maxHeight - 88,
+          maxBodyHeight: (maxSheetHeight - 88).clamp(80.0, maxSheetHeight),
           title: title,
           summary: summary,
           sectionNote: sectionNote,
@@ -62,9 +133,9 @@ Future<void> showExploreDetailSheet({
           ayahRefs: ayahRefs,
           preloadedVerses: preloadedVerses,
           lang: lang,
-          onOpenReader: () {
+          onOpenReader: (ayahRef) {
             Navigator.pop(sheetContext);
-            onOpenReader();
+            onOpenReader(ayahRef);
           },
         ),
       );
@@ -94,7 +165,7 @@ class ExploreDetailSheet extends ConsumerWidget {
   final List<DuaAyahRef> ayahRefs;
   final Map<String, List<Verse>> preloadedVerses;
   final String lang;
-  final VoidCallback onOpenReader;
+  final void Function(DuaAyahRef ayahRef) onOpenReader;
   final double? maxBodyHeight;
   final String? headerArabic;
 
@@ -106,96 +177,92 @@ class ExploreDetailSheet extends ConsumerWidget {
     final headerArabicText = headerArabic;
     final headerArabicSize = settings.arabicFontSize * 1.25;
 
-    final body = SingleChildScrollView(
+    // shrinkWrap so the sheet hugs content; ConstrainedBox caps tall content.
+    final body = ListView(
+      shrinkWrap: true,
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (headerArabicText != null)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    title.forLanguage(lang),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
+      children: [
+        if (headerArabicText != null)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  title.forLanguage(lang),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                 ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 112,
-                  child: Align(
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: 112,
+                height: 48,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: FittedBox(
+                    fit: BoxFit.contain,
                     alignment: Alignment.centerRight,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Directionality(
-                        textDirection: TextDirection.rtl,
-                        child: Text(
-                          headerArabicText,
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontFamily: 'UthmanicHafsV22',
-                                fontFamilyFallback: const ['UthmanicHafs'],
-                                fontSize: headerArabicSize,
-                                fontWeight: FontWeight.w600,
-                                height: 1.45,
-                                color: colorScheme.onSurface,
-                              ),
-                          textAlign: TextAlign.right,
-                        ),
+                    child: Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: Text(
+                        headerArabicText,
+                        style: QuranArabicText.arabicDisplayStyle(
+                          fontSize: headerArabicSize,
+                          color: colorScheme.onSurface,
+                          height: 1.45,
+                        ).copyWith(fontWeight: FontWeight.w600),
+                        textAlign: TextAlign.right,
                       ),
                     ),
                   ),
                 ),
-              ],
-            )
-          else
-            Text(
-              title.forLanguage(lang),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-          const SizedBox(height: 8),
+              ),
+            ],
+          )
+        else
           Text(
-            summary.forLanguage(lang),
+            title.forLanguage(lang),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+        const SizedBox(height: 8),
+        Text(
+          summary.forLanguage(lang),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                height: 1.45,
+              ),
+        ),
+        if (sectionNote != null && sectionHeading != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            sectionHeading!,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.primary,
+                ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            sectionNote!.forLanguage(lang),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   height: 1.45,
                 ),
           ),
-          if (sectionNote != null && sectionHeading != null) ...[
-            const SizedBox(height: 16),
-            Text(
-              sectionHeading!,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.primary,
-                  ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              sectionNote!.forLanguage(lang),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.45,
-                  ),
-            ),
-          ],
-          const SizedBox(height: 20),
-          ...ayahRefs.map(
-            (ayahRef) => ExploreAyahBlock(
-              ayahRef: ayahRef,
-              lang: lang,
-              surahNames: surahNames,
-              verses: preloadedVerses[ayahRef.rangeKey()],
-            ),
-          ),
         ],
-      ),
+        const SizedBox(height: 20),
+        ...ayahRefs.map(
+          (ayahRef) => ExploreAyahBlock(
+            ayahRef: ayahRef,
+            lang: lang,
+            surahNames: surahNames,
+            verses: preloadedVerses[ayahRef.rangeKey()],
+          ),
+        ),
+      ],
     );
 
     return Material(
@@ -227,7 +294,23 @@ class ExploreDetailSheet extends ConsumerWidget {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: onOpenReader,
+                  onPressed: ayahRefs.isEmpty
+                      ? null
+                      : () async {
+                          if (ayahRefs.length == 1) {
+                            onOpenReader(ayahRefs.first);
+                            return;
+                          }
+                          final picked = await showExploreAyahRefPicker(
+                            context: context,
+                            lang: lang,
+                            ayahRefs: ayahRefs,
+                            surahNames: surahNames,
+                          );
+                          if (picked != null) {
+                            onOpenReader(picked);
+                          }
+                        },
                   icon: const Icon(Icons.menu_book_outlined),
                   label: Text(AppLocalizations.getDuaOpenInReader(lang)),
                 ),
@@ -325,8 +408,9 @@ class ExploreAyahBlock extends ConsumerWidget {
                 const SizedBox(width: 12),
                 SizedBox(
                   width: 128,
+                  height: 44,
                   child: FittedBox(
-                    fit: BoxFit.fitWidth,
+                    fit: BoxFit.contain,
                     alignment: Alignment.centerRight,
                     child: SurahNameListGlyph(
                       surahId: surahInfo.id,

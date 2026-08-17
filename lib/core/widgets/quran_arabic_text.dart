@@ -3,6 +3,8 @@ import 'package:quran_offline/core/constants/quran_fonts.dart';
 
 /// Renders Quran Arabic (`ar`) codepoint-for-codepoint.
 ///
+/// Default face is Digital Khatt V2 (Reader, Explore, share, library, etc.).
+/// Mushaf keeps its own Uthmanic / QPC V2 widgets and does not use this.
 /// No letter rewriting, no span coalescing, no sukun substitution.
 class QuranArabicText extends StatelessWidget {
   final String arabic;
@@ -12,7 +14,8 @@ class QuranArabicText extends StatelessWidget {
   final TextAlign textAlign;
   final double height;
   final bool selectable;
-  /// Reader (Surah/Juz AyahCard) only. Null keeps UthmanicHafsV22 for share/mushaf callers.
+  /// Defaults to [QuranFonts.digitalKhattV2]. Pass [QuranFonts.uthmanicHafsV22]
+  /// only when a non-Mushaf caller must keep the old Uthmanic face.
   final String? fontFamily;
 
   const QuranArabicText({
@@ -34,21 +37,13 @@ class QuranArabicText extends StatelessWidget {
     bool isLightTheme = false,
     String? fontFamily,
   }) {
+    final family = fontFamily ?? QuranFonts.digitalKhattV2;
     return TextStyle(
       fontSize: fontSize,
-      fontFamily: fontFamily ?? QuranFonts.uthmanicHafsV22,
-      fontFamilyFallback: fontFamily == QuranFonts.digitalKhattV2
-          ? const [
-              QuranFonts.uthmanicHafsV22,
-              'UthmanicHafs',
-              'KFGQPCUthmanic',
-              'ScheherazadeNew',
-            ]
-          : const [
-              'UthmanicHafs',
-              'KFGQPCUthmanic',
-              'ScheherazadeNew',
-            ],
+      fontFamily: family,
+      fontFamilyFallback: family == QuranFonts.digitalKhattV2
+          ? QuranFonts.digitalKhattFallbacks
+          : QuranFonts.uthmanicFallbacks,
       height: height,
       color: color,
       locale: const Locale('ar'),

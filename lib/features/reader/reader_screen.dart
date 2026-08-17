@@ -323,37 +323,34 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     // Adjust index if header is present (header is at index 0)
     final itemIndex = isSurahSource && hasHeader ? targetIndex + 1 : targetIndex;
     
-    // Wait for initial frame, then scroll to item
+    // Wait for initial frame, then jump (not animate) so ScrollablePositionedList
+    // does not leave phantom gaps when SurahHeaderCard later grows with QUL text.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _hasScrolledToTarget) return;
-      
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (!mounted || _hasScrolledToTarget) return;
-        
+
+      void jump() {
+        if (!mounted || !_itemScrollController.isAttached) return;
         try {
-          _itemScrollController.scrollTo(
+          _itemScrollController.jumpTo(
             index: itemIndex,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-            alignment: 0.15, // Position 15% from top of viewport
+            alignment: 0.05,
           );
-          
-          // Mark as successful after scroll completes
-          Future.delayed(const Duration(milliseconds: 600), () {
-            if (mounted) {
-              _hasScrolledToTarget = true;
-              ref.read(targetAyahProvider.notifier).state = null;
-              ref.read(targetSurahIdProvider.notifier).state = null;
-            }
-          });
-        } catch (e) {
-          // If scroll fails, mark as done to prevent infinite retries
+        } catch (_) {}
+      }
+
+      Future.delayed(const Duration(milliseconds: 50), () {
+        if (!mounted || _hasScrolledToTarget) return;
+        jump();
+        // Second jump after async SurahHeaderCard (QUL about-text) settles.
+        Future.delayed(const Duration(milliseconds: 450), () {
+          if (!mounted) return;
+          jump();
           if (mounted) {
             _hasScrolledToTarget = true;
             ref.read(targetAyahProvider.notifier).state = null;
             ref.read(targetSurahIdProvider.notifier).state = null;
           }
-        }
+        });
       });
     });
   }

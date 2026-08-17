@@ -23,6 +23,16 @@ class AudioOfflinePrompts {
     );
   }
 
+  static void _startSurahDownload(
+    ScaffoldMessengerState messenger,
+    WidgetRef ref,
+    int surahId,
+  ) {
+    messenger.hideCurrentSnackBar();
+    final reciter = ref.read(reciterProvider);
+    ref.read(audioDownloadProvider.notifier).downloadSurah(reciter, surahId);
+  }
+
   static void showSurahSaved(
     BuildContext context, {
     required String surahLabel,
@@ -43,6 +53,7 @@ class AudioOfflinePrompts {
           ),
         ),
         duration: const Duration(seconds: 4),
+        showCloseIcon: true,
       ),
     );
   }
@@ -57,6 +68,30 @@ class AudioOfflinePrompts {
           AppLocalizations.getRecitationText('all_surahs_saved', language),
         ),
         duration: const Duration(seconds: 5),
+        showCloseIcon: true,
+      ),
+    );
+  }
+
+  static void showSaveFailed(
+    BuildContext context,
+    WidgetRef ref, {
+    required int surahId,
+    required String surahLabel,
+    String language = 'en',
+  }) {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.recSaveFailed(surahLabel, language)),
+        duration: const Duration(days: 1),
+        showCloseIcon: true,
+        action: SnackBarAction(
+          label: AppLocalizations.getRecitationText('save_retry', language),
+          onPressed: () => _startSurahDownload(messenger, ref, surahId),
+        ),
       ),
     );
   }
@@ -73,7 +108,7 @@ class AudioOfflinePrompts {
     final reciter = ref.read(reciterProvider);
     final downloads = ref.read(audioDownloadProvider);
     if (downloads.isComplete(reciter.id, surahId) ||
-        downloads.isDownloading(reciter.id, surahId)) {
+        downloads.isDownloadInFlight(reciter.id, surahId)) {
       return;
     }
     if (!context.mounted) return;
@@ -100,13 +135,10 @@ class AudioOfflinePrompts {
       SnackBar(
         content: Text(message),
         duration: Duration(seconds: isLarge ? 7 : 5),
+        showCloseIcon: true,
         action: SnackBarAction(
           label: actionLabel,
-          onPressed: () {
-            ref
-                .read(audioDownloadProvider.notifier)
-                .downloadSurah(reciter, surahId);
-          },
+          onPressed: () => _startSurahDownload(messenger, ref, surahId),
         ),
       ),
     );
@@ -122,7 +154,7 @@ class AudioOfflinePrompts {
     final reciter = ref.read(reciterProvider);
     final downloads = ref.read(audioDownloadProvider);
     if (downloads.isComplete(reciter.id, surahId) ||
-        downloads.isDownloading(reciter.id, surahId)) {
+        downloads.isDownloadInFlight(reciter.id, surahId)) {
       return;
     }
     if (!context.mounted) return;
@@ -138,13 +170,10 @@ class AudioOfflinePrompts {
           AppLocalizations.recStreamingReminder(label, language),
         ),
         duration: const Duration(seconds: 6),
+        showCloseIcon: true,
         action: SnackBarAction(
           label: AppLocalizations.getRecitationText('save_action', language),
-          onPressed: () {
-            ref
-                .read(audioDownloadProvider.notifier)
-                .downloadSurah(reciter, surahId);
-          },
+          onPressed: () => _startSurahDownload(messenger, ref, surahId),
         ),
       ),
     );
@@ -169,13 +198,10 @@ class AudioOfflinePrompts {
           AppLocalizations.recNotSavedOnDevice(label, language),
         ),
         duration: const Duration(seconds: 6),
+        showCloseIcon: true,
         action: SnackBarAction(
           label: AppLocalizations.getRecitationText('save_action', language),
-          onPressed: () {
-            ref
-                .read(audioDownloadProvider.notifier)
-                .downloadSurah(reciter, surahId);
-          },
+          onPressed: () => _startSurahDownload(messenger, ref, surahId),
         ),
       ),
     );

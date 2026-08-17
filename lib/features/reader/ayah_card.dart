@@ -12,7 +12,6 @@ import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/providers/transliteration_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
-import 'package:quran_offline/core/constants/quran_fonts.dart';
 import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 import 'package:quran_offline/core/share/verse_share.dart';
 import 'package:quran_offline/core/feedback/feedback_context.dart';
@@ -402,8 +401,6 @@ class _AyahCardState extends ConsumerState<AyahCard> {
       textDirection: TextDirection.rtl,
       textAlign: TextAlign.right,
       height: 1.7,
-      // Surah/Juz Reader only. Mushaf stays on UthmanicHafsV22 / QPC V2.
-      fontFamily: QuranFonts.digitalKhattV2,
     );
   }
 

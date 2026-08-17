@@ -103,8 +103,8 @@ class HomeWidgetNavigation {
             sectionHeading:
                 AppLocalizations.getReflectionReflectionHeading(lang),
             ayahRefs: entry.ayahRefs,
-            onOpenReader: () {
-              openReaderFromAyahRefs(ref, entry.ayahRefs);
+            onOpenReader: (ayahRef) {
+              openReaderFromAyahRef(ref, ayahRef);
               openReaderScreen(context, ref);
             },
           );

@@ -25,6 +25,24 @@ class _AudioDownloadNotificationsState
   bool _bulkWasActive = false;
   bool _completedSeeded = false;
   Set<String> _knownCompleted = const {};
+  Set<String> _knownFailed = const {};
+
+  String _surahName(int surahId) {
+    final surahs = ref.read(surahNamesProvider).valueOrNull;
+    if (surahs != null) {
+      for (final s in surahs) {
+        if (s.id == surahId) return s.englishName;
+      }
+    }
+    return 'Surah $surahId';
+  }
+
+  Set<String> _failedKeys(AudioDownloadsState state) {
+    return state.active.entries
+        .where((e) => e.value.failed)
+        .map((e) => e.key)
+        .toSet();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +51,7 @@ class _AudioDownloadNotificationsState
 
       if (!_completedSeeded) {
         _knownCompleted = Set<String>.from(next.completed);
+        _knownFailed = _failedKeys(next);
         _completedSeeded = true;
         _bulkWasActive = next.bulk != null;
         return;
@@ -42,32 +61,41 @@ class _AudioDownloadNotificationsState
       final added = next.completed.difference(_knownCompleted);
       if (added.isNotEmpty && next.bulk == null) {
         final reciter = ref.read(reciterProvider);
-        final surahs = ref.read(surahNamesProvider).valueOrNull;
         for (final key in added) {
           if (!key.startsWith('${reciter.id}:')) continue;
           final surahId = int.tryParse(key.split(':').last);
           if (surahId == null) continue;
-          var name = 'Surah $surahId';
-          if (surahs != null) {
-            for (final s in surahs) {
-              if (s.id == surahId) {
-                name = s.englishName;
-                break;
-              }
-            }
-          }
           final count = ref
               .read(audioDownloadProvider.notifier)
               .completedCountForReciter(reciter.id);
           AudioOfflinePrompts.showSurahSaved(
             context,
-            surahLabel: name,
+            surahLabel: _surahName(surahId),
             completedCount: count,
             language: language,
           );
         }
       }
       _knownCompleted = Set<String>.from(next.completed);
+
+      final failedNow = _failedKeys(next);
+      final newlyFailed = failedNow.difference(_knownFailed);
+      if (newlyFailed.isNotEmpty && next.bulk == null) {
+        final reciter = ref.read(reciterProvider);
+        for (final key in newlyFailed) {
+          if (!key.startsWith('${reciter.id}:')) continue;
+          final surahId = int.tryParse(key.split(':').last);
+          if (surahId == null) continue;
+          AudioOfflinePrompts.showSaveFailed(
+            context,
+            ref,
+            surahId: surahId,
+            surahLabel: _surahName(surahId),
+            language: language,
+          );
+        }
+      }
+      _knownFailed = failedNow;
 
       final bulkActive = next.bulk != null;
       if (_bulkWasActive && !bulkActive) {

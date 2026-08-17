@@ -11,6 +11,7 @@ import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
+import 'package:quran_offline/core/constants/quran_fonts.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 
@@ -469,9 +470,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                   text: TextSpan(
                                     style: titleStyle.copyWith(
                                       color: colorScheme.onSurface,
-                                      fontFamily: isArabicTitle ? 'UthmanicHafsV22' : null,
+                                      fontFamily: isArabicTitle
+                                          ? QuranFonts.digitalKhattV2
+                                          : null,
                                       fontFamilyFallback: isArabicTitle
-                                          ? const ['UthmanicHafs']
+                                          ? QuranFonts.digitalKhattFallbacks
                                           : null,
                                     ),
                                     children: buildHighlightedSpans(
