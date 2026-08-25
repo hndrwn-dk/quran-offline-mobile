@@ -4,10 +4,12 @@ import 'package:home_widget/home_widget.dart';
 import 'package:quran_offline/core/models/reflection_lens.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/providers/reflection_history_store.dart';
 import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/utils/home_tagline.dart';
 import 'package:quran_offline/core/widgets/home_widget_keys.dart';
 import 'package:quran_offline/core/widgets/home_widget_payload.dart';
 import 'package:quran_offline/core/widgets/home_widget_progress.dart';
@@ -19,7 +21,15 @@ class HomeWidgetSync {
   static Future<void> updateFromRef(WidgetRef ref) async {
     try {
       final lang = ref.read(settingsProvider).appLanguage;
-      final payload = await _buildPayload(ref, lang);
+      final day = ref.read(islamicDayProvider);
+      final salt = await ReflectionHistoryStore().readOrCreateInstallSalt();
+      final tagline = pickHomeTagline(
+        language: lang,
+        installSalt: salt,
+        hijriYmd: day.hijri.ymdKey,
+        period: day.period,
+      );
+      final payload = await _buildPayload(ref, lang, tagline);
       await HomeWidget.saveWidgetData<String>(
         HomeWidgetKeys.payload,
         payload.encode(),
@@ -36,6 +46,7 @@ class HomeWidgetSync {
   static Future<BerandaWidgetPayload> _buildPayload(
     WidgetRef ref,
     String lang,
+    String tagline,
   ) async {
     final reflection = await _safeReflection(ref, lang);
     final lastRead = ref.read(lastReadProvider);
@@ -43,7 +54,7 @@ class HomeWidgetSync {
 
     if (lastRead == null) {
       return BerandaWidgetPayload(
-        tagline: AppLocalizations.getHomeTagline(lang),
+        tagline: tagline,
         reflectionLabel: reflection.label,
         reflectionTitle: reflection.title,
         reflectionRef: reflection.ref,
@@ -61,7 +72,7 @@ class HomeWidgetSync {
     final coords = await resolveSurahAyahFromLastRead(db, lastRead);
     if (coords == null) {
       return BerandaWidgetPayload(
-        tagline: AppLocalizations.getHomeTagline(lang),
+        tagline: tagline,
         reflectionLabel: reflection.label,
         reflectionTitle: reflection.title,
         reflectionRef: reflection.ref,
@@ -91,7 +102,7 @@ class HomeWidgetSync {
 
     if (progress == null) {
       return BerandaWidgetPayload(
-        tagline: AppLocalizations.getHomeTagline(lang),
+        tagline: tagline,
         reflectionLabel: reflection.label,
         reflectionTitle: reflection.title,
         reflectionRef: reflection.ref,
@@ -107,7 +118,7 @@ class HomeWidgetSync {
     }
 
     return BerandaWidgetPayload(
-      tagline: AppLocalizations.getHomeTagline(lang),
+      tagline: tagline,
       reflectionLabel: reflection.label,
       reflectionTitle: reflection.title,
       reflectionRef: reflection.ref,
@@ -117,7 +128,8 @@ class HomeWidgetSync {
       surahName: progress.surahName,
       ayahNo: progress.ayahNo,
       surahPercent: progress.surahPercent,
-      juzLabel: '${AppLocalizations.getMenuText('juz', lang)} ${progress.juzNo}',
+      juzLabel:
+          '${AppLocalizations.getMenuText('juz', lang)} ${progress.juzNo}',
       juzPercent: progress.juzPercent,
       surahCurrent: progress.surahCurrent,
       surahTotal: progress.surahTotal,
@@ -185,7 +197,9 @@ class HomeWidgetSync {
       label: AppLocalizations.getReflectionCardTitle(sourceKey, lang),
       title: entry.title.forLanguage(lang),
       ref: refLabel,
-      badge: AppLocalizations.getReflectionBadge(entry.badgeKey, lang),
+      badge: entry.showsOccasionBadge
+          ? AppLocalizations.getReflectionBadge(entry.badgeKey, lang)
+          : '',
       context: entry.summary.forLanguage(lang),
     );
   }

@@ -50,7 +50,8 @@ class WeeklyReflectionCard extends ConsumerWidget {
                 decoration: forHome
                     ? _homeReflectionDecoration(colorScheme)
                     : BoxDecoration(
-                        color: colorScheme.secondaryContainer.withValues(alpha: 0.35),
+                        color: colorScheme.secondaryContainer
+                            .withValues(alpha: 0.35),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: colorScheme.secondary.withValues(alpha: 0.25),
@@ -72,7 +73,9 @@ class WeeklyReflectionCard extends ConsumerWidget {
                           Icon(
                             Icons.auto_stories_outlined,
                             size: 18,
-                            color: forHome ? colorScheme.primary : colorScheme.secondary,
+                            color: forHome
+                                ? colorScheme.primary
+                                : colorScheme.secondary,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -81,72 +84,80 @@ class WeeklyReflectionCard extends ConsumerWidget {
                                 sourceKey,
                                 lang,
                               ),
-                              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium
+                                  ?.copyWith(
                                     color: colorScheme.onSurfaceVariant,
                                     fontWeight: FontWeight.w600,
                                   ),
                             ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: forHome
-                                  ? (colorScheme.brightness == Brightness.dark
-                                      ? colorScheme.surface.withValues(alpha: 0.35)
-                                      : Colors.white.withValues(alpha: 0.58))
-                                  : colorScheme.secondary.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(8),
-                              border: forHome
-                                  ? Border.all(
-                                      color: colorScheme.primary.withValues(
-                                        alpha: colorScheme.brightness == Brightness.dark
-                                            ? 0.28
-                                            : 0.16,
-                                      ),
-                                    )
-                                  : null,
-                            ),
-                            child: Text(
-                              AppLocalizations.getReflectionBadge(
-                                entry.badgeKey,
-                                lang,
+                          if (entry.showsOccasionBadge)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
                               ),
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: forHome ? colorScheme.primary : colorScheme.secondary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              decoration: BoxDecoration(
+                                color: forHome
+                                    ? (colorScheme.brightness == Brightness.dark
+                                        ? colorScheme.surface
+                                            .withValues(alpha: 0.35)
+                                        : Colors.white.withValues(alpha: 0.58))
+                                    : colorScheme.secondary
+                                        .withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                                border: forHome
+                                    ? Border.all(
+                                        color: colorScheme.primary.withValues(
+                                          alpha: colorScheme.brightness ==
+                                                  Brightness.dark
+                                              ? 0.28
+                                              : 0.16,
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              child: Text(
+                                AppLocalizations.getReflectionBadge(
+                                  entry.badgeKey,
+                                  lang,
+                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall
+                                    ?.copyWith(
+                                      color: forHome
+                                          ? colorScheme.primary
+                                          : colorScheme.secondary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
                             ),
-                          ),
                         ],
                       ),
                       const SizedBox(height: 10),
                       Text(
                         entry.title.forLanguage(lang),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: colorScheme.onSurface,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: colorScheme.onSurface,
+                                ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         refLabel,
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              color: forHome ? colorScheme.primary : colorScheme.secondary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  color: forHome
+                                      ? colorScheme.primary
+                                      : colorScheme.secondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
                       ),
                       const SizedBox(height: 10),
-                      Text(
-                        AppLocalizations.getReflectionContextLabel(lang),
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
                       Text(
                         contextSnippet,
                         maxLines: forHome ? 2 : 3,
@@ -156,14 +167,33 @@ class WeeklyReflectionCard extends ConsumerWidget {
                               height: 1.45,
                             ),
                       ),
+                      const SizedBox(height: 12),
+                      Text(
+                        entry.reflection.forLanguage(lang),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: const Color(0xFF5F6459),
+                              height: 1.4,
+                              fontSize: (Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.fontSize ??
+                                      12) -
+                                  1,
+                            ),
+                      ),
                       if (forHome) ...[
                         const SizedBox(height: 8),
                         Align(
                           alignment: Alignment.centerLeft,
                           child: HomeCircleArrowButton(
-                            onPressed: () => _openDetail(context, ref, pick, lang),
-                            tooltip: AppLocalizations.getHomeReflectionCta(lang),
-                            semanticsLabel: AppLocalizations.getHomeReflectionCta(lang),
+                            onPressed: () =>
+                                _openDetail(context, ref, pick, lang),
+                            tooltip:
+                                AppLocalizations.getHomeReflectionCta(lang),
+                            semanticsLabel:
+                                AppLocalizations.getHomeReflectionCta(lang),
                             onTintedCard: true,
                           ),
                         ),
