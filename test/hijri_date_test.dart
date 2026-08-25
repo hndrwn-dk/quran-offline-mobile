@@ -20,4 +20,15 @@ void main() {
     expect(timeOfDayPeriodForHour(19), TimeOfDayPeriod.evening);
     expect(timeOfDayPeriodForHour(14), isNull);
   });
+
+  test('HijriDate.ymdKey zero-pads month and day', () {
+    const h = HijriDate(year: 1448, month: 2, day: 7);
+    expect(h.ymdKey, '1448-02-07');
+  });
+
+  test('timeOfDayPeriodForHour treats late night as evening', () {
+    expect(timeOfDayPeriodForHour(23), TimeOfDayPeriod.evening);
+    expect(timeOfDayPeriodForHour(3), TimeOfDayPeriod.evening);
+    expect(timeOfDayPeriodForHour(14), isNull);
+  });
 }

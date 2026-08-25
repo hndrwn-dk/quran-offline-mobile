@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/day_period.dart';
+import 'package:quran_offline/core/utils/hijri_date.dart';
 import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
 /// Unified home hero (layout C): section label, time-of-day salam, tagline.
@@ -16,6 +18,25 @@ class HomeHeroCard extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     final period = homeDayPeriodFromTime(DateTime.now());
     final periodColor = homeDayPeriodIconColor(period, colorScheme);
+    final now = ref.watch(reflectionNowProvider);
+    final pickAsync = ref.watch(reflectionPickProvider);
+    final hijri = HijriDate.fromGregorian(now);
+    final occasionBadgeKey = pickAsync.maybeWhen(
+      data: (pick) {
+        final type = pick.entry.trigger?.type;
+        if (type == 'hijri_day' || type == 'hijri_month') {
+          return pick.entry.badgeKey;
+        }
+        return null;
+      },
+      orElse: () => null,
+    );
+    final headline = AppLocalizations.getHijriHeadline(
+      language: lang,
+      gregorianWeekday: now.weekday,
+      hijri: hijri,
+      occasionBadgeKey: occasionBadgeKey,
+    );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
@@ -81,29 +102,28 @@ class HomeHeroCard extends ConsumerWidget {
                   height: 1.4,
                 ),
               ),
-              if (AppLocalizations.getHomeFridayHint(lang) case final hint?) ...[
-                const SizedBox(height: 10),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: colorScheme.primaryContainer.withValues(alpha: 0.35),
-                    border: Border.all(
-                      color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                    ),
+              const SizedBox(height: 10),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: colorScheme.primaryContainer.withValues(alpha: 0.35),
+                  border: Border.all(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    child: Text(
-                      hint,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.primary,
-                        height: 1.4,
-                        fontWeight: FontWeight.w500,
-                      ),
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  child: Text(
+                    headline,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.primary,
+                      height: 1.4,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
-              ],
+              ),
             ],
           ),
         ),
