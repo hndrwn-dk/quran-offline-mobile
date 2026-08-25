@@ -1,45 +1,40 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_offline/core/providers/reflection_history_store.dart';
-import 'package:quran_offline/core/utils/reflection_slot.dart';
 
 void main() {
-  test('write then read returns same ymd slot id', () async {
+  test('write then read today returns same ymd id', () async {
     SharedPreferences.setMockInitialValues({});
     final store = ReflectionHistoryStore();
-    await store.write(
-      const ReflectionSlotCache(
-        ymd: '2026-08-25',
-        slot: ReflectionSlot.morning,
-        id: 'pagi_syukur',
-      ),
-    );
-    final got = await store.read();
-    expect(got?.ymd, '2026-08-25');
-    expect(got?.slot, ReflectionSlot.morning);
-    expect(got?.id, 'pagi_syukur');
+    await store.writeToday(ymd: '1448-02-27', id: 'jumat_kahf');
+    final got = await store.readToday();
+    expect(got?.ymd, '1448-02-27');
+    expect(got?.id, 'jumat_kahf');
   });
 
-  test('read returns null for empty prefs', () async {
+  test('readToday returns null for empty prefs', () async {
     SharedPreferences.setMockInitialValues({});
     final store = ReflectionHistoryStore();
-    expect(await store.read(), isNull);
+    expect(await store.readToday(), isNull);
   });
 
-  test('malformed JSON returns null without throwing', () async {
+  test('malformed today JSON returns null without throwing', () async {
     SharedPreferences.setMockInitialValues({
-      ReflectionHistoryStore.prefsKey: '{not-json',
+      ReflectionHistoryStore.todayKey: '{not-json',
     });
     final store = ReflectionHistoryStore();
-    expect(await store.read(), isNull);
+    expect(await store.readToday(), isNull);
   });
 
-  test('unknown slot name returns null without throwing', () async {
-    SharedPreferences.setMockInitialValues({
-      ReflectionHistoryStore.prefsKey:
-          '{"ymd":"2026-08-25","slot":"night","id":"x"}',
-    });
+  test('readRecentIds trims to the current cap', () async {
+    SharedPreferences.setMockInitialValues({});
     final store = ReflectionHistoryStore();
-    expect(await store.read(), isNull);
+    for (var i = 0; i < 20; i++) {
+      await store.pushRecentId('id-$i');
+    }
+    final trimmed = await store.readRecentIds(cap: 10);
+    expect(trimmed.length, 10);
+    expect(trimmed.first, 'id-19');
+    expect(trimmed.last, 'id-10');
   });
 }

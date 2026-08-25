@@ -1,73 +1,84 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:quran_offline/core/utils/reflection_slot.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ReflectionSlotCache {
+class ReflectionTodayCache {
   final String ymd;
-  final ReflectionSlot slot;
   final String id;
-  const ReflectionSlotCache({
-    required this.ymd,
-    required this.slot,
-    required this.id,
-  });
+
+  const ReflectionTodayCache({required this.ymd, required this.id});
 }
 
 class ReflectionHistoryStore {
-  static const prefsKey = 'reflection_slot_pick';
+  static const saltKey = 'reflection_install_salt';
+  static const recentKey = 'reflection_recent_ids';
+  static const todayKey = 'reflection_today';
 
-  String localYmd(DateTime now) {
-    final y = now.year.toString().padLeft(4, '0');
-    final m = now.month.toString().padLeft(2, '0');
-    final d = now.day.toString().padLeft(2, '0');
-    return '$y-$m-$d';
+  Future<String> readOrCreateInstallSalt() async {
+    final prefs = await SharedPreferences.getInstance();
+    final existing = prefs.getString(saltKey);
+    if (existing != null && existing.isNotEmpty) return existing;
+    final salt = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
+    await prefs.setString(saltKey, salt);
+    return salt;
   }
 
-  Future<ReflectionSlotCache?> read() async {
+  Future<ReflectionTodayCache?> readToday() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(prefsKey);
+    final raw = prefs.getString(todayKey);
     if (raw == null || raw.isEmpty) return null;
     try {
       final decoded = jsonDecode(raw);
       if (decoded is! Map) {
-        debugPrint('ReflectionHistoryStore: cache is not a JSON object');
+        debugPrint('ReflectionHistoryStore: today cache is not a JSON object');
         return null;
       }
       final json = Map<String, dynamic>.from(decoded);
       final ymd = json['ymd'];
       final id = json['id'];
-      final slot = _slotFromName(json['slot']);
-      if (ymd is! String || id is! String || slot == null) {
-        debugPrint('ReflectionHistoryStore: malformed cache $raw');
+      if (ymd is! String || id is! String) {
+        debugPrint('ReflectionHistoryStore: malformed today cache $raw');
         return null;
       }
-      return ReflectionSlotCache(ymd: ymd, slot: slot, id: id);
+      return ReflectionTodayCache(ymd: ymd, id: id);
     } catch (e, st) {
-      debugPrint('ReflectionHistoryStore: parse failed: $e\n$st');
+      debugPrint('ReflectionHistoryStore: today parse failed: $e\n$st');
       return null;
     }
   }
 
-  Future<void> write(ReflectionSlotCache cache) async {
+  Future<void> writeToday({required String ymd, required String id}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-      prefsKey,
-      jsonEncode({
-        'ymd': cache.ymd,
-        'slot': cache.slot.name,
-        'id': cache.id,
-      }),
+      todayKey,
+      jsonEncode({'ymd': ymd, 'id': id}),
     );
   }
 
-  ReflectionSlot? _slotFromName(Object? name) {
-    return switch (name) {
-      'morning' => ReflectionSlot.morning,
-      'midday' => ReflectionSlot.midday,
-      'evening' => ReflectionSlot.evening,
-      _ => null,
-    };
+  Future<List<String>> readRecentIds({int? cap}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(recentKey);
+    if (raw == null || raw.isEmpty) return const [];
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return const [];
+      final list = decoded.whereType<String>().toList();
+      if (cap == null || list.length <= cap) return list;
+      return list.sublist(0, cap);
+    } catch (e, st) {
+      debugPrint('ReflectionHistoryStore: recent parse failed: $e\n$st');
+      return const [];
+    }
+  }
+
+  Future<void> pushRecentId(String id, {int? cap}) async {
+    final current = await readRecentIds();
+    final next = [id, ...current];
+    if (cap != null && next.length > cap) {
+      next.removeRange(cap, next.length);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(recentKey, jsonEncode(next));
   }
 }

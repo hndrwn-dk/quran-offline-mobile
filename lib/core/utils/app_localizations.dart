@@ -124,7 +124,8 @@ class AppLocalizations {
   }
 
   static String getDailyThemeLabel(String theme, String language) {
-    return getThemeCategoryLabel(normalizeLifeSituationCategoryKey(theme), language);
+    return getThemeCategoryLabel(
+        normalizeLifeSituationCategoryKey(theme), language);
   }
 
   /// Maps legacy theme catalog keys to unified Tema hidup keys.
@@ -497,8 +498,7 @@ class AppLocalizations {
     return switch (language) {
       'id' =>
         'Katalog tema hidup tidak dapat dimuat. Tutup aplikasi sepenuhnya lalu buka lagi.',
-      'en' =>
-        'Could not load the life themes catalog. Fully restart the app.',
+      'en' => 'Could not load the life themes catalog. Fully restart the app.',
       'zh' => '无法加载生活主题目录。请完全关闭后重新打开应用。',
       'ja' => '生活テーマの目録を読み込めませんでした。アプリを完全に終了して再起動してください。',
       _ => 'Could not load the life themes catalog. Fully restart the app.',
@@ -528,7 +528,8 @@ class AppLocalizations {
       'zh' => '无法加载真主美名目录。请停止应用并完整重新安装（flutter run）。热重载不会打包新文件。',
       'ja' =>
         'アッラーの美名の目録を読み込めませんでした。アプリを停止し、完全に再ビルドしてください（flutter run）。ホットリロードでは新しいファイルは含まれません。',
-      _ => 'Could not load the Names of Allah catalog. Stop the app and run a full rebuild (flutter run).',
+      _ =>
+        'Could not load the Names of Allah catalog. Stop the app and run a full rebuild (flutter run).',
     };
   }
 
@@ -598,11 +599,11 @@ class AppLocalizations {
         'Metode terstruktur: hari biasa hafalan baru (1 unit), Jumat setoran (mengulang), lalu beberapa hari memantapkan (tahsin). Setoran Jumat muncul otomatis di kartu tugas. Konsisten setiap hari.',
       'en' =>
         'Structured method: weekdays for new memorization (one unit), Friday setoran (review), then a few tahsin days to strengthen. Friday setoran appears in the task card. Stay consistent.',
-      'zh' =>
-        '结构化方法：平日背新内容（一个单元），周五复习（setoran），随后几天塔辛巩固。周五复习自动显示在任务卡片。每天坚持。',
+      'zh' => '结构化方法：平日背新内容（一个单元），周五复习（setoran），随后几天塔辛巩固。周五复习自动显示在任务卡片。每天坚持。',
       'ja' =>
         '構成された方法：平日は新しい暗誦（1単位）、金曜は復習（セットラン）、その後数日タフスィーンで定着。金曜の復習はタスクカードに表示されます。毎日続けましょう。',
-      _ => 'Structured method: weekdays for new units, Friday setoran, then tahsin days.',
+      _ =>
+        'Structured method: weekdays for new units, Friday setoran, then tahsin days.',
     };
   }
 
@@ -899,8 +900,7 @@ class AppLocalizations {
       'en' =>
         'Review Sat–Thu memorization. Mark "setoran done" after practice (personal note).',
       'zh' => '复习本周六至周四内容。练习后可标记“已复习”（个人记录）。',
-      'ja' =>
-        '土〜木曜の暗誦を復習。練習後に「済み」とマーク（個人メモ）。',
+      'ja' => '土〜木曜の暗誦を復習。練習後に「済み」とマーク（個人メモ）。',
       _ => 'Review this week\'s units. Mark done after self-practice.',
     };
   }
@@ -1002,8 +1002,7 @@ class AppLocalizations {
       'en' =>
         'Self-practice only — setoran with a teacher happens outside the app.',
       'zh' => '自主练习记录，向老师复习请在应用外进行。',
-      'ja' =>
-        '自主練習の記録です。師匠へのセットランはアプリ外で行ってください。',
+      'ja' => '自主練習の記録です。師匠へのセットランはアプリ外で行ってください。',
       _ => 'Self-practice note — teacher setoran is outside the app.',
     };
   }
@@ -1016,14 +1015,14 @@ class AppLocalizations {
         'Recite from memory — faint sketch text. Tap Check recitation, recite, then Finish check. Correct = bold; wrong = red.',
       'zh' => '凭记忆诵读 — 淡影文字。点核对诵读，诵读后点完成。正确加粗，错误变红。',
       'ja' => '暗誦で読む — 薄い文字。読みチェック→読む→完了。正しければ太字、誤りは赤。',
-      _ => 'Recite from memory. Check recitation, then finish. Correct = bold; wrong = red.',
+      _ =>
+        'Recite from memory. Check recitation, then finish. Correct = bold; wrong = red.',
     };
   }
 
   static String getSetoranCheckOnlyHint(String language) {
     return switch (language) {
-      'id' =>
-        'Atau pakai Sudah benar / Perlu ulang jika tanpa internet',
+      'id' => 'Atau pakai Sudah benar / Perlu ulang jika tanpa internet',
       'en' => 'Or use Already correct / Need repeat when offline',
       'zh' => '无网络时可用手动标记',
       'ja' => 'オフライン時は手動で判定できます',
@@ -1063,7 +1062,8 @@ class AppLocalizations {
 
   static String getSetoranCheckListeningHint(String language) {
     return switch (language) {
-      'id' => 'Baca ayat sekarang — teks akan tebal jika cocok, merah jika salah',
+      'id' =>
+        'Baca ayat sekarang — teks akan tebal jika cocok, merah jika salah',
       'en' => 'Recite the ayah now — text turns bold if correct, red if wrong',
       'zh' => '请诵读本节 — 正确则加粗，错误则变红',
       'ja' => '節を読んでください — 正しければ太字、誤りは赤',
@@ -1104,7 +1104,8 @@ class AppLocalizations {
 
   static String getSetoranAfterPlaybackCheckHint(String language) {
     return switch (language) {
-      'id' => 'Sudah dengar rekaman? Ketuk Cek bacaan dan baca ayat sekali lagi',
+      'id' =>
+        'Sudah dengar rekaman? Ketuk Cek bacaan dan baca ayat sekali lagi',
       'en' => 'Heard your recording? Tap Check recitation and recite once more',
       'zh' => '听完录音？点核对诵读并再读一遍',
       'ja' => '録音を聞き終えたら読みチェックで再度読んでください',
@@ -1144,10 +1145,8 @@ class AppLocalizations {
 
   static String getSetoranSpeechUncertain(String language) {
     return switch (language) {
-      'id' =>
-        'Suara tidak jelas — tandai manual atau rekam ulang',
-      'en' =>
-        'Could not hear clearly — mark manually or record again',
+      'id' => 'Suara tidak jelas — tandai manual atau rekam ulang',
+      'en' => 'Could not hear clearly — mark manually or record again',
       'zh' => '听不清楚 — 请手动标记或重新录音',
       'ja' => '聞き取れません — 手動で判定するか再録音してください',
       _ => 'Could not hear clearly — mark manually or record again',
@@ -1156,10 +1155,8 @@ class AppLocalizations {
 
   static String getSetoranSpeechUnavailable(String language) {
     return switch (language) {
-      'id' =>
-        'Pengenalan suara tidak tersedia — gunakan tandai manual',
-      'en' =>
-        'Speech recognition unavailable — use manual marking',
+      'id' => 'Pengenalan suara tidak tersedia — gunakan tandai manual',
+      'en' => 'Speech recognition unavailable — use manual marking',
       'zh' => '语音识别不可用 — 请手动标记',
       'ja' => '音声認識が使えません — 手動で判定してください',
       _ => 'Speech recognition unavailable — mark manually',
@@ -1187,7 +1184,8 @@ class AppLocalizations {
       'zh' => '未安装阿拉伯语语音包。无需更改系统语言 — 仅在 Google 语音输入中添加阿拉伯语，或手动标记。',
       'ja' =>
         'アラビア語の音声パックがありません。システム言語は変更不要 — Google 音声入力にアラビア語を追加するか、手動で判定してください。',
-      _ => 'Arabic voice pack is not installed. Add Arabic in voice input settings, or mark manually.',
+      _ =>
+        'Arabic voice pack is not installed. Add Arabic in voice input settings, or mark manually.',
     };
   }
 
@@ -1196,69 +1194,64 @@ class AppLocalizations {
     return switch (language) {
       'id' =>
         'Arab sudah dipilih di Google voice typing? Cek bacaan pakai internet '
-        '(Wi‑Fi/data) — paket offline Arab sering tidak ada di Pixel, itu normal.',
+            '(Wi‑Fi/data) — paket offline Arab sering tidak ada di Pixel, itu normal.',
       'en' =>
         'Auto check needs an Arabic voice pack (not a system language change). '
-        'New Gboard builds often hide Languages — use the steps below.',
+            'New Gboard builds often hide Languages — use the steps below.',
       'zh' => '自动核对需要阿拉伯语语音包。新版 Gboard 可能没有 Languages 菜单 — 请按下方步骤操作。',
-      'ja' =>
-        '自動チェックにはアラビア語音声パックが必要です。'
-        '新しい Gboard では Languages がない場合があります — 下の手順を参照。',
+      'ja' => '自動チェックにはアラビア語音声パックが必要です。'
+          '新しい Gboard では Languages がない場合があります — 下の手順を参照。',
       _ => 'Auto check needs Arabic voice input. See steps below.',
     };
   }
 
   static String getSetoranArabicVoiceSetupSteps(String language) {
     return switch (language) {
-      'id' =>
-        'Pixel & Samsung (tanpa ubah bahasa HP):\n\n'
-        'A) Google voice typing (paling umum)\n'
-        'Settings → System → Languages & input\n'
-        '→ On-screen keyboard → Google voice typing\n'
-        '→ Offline speech recognition → tab All\n'
-        '→ centang Arabic (Saudi Arabia) / العربية (السعودية)\n'
-        '  (paling cocok untuk bacaan Qur\'an; Egypt juga OK)\n\n'
-        'Offline speech: Arab sering TIDAK ada di daftar download Pixel — '
-        'abaikan, cukup langkah A + internet saat Cek bacaan.\n\n'
-        'B) Lewat tile Google\n'
-        'Settings → Google → All services\n'
-        '→ Search, Assistant & Voice → Voice\n'
-        '→ Offline speech recognition → Arabic\n\n'
-        'C) Samsung khusus\n'
-        'Settings → General management\n'
-        '→ Keyboard list and default → Google voice typing\n'
-        '→ Offline speech recognition / Add language\n\n'
-        'D) Update dulu\n'
-        'Play Store: update Google, Gboard, '
-        'Speech Services by Google\n\n'
-        'Setelah download: kembali ke app → ketuk Cek lagi.',
-      'en' =>
-        'Pixel & Samsung (no system language change):\n\n'
-        'A) Google voice typing\n'
-        'Settings → System → Languages & input\n'
-        '→ On-screen keyboard → Google voice typing\n'
-        '→ Offline speech recognition → All\n'
-        '→ Arabic (Saudi Arabia) preferred for Qur\'an\n\n'
-        'B) Google settings tile\n'
-        'Settings → Google → Search, Assistant & Voice → Voice\n'
-        '→ Offline speech recognition → Arabic\n\n'
-        'C) Samsung\n'
-        'Settings → General management → Keyboard list and default\n'
-        '→ Google voice typing → Offline speech recognition\n\n'
-        'D) Update Google, Gboard, Speech Services by Google\n\n'
-        'Then return here and tap Check again.',
-      'zh' =>
-        'Pixel 与 Samsung：\n'
-        '设置 → 系统 → 语言和输入法 → 屏幕键盘 → Google 语音输入\n'
-        '→ 离线语音识别 → 全部 → 下载阿拉伯语\n\n'
-        '或：设置 → Google → 语音 → 离线语音识别\n\n'
-        '完成后返回应用点“重新检测”。',
-      'ja' =>
-        'Pixel / Samsung:\n'
-        '設定 → システム → 言語と入力 → 画面キーボード\n'
-        '→ Google 音声入力 → オフライン音声認識 → アラビア語\n\n'
-        'または 設定 → Google → 音声 → オフライン音声認識\n\n'
-        '戻って「再確認」をタップ。',
+      'id' => 'Pixel & Samsung (tanpa ubah bahasa HP):\n\n'
+          'A) Google voice typing (paling umum)\n'
+          'Settings → System → Languages & input\n'
+          '→ On-screen keyboard → Google voice typing\n'
+          '→ Offline speech recognition → tab All\n'
+          '→ centang Arabic (Saudi Arabia) / العربية (السعودية)\n'
+          '  (paling cocok untuk bacaan Qur\'an; Egypt juga OK)\n\n'
+          'Offline speech: Arab sering TIDAK ada di daftar download Pixel — '
+          'abaikan, cukup langkah A + internet saat Cek bacaan.\n\n'
+          'B) Lewat tile Google\n'
+          'Settings → Google → All services\n'
+          '→ Search, Assistant & Voice → Voice\n'
+          '→ Offline speech recognition → Arabic\n\n'
+          'C) Samsung khusus\n'
+          'Settings → General management\n'
+          '→ Keyboard list and default → Google voice typing\n'
+          '→ Offline speech recognition / Add language\n\n'
+          'D) Update dulu\n'
+          'Play Store: update Google, Gboard, '
+          'Speech Services by Google\n\n'
+          'Setelah download: kembali ke app → ketuk Cek lagi.',
+      'en' => 'Pixel & Samsung (no system language change):\n\n'
+          'A) Google voice typing\n'
+          'Settings → System → Languages & input\n'
+          '→ On-screen keyboard → Google voice typing\n'
+          '→ Offline speech recognition → All\n'
+          '→ Arabic (Saudi Arabia) preferred for Qur\'an\n\n'
+          'B) Google settings tile\n'
+          'Settings → Google → Search, Assistant & Voice → Voice\n'
+          '→ Offline speech recognition → Arabic\n\n'
+          'C) Samsung\n'
+          'Settings → General management → Keyboard list and default\n'
+          '→ Google voice typing → Offline speech recognition\n\n'
+          'D) Update Google, Gboard, Speech Services by Google\n\n'
+          'Then return here and tap Check again.',
+      'zh' => 'Pixel 与 Samsung：\n'
+          '设置 → 系统 → 语言和输入法 → 屏幕键盘 → Google 语音输入\n'
+          '→ 离线语音识别 → 全部 → 下载阿拉伯语\n\n'
+          '或：设置 → Google → 语音 → 离线语音识别\n\n'
+          '完成后返回应用点“重新检测”。',
+      'ja' => 'Pixel / Samsung:\n'
+          '設定 → システム → 言語と入力 → 画面キーボード\n'
+          '→ Google 音声入力 → オフライン音声認識 → アラビア語\n\n'
+          'または 設定 → Google → 音声 → オフライン音声認識\n\n'
+          '戻って「再確認」をタップ。',
       _ => 'Settings → Languages & input → Google voice typing\n'
           '→ Offline speech recognition → Arabic',
     };
@@ -1328,17 +1321,14 @@ class AppLocalizations {
 
   static String getSetoranArabicVoiceBlockedBody(String language) {
     return switch (language) {
-      'id' =>
-        'HP belum mendeteksi bahasa Arab untuk pengenalan suara. '
-        'Pasang dulu di Google voice typing (Arabic Saudi Arabia), ketuk Cek lagi, '
-        'baru pakai Cek bacaan. Atau gunakan Sudah benar / Perlu ulang manual.',
-      'en' =>
-        'This device has not registered Arabic for speech recognition. '
-        'Add Arabic (Saudi Arabia) in Google voice typing, tap Check again, '
-        'then use Check recitation — or mark manually.',
+      'id' => 'HP belum mendeteksi bahasa Arab untuk pengenalan suara. '
+          'Pasang dulu di Google voice typing (Arabic Saudi Arabia), ketuk Cek lagi, '
+          'baru pakai Cek bacaan. Atau gunakan Sudah benar / Perlu ulang manual.',
+      'en' => 'This device has not registered Arabic for speech recognition. '
+          'Add Arabic (Saudi Arabia) in Google voice typing, tap Check again, '
+          'then use Check recitation — or mark manually.',
       'zh' => '设备尚未注册阿拉伯语语音识别。请先添加阿拉伯语并重新检测，或手动标记。',
-      'ja' =>
-        '端末がアラビア語音声認識を検出していません。設定後に再確認するか、手動で判定してください。',
+      'ja' => '端末がアラビア語音声認識を検出していません。設定後に再確認するか、手動で判定してください。',
       _ => 'Add Arabic voice input first, or mark manually.',
     };
   }
@@ -1642,8 +1632,7 @@ class AppLocalizations {
       'en' =>
         'Some ayahs are correct but tajweed notes remain. You may mark done or retry weaker ayahs.',
       'zh' => '部分经文已正确但仍有塔吉维德说明。可提交或重试薄弱经文。',
-      'ja' =>
-        '正解の節もありますがタジウィードの注意があります。提出するか弱い節をやり直せます。',
+      'ja' => '正解の節もありますがタジウィードの注意があります。提出するか弱い節をやり直せます。',
       _ => 'You may mark done or retry weaker ayahs.',
     };
   }
@@ -1675,18 +1664,14 @@ class AppLocalizations {
     int noteCount,
   ) {
     return switch (language) {
-      'id' =>
-        'Anda menyelesaikan $done dari $total ayat. '
-        '${noteCount > 0 ? 'Ada $noteCount catatan tajwid untuk dipelajari.' : 'Tidak ada catatan tajwid khusus.'}',
-      'en' =>
-        'You completed $done of $total ayahs. '
-        '${noteCount > 0 ? 'There are $noteCount tajweed notes to review.' : 'No specific tajweed notes.'}',
-      'zh' =>
-        '已完成 $done/$total 节。'
-        '${noteCount > 0 ? '有 $noteCount 条塔吉维德说明可供复习。' : '无特别塔吉维德说明。'}',
-      'ja' =>
-        '$total 節中 $done 節を完了しました。'
-        '${noteCount > 0 ? 'タジウィードの注意が $noteCount 件あります。' : '特記事項はありません。'}',
+      'id' => 'Anda menyelesaikan $done dari $total ayat. '
+          '${noteCount > 0 ? 'Ada $noteCount catatan tajwid untuk dipelajari.' : 'Tidak ada catatan tajwid khusus.'}',
+      'en' => 'You completed $done of $total ayahs. '
+          '${noteCount > 0 ? 'There are $noteCount tajweed notes to review.' : 'No specific tajweed notes.'}',
+      'zh' => '已完成 $done/$total 节。'
+          '${noteCount > 0 ? '有 $noteCount 条塔吉维德说明可供复习。' : '无特别塔吉维德说明。'}',
+      'ja' => '$total 節中 $done 節を完了しました。'
+          '${noteCount > 0 ? 'タジウィードの注意が $noteCount 件あります。' : '特記事項はありません。'}',
       _ => 'Completed $done of $total ayahs.',
     };
   }
@@ -1848,7 +1833,8 @@ class AppLocalizations {
   static String getSetoranRevealAllHint(String language, int done, int total) {
     return switch (language) {
       'id' => 'Ayat jelas: $done / $total — selesaikan semua untuk setoran.',
-      'en' => 'Revealed: $done / $total — complete all ayahs to finish setoran.',
+      'en' =>
+        'Revealed: $done / $total — complete all ayahs to finish setoran.',
       'zh' => '已显示：$done / $total — 完成所有节后标记复习。',
       'ja' => '表示済み：$done / $total — 全節で完了。',
       _ => 'Revealed: $done / $total ayahs.',
@@ -2168,7 +2154,8 @@ class AppLocalizations {
         'Support Quran Offline development here. The app is free forever with no ads.',
       'zh' => '在这里支持 Quran Offline 的开发。应用永久免费，无广告。',
       'ja' => 'こちらから Quran Offline の開発をサポートしてください。アプリは永久無料・広告なしです。',
-      _ => 'Support Quran Offline development here. The app is free forever with no ads.',
+      _ =>
+        'Support Quran Offline development here. The app is free forever with no ads.',
     };
   }
 
@@ -2202,7 +2189,8 @@ class AppLocalizations {
     };
   }
 
-  static String getMushafSaveSurahAction(String language, {bool plural = false}) {
+  static String getMushafSaveSurahAction(String language,
+      {bool plural = false}) {
     return switch (language) {
       'id' => plural ? 'Unduh surah' : 'Unduh surah',
       'en' => plural ? 'Download surahs' : 'Download surah',
@@ -2421,12 +2409,49 @@ class AppLocalizations {
   }
 
   static String getHomeTagline(String language) {
+    return homeTaglinePool(language).first.text;
+  }
+
+  /// Daily hero taglines. `period` is `morning`, `evening`, or null (any).
+  static List<({String text, String? period})> homeTaglinePool(
+    String language,
+  ) {
     return switch (language) {
-      'id' => 'Qur\'an di genggaman, ketenangan di hati.',
-      'en' => 'The Qur\'an in your hands, peace in your heart.',
-      'zh' => '古兰在握，心安于内。',
-      'ja' => 'クルアーンを手に、心に安らぎを。',
-      _ => 'The Qur\'an in your hands, peace in your heart.',
+      'id' => const [
+          (text: 'Qur\'an di genggaman, ketenangan di hati.', period: null),
+          (text: 'Pagi yang tenang bersama ayat-Nya.', period: 'morning'),
+          (text: 'Sedikit bacaan, hati lebih lapang.', period: null),
+          (text: 'Malam yang lembut untuk mengingat-Nya.', period: 'evening'),
+          (text: 'Satu ayat cukup untuk hari ini.', period: null),
+          (text: 'Hati yang tenang dekat dengan Qur\'an.', period: null),
+        ],
+      'zh' => const [
+          (text: '古兰在握，心安于内。', period: null),
+          (text: '清晨与经文同在。', period: 'morning'),
+          (text: '少许诵读，心地更宽。', period: null),
+          (text: '夜晚轻柔地记念。', period: 'evening'),
+          (text: '今日一节经文已足够。', period: null),
+          (text: '平静的心贴近古兰。', period: null),
+        ],
+      'ja' => const [
+          (text: 'クルアーンを手に、心に安らぎを。', period: null),
+          (text: '朝の静けさを御言葉とともに。', period: 'morning'),
+          (text: '少しの読誦で、心が広がる。', period: null),
+          (text: '夜は穏やかに御方を想う。', period: 'evening'),
+          (text: '今日は一節で足りる。', period: null),
+          (text: '穏やかな心はクルアーンのそばに。', period: null),
+        ],
+      _ => const [
+          (
+            text: 'The Qur\'an in your hands, peace in your heart.',
+            period: null
+          ),
+          (text: 'A quiet morning with His words.', period: 'morning'),
+          (text: 'A little recitation, a wider heart.', period: null),
+          (text: 'A gentle evening to remember Him.', period: 'evening'),
+          (text: 'One verse can be enough today.', period: null),
+          (text: 'A calm heart stays near the Qur\'an.', period: null),
+        ],
     };
   }
 
@@ -2551,11 +2576,16 @@ class AppLocalizations {
 
   static String getHijriHeadline({
     required String language,
-    required int gregorianWeekday,
+    required int weekday,
     required HijriDate hijri,
+    int? clockHour,
     String? occasionBadgeKey,
   }) {
-    final weekdayName = getGregorianWeekdayName(gregorianWeekday, language);
+    final weekdayName = _headlineWeekdayName(
+      language: language,
+      weekday: weekday,
+      clockHour: clockHour,
+    );
     final monthName = getHijriMonthName(hijri.month, language);
     final text = '$weekdayName, ${hijri.day} $monthName ${hijri.year}';
     switch (occasionBadgeKey) {
@@ -2566,6 +2596,22 @@ class AppLocalizations {
       default:
         return text;
     }
+  }
+
+  static String _headlineWeekdayName({
+    required String language,
+    required int weekday,
+    int? clockHour,
+  }) {
+    final name = getGregorianWeekdayName(weekday, language);
+    final afterMaghrib = clockHour != null && clockHour >= kMaghribRolloverHour;
+    if (!afterMaghrib) return name;
+    return switch (language) {
+      'id' => 'Malam $name',
+      'zh' => '$name前夜',
+      'ja' => '$nameの前夜',
+      _ => 'Eve of $name',
+    };
   }
 
   static String getWeeklyReminderNotifTitleNotRead(String language) {
@@ -2581,7 +2627,8 @@ class AppLocalizations {
   static String getWeeklyReminderNotifBodyNotRead(String language) {
     return switch (language) {
       'id' => 'Luangkan waktu sore ini — lanjutkan dari posisi terakhir.',
-      'en' => 'Take a moment this afternoon — continue from where you left off.',
+      'en' =>
+        'Take a moment this afternoon — continue from where you left off.',
       'zh' => '今天下午抽空继续阅读，从上次位置接着读。',
       'ja' => '午後の時間に、前回の続きから読みましょう。',
       _ => 'Take a moment this afternoon — continue from where you left off.',
@@ -2718,7 +2765,8 @@ class AppLocalizations {
     return scopeLabel;
   }
 
-  static String formatHomeReadProgressPercent(int percent, String scope, String language) {
+  static String formatHomeReadProgressPercent(
+      int percent, String scope, String language) {
     return switch (scope) {
       'surah' => switch (language) {
           'id' => '$percent% surah ini',
@@ -3058,21 +3106,25 @@ class AppLocalizations {
   static String getSearchNoResultsForFilter(String language, String filter) {
     return switch (filter) {
       'surah' => switch (language) {
-          'id' => 'Tidak ada surat pada filter ini. Coba "Semua" atau nama surat lain.',
-          'en' => 'No surah matches this filter. Try All or another surah name.',
+          'id' =>
+            'Tidak ada surat pada filter ini. Coba "Semua" atau nama surat lain.',
+          'en' =>
+            'No surah matches this filter. Try All or another surah name.',
           'zh' => '此筛选下没有章节。请尝试“全部”或其他章节名。',
           'ja' => 'このフィルターに該当するスーラはありません。「すべて」や別の名前をお試しください。',
           _ => 'No surah matches this filter. Try All or another surah name.',
         },
       'juz' => switch (language) {
-          'id' => 'Tidak ada juz pada filter ini. Coba angka 1–30 atau filter "Semua".',
+          'id' =>
+            'Tidak ada juz pada filter ini. Coba angka 1–30 atau filter "Semua".',
           'en' => 'No juz matches this filter. Try 1–30 or the All filter.',
           'zh' => '此筛选下没有卷。请尝试 1–30 或“全部”。',
           'ja' => 'このフィルターに該当するジュズはありません。1–30 または「すべて」をお試しください。',
           _ => 'No juz matches this filter. Try 1–30 or the All filter.',
         },
       'page' => switch (language) {
-          'id' => 'Tidak ada halaman pada filter ini. Coba nomor halaman atau "Semua".',
+          'id' =>
+            'Tidak ada halaman pada filter ini. Coba nomor halaman atau "Semua".',
           'en' => 'No page matches this filter. Try a page number or All.',
           'zh' => '此筛选下没有页。请尝试页码或“全部”。',
           'ja' => 'このフィルターに該当するページはありません。ページ番号または「すべて」をお試しください。',
@@ -3080,27 +3132,27 @@ class AppLocalizations {
         },
       'ayat' => switch (language) {
           'id' =>
-              'Tidak ada ayat pada filter ini. Coba format 2:255, teks Arab ayat, atau filter "Semua".',
+            'Tidak ada ayat pada filter ini. Coba format 2:255, teks Arab ayat, atau filter "Semua".',
           'en' =>
-              'No verse matches this filter. Try 2:255, Arabic verse text, or All.',
+            'No verse matches this filter. Try 2:255, Arabic verse text, or All.',
           'zh' => '此筛选下没有经文。请尝试 2:255、阿拉伯文经文或“全部”。',
-          'ja' =>
-              'このフィルターに該当する節はありません。2:255、アラビア語、または「すべて」をお試しください。',
-          _ => 'No verse matches this filter. Try 2:255, Arabic verse text, or All.',
+          'ja' => 'このフィルターに該当する節はありません。2:255、アラビア語、または「すべて」をお試しください。',
+          _ =>
+            'No verse matches this filter. Try 2:255, Arabic verse text, or All.',
         },
       'terjemahan' => switch (language) {
           'id' =>
-              'Tidak ada terjemahan pada filter ini. Coba kata dalam teks terjemahan atau filter "Semua".',
+            'Tidak ada terjemahan pada filter ini. Coba kata dalam teks terjemahan atau filter "Semua".',
           'en' =>
-              'No translation matches this filter. Try a word from the translation or All.',
+            'No translation matches this filter. Try a word from the translation or All.',
           'zh' => '此筛选下没有翻译结果。请尝试译文中的词或“全部”。',
-          'ja' =>
-              'このフィルターに該当する翻訳はありません。訳文の語句または「すべて」をお試しください。',
-          _ => 'No translation matches this filter. Try a word from the translation or All.',
+          'ja' => 'このフィルターに該当する翻訳はありません。訳文の語句または「すべて」をお試しください。',
+          _ =>
+            'No translation matches this filter. Try a word from the translation or All.',
         },
       _ => switch (language) {
           'id' =>
-              'Tidak ada hasil untuk filter ini. Coba filter "Semua" atau kata kunci lain.',
+            'Tidak ada hasil untuk filter ini. Coba filter "Semua" atau kata kunci lain.',
           'en' => 'No results for this filter. Try All or a different keyword.',
           'zh' => '此筛选下没有结果。请尝试“全部”或其他关键词。',
           'ja' => 'このフィルターに結果はありません。「すべて」や別のキーワードをお試しください。',
@@ -3249,12 +3301,12 @@ class AppLocalizations {
       'page' => '1',
       'ayat' => '2:255',
       'terjemahan' => switch (language) {
-        'id' => 'rahmat',
-        'en' => 'mercy',
-        'zh' => '慈悲',
-        'ja' => '慈悲',
-        _ => 'mercy',
-      },
+          'id' => 'rahmat',
+          'en' => 'mercy',
+          'zh' => '慈悲',
+          'ja' => '慈悲',
+          _ => 'mercy',
+        },
       'arabic' => 'الرحمن',
       _ => '',
     };
@@ -3288,9 +3340,11 @@ class AppLocalizations {
       'language_title' => _getLanguageTitle(language),
       'language_subtitle' => _getLanguageSubtitle(language),
       'translation_language_title' => _getTranslationLanguageTitle(language),
-      'translation_language_subtitle' => _getTranslationLanguageSubtitle(language),
+      'translation_language_subtitle' =>
+        _getTranslationLanguageSubtitle(language),
       'show_transliteration_title' => _getShowTransliterationTitle(language),
-      'show_transliteration_subtitle' => _getShowTransliterationSubtitle(language),
+      'show_transliteration_subtitle' =>
+        _getShowTransliterationSubtitle(language),
       'show_translation_title' => _getShowTranslationTitle(language),
       'show_translation_subtitle' => _getShowTranslationSubtitle(language),
       'show_tafsir_title' => _getShowTafsirTitle(language),
@@ -3301,7 +3355,8 @@ class AppLocalizations {
       'weekly_reminder_subtitle' => _getWeeklyReminderSubtitle(language),
       'weekly_reminder_time_title' => _getWeeklyReminderTimeTitle(language),
       'weekly_reminder_time_hint' => _getWeeklyReminderTimeHint(language),
-      'weekly_reminder_permission_denied' => _getWeeklyReminderPermissionDenied(language),
+      'weekly_reminder_permission_denied' =>
+        _getWeeklyReminderPermissionDenied(language),
       'app_language_title' => _getAppLanguageTitle(language),
       'app_language_subtitle' => _getAppLanguageSubtitle(language),
       'theme_title' => _getThemeTitle(language),
@@ -3365,20 +3420,23 @@ class AppLocalizations {
       'feedback_submitting' => _getFeedbackSubmitting(language),
       'feedback_success' => _getFeedbackSuccess(language),
       'feedback_success_email_fallback' =>
-          _getFeedbackSuccessEmailFallback(language),
+        _getFeedbackSuccessEmailFallback(language),
       'feedback_error' => _getFeedbackError(language),
       'feedback_error_rate_limited' => _getFeedbackErrorRateLimited(language),
       'feedback_title_required' => _getFeedbackTitleRequired(language),
-      'feedback_description_required' => _getFeedbackDescriptionRequired(language),
+      'feedback_description_required' =>
+        _getFeedbackDescriptionRequired(language),
       'feedback_body_verse' => _getFeedbackBodyVerse(language),
       'feedback_body_reference' => _getFeedbackBodyReference(language),
       'feedback_body_arabic' => _getFeedbackBodyArabic(language),
       'feedback_body_meta' => _getFeedbackBodyMeta(language),
       'feedback_email_subject_bug_verse' =>
-          _getFeedbackEmailSubjectBugVerse(language),
+        _getFeedbackEmailSubjectBugVerse(language),
       'feedback_email_subject_bug' => _getFeedbackEmailSubjectBug(language),
-      'feedback_email_subject_feature' => _getFeedbackEmailSubjectFeature(language),
-      'feedback_email_header_feature' => _getFeedbackEmailHeaderFeature(language),
+      'feedback_email_subject_feature' =>
+        _getFeedbackEmailSubjectFeature(language),
+      'feedback_email_header_feature' =>
+        _getFeedbackEmailHeaderFeature(language),
       'feedback_email_header_bug' => _getFeedbackEmailHeaderBug(language),
       'feedback_email_failed' => _getFeedbackEmailFailed(language),
       // Highlight Guide
@@ -3434,19 +3492,29 @@ class AppLocalizations {
       // Text Settings Dialog
       'text_settings_title' => _getTextSettingsTitle(language),
       'text_settings_arabic_size' => _getTextSettingsArabicSize(language),
-      'text_settings_translation_size' => _getTextSettingsTranslationSize(language),
+      'text_settings_translation_size' =>
+        _getTextSettingsTranslationSize(language),
       'text_settings_size_label' => _getTextSettingsSizeLabel(language),
       'apply' => _getApply(language),
       'transliteration_style_title' => _getTransliterationStyleTitle(language),
-      'transliteration_style_original' => _getTransliterationStyleOriginal(language),
-      'transliteration_style_readable' => _getTransliterationStyleReadable(language),
-      'transliteration_source_title' => _getTransliterationSourceTitle(language),
-      'transliteration_source_tajweed' => _getTransliterationSourceTajweed(language),
-      'transliteration_source_tajweed_sub' => _getTransliterationSourceTajweedSub(language),
-      'transliteration_source_simple' => _getTransliterationSourceSimple(language),
-      'transliteration_source_simple_sub' => _getTransliterationSourceSimpleSub(language),
-      'transliteration_source_original' => _getTransliterationSourceOriginal(language),
-      'transliteration_choice_title' => _getTransliterationChoiceTitle(language),
+      'transliteration_style_original' =>
+        _getTransliterationStyleOriginal(language),
+      'transliteration_style_readable' =>
+        _getTransliterationStyleReadable(language),
+      'transliteration_source_title' =>
+        _getTransliterationSourceTitle(language),
+      'transliteration_source_tajweed' =>
+        _getTransliterationSourceTajweed(language),
+      'transliteration_source_tajweed_sub' =>
+        _getTransliterationSourceTajweedSub(language),
+      'transliteration_source_simple' =>
+        _getTransliterationSourceSimple(language),
+      'transliteration_source_simple_sub' =>
+        _getTransliterationSourceSimpleSub(language),
+      'transliteration_source_original' =>
+        _getTransliterationSourceOriginal(language),
+      'transliteration_choice_title' =>
+        _getTransliterationChoiceTitle(language),
       'transliteration_style_raw' => _getTransliterationStyleRaw(language),
       'language_name_indonesian' => _getLanguageNameIndonesian(language),
       'language_name_english' => _getLanguageNameEnglish(language),
@@ -3488,10 +3556,9 @@ class AppLocalizations {
 
   static String _getLanguageSubtitle(String language) {
     return switch (language) {
-      'id' =>
-          'Menu, terjemahan, tafsir, dan info surat mengikuti bahasa ini.',
+      'id' => 'Menu, terjemahan, tafsir, dan info surat mengikuti bahasa ini.',
       'en' =>
-          'Menus, translation, tafsir, and surah info follow this language.',
+        'Menus, translation, tafsir, and surah info follow this language.',
       'zh' => '菜单、翻译、注释和章节信息均使用此语言。',
       'ja' => 'メニュー、翻訳、タフスィール、スーラ情報はこの言語に従います。',
       _ => 'Menus, translation, tafsir, and surah info follow this language.',
@@ -3576,7 +3643,8 @@ class AppLocalizations {
         'Verse commentary follows translation language (As-Sa\'di, Ibn Kathir, etc.). Hidden in Mushaf mode.',
       'zh' => '经注随翻译语言显示。穆沙夫模式不显示。',
       'ja' => '翻訳言語に合わせたタフスィール。ムスハフでは非表示。',
-      _ => 'Verse commentary follows translation language. Hidden in Mushaf mode.',
+      _ =>
+        'Verse commentary follows translation language. Hidden in Mushaf mode.',
     };
   }
 
@@ -3632,7 +3700,8 @@ class AppLocalizations {
   }
 
   /// Makkiyah / Madaniyah labels from tafsir metadata.
-  static String getTafsirRevelationLabel(String language, String revelationType) {
+  static String getTafsirRevelationLabel(
+      String language, String revelationType) {
     final isMadani = revelationType.toLowerCase().startsWith('mad');
     return switch (language) {
       'id' => isMadani ? 'Madaniyah' : 'Makkiyah',
@@ -3705,11 +3774,14 @@ class AppLocalizations {
 
   static String _getWeeklyReminderPermissionDenied(String language) {
     return switch (language) {
-      'id' => 'Izin notifikasi ditolak. Aktifkan di pengaturan perangkat untuk menerima pengingat.',
-      'en' => 'Notification permission denied. Enable it in device settings to receive reminders.',
+      'id' =>
+        'Izin notifikasi ditolak. Aktifkan di pengaturan perangkat untuk menerima pengingat.',
+      'en' =>
+        'Notification permission denied. Enable it in device settings to receive reminders.',
       'zh' => '通知权限被拒绝。请在设备设置中启用以接收提醒。',
       'ja' => '通知の許可が拒否されました。リマインダーを受け取るには端末設定で有効にしてください。',
-      _ => 'Notification permission denied. Enable it in device settings to receive reminders.',
+      _ =>
+        'Notification permission denied. Enable it in device settings to receive reminders.',
     };
   }
 
@@ -3918,7 +3990,8 @@ class AppLocalizations {
 
   static String _getPrivacySubtitle(String language) {
     return switch (language) {
-      'id' => 'Baca bagaimana kami menangani privasi (tanpa iklan, tanpa pelacakan).',
+      'id' =>
+        'Baca bagaimana kami menangani privasi (tanpa iklan, tanpa pelacakan).',
       'en' => 'Read how we handle privacy (no ads, no tracking).',
       'zh' => '阅读我们如何处理隐私（无广告，无跟踪）。',
       'ja' => 'プライバシーの処理方法を読む（広告なし、追跡なし）。',
@@ -4066,7 +4139,8 @@ class AppLocalizations {
     };
   }
 
-  static String getRamadanPromoBadge(String language, int daysUntil, bool inRamadan) {
+  static String getRamadanPromoBadge(
+      String language, int daysUntil, bool inRamadan) {
     if (inRamadan) {
       return _getRamadanPromoBadgeActive(language);
     }
@@ -4122,11 +4196,10 @@ class AppLocalizations {
         'Al Quran dan Terjemahan dari Quran Foundation dan QUL (Quranic Universal Library)',
       'en' =>
         'Al-Quran and translations from Quran Foundation and QUL (Quranic Universal Library)',
-      'zh' =>
-        '古兰经与翻译来自 Quran Foundation 与 QUL（Quranic Universal Library）',
-      'ja' =>
-        'クルアーンと翻訳: Quran Foundation および QUL（Quranic Universal Library）',
-      _ => 'Al-Quran and translations from Quran Foundation and QUL (Quranic Universal Library)',
+      'zh' => '古兰经与翻译来自 Quran Foundation 与 QUL（Quranic Universal Library）',
+      'ja' => 'クルアーンと翻訳: Quran Foundation および QUL（Quranic Universal Library）',
+      _ =>
+        'Al-Quran and translations from Quran Foundation and QUL (Quranic Universal Library)',
     };
   }
 
@@ -4193,10 +4266,12 @@ class AppLocalizations {
   static String _getSupportDialogContent(String language) {
     return switch (language) {
       'id' => 'Ini adalah donasi eksternal opsional dan tidak membuka fitur.',
-      'en' => 'This is an optional external donation and does not unlock features.',
+      'en' =>
+        'This is an optional external donation and does not unlock features.',
       'zh' => '这是可选的外部捐赠，不会解锁功能。',
       'ja' => 'これはオプションの外部寄付であり、機能のロックを解除しません。',
-      _ => 'This is an optional external donation and does not unlock features.',
+      _ =>
+        'This is an optional external donation and does not unlock features.',
     };
   }
 
@@ -4314,8 +4389,7 @@ class AppLocalizations {
     return switch (language) {
       'id' =>
         'Jelaskan detailnya. Untuk bug, sebutkan langkah untuk memunculkannya.',
-      'en' =>
-        'Describe in detail. For bugs, include steps to reproduce.',
+      'en' => 'Describe in detail. For bugs, include steps to reproduce.',
       'zh' => '请详细说明。如是错误，请附上重现步骤。',
       'ja' => '詳しく記入してください。バグの場合は再現手順も。',
       _ => 'Describe in detail. For bugs, include steps to reproduce.',
@@ -4359,9 +4433,9 @@ class AppLocalizations {
       'en' =>
         'Could not submit automatically. Your email app was opened as a fallback.',
       'zh' => '无法自动提交。已打开邮件应用作为备用方式。',
-      'ja' =>
-        '自動送信できませんでした。メールアプリをフォールバックとして開きました。',
-      _ => 'Could not submit automatically. Your email app was opened as a fallback.',
+      'ja' => '自動送信できませんでした。メールアプリをフォールバックとして開きました。',
+      _ =>
+        'Could not submit automatically. Your email app was opened as a fallback.',
     };
   }
 
@@ -5111,21 +5185,27 @@ class AppLocalizations {
 
   static String _getHighlightGuideIntro(String language) {
     return switch (language) {
-      'id' => 'Warna berikut dapat digunakan untuk mengkategorikan ayat yang Anda highlight:',
-      'en' => 'The following colors can be used to categorize verses you highlight:',
+      'id' =>
+        'Warna berikut dapat digunakan untuk mengkategorikan ayat yang Anda highlight:',
+      'en' =>
+        'The following colors can be used to categorize verses you highlight:',
       'zh' => '以下颜色可用于对您高亮的经文进行分类：',
       'ja' => '次の色を使用して、ハイライトした節を分類できます：',
-      _ => 'The following colors can be used to categorize verses you highlight:',
+      _ =>
+        'The following colors can be used to categorize verses you highlight:',
     };
   }
 
   static String _getHighlightGuideClosing(String language) {
     return switch (language) {
-      'id' => 'Gunakan warna yang berbeda untuk mengorganisir dan mengkategorikan ayat-ayat penting Anda.',
-      'en' => 'Use different colors to organize and categorize your important verses.',
+      'id' =>
+        'Gunakan warna yang berbeda untuk mengorganisir dan mengkategorikan ayat-ayat penting Anda.',
+      'en' =>
+        'Use different colors to organize and categorize your important verses.',
       'zh' => '使用不同的颜色来组织和分类您的重要经文。',
       'ja' => '異なる色を使用して、重要な節を整理して分類します。',
-      _ => 'Use different colors to organize and categorize your important verses.',
+      _ =>
+        'Use different colors to organize and categorize your important verses.',
     };
   }
 
@@ -5418,13 +5498,13 @@ class AppLocalizations {
     int verseCount,
   ) {
     return switch (language) {
-      'id' =>
-          'Saat ini ayat $currentAyah. Pilih nomor 1–$verseCount.',
+      'id' => 'Saat ini ayat $currentAyah. Pilih nomor 1–$verseCount.',
       'en' =>
-          'Currently on ayah $currentAyah. Choose a number from 1–$verseCount.',
+        'Currently on ayah $currentAyah. Choose a number from 1–$verseCount.',
       'zh' => '当前在第 $currentAyah 节。请选择 1–$verseCount。',
       'ja' => '現在 $currentAyah 節です。1–$verseCount から選んでください。',
-      _ => 'Currently on ayah $currentAyah. Choose a number from 1–$verseCount.',
+      _ =>
+        'Currently on ayah $currentAyah. Choose a number from 1–$verseCount.',
     };
   }
 
@@ -5501,9 +5581,8 @@ class AppLocalizations {
   static String getSplashTagline(String language) {
     return switch (language) {
       'id' =>
-          'Baca Al-Qur\'an offline per Surah, Juz, atau Halaman dengan terjemahan',
-      'en' =>
-          'Read the Quran offline by Surah, Juz, or Page with translation',
+        'Baca Al-Qur\'an offline per Surah, Juz, atau Halaman dengan terjemahan',
+      'en' => 'Read the Quran offline by Surah, Juz, or Page with translation',
       'zh' => '离线按章节、卷或页阅读古兰经，附带翻译',
       'ja' => 'スーラ・ジュズ・ページ単位でオフライン読書（翻訳付き）',
       _ => 'Read the Quran offline by Surah, Juz, or Page with translation',
@@ -5538,20 +5617,15 @@ class AppLocalizations {
   /// Shown on first launch; uses device locale until the user picks a language.
   static String getOnboardingSettingsHint(String language) {
     return switch (language) {
-      'id' =>
-          'Menu, terjemahan, dan konten mengikuti bahasa ini.\n'
+      'id' => 'Menu, terjemahan, dan konten mengikuti bahasa ini.\n'
           'Anda dapat mengubahnya nanti di Pengaturan.',
-      'en' =>
-          'Menus, translation, and content follow this language.\n'
+      'en' => 'Menus, translation, and content follow this language.\n'
           'You can change this later in Settings.',
-      'zh' =>
-          '菜单、译文和内容将使用所选语言。\n'
+      'zh' => '菜单、译文和内容将使用所选语言。\n'
           '之后可在设置中更改。',
-      'ja' =>
-          'メニュー、翻訳、コンテンツはこの言語に従います。\n'
+      'ja' => 'メニュー、翻訳、コンテンツはこの言語に従います。\n'
           '後から設定で変更できます。',
-      _ =>
-          'Menus, translation, and content follow this language.\n'
+      _ => 'Menus, translation, and content follow this language.\n'
           'You can change this later in Settings.',
     };
   }
@@ -5994,11 +6068,14 @@ class AppLocalizations {
 
   static String recSaveFailed(String label, String language) {
     return switch (language) {
-      'id' => 'Gagal menyimpan $label. Periksa koneksi, lalu coba lagi atau tutup.',
-      'en' => 'Could not save $label. Check your connection, then retry or dismiss.',
+      'id' =>
+        'Gagal menyimpan $label. Periksa koneksi, lalu coba lagi atau tutup.',
+      'en' =>
+        'Could not save $label. Check your connection, then retry or dismiss.',
       'zh' => '无法保存 $label。请检查网络后重试或关闭。',
       'ja' => '$label を保存できませんでした。接続を確認して再試行するか閉じてください。',
-      _ => 'Could not save $label. Check your connection, then retry or dismiss.',
+      _ =>
+        'Could not save $label. Check your connection, then retry or dismiss.',
     };
   }
 
@@ -6149,7 +6226,8 @@ class AppLocalizations {
     };
   }
 
-  static String recStorageForReciter(String name, String size, String language) {
+  static String recStorageForReciter(
+      String name, String size, String language) {
     return size;
   }
 
@@ -6188,7 +6266,8 @@ class AppLocalizations {
     };
   }
 
-  static String recSavingSurah(String surahId, int done, int total, String language) {
+  static String recSavingSurah(
+      String surahId, int done, int total, String language) {
     return switch (language) {
       'id' => 'Menyimpan surah $surahId ($done/$total)',
       'en' => 'Saving surah $surahId ($done/$total)',
@@ -6240,21 +6319,28 @@ class AppLocalizations {
 
   static String recDeleteReciterMessage(String name, String language) {
     return switch (language) {
-      'id' => 'Ini menghapus semua file tilawah $name yang tersimpan dari ponsel Anda. Anda dapat menyimpannya lagi nanti.',
-      'en' => 'This removes all saved recitation files for $name from your phone. You can save them again later.',
+      'id' =>
+        'Ini menghapus semua file tilawah $name yang tersimpan dari ponsel Anda. Anda dapat menyimpannya lagi nanti.',
+      'en' =>
+        'This removes all saved recitation files for $name from your phone. You can save them again later.',
       'zh' => '这将从您的手机中删除 $name 所有已保存的诵读文件。您可以稍后重新保存。',
       'ja' => 'これにより、$name の保存済み朗読ファイルがすべて端末から削除されます。後で再度保存できます。',
-      _ => 'This removes all saved recitation files for $name from your phone. You can save them again later.',
+      _ =>
+        'This removes all saved recitation files for $name from your phone. You can save them again later.',
     };
   }
 
   static String recDeleteAllMessage(String size, String language) {
     return switch (language) {
-      'id' => 'Ini mengosongkan $size dengan menghapus audio tersimpan untuk semua qari. Pemutaran akan memerlukan internet atau unduhan baru.',
-      'en' => 'This frees $size by removing saved audio for every reciter. Playback will need the internet or a new download.',
+      'id' =>
+        'Ini mengosongkan $size dengan menghapus audio tersimpan untuk semua qari. Pemutaran akan memerlukan internet atau unduhan baru.',
+      'en' =>
+        'This frees $size by removing saved audio for every reciter. Playback will need the internet or a new download.',
       'zh' => '这将通过删除所有诵读者的已保存音频释放 $size。播放将需要联网或重新下载。',
-      'ja' => 'これにより、すべての朗読者の保存済み音声を削除して $size を解放します。再生にはインターネットまたは再ダウンロードが必要になります。',
-      _ => 'This frees $size by removing saved audio for every reciter. Playback will need the internet or a new download.',
+      'ja' =>
+        'これにより、すべての朗読者の保存済み音声を削除して $size を解放します。再生にはインターネットまたは再ダウンロードが必要になります。',
+      _ =>
+        'This frees $size by removing saved audio for every reciter. Playback will need the internet or a new download.',
     };
   }
 
@@ -6285,62 +6371,81 @@ class AppLocalizations {
     String language,
   ) {
     return switch (language) {
-      'id' => '$label tersimpan di perangkat Anda ($count/$total surah). Pemutaran kini seketika untuk surah ini.',
-      'en' => '$label saved on your device ($count/$total surahs). Playback is now instant for this surah.',
+      'id' =>
+        '$label tersimpan di perangkat Anda ($count/$total surah). Pemutaran kini seketika untuk surah ini.',
+      'en' =>
+        '$label saved on your device ($count/$total surahs). Playback is now instant for this surah.',
       'zh' => '$label 已保存到您的设备（$count/$total 章）。该章现在可即时播放。',
       'ja' => '$label を端末に保存しました（$count/$total 章）。この章はすぐに再生できます。',
-      _ => '$label saved on your device ($count/$total surahs). Playback is now instant for this surah.',
+      _ =>
+        '$label saved on your device ($count/$total surahs). Playback is now instant for this surah.',
     };
   }
 
   static String recPreparingLargeWhole(String name, String language) {
     return switch (language) {
-      'id' => '$name belum tersimpan di perangkat Anda. Putar surah mungkin menampilkan indikator memuat saat ayat diambil dari internet. Simpan seluruh surah untuk pemutaran offline seketika.',
-      'en' => '$name is not saved on your device yet. Play surah may show a loading spinner while verses stream from the internet. Save the full surah for instant offline playback.',
+      'id' =>
+        '$name belum tersimpan di perangkat Anda. Putar surah mungkin menampilkan indikator memuat saat ayat diambil dari internet. Simpan seluruh surah untuk pemutaran offline seketika.',
+      'en' =>
+        '$name is not saved on your device yet. Play surah may show a loading spinner while verses stream from the internet. Save the full surah for instant offline playback.',
       'zh' => '$name 尚未保存到您的设备。播放整章时，经文从网络加载可能出现加载指示。保存整章可立即离线播放。',
-      'ja' => '$name はまだ端末に保存されていません。章を再生すると、節がインターネットから読み込まれる間ローディングが表示される場合があります。章全体を保存すると、すぐにオフライン再生できます。',
-      _ => '$name is not saved on your device yet. Play surah may show a loading spinner while verses stream from the internet. Save the full surah for instant offline playback.',
+      'ja' =>
+        '$name はまだ端末に保存されていません。章を再生すると、節がインターネットから読み込まれる間ローディングが表示される場合があります。章全体を保存すると、すぐにオフライン再生できます。',
+      _ =>
+        '$name is not saved on your device yet. Play surah may show a loading spinner while verses stream from the internet. Save the full surah for instant offline playback.',
     };
   }
 
   static String recPreparingLarge(String name, String language) {
     return switch (language) {
-      'id' => '$name belum tersimpan sepenuhnya. Ayat ini mungkin butuh waktu sejenak untuk mulai. Simpan surah untuk pemutaran offline yang lancar.',
-      'en' => '$name is not fully saved. This verse may take a moment to start. Save the surah for smooth offline playback.',
+      'id' =>
+        '$name belum tersimpan sepenuhnya. Ayat ini mungkin butuh waktu sejenak untuk mulai. Simpan surah untuk pemutaran offline yang lancar.',
+      'en' =>
+        '$name is not fully saved. This verse may take a moment to start. Save the surah for smooth offline playback.',
       'zh' => '$name 尚未完全保存。这节经文可能需要片刻才能开始。保存该章以获得流畅的离线播放。',
-      'ja' => '$name は完全には保存されていません。この節は開始までに少し時間がかかる場合があります。スムーズなオフライン再生のために章を保存してください。',
-      _ => '$name is not fully saved. This verse may take a moment to start. Save the surah for smooth offline playback.',
+      'ja' =>
+        '$name は完全には保存されていません。この節は開始までに少し時間がかかる場合があります。スムーズなオフライン再生のために章を保存してください。',
+      _ =>
+        '$name is not fully saved. This verse may take a moment to start. Save the surah for smooth offline playback.',
     };
   }
 
   static String recPreparingSmall(String name, String language) {
     return switch (language) {
-      'id' => '$name belum tersimpan di perangkat Anda. Simpan untuk pemutaran seketika tanpa menunggu.',
-      'en' => '$name is not saved on your device yet. Save it for instant playback without waiting.',
+      'id' =>
+        '$name belum tersimpan di perangkat Anda. Simpan untuk pemutaran seketika tanpa menunggu.',
+      'en' =>
+        '$name is not saved on your device yet. Save it for instant playback without waiting.',
       'zh' => '$name 尚未保存到您的设备。保存后可立即播放，无需等待。',
       'ja' => '$name はまだ端末に保存されていません。待たずにすぐ再生できるよう保存してください。',
-      _ => '$name is not saved on your device yet. Save it for instant playback without waiting.',
+      _ =>
+        '$name is not saved on your device yet. Save it for instant playback without waiting.',
     };
   }
 
   static String recStreamingReminder(String label, String language) {
     return switch (language) {
-      'id' => 'Memutar $label menggunakan internet. Simpan di perangkat Anda untuk pemutaran offline.',
-      'en' => 'Playing $label using the internet. Save it on your device for offline playback.',
+      'id' =>
+        'Memutar $label menggunakan internet. Simpan di perangkat Anda untuk pemutaran offline.',
+      'en' =>
+        'Playing $label using the internet. Save it on your device for offline playback.',
       'zh' => '正在使用网络播放 $label。将其保存到设备以便离线播放。',
       'ja' => 'インターネットを使用して $label を再生中。オフライン再生のために端末に保存してください。',
-      _ => 'Playing $label using the internet. Save it on your device for offline playback.',
+      _ =>
+        'Playing $label using the internet. Save it on your device for offline playback.',
     };
   }
 
   static String recNotSavedOnDevice(String label, String language) {
     return switch (language) {
-      'id' => '$label belum tersimpan di perangkat Anda. Ketuk Simpan untuk mengunduh surah ini untuk pemutaran offline.',
-      'en' => '$label is not saved on your device. Tap Save to download this surah for offline playback.',
+      'id' =>
+        '$label belum tersimpan di perangkat Anda. Ketuk Simpan untuk mengunduh surah ini untuk pemutaran offline.',
+      'en' =>
+        '$label is not saved on your device. Tap Save to download this surah for offline playback.',
       'zh' => '$label 尚未保存到您的设备。点按"保存"下载该章以便离线播放。',
       'ja' => '$label は端末に保存されていません。「保存」をタップしてこの章をダウンロードするとオフライン再生できます。',
-      _ => '$label is not saved on your device. Tap Save to download this surah for offline playback.',
+      _ =>
+        '$label is not saved on your device. Tap Save to download this surah for offline playback.',
     };
   }
 }
-

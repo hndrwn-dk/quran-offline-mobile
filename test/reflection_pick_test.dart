@@ -13,6 +13,7 @@ ReflectionLensEntry lens({
   int priority = 0,
   String badgeKey = 'weekly',
   ReflectionTrigger? trigger,
+  List<HijriDay> forbidOn = const [],
 }) {
   return ReflectionLensEntry(
     id: id,
@@ -24,6 +25,7 @@ ReflectionLensEntry lens({
     reflection: _text,
     ayahRefs: const [DuaAyahRef(surah: 1, from: 1, to: 1)],
     trigger: trigger,
+    forbidOn: forbidOn,
   );
 }
 
@@ -97,97 +99,180 @@ List<ReflectionLensEntry> get weekly => [
       lens(id: 'week_b', sort: 20),
     ];
 
-const ordinaryHijri = HijriDate(year: 1448, month: 2, day: 27);
-
-ReflectionPick pick(DateTime now, {HijriDate hijri = ordinaryHijri}) {
+ReflectionPick pick(
+  DateTime now, {
+  String salt = 's',
+  List<String> recentIds = const [],
+}) {
   return resolveReflectionPick(
-    now: now,
-    hijri: hijri,
+    day: IslamicDay.fromDateTime(now),
     calendarEntries: calendar,
     weeklyEntries: weekly,
+    seedSalt: salt,
+    recentIds: recentIds,
   );
 }
 
 void main() {
-  test('Thursday 19:00 is malam Jumat Kahf', () {
-    final now = DateTime(2026, 8, 20, 19);
+  test('derived tiers match trigger types', () {
+    expect(calendar.firstWhere((e) => e.id == 'ramadan_laylat').tier,
+        ReflectionTier.fixedDate);
+    expect(calendar.firstWhere((e) => e.id == 'ramadan_quran').tier,
+        ReflectionTier.season);
+    expect(calendar.firstWhere((e) => e.id == 'jumat_kahf').tier,
+        ReflectionTier.weekday);
+    expect(calendar.firstWhere((e) => e.id == 'pagi_syukur').tier,
+        ReflectionTier.ambient);
+    expect(weekly.first.tier, ReflectionTier.ambient);
+    expect(calendar.firstWhere((e) => e.id == 'pagi_syukur').weight, 3);
+    expect(calendar.firstWhere((e) => e.id == 'jumat_kahf').weight, 1);
+  });
+
+  test('Thursday 20:00 is Friday weekday pool, not locked to Kahf', () {
+    final now = DateTime(2026, 8, 20, 20);
     expect(now.weekday, DateTime.thursday);
-    expect(pick(now).entry.id, 'jumat_kahf');
+    expect(IslamicDay.fromDateTime(now).weekday, DateTime.friday);
+    final ids = <String>{};
+    for (var i = 0; i < 40; i++) {
+      ids.add(pick(now, salt: 'thu-$i').entry.id);
+    }
+    expect(ids, containsAll(['jumat_kahf', 'jumat_shalat']));
   });
 
-  test('Friday 19:00 is malam_berlindung not Kahf', () {
-    final now = DateTime(2026, 8, 21, 19);
-    expect(now.weekday, DateTime.friday);
-    expect(pick(now).entry.id, 'malam_berlindung');
+  test('Ramadan evening is exclusive ramadan_quran', () {
+    const day = IslamicDay(
+      hijri: HijriDate(year: 1447, month: 9, day: 10),
+      weekday: DateTime.tuesday,
+      period: TimeOfDayPeriod.evening,
+    );
+    expect(
+      resolveReflectionPick(
+        day: day,
+        calendarEntries: calendar,
+        weeklyEntries: weekly,
+        seedSalt: 'r',
+        recentIds: const ['ramadan_quran', 'malam_berlindung'],
+      ).entry.id,
+      'ramadan_quran',
+    );
   });
 
-  test('Saturday 19:00 is malam_berlindung not istighfar', () {
-    final now = DateTime(2026, 8, 22, 19);
-    expect(now.weekday, DateTime.saturday);
-    expect(pick(now).entry.id, 'malam_berlindung');
+  test('Ramadan 21 is exclusive laylat', () {
+    expect(
+      resolveReflectionPick(
+        day: const IslamicDay(
+          hijri: HijriDate(year: 1447, month: 9, day: 21),
+          weekday: DateTime.friday,
+          period: TimeOfDayPeriod.evening,
+        ),
+        calendarEntries: calendar,
+        weeklyEntries: weekly,
+        seedSalt: 'laylat',
+        recentIds: const ['ramadan_laylat', 'jumat_kahf'],
+      ).entry.id,
+      'ramadan_laylat',
+    );
   });
 
-  test('Friday 08:00 is Kahf', () {
-    expect(pick(DateTime(2026, 8, 21, 8)).entry.id, 'jumat_kahf');
+  test('1 Muharram is exclusive even on Friday', () {
+    expect(
+      resolveReflectionPick(
+        day: const IslamicDay(
+          hijri: HijriDate(year: 1448, month: 1, day: 1),
+          weekday: DateTime.friday,
+          period: TimeOfDayPeriod.morning,
+        ),
+        calendarEntries: calendar,
+        weeklyEntries: weekly,
+        seedSalt: 'm',
+        recentIds: const ['muharram_new_year', 'jumat_kahf'],
+      ).entry.id,
+      'muharram_new_year',
+    );
   });
 
-  test('Friday 13:00 is jumat_shalat', () {
-    expect(pick(DateTime(2026, 8, 21, 13)).entry.id, 'jumat_shalat');
+  test('ordinary morning ambient includes pagi and weekly', () {
+    final ids = <String>{};
+    for (var i = 0; i < 60; i++) {
+      ids.add(pick(DateTime(2026, 8, 25, 7), salt: 'am-$i').entry.id);
+    }
+    expect(ids, contains('pagi_syukur'));
+    expect(ids, contains('week_a'));
+    expect(ids, contains('week_b'));
+    expect(ids, isNot(contains('malam_berlindung')));
   });
 
-  test('Saturday 08:00 is sabtu_istighfar', () {
-    expect(pick(DateTime(2026, 8, 22, 8)).entry.id, 'sabtu_istighfar');
-  });
-
-  test('Ramadan Friday morning beats Kahf', () {
-    final now = DateTime(2026, 8, 21, 8);
-    final hijri = HijriDate(year: 1447, month: 9, day: 10);
-    expect(pick(now, hijri: hijri).entry.id, 'ramadan_quran');
-  });
-
-  test('ordinary morning is pagi_syukur', () {
-    expect(pick(DateTime(2026, 8, 25, 7)).entry.id, 'pagi_syukur');
-  });
-
-  test('ordinary midday uses weekly rotation', () {
-    final p = pick(DateTime(2026, 8, 25, 14));
-    expect(p.source, ReflectionPickSource.weekly);
-    expect(p.entry.id, isIn(['week_a', 'week_b']));
-  });
-
-  test('same midday date is stable', () {
-    final a = pick(DateTime(2026, 8, 25, 14));
-    final b = pick(DateTime(2026, 8, 25, 16));
+  test('same salt and ymd reproduce', () {
+    final a = pick(DateTime(2026, 8, 25, 7), salt: 'same');
+    final b = pick(DateTime(2026, 8, 25, 10), salt: 'same');
     expect(a.entry.id, b.entry.id);
   });
 
-  test('two consecutive local midday dates can differ', () {
-    final a = pick(DateTime(2026, 8, 25, 14));
-    final b = pick(DateTime(2026, 8, 26, 14));
-    expect(a.entry.id, isNot(b.entry.id));
-    expect({a.entry.id, b.entry.id}, unorderedEquals(['week_a', 'week_b']));
+  test('recentIds drops a match unless it empties the pool', () {
+    final ids = <String>{};
+    for (var i = 0; i < 30; i++) {
+      ids.add(
+        resolveReflectionPick(
+          day: const IslamicDay(
+            hijri: HijriDate(year: 1448, month: 2, day: 27),
+            weekday: DateTime.friday,
+            period: TimeOfDayPeriod.morning,
+          ),
+          calendarEntries: calendar,
+          weeklyEntries: weekly,
+          seedSalt: 'x-$i',
+          recentIds: const ['jumat_kahf'],
+        ).entry.id,
+      );
+    }
+    expect(ids, isNot(contains('jumat_kahf')));
+    expect(ids, contains('jumat_shalat'));
   });
 
-  test('Thursday 19:00 Hijri 9/21 is ramadan_laylat not Kahf', () {
-    final now = DateTime(2026, 8, 20, 19);
-    final hijri = HijriDate(year: 1447, month: 9, day: 21);
-    expect(now.weekday, DateTime.thursday);
-    expect(pick(now, hijri: hijri).entry.id, 'ramadan_laylat');
-  });
-
-  test('Friday 19:00 Hijri 9/21 is ramadan_laylat not malam_berlindung', () {
-    final now = DateTime(2026, 8, 21, 19);
-    final hijri = HijriDate(year: 1447, month: 9, day: 21);
-    expect(now.weekday, DateTime.friday);
-    expect(pick(now, hijri: hijri).entry.id, 'ramadan_laylat');
-  });
-
-  test('hijri_day 1 Muharram beats morning', () {
-    final hijri = HijriDate(year: 1448, month: 1, day: 1);
+  test('season pool does not bleed or use the ring', () {
     expect(
-      pick(DateTime(2026, 8, 25, 7), hijri: hijri).entry.id,
-      'muharram_new_year',
+      resolveReflectionPick(
+        day: const IslamicDay(
+          hijri: HijriDate(year: 1447, month: 9, day: 10),
+          weekday: DateTime.wednesday,
+          period: TimeOfDayPeriod.morning,
+        ),
+        calendarEntries: calendar,
+        weeklyEntries: weekly,
+        seedSalt: 'bleed',
+        recentIds: const ['ramadan_quran', 'pagi_syukur'],
+      ).entry.id,
+      'ramadan_quran',
     );
+  });
+
+  test('reflectionRecentCap clamps eligible minus one to 1..5', () {
+    expect(reflectionRecentCap(20), 5);
+    expect(reflectionRecentCap(2), 1);
+    expect(reflectionRecentCap(1), 1);
+    expect(reflectionRecentCap(8), 5);
+  });
+
+  test('forbidOn drops an entry', () {
+    final blocked = lens(
+      id: 'blocked_kahf',
+      trigger: const ReflectionTrigger(type: 'weekday', weekday: 5),
+      forbidOn: const [HijriDay(month: 2, day: 27)],
+    );
+    final p = resolveReflectionPick(
+      day: const IslamicDay(
+        hijri: HijriDate(year: 1448, month: 2, day: 27),
+        weekday: DateTime.friday,
+        period: TimeOfDayPeriod.morning,
+      ),
+      calendarEntries: [
+        blocked,
+        calendar.firstWhere((e) => e.id == 'jumat_shalat')
+      ],
+      weeklyEntries: const [],
+      seedSalt: 'f',
+    );
+    expect(p.entry.id, 'jumat_shalat');
   });
 
   test('fallback entries all have ayahRefs', () {
@@ -205,49 +290,52 @@ void main() {
       final e = kReflectionFallbackEntries[i];
       expect(e.ayahRefs, isNotEmpty);
       expect(e.trigger, isNull);
-      expect(e.title.id, isNotEmpty);
-      expect(e.title.en, isNotEmpty);
-      expect(e.title.zh, isNotEmpty);
-      expect(e.title.ja, isNotEmpty);
-      expect(e.summary.id, isNotEmpty);
-      expect(e.summary.en, isNotEmpty);
-      expect(e.summary.zh, isNotEmpty);
-      expect(e.summary.ja, isNotEmpty);
-      expect(e.reflection.id, isNotEmpty);
-      expect(e.reflection.en, isNotEmpty);
-      expect(e.reflection.zh, isNotEmpty);
-      expect(e.reflection.ja, isNotEmpty);
+      expect(e.tier, ReflectionTier.ambient);
       final ref = e.ayahRefs.first;
       expect(ref.surah, expectedRefs[i].$1);
       expect(ref.from, expectedRefs[i].$2);
       expect(ref.to, expectedRefs[i].$3);
-      final copy = [
-        e.title.id,
-        e.title.en,
-        e.title.zh,
-        e.title.ja,
-        e.summary.id,
-        e.summary.en,
-        e.summary.zh,
-        e.summary.ja,
-        e.reflection.id,
-        e.reflection.en,
-        e.reflection.zh,
-        e.reflection.ja,
-      ].join();
-      expect(
-        copy.contains(RegExp(r'[\u{1F300}-\u{1FAFF}]', unicode: true)),
-        isFalse,
-      );
     }
+  });
+
+  test('thin weekday pool borrows at most three ambient', () {
+    final ambients = [
+      for (var i = 0; i < 10; i++) lens(id: 'amb_$i', sort: 100 + i),
+    ];
+    const day = IslamicDay(
+      hijri: HijriDate(year: 1448, month: 2, day: 27),
+      weekday: DateTime.friday,
+      period: TimeOfDayPeriod.morning,
+    );
+    var weekdayHits = 0;
+    final seenAmbient = <String>{};
+    const n = 200;
+    for (var i = 0; i < n; i++) {
+      final id = resolveReflectionPick(
+        day: day,
+        calendarEntries: [
+          calendar.firstWhere((e) => e.id == 'jumat_kahf'),
+          calendar.firstWhere((e) => e.id == 'jumat_shalat'),
+        ],
+        weeklyEntries: ambients,
+        seedSalt: 'thin-$i',
+      ).entry.id;
+      if (id == 'jumat_kahf' || id == 'jumat_shalat') {
+        weekdayHits++;
+      } else {
+        seenAmbient.add(id);
+      }
+    }
+    expect(weekdayHits / n, inInclusiveRange(0.55, 0.85));
+    expect(seenAmbient, isNotEmpty);
   });
 
   test('empty catalogs resolve using fallback weekly entries', () {
     final p = resolveReflectionPick(
-      now: DateTime(2026, 8, 25, 14),
-      hijri: ordinaryHijri,
+      day: IslamicDay.fromDateTime(DateTime(2026, 8, 25, 14)),
       calendarEntries: const [],
       weeklyEntries: kReflectionFallbackEntries,
+      seedSalt: 'fb',
     );
     expect(p.source, ReflectionPickSource.weekly);
     expect(

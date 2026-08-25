@@ -7,7 +7,7 @@ void main() {
     const hijri = HijriDate(year: 1448, month: 2, day: 27);
     final text = AppLocalizations.getHijriHeadline(
       language: 'id',
-      gregorianWeekday: DateTime.friday,
+      weekday: DateTime.friday,
       hijri: hijri,
     );
     expect(text, 'Jumat, 27 Safar 1448');
@@ -17,7 +17,7 @@ void main() {
     const hijri = HijriDate(year: 1447, month: 9, day: 10);
     final text = AppLocalizations.getHijriHeadline(
       language: 'id',
-      gregorianWeekday: DateTime.monday,
+      weekday: DateTime.monday,
       hijri: hijri,
       occasionBadgeKey: 'ramadan',
     );
@@ -49,7 +49,7 @@ void main() {
     const hijri = HijriDate(year: 1448, month: 1, day: 5);
     final text = AppLocalizations.getHijriHeadline(
       language: 'id',
-      gregorianWeekday: DateTime.saturday,
+      weekday: DateTime.saturday,
       hijri: hijri,
     );
     expect(text, 'Sabtu, 5 Muharram 1448');
@@ -59,7 +59,7 @@ void main() {
     const hijri = HijriDate(year: 1448, month: 1, day: 1);
     final text = AppLocalizations.getHijriHeadline(
       language: 'id',
-      gregorianWeekday: DateTime.wednesday,
+      weekday: DateTime.wednesday,
       hijri: hijri,
       occasionBadgeKey: 'hijrah',
     );
@@ -73,10 +73,55 @@ void main() {
     const hijri = HijriDate(year: 1448, month: 2, day: 27);
     final text = AppLocalizations.getHijriHeadline(
       language: 'id',
-      gregorianWeekday: DateTime.friday,
+      weekday: DateTime.friday,
       hijri: hijri,
       occasionBadgeKey: 'friday',
     );
     expect(text, 'Jumat, 27 Safar 1448');
+  });
+
+  test('Indonesian after maghrib uses Malam Jumat', () {
+    const hijri = HijriDate(year: 1448, month: 2, day: 15);
+    final text = AppLocalizations.getHijriHeadline(
+      language: 'id',
+      weekday: DateTime.friday,
+      hijri: hijri,
+      clockHour: 20,
+    );
+    expect(text, 'Malam Jumat, 15 Safar 1448');
+  });
+
+  test('English after maghrib uses Eve of Friday', () {
+    const hijri = HijriDate(year: 1448, month: 2, day: 15);
+    final text = AppLocalizations.getHijriHeadline(
+      language: 'en',
+      weekday: DateTime.friday,
+      hijri: hijri,
+      clockHour: 20,
+    );
+    expect(text, startsWith('Eve of Friday,'));
+  });
+
+  test('Japanese after maghrib uses 前夜 not の夜', () {
+    const hijri = HijriDate(year: 1448, month: 2, day: 15);
+    final text = AppLocalizations.getHijriHeadline(
+      language: 'ja',
+      weekday: DateTime.friday,
+      hijri: hijri,
+      clockHour: 20,
+    );
+    expect(text, startsWith('金曜日の前夜,'));
+    expect(text.contains('金曜の夜'), isFalse);
+  });
+
+  test('Chinese after maghrib uses 前夜', () {
+    const hijri = HijriDate(year: 1448, month: 2, day: 15);
+    final text = AppLocalizations.getHijriHeadline(
+      language: 'zh',
+      weekday: DateTime.friday,
+      hijri: hijri,
+      clockHour: 20,
+    );
+    expect(text, startsWith('星期五前夜,'));
   });
 }

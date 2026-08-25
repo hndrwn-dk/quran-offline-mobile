@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/providers/reflection_history_provider.dart';
 import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/day_period.dart';
-import 'package:quran_offline/core/utils/hijri_date.dart';
+import 'package:quran_offline/core/utils/home_tagline.dart';
 import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
-/// Unified home hero (layout C): section label, time-of-day salam, tagline.
+/// Unified home hero (layout C): time-of-day salam, tagline, Hijri chip.
 class HomeHeroCard extends ConsumerWidget {
   const HomeHeroCard({super.key});
 
@@ -20,7 +21,14 @@ class HomeHeroCard extends ConsumerWidget {
     final periodColor = homeDayPeriodIconColor(period, colorScheme);
     final now = ref.watch(reflectionNowProvider);
     final pickAsync = ref.watch(reflectionPickProvider);
-    final hijri = HijriDate.fromGregorian(now);
+    final day = ref.watch(islamicDayProvider);
+    final salt = ref.watch(reflectionInstallSaltProvider).asData?.value ?? '';
+    final tagline = pickHomeTagline(
+      language: lang,
+      installSalt: salt,
+      hijriYmd: day.hijri.ymdKey,
+      period: day.period,
+    );
     final occasionBadgeKey = pickAsync.maybeWhen(
       data: (pick) {
         final type = pick.entry.trigger?.type;
@@ -33,8 +41,9 @@ class HomeHeroCard extends ConsumerWidget {
     );
     final headline = AppLocalizations.getHijriHeadline(
       language: lang,
-      gregorianWeekday: now.weekday,
-      hijri: hijri,
+      weekday: day.weekday,
+      hijri: day.hijri,
+      clockHour: now.hour,
       occasionBadgeKey: occasionBadgeKey,
     );
 
@@ -53,15 +62,6 @@ class HomeHeroCard extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                AppLocalizations.getMenuText('home', lang).toUpperCase(),
-                style: textTheme.labelSmall?.copyWith(
-                  letterSpacing: 1.1,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 10),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -96,7 +96,7 @@ class HomeHeroCard extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                AppLocalizations.getHomeTagline(lang),
+                tagline,
                 style: textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
                   height: 1.4,

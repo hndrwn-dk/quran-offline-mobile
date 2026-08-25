@@ -1,13 +1,15 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/reflection_fallback.dart';
 import 'package:quran_offline/core/models/reflection_lens.dart';
+import 'package:quran_offline/core/providers/reflection_history_provider.dart';
 import 'package:quran_offline/core/providers/reflection_history_store.dart';
 import 'package:quran_offline/core/utils/hijri_date.dart';
-import 'package:quran_offline/core/utils/reflection_slot.dart';
+import 'package:quran_offline/core/utils/home_tagline.dart';
 
 const _calendarAsset = 'assets/reflection/calendar_lenses_catalog.json';
 const _weeklyAsset = 'assets/reflection/weekly_rotation_catalog.json';
@@ -44,173 +46,157 @@ final weeklyRotationProvider = FutureProvider<ReflectionCatalog>((ref) async {
   return _loadCatalog(_weeklyAsset);
 });
 
-int _localEpochDay(DateTime now) {
-  final local = DateTime(now.year, now.month, now.day);
-  return local.difference(DateTime(1970, 1, 1)).inDays;
+const _tierRank = {
+  ReflectionTier.fixedDate: 0,
+  ReflectionTier.season: 1,
+  ReflectionTier.weekday: 2,
+  ReflectionTier.ambient: 3,
+};
+
+const _tiersDescending = [
+  ReflectionTier.fixedDate,
+  ReflectionTier.season,
+  ReflectionTier.weekday,
+  ReflectionTier.ambient,
+];
+
+int reflectionRecentCap(int eligibleCount) {
+  return (eligibleCount - 1).clamp(1, 5);
 }
 
-List<ReflectionLensEntry> _sortPriorityDesc(List<ReflectionLensEntry> list) {
-  final copy = [...list];
-  copy.sort((a, b) {
-    final byPriority = b.priority.compareTo(a.priority);
-    if (byPriority != 0) return byPriority;
-    return a.sort.compareTo(b.sort);
-  });
-  return copy;
+List<String> trimRecentIds(List<String> recentIds, int eligibleCount) {
+  final cap = reflectionRecentCap(eligibleCount);
+  if (recentIds.length <= cap) return recentIds;
+  return recentIds.sublist(0, cap);
 }
 
-List<ReflectionLensEntry> _sortPriorityAsc(List<ReflectionLensEntry> list) {
-  final copy = [...list];
-  copy.sort((a, b) {
-    final byPriority = a.priority.compareTo(b.priority);
-    if (byPriority != 0) return byPriority;
-    return a.sort.compareTo(b.sort);
-  });
-  return copy;
-}
+bool _isOccasion(ReflectionTier tier) =>
+    tier == ReflectionTier.fixedDate || tier == ReflectionTier.season;
 
-bool _isType(ReflectionLensEntry e, String type) => e.trigger?.type == type;
-
-List<ReflectionLensEntry> _matching(
-  List<ReflectionLensEntry> calendar,
-  DateTime now,
-  HijriDate hijri,
-  ReflectionSlot slot,
-  bool Function(ReflectionLensEntry e) predicate,
+List<ReflectionLensEntry> _takeSeeded(
+  List<ReflectionLensEntry> list,
+  int n,
+  int seed,
 ) {
-  return calendar.where((e) {
-    final t = e.trigger;
-    if (t == null) return false;
-    if (!t.appliesInSlot(slot)) return false;
-    if (!t.matches(now, hijri)) return false;
-    return predicate(e);
-  }).toList();
+  if (list.length <= n) return list;
+  final copy = [...list]..shuffle(Random(seed));
+  return copy.take(n).toList();
+}
+
+ReflectionLensEntry _pickByWeight(
+  List<ReflectionLensEntry> entries,
+  Random rng,
+) {
+  var total = 0;
+  for (final e in entries) {
+    total += e.weight;
+  }
+  var dart = rng.nextInt(total);
+  for (final e in entries) {
+    dart -= e.weight;
+    if (dart < 0) return e;
+  }
+  return entries.last;
 }
 
 ReflectionPick resolveReflectionPick({
-  required DateTime now,
-  required HijriDate hijri,
+  required IslamicDay day,
   required List<ReflectionLensEntry> calendarEntries,
   required List<ReflectionLensEntry> weeklyEntries,
+  String seedSalt = '',
+  List<String> recentIds = const [],
 }) {
-  final slot = reflectionSlotForHour(now.hour);
-
-  ReflectionPick? from(ReflectionLensEntry? e, ReflectionPickSource source) {
-    if (e == null) return null;
-    return ReflectionPick(entry: e, source: source);
-  }
-
-  ReflectionLensEntry? firstDesc(List<ReflectionLensEntry> list) =>
-      list.isEmpty ? null : _sortPriorityDesc(list).first;
-
-  if (slot == ReflectionSlot.evening) {
-    final hijriDay = _matching(
-      calendarEntries,
-      now,
-      hijri,
-      slot,
-      (e) => _isType(e, 'hijri_day'),
-    );
-    final hijriPick = from(firstDesc(hijriDay), ReflectionPickSource.calendar);
-    if (hijriPick != null) return hijriPick;
-
-    if (now.weekday == DateTime.thursday) {
-      final friday = calendarEntries.where((e) {
-        final t = e.trigger;
-        return t != null &&
-            t.type == 'weekday' &&
-            t.weekday == DateTime.friday &&
-            t.appliesInSlot(slot);
-      }).toList();
-      final kahf = from(firstDesc(friday), ReflectionPickSource.calendar);
-      if (kahf != null) return kahf;
-    }
-
-    final evening = _matching(
-      calendarEntries,
-      now,
-      hijri,
-      slot,
-      (e) => _isType(e, 'time_of_day'),
-    );
-    final night = from(firstDesc(evening), ReflectionPickSource.timeOfDay);
-    if (night != null) return night;
-  } else {
-    final hijriDay = _matching(
-      calendarEntries,
-      now,
-      hijri,
-      slot,
-      (e) => _isType(e, 'hijri_day'),
-    );
-    final dayPick = from(firstDesc(hijriDay), ReflectionPickSource.calendar);
-    if (dayPick != null) return dayPick;
-
-    final hijriMonth = _matching(
-      calendarEntries,
-      now,
-      hijri,
-      slot,
-      (e) => _isType(e, 'hijri_month'),
-    );
-    final monthPick =
-        from(firstDesc(hijriMonth), ReflectionPickSource.calendar);
-    if (monthPick != null) return monthPick;
-
-    final weekday = _matching(
-      calendarEntries,
-      now,
-      hijri,
-      slot,
-      (e) => _isType(e, 'weekday'),
-    );
-    if (weekday.isNotEmpty) {
-      final chosen = now.weekday == DateTime.friday &&
-              slot == ReflectionSlot.midday &&
-              weekday.length > 1
-          ? _sortPriorityAsc(weekday).first
-          : _sortPriorityDesc(weekday).first;
-      return ReflectionPick(
-        entry: chosen,
-        source: ReflectionPickSource.calendar,
-      );
-    }
-
-    if (slot == ReflectionSlot.morning) {
-      final morning = _matching(
-        calendarEntries,
-        now,
-        hijri,
-        slot,
-        (e) => _isType(e, 'time_of_day'),
-      );
-      final m = from(firstDesc(morning), ReflectionPickSource.timeOfDay);
-      if (m != null) return m;
+  final all = [...calendarEntries, ...weeklyEntries];
+  final eligible = <ReflectionLensEntry>[];
+  for (final entry in all) {
+    if (entry.isForbiddenOn(day.hijri)) continue;
+    final trigger = entry.trigger;
+    if (trigger == null || trigger.matches(day)) {
+      eligible.add(entry);
     }
   }
-
-  final sortedWeekly = [...weeklyEntries]
-    ..sort((a, b) => a.sort.compareTo(b.sort));
-  if (sortedWeekly.isEmpty) {
+  if (eligible.isEmpty) {
     throw StateError('Weekly reflection catalog is empty');
   }
-  final index = _localEpochDay(now).abs() % sortedWeekly.length;
+
+  List<ReflectionLensEntry> ofTier(ReflectionTier tier) =>
+      eligible.where((e) => e.tier == tier).toList();
+
+  var bestRank = 99;
+  for (final entry in eligible) {
+    final rank = _tierRank[entry.tier] ?? 99;
+    if (rank < bestRank) bestRank = rank;
+  }
+  final primaryTier = _tiersDescending.firstWhere(
+    (t) => (_tierRank[t] ?? 99) == bestRank,
+  );
+  final primary = ofTier(primaryTier);
+  final seed = fnv1a32('$seedSalt|${day.hijri.ymdKey}');
+  final rng = Random(seed);
+
+  List<ReflectionLensEntry> pool;
+  var borrowed = <ReflectionLensEntry>[];
+
+  if (_isOccasion(primaryTier)) {
+    pool = primary;
+  } else {
+    final blocked = trimRecentIds(recentIds, primary.length).toSet();
+    List<ReflectionLensEntry> withoutRecent(List<ReflectionLensEntry> list) =>
+        list.where((e) => !blocked.contains(e.id)).toList();
+    pool = withoutRecent(primary);
+    if (pool.length < 3) {
+      var nextIndex = _tiersDescending.indexOf(primaryTier) + 1;
+      while (borrowed.length < 3 && nextIndex < _tiersDescending.length) {
+        final next = withoutRecent(ofTier(_tiersDescending[nextIndex]));
+        final need = 3 - borrowed.length;
+        borrowed.addAll(_takeSeeded(next, need, seed ^ nextIndex));
+        nextIndex++;
+      }
+    }
+    if (pool.isEmpty && borrowed.isEmpty) {
+      pool = primary;
+    }
+  }
+
+  late final ReflectionLensEntry chosen;
+  if (pool.isEmpty && borrowed.isNotEmpty) {
+    chosen = _pickByWeight(borrowed, rng);
+  } else if (borrowed.isEmpty) {
+    chosen = _pickByWeight(pool, rng);
+  } else if (rng.nextInt(10) < 7) {
+    chosen = _pickByWeight(pool, rng);
+  } else {
+    chosen = _pickByWeight(borrowed, rng);
+  }
+
   return ReflectionPick(
-    entry: sortedWeekly[index],
-    source: ReflectionPickSource.weekly,
+    entry: chosen,
+    source: _sourceFor(chosen),
   );
 }
 
-ReflectionPickSource _sourceFromTrigger(ReflectionTrigger? trigger) {
-  if (trigger == null) return ReflectionPickSource.weekly;
-  if (trigger.type == 'time_of_day') return ReflectionPickSource.timeOfDay;
-  return ReflectionPickSource.calendar;
+ReflectionPickSource _sourceFor(ReflectionLensEntry entry) {
+  switch (entry.tier) {
+    case ReflectionTier.fixedDate:
+    case ReflectionTier.season:
+    case ReflectionTier.weekday:
+      return ReflectionPickSource.calendar;
+    case ReflectionTier.ambient:
+      if (entry.trigger?.type == 'time_of_day') {
+        return ReflectionPickSource.timeOfDay;
+      }
+      return ReflectionPickSource.weekly;
+  }
 }
 
 final reflectionNowProvider = Provider<DateTime>((ref) => DateTime.now());
 
+final islamicDayProvider = Provider<IslamicDay>((ref) {
+  return IslamicDay.fromDateTime(ref.watch(reflectionNowProvider));
+});
+
 final reflectionPickProvider = FutureProvider<ReflectionPick>((ref) async {
-  final now = ref.watch(reflectionNowProvider);
+  final day = ref.watch(islamicDayProvider);
   var calendar = await ref.watch(calendarLensesProvider.future);
   var weekly = await ref.watch(weeklyRotationProvider.future);
   if (weekly.entries.isEmpty) {
@@ -219,29 +205,30 @@ final reflectionPickProvider = FutureProvider<ReflectionPick>((ref) async {
       entries: kReflectionFallbackEntries,
     );
   }
-  final hijri = HijriDate.fromGregorian(now);
-  final slot = reflectionSlotForHour(now.hour);
+  final all = [...calendar.entries, ...weekly.entries];
   final store = ReflectionHistoryStore();
-  final ymd = store.localYmd(now);
-  final cached = await store.read();
-  if (cached != null && cached.ymd == ymd && cached.slot == slot) {
-    for (final e in [...calendar.entries, ...weekly.entries]) {
+  final ymd = day.hijri.ymdKey;
+  final cached = await store.readToday();
+  if (cached != null && cached.ymd == ymd) {
+    for (final e in all) {
       if (e.id == cached.id) {
-        return ReflectionPick(
-          entry: e,
-          source: _sourceFromTrigger(e.trigger),
-        );
+        return ReflectionPick(entry: e, source: _sourceFor(e));
       }
     }
   }
+  final salt = await ref.watch(reflectionInstallSaltProvider.future);
+  final recent = await store.readRecentIds();
   final pick = resolveReflectionPick(
-    now: now,
-    hijri: hijri,
+    day: day,
     calendarEntries: calendar.entries,
     weeklyEntries: weekly.entries,
+    seedSalt: salt,
+    recentIds: recent,
   );
-  await store.write(
-    ReflectionSlotCache(ymd: ymd, slot: slot, id: pick.entry.id),
-  );
+  final dayChanged = cached == null || cached.ymd != ymd;
+  await store.writeToday(ymd: ymd, id: pick.entry.id);
+  if (dayChanged) {
+    await store.pushRecentId(pick.entry.id);
+  }
   return pick;
 });

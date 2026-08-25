@@ -2,6 +2,22 @@ import 'package:quran_offline/core/models/dua_entry.dart';
 import 'package:quran_offline/core/utils/hijri_date.dart';
 import 'package:quran_offline/core/utils/reflection_slot.dart';
 
+enum ReflectionTier { fixedDate, season, weekday, ambient }
+
+class HijriDay {
+  final int month;
+  final int day;
+
+  const HijriDay({required this.month, required this.day});
+
+  factory HijriDay.fromJson(Map<String, dynamic> json) {
+    return HijriDay(
+      month: json['month'] as int,
+      day: json['day'] as int,
+    );
+  }
+}
+
 class ReflectionTrigger {
   final String type;
   final int? weekday;
@@ -42,12 +58,13 @@ class ReflectionTrigger {
     return allowed.contains(slot);
   }
 
-  bool matches(DateTime gregorian, HijriDate hijri) {
+  bool matches(IslamicDay day) {
     return switch (type) {
-      'weekday' => gregorian.weekday == weekday,
-      'hijri_month' => hijri.month == hijriMonth,
-      'hijri_day' => hijri.month == hijriMonth && _hijriDayMatches(hijri.day),
-      'time_of_day' => _matchesPeriod(gregorian.hour, period),
+      'weekday' => day.weekday == weekday,
+      'hijri_month' => day.hijri.month == hijriMonth,
+      'hijri_day' =>
+        day.hijri.month == hijriMonth && _hijriDayMatches(day.hijri.day),
+      'time_of_day' => _matchesPeriod(day.period, period),
       _ => false,
     };
   }
@@ -77,12 +94,11 @@ class ReflectionTrigger {
     return slots;
   }
 
-  static bool _matchesPeriod(int hour, String? period) {
-    final slot = timeOfDayPeriodForHour(hour);
-    if (slot == null || period == null) return false;
-    return switch (period) {
-      'morning' => slot == TimeOfDayPeriod.morning,
-      'evening' => slot == TimeOfDayPeriod.evening,
+  static bool _matchesPeriod(TimeOfDayPeriod? current, String? expected) {
+    if (current == null || expected == null) return false;
+    return switch (expected) {
+      'morning' => current == TimeOfDayPeriod.morning,
+      'evening' => current == TimeOfDayPeriod.evening,
       _ => false,
     };
   }
@@ -98,6 +114,10 @@ class ReflectionLensEntry {
   final LocalizedText reflection;
   final List<DuaAyahRef> ayahRefs;
   final ReflectionTrigger? trigger;
+  final String? poolIdOverride;
+  final int? weightOverride;
+  final ReflectionTier? tierOverride;
+  final List<HijriDay> forbidOn;
 
   const ReflectionLensEntry({
     required this.id,
@@ -109,6 +129,10 @@ class ReflectionLensEntry {
     required this.reflection,
     required this.ayahRefs,
     this.trigger,
+    this.poolIdOverride,
+    this.weightOverride,
+    this.tierOverride,
+    this.forbidOn = const [],
   });
 
   factory ReflectionLensEntry.fromJson(Map<String, dynamic> json) {
@@ -129,7 +153,39 @@ class ReflectionLensEntry {
       trigger: triggerRaw == null
           ? null
           : ReflectionTrigger.fromJson(triggerRaw as Map<String, dynamic>),
+      poolIdOverride: json['poolId'] as String?,
+      weightOverride: json['weight'] as int?,
+      tierOverride: _parseTier(json['tier']),
+      forbidOn: _parseForbidOn(json['forbidOn']),
     );
+  }
+
+  String get poolId => poolIdOverride ?? id;
+
+  int get weight {
+    final w = weightOverride ?? (trigger?.type == 'time_of_day' ? 3 : 1);
+    return w < 1 ? 1 : w;
+  }
+
+  ReflectionTier get tier {
+    if (tierOverride != null) return tierOverride!;
+    return switch (trigger?.type) {
+      'hijri_day' => ReflectionTier.fixedDate,
+      'hijri_month' => ReflectionTier.season,
+      'weekday' => ReflectionTier.weekday,
+      _ => ReflectionTier.ambient,
+    };
+  }
+
+  bool isForbiddenOn(HijriDate hijri) {
+    for (final day in forbidOn) {
+      if (day.month == hijri.month && day.day == hijri.day) return true;
+    }
+    return false;
+  }
+
+  bool get showsOccasionBadge {
+    return tier == ReflectionTier.fixedDate || tier == ReflectionTier.season;
   }
 
   DuaAyahRef get primaryRef => ayahRefs.first;
@@ -140,6 +196,24 @@ class ReflectionLensEntry {
       count += ref.to - ref.from + 1;
     }
     return count;
+  }
+
+  static ReflectionTier? _parseTier(Object? raw) {
+    return switch (raw) {
+      'fixedDate' => ReflectionTier.fixedDate,
+      'season' => ReflectionTier.season,
+      'weekday' => ReflectionTier.weekday,
+      'ambient' => ReflectionTier.ambient,
+      _ => null,
+    };
+  }
+
+  static List<HijriDay> _parseForbidOn(Object? raw) {
+    if (raw is! List) return const [];
+    return raw
+        .whereType<Map>()
+        .map((e) => HijriDay.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
   }
 }
 

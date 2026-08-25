@@ -3,9 +3,16 @@ import 'package:quran_offline/core/models/reflection_lens.dart';
 import 'package:quran_offline/core/utils/hijri_date.dart';
 import 'package:quran_offline/core/utils/reflection_slot.dart';
 
+IslamicDay dayFor({
+  required HijriDate hijri,
+  int weekday = DateTime.monday,
+  TimeOfDayPeriod? period,
+}) {
+  return IslamicDay(hijri: hijri, weekday: weekday, period: period);
+}
+
 void main() {
   const hijri = HijriDate(year: 1447, month: 9, day: 25);
-  final now = DateTime(2026, 3, 15, 10);
 
   test('hijri_day with dayFrom/dayTo matches inclusive range', () {
     final t = ReflectionTrigger(
@@ -14,9 +21,11 @@ void main() {
       hijriDayFrom: 21,
       hijriDayTo: 30,
     );
-    expect(t.matches(now, hijri), isTrue);
+    expect(t.matches(dayFor(hijri: hijri)), isTrue);
     expect(
-      t.matches(now, const HijriDate(year: 1447, month: 9, day: 20)),
+      t.matches(
+        dayFor(hijri: const HijriDate(year: 1447, month: 9, day: 20)),
+      ),
       isFalse,
     );
   });
@@ -28,11 +37,15 @@ void main() {
       hijriDay: 21,
     );
     expect(
-      t.matches(now, const HijriDate(year: 1447, month: 9, day: 21)),
+      t.matches(
+        dayFor(hijri: const HijriDate(year: 1447, month: 9, day: 21)),
+      ),
       isTrue,
     );
     expect(
-      t.matches(now, const HijriDate(year: 1447, month: 9, day: 22)),
+      t.matches(
+        dayFor(hijri: const HijriDate(year: 1447, month: 9, day: 22)),
+      ),
       isFalse,
     );
   });
@@ -59,5 +72,35 @@ void main() {
     expect(t.hijriDayFrom, 21);
     expect(t.hijriDayTo, 30);
     expect(t.slots, [ReflectionSlot.evening]);
+  });
+
+  test('weekday matches rolled IslamicDay weekday', () {
+    final t = const ReflectionTrigger(type: 'weekday', weekday: 5);
+    expect(
+      t.matches(
+        dayFor(
+          hijri: const HijriDate(year: 1448, month: 2, day: 27),
+          weekday: DateTime.friday,
+        ),
+      ),
+      isTrue,
+    );
+  });
+
+  test('time_of_day matches IslamicDay period', () {
+    final t = const ReflectionTrigger(
+      type: 'time_of_day',
+      period: 'evening',
+    );
+    expect(
+      t.matches(
+        dayFor(
+          hijri: hijri,
+          period: TimeOfDayPeriod.evening,
+        ),
+      ),
+      isTrue,
+    );
+    expect(t.matches(dayFor(hijri: hijri)), isFalse);
   });
 }
