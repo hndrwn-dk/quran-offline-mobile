@@ -1,3 +1,5 @@
+import 'package:quran_offline/core/utils/hijri_date.dart';
+
 /// Utility class for app UI localization
 /// Uses the translation language setting to localize menu items and UI text
 class AppLocalizations {
@@ -2428,8 +2430,8 @@ class AppLocalizations {
     };
   }
 
-  static String? getHomeFridayHint(String language) {
-    if (DateTime.now().weekday != DateTime.friday) return null;
+  static String? getFridayHint(String language, int weekday) {
+    if (weekday != DateTime.friday) return null;
     return switch (language) {
       'id' => 'Hari Jumat — renungan Al-Kahfi menanti',
       'en' => 'Friday — Al-Kahf reflection awaits',
@@ -2437,6 +2439,133 @@ class AppLocalizations {
       'ja' => '金曜日 — カーフの黙想が待っています',
       _ => 'Friday — Al-Kahf reflection awaits',
     };
+  }
+
+  static String getGregorianWeekdayName(int weekday, String language) {
+    final names = switch (language) {
+      'id' => const [
+          'Senin',
+          'Selasa',
+          'Rabu',
+          'Kamis',
+          'Jumat',
+          'Sabtu',
+          'Minggu',
+        ],
+      'zh' => const [
+          '星期一',
+          '星期二',
+          '星期三',
+          '星期四',
+          '星期五',
+          '星期六',
+          '星期日',
+        ],
+      'ja' => const [
+          '月曜日',
+          '火曜日',
+          '水曜日',
+          '木曜日',
+          '金曜日',
+          '土曜日',
+          '日曜日',
+        ],
+      _ => const [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ],
+    };
+    if (weekday < DateTime.monday || weekday > DateTime.sunday) {
+      return names[DateTime.monday - 1];
+    }
+    return names[weekday - 1];
+  }
+
+  static String getHijriMonthName(int month, String language) {
+    final names = switch (language) {
+      'id' => const [
+          'Muharram',
+          'Safar',
+          'Rabiul Awal',
+          'Rabiul Akhir',
+          'Jumadil Awal',
+          'Jumadil Akhir',
+          'Rajab',
+          'Sya\'ban',
+          'Ramadan',
+          'Syawal',
+          'Dzulkaidah',
+          'Dzulhijjah',
+        ],
+      'zh' => const [
+          '穆哈兰姆',
+          '色法尔',
+          '赖比尔·敖外鲁',
+          '赖比尔·阿色尼',
+          '主马达·敖外鲁',
+          '主马达·阿色尼',
+          '赖哲卜',
+          '舍尔邦',
+          '莱麦丹',
+          '闪瓦勒',
+          '都尔喀尔德',
+          '都尔黑哲',
+        ],
+      'ja' => const [
+          'ムハッラム',
+          'サファル',
+          'ラビーウ・アル＝アウワル',
+          'ラビーウ・アッ＝サーニー',
+          'ジュマーダー・アル＝ウーラー',
+          'ジュマーダー・アッ＝サーニア',
+          'ラジャブ',
+          'シャアバーン',
+          'ラマダーン',
+          'シャウワール',
+          'ズー・アル＝カアダ',
+          'ズー・アル＝ヒッジャ',
+        ],
+      _ => const [
+          'Muharram',
+          'Safar',
+          'Rabi\' al-Awwal',
+          'Rabi\' al-Thani',
+          'Jumada al-Ula',
+          'Jumada al-Thani',
+          'Rajab',
+          'Sha\'ban',
+          'Ramadan',
+          'Shawwal',
+          'Dhu al-Qa\'dah',
+          'Dhu al-Hijjah',
+        ],
+    };
+    if (month < 1 || month > 12) return names[0];
+    return names[month - 1];
+  }
+
+  static String getHijriHeadline({
+    required String language,
+    required int gregorianWeekday,
+    required HijriDate hijri,
+    String? occasionBadgeKey,
+  }) {
+    final weekdayName = getGregorianWeekdayName(gregorianWeekday, language);
+    final monthName = getHijriMonthName(hijri.month, language);
+    final text = '$weekdayName, ${hijri.day} $monthName ${hijri.year}';
+    switch (occasionBadgeKey) {
+      case 'ramadan':
+        return '$text — ${getReflectionBadge('ramadan', language)}';
+      case 'hijrah':
+        return '$text — ${getReflectionBadge('hijrah', language)}';
+      default:
+        return text;
+    }
   }
 
   static String getWeeklyReminderNotifTitleNotRead(String language) {

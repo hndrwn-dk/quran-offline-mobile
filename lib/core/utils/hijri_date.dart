@@ -21,13 +21,20 @@ class HijriDate {
       day: h.hDay,
     );
   }
+
+  String get ymdKey {
+    final y = year.toString().padLeft(4, '0');
+    final m = month.toString().padLeft(2, '0');
+    final d = day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
 }
 
 enum TimeOfDayPeriod { morning, evening }
 
 TimeOfDayPeriod? timeOfDayPeriodForHour(int hour) {
   if (hour >= 5 && hour < 12) return TimeOfDayPeriod.morning;
-  if (hour >= 18 && hour < 22) return TimeOfDayPeriod.evening;
+  if (hour >= 18 || hour < 5) return TimeOfDayPeriod.evening;
   return null;
 }
 
