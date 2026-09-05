@@ -362,6 +362,9 @@ class _IconBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final inset = size * 0.18;
+    final imageLogical = size - (inset * 2);
+    final cachePx =
+        (imageLogical * MediaQuery.devicePixelRatioOf(context)).ceil();
 
     return Container(
       width: size,
@@ -383,6 +386,7 @@ class _IconBox extends StatelessWidget {
                 filterQuality: FilterQuality.high,
                 color: colorScheme.primary,
                 colorBlendMode: BlendMode.srcIn,
+                cacheWidth: cachePx,
                 errorBuilder: (_, __, ___) => Icon(
                   icon,
                   size: size * 0.5,
