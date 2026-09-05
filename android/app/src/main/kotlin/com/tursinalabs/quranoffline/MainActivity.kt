@@ -2,6 +2,7 @@ package com.tursinalabs.quranoffline
 
 import android.content.pm.PackageManager
 import android.os.Bundle
+import androidx.activity.EdgeToEdge
 import com.google.android.play.core.integrity.IntegrityManagerFactory
 import com.google.android.play.core.integrity.IntegrityTokenRequest
 import com.ryanheise.audioservice.AudioServiceFragmentActivity
@@ -16,8 +17,8 @@ class MainActivity : AudioServiceFragmentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        EdgeToEdge.enable(this)
         super.onCreate(savedInstanceState)
-        EdgeToEdgeHelper.enable(this)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
