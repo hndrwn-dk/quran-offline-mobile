@@ -22,6 +22,7 @@ import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_mushaf_layout.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
+import 'package:quran_offline/core/utils/system_bottom_inset.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/core/feedback/feedback_context.dart';
@@ -673,9 +674,10 @@ class _MushafPageState extends ConsumerState<MushafPage> {
           }
           
           final audio = ref.watch(audioPlayerProvider);
+          final bottomInset = systemBottomInset(MediaQuery.of(context));
 
           return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+            padding: EdgeInsets.fromLTRB(16, 24, 16, 32 + bottomInset),
             child: Column(
               children: [
                 if (!audio.isActive) ...[
