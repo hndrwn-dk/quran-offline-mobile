@@ -11,10 +11,30 @@ class NavReadIcon extends StatefulWidget {
   static const idleAssetPath = 'assets/icon/nav_read_quran.png';
   static const activeAssetPath = 'assets/icon/nav_read_quran_active.png';
 
-  static Future<void> precache(BuildContext context) {
+  /// Single source of truth for display and [precache] decode size.
+  static double resolveLogicalSize(BuildContext context, {double? size}) {
+    return size ?? IconTheme.of(context).size ?? 24.0;
+  }
+
+  static Future<void> precache(BuildContext context, {double? size}) {
+    final logical = resolveLogicalSize(context, size: size);
+    final cachePx =
+        (logical * MediaQuery.devicePixelRatioOf(context)).ceil();
     return Future.wait([
-      precacheImage(const AssetImage(idleAssetPath), context),
-      precacheImage(const AssetImage(activeAssetPath), context),
+      precacheImage(
+        ResizeImage(
+          const AssetImage(idleAssetPath),
+          width: cachePx,
+        ),
+        context,
+      ),
+      precacheImage(
+        ResizeImage(
+          const AssetImage(activeAssetPath),
+          width: cachePx,
+        ),
+        context,
+      ),
     ]);
   }
 
@@ -28,8 +48,10 @@ class _NavReadIconState extends State<NavReadIcon> {
 
   @override
   Widget build(BuildContext context) {
-    final iconTheme = IconTheme.of(context);
-    final resolvedSize = widget.size ?? iconTheme.size ?? 24;
+    final resolvedSize = NavReadIcon.resolveLogicalSize(
+      context,
+      size: widget.size,
+    );
 
     return RepaintBoundary(
       child: SizedBox(
@@ -75,6 +97,8 @@ class _NavReadLayer extends StatelessWidget {
     final iconTheme = IconTheme.of(context);
     final scheme = Theme.of(context).colorScheme;
     final tint = iconTheme.color ?? scheme.onSurface;
+    final cachePx =
+        (size * MediaQuery.devicePixelRatioOf(context)).ceil();
 
     return Offstage(
       offstage: offstage,
@@ -88,6 +112,7 @@ class _NavReadLayer extends StatelessWidget {
         color: tint,
         colorBlendMode: BlendMode.srcIn,
         excludeFromSemantics: offstage,
+        cacheWidth: cachePx,
       ),
     );
   }

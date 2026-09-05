@@ -116,11 +116,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Widget _buildSplashIcon(double size) {
+    final cachePx =
+        (size * MediaQuery.devicePixelRatioOf(context)).ceil();
     return Image.asset(
-      'assets/icon/splash_icon.png',
+      'assets/icon/splash_icon_display.png',
       width: size,
       height: size,
       fit: BoxFit.contain,
+      cacheWidth: cachePx,
     );
   }
 

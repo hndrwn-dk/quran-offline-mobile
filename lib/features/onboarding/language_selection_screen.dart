@@ -9,7 +9,7 @@ import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/nav_read_icon.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
 
-const String _logoAssetPath = 'assets/icon/splash_icon.png';
+const String _logoAssetPath = 'assets/icon/splash_icon_display.png';
 
 const String _prefKeyLanguageDone = 'language_selection_done';
 
@@ -290,6 +290,8 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
               width: size,
               height: size,
               fit: BoxFit.contain,
+              cacheWidth:
+                  (size * MediaQuery.devicePixelRatioOf(context)).ceil(),
               errorBuilder: (_, __, ___) => Icon(
                 Icons.menu_book_rounded,
                 size: 48,
