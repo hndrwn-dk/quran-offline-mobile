@@ -107,6 +107,8 @@ assets/themes/*.json
 !assets/themes/.gitkeep
 assets/reflection/*.json
 !assets/reflection/.gitkeep
+assets/ai/*
+!assets/ai/.gitkeep
 assets/mushaf/layout/*.sqlite
 !assets/mushaf/layout/.gitkeep
 assets/mushaf/script/*.sqlite
@@ -127,6 +129,9 @@ assets/qpc-v4-tajweed-15-lines.db.zip
 # Local docs stay untracked except text-integrity note.
 docs/*
 !docs/QURAN_TEXT_INTEGRITY.md
+!docs/ai_search/
+!docs/ai_search/**
+!docs/followup-r8-keep-narrowing.md
 assets/quran/*.json
 
 # Vercel feedback API (Node)
