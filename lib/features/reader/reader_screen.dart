@@ -16,6 +16,7 @@ import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/utils/juz_info.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
+import 'package:quran_offline/core/utils/system_bottom_inset.dart';
 import 'package:quran_offline/features/reader/ayah_card.dart';
 import 'package:quran_offline/features/audio/global_recitation_bar.dart';
 import 'package:quran_offline/features/reader/surah_header_card.dart';
@@ -795,7 +796,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   return ScrollablePositionedList.builder(
                     itemScrollController: _itemScrollController,
                     itemPositionsListener: _itemPositionsListener,
-                    padding: const EdgeInsets.only(top: 10),
+                    padding: EdgeInsets.only(
+                      top: 10,
+                      bottom: systemBottomInset(MediaQuery.of(context)),
+                    ),
                     itemCount: verses.length + (isSurahSource && currentSurahInfo != null ? 1 : 0),
                     itemBuilder: (context, index) {
                       // Show header card at the top for surah reading
@@ -875,7 +879,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   return ScrollablePositionedList.builder(
                     itemScrollController: _itemScrollController,
                     itemPositionsListener: _itemPositionsListener,
-                    padding: const EdgeInsets.only(top: 10),
+                    padding: EdgeInsets.only(
+                      top: 10,
+                      bottom: systemBottomInset(MediaQuery.of(context)),
+                    ),
                     itemCount: verses.length,
                     itemBuilder: (context, index) {
                       final verse = verses[index];
@@ -964,7 +971,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   return ScrollablePositionedList.builder(
                     itemScrollController: _itemScrollController,
                     itemPositionsListener: _itemPositionsListener,
-                    padding: const EdgeInsets.only(top: 10),
+                    padding: EdgeInsets.only(
+                      top: 10,
+                      bottom: systemBottomInset(MediaQuery.of(context)),
+                    ),
                     itemCount: verses.length,
                     itemBuilder: (context, index) {
                       final verse = verses[index];
