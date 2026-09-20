@@ -54,6 +54,22 @@ tests make the seed non-deterministic between runs.
 Friday calendar case is reproducible. Do not change production picker behavior
 solely to silence this flake unless product requires strict calendar wins.
 
+## Item C — Friday lens count
+
+**Symptom:** `test/reflection_distribution_test.dart` line ~320 expects
+`fridayKahf + fridayShalat >= 45` over 52 simulated Fridays; actual is 36
+(`jumat_kahf=18`, `jumat_shalat=18`, `other=16`).
+
+It surfaced only after the Item A range was corrected, which had masked it.
+
+**Open product question:** Should a Friday lens always win on Fridays unless a
+higher occasion tier (Ramadan, Muharram, Laylat) claims the day? If yes, the
+target is ~46–47 of 52 and the selector's tier priority needs investigation.
+If Fridays are meant to stay varied, the assertion should move to `>= 35`
+with a comment.
+
+**Status:** documented only, not fixed, out of scope for AI search.
+
 ## Out of scope for this note
 
 - Edge-to-edge inset work on `feat/edge-to-edge-insets` (separate review).
