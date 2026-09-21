@@ -277,17 +277,13 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
 - Acceptance: tests for every tier, for `recommendedToRecite=false` exclusion, for tier-1/tier-2 dedupe, and that tier 3 only appears when tiers 1–2 are empty.
 
 **E2. Screen**
-- Files: `lib/features/dua/dua_screen.dart` (Jelajahi hub), `lib/features/dua/widgets/explore_hub_search_bar.dart`, `lib/features/dua/explore_search.dart` (existing catalog search; do not remove), `app_localizations.dart`, `test/explore_doa_need_search_test.dart`
-- Doa-by-need lives **inside Jelajahi's existing search field**. There is no separate `doa_need_screen.dart` and no hub card that opens one.
+- Files: `lib/features/dua/dua_screen.dart` (Jelajahi hub), `lib/features/search/**` (Cari Doa groups), `lib/core/providers/ai_search_provider.dart`, `lib/features/dua/explore_search.dart` (flag-off catalog search; do not remove), `test/explore_doa_need_search_test.dart`, `test/cari_doa_need_groups_test.dart`, `test/ai_search_provider_test.dart`
+- Doa-by-need lives in **Cari's Doa Nabi and Doa dari Al-Qur'an groups**, filled by the E1 resolver. There is no separate `doa_need_screen.dart` and no hub card that opens one.
 - When `kAiSearchEnabled` is **false**: Jelajahi is unchanged from main (same search field, position, header, catalog-only results).
-- When `kAiSearchEnabled` is **true**: keep that same search field. Placeholder "Cari doa, tema, atau kebutuhan — mis. anak sakit". Queries run the E1 resolver **and** the existing catalog search on this screen. Results are grouped with §6.3 labels:
-  1. Doa Nabi (tier 1)
-  2. Doa dari Al-Qur'an (tier 2)
-  3. Ayat terkait — bukan lafaz doa (tier 3, only when tiers 1 and 2 are empty)
-  4. Asmaul Husna, Tema hidup, Sains (existing catalog results; resolver tier 3b uses the Asmaul Husna related label)
-- Cards reuse Jelajahi `ExploreTopicCard`, not Cari `ai_result_card`.
+- When `kAiSearchEnabled` is **true**: Jelajahi is **browse-only**. Header and subtitle stay ("Doa, sains, Asmaul Husna, tema hidup"). Four cards only, in this order: Doa para nabi, Sains, Asmaul Husna, Tema hidup. No search field. No "Doa sesuai kebutuhan" card. Search lives in Cari.
+- Cari Doa groups: replace keyword `dua` / `quran_dua` with resolver tier 1 / tier 2. Do **not** show the related-ayah tier ("Ayat terkait — bukan lafaz doa"); Cari already has its own Ayat group.
 - Arabic via existing verse rendering widgets only (R4).
-- Acceptance: widget tests for flag-off identical hub search; flag-on tier groups on the Jelajahi screen; tier 3 hidden when tier 1 or 2 has results; no `doa_need_screen.dart`; no Arabic string literals in new Dart files.
+- Acceptance: widget tests for flag-off identical hub search; flag-on no search field and four cards in the given order; Cari Doa groups from the resolver and no tier-3 group; no `doa_need_screen.dart`; no Arabic string literals in new Dart files.
 
 ### Phase F — Jelajah terkait
 

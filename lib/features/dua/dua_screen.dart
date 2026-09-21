@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quran_offline/core/ai_search/doa_need_resolver.dart';
 import 'package:quran_offline/core/models/asma_entry.dart';
 import 'package:quran_offline/core/models/dua_entry.dart';
 import 'package:quran_offline/core/models/science_entry.dart';
@@ -8,7 +7,6 @@ import 'package:quran_offline/core/models/theme_entry.dart';
 import 'package:quran_offline/core/providers/ai_search_provider.dart';
 import 'package:quran_offline/core/providers/asma_catalog_provider.dart';
 import 'package:quran_offline/core/providers/dua_catalog_provider.dart';
-import 'package:quran_offline/core/providers/quran_dua_ayat_catalog_provider.dart';
 import 'package:quran_offline/core/providers/science_catalog_provider.dart';
 import 'package:quran_offline/core/providers/theme_catalog_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
@@ -61,10 +59,7 @@ class _CatalogLoadError extends StatelessWidget {
 }
 
 class DuaScreen extends ConsumerWidget {
-  const DuaScreen({super.key, this.previewDoaNeed});
-
-  /// Test seam: skip the index and render this doa-need result.
-  final DoaNeedResult? previewDoaNeed;
+  const DuaScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -84,6 +79,7 @@ class DuaScreen extends ConsumerWidget {
         backgroundColor: HomeBackdrop.topTint(colorScheme),
         elevation: 0,
         scrolledUnderElevation: 0,
+        systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
         title: Row(
           children: [
             Container(
@@ -158,7 +154,6 @@ class DuaScreen extends ConsumerWidget {
           catalog: catalog,
           lang: lang,
           colorScheme: colorScheme,
-          previewDoaNeed: previewDoaNeed,
         ),
       ),
     );
@@ -170,13 +165,11 @@ class _ExploreHubBody extends ConsumerStatefulWidget {
     required this.catalog,
     required this.lang,
     required this.colorScheme,
-    this.previewDoaNeed,
   });
 
   final DuaCatalog catalog;
   final String lang;
   final ColorScheme colorScheme;
-  final DoaNeedResult? previewDoaNeed;
 
   @override
   ConsumerState<_ExploreHubBody> createState() => _ExploreHubBodyState();
@@ -186,14 +179,10 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
   late final TextEditingController _searchController;
   late final FocusNode _searchFocusNode;
   String _query = '';
-  DoaNeedResult? _doaNeed;
-  bool _doaNeedLoading = false;
-  int _resolveGen = 0;
 
   DuaCatalog get catalog => widget.catalog;
   String get lang => widget.lang;
   ColorScheme get colorScheme => widget.colorScheme;
-  DoaNeedResult? get _effectiveDoaNeed => widget.previewDoaNeed ?? _doaNeed;
 
   @override
   void initState() {
@@ -211,54 +200,12 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
 
   void _onSearchChanged(String value) {
     setState(() => _query = value);
-    if (ref.read(aiSearchEnabledProvider)) {
-      _resolveDoaNeed(value);
-    }
   }
 
   void _clearSearch() {
     _searchController.clear();
-    setState(() {
-      _query = '';
-      _doaNeed = null;
-      _doaNeedLoading = false;
-    });
+    setState(() => _query = '');
     _searchFocusNode.unfocus();
-  }
-
-  Future<void> _resolveDoaNeed(String raw) async {
-    if (widget.previewDoaNeed != null) return;
-    final gen = ++_resolveGen;
-    final query = raw.trim();
-    if (query.isEmpty) {
-      setState(() {
-        _doaNeed = null;
-        _doaNeedLoading = false;
-      });
-      return;
-    }
-    setState(() => _doaNeedLoading = true);
-    try {
-      final langCode = ref.read(settingsProvider).language;
-      final quranDua = await ref.read(quranDuaAyatCatalogProvider.future);
-      final resolver = DoaNeedResolver(
-        index: ref.read(searchIndexRepositoryProvider),
-        quranDuaEntries: quranDua.entries,
-        duaEntries: catalog.entries,
-      );
-      final result = await resolver.resolve(query, lang: langCode);
-      if (!mounted || gen != _resolveGen) return;
-      setState(() {
-        _doaNeed = result;
-        _doaNeedLoading = false;
-      });
-    } catch (_) {
-      if (!mounted || gen != _resolveGen) return;
-      setState(() {
-        _doaNeed = DoaNeedResult.empty;
-        _doaNeedLoading = false;
-      });
-    }
   }
 
   void _openSearchHit(ExploreSearchHit hit) {
@@ -291,11 +238,10 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
     final themeCatalog = themeAsync.value;
 
     final aiEnabled = ref.watch(aiSearchEnabledProvider);
-    final trimmedQuery = _query.trim();
+    final trimmedQuery = aiEnabled ? '' : _query.trim();
     final isSearching = trimmedQuery.isNotEmpty;
-    final doaNeed = isSearching ? _effectiveDoaNeed : null;
 
-    final searchHits = isSearching
+    final catalogHits = isSearching
         ? searchExploreContent(
             query: trimmedQuery,
             lang: lang,
@@ -305,11 +251,6 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
             themeCatalog: themeCatalog,
           )
         : const <ExploreSearchHit>[];
-    final catalogHits = aiEnabled
-        ? searchHits
-            .where((hit) => hit.kind != ExploreSearchKind.dua)
-            .toList()
-        : searchHits;
 
     final dailyCount = catalog.byCategory('daily').length;
     final prophetGrouped = catalog.prophetsGrouped();
@@ -347,45 +288,32 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
       ),
     ];
 
-    final showTier3 = doaNeed != null &&
-        doaNeed.tier1.isEmpty &&
-        doaNeed.tier2.isEmpty &&
-        doaNeed.tier3.isNotEmpty;
-    final hasDoaGroups = doaNeed != null &&
-        (doaNeed.tier1.isNotEmpty ||
-            doaNeed.tier2.isNotEmpty ||
-            showTier3 ||
-            doaNeed.tier3b.isNotEmpty);
-    final resultsEmpty = catalogHits.isEmpty && !hasDoaGroups;
-
     return HomeBackdrop(
       child: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(
-            child: AppSearchFieldInset(
-              padding: const EdgeInsets.fromLTRB(
-                kAppContentHorizontalInset,
-                kAppBodyTopInset,
-                kAppContentHorizontalInset,
-                12,
-              ),
-              child: ExploreHubSearchBar(
-                lang: lang,
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                onChanged: _onSearchChanged,
-                onClear: _clearSearch,
-                hintText: aiEnabled
-                    ? AppLocalizations.getExploreNeedSearchHint(lang)
-                    : null,
+          if (!aiEnabled)
+            SliverToBoxAdapter(
+              child: AppSearchFieldInset(
+                padding: const EdgeInsets.fromLTRB(
+                  kAppContentHorizontalInset,
+                  kAppBodyTopInset,
+                  kAppContentHorizontalInset,
+                  12,
+                ),
+                child: ExploreHubSearchBar(
+                  lang: lang,
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  onChanged: _onSearchChanged,
+                  onClear: _clearSearch,
+                ),
               ),
             ),
-          ),
-          if (!isSearching) ...[
+          if (!isSearching)
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
+              padding: EdgeInsets.fromLTRB(
                 kAppContentHorizontalInset,
-                0,
+                aiEnabled ? kAppBodyTopInset : 0,
                 kAppContentHorizontalInset,
                 24,
               ),
@@ -409,22 +337,15 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
                   );
                 },
               ),
-            ),
-          ] else if (_doaNeedLoading && widget.previewDoaNeed == null) ...[
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          ] else if (resultsEmpty) ...[
+            )
+          else if (catalogHits.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Text(
-                    aiEnabled
-                        ? AppLocalizations.getDoaNeedEmpty(lang)
-                        : AppLocalizations.getExploreSearchEmpty(lang),
+                    AppLocalizations.getExploreSearchEmpty(lang),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
@@ -432,8 +353,8 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
                   ),
                 ),
               ),
-            ),
-          ] else if (!aiEnabled) ...[
+            )
+          else
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(
                 kAppContentHorizontalInset,
@@ -454,231 +375,9 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
                 },
               ),
             ),
-          ] else ...[
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                kAppContentHorizontalInset,
-                0,
-                kAppContentHorizontalInset,
-                24,
-              ),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  if (doaNeed != null && doaNeed.tier1.isNotEmpty) ...[
-                    _exploreSearchGroupHeader(
-                      key: const Key('doa_need_header_tier1'),
-                      label: AppLocalizations.getDoaNeedTier1Header(lang),
-                    ),
-                    ..._doaNeedTopicCards(doaNeed.tier1),
-                  ],
-                  if (doaNeed != null && doaNeed.tier2.isNotEmpty) ...[
-                    _exploreSearchGroupHeader(
-                      key: const Key('doa_need_header_tier2'),
-                      label: AppLocalizations.getDoaNeedTier2Header(lang),
-                    ),
-                    ..._doaNeedTopicCards(doaNeed.tier2),
-                  ],
-                  if (showTier3) ...[
-                    _exploreSearchGroupHeader(
-                      key: const Key('doa_need_header_tier3'),
-                      label: AppLocalizations.getDoaNeedTier3Header(lang),
-                    ),
-                    ..._doaNeedTopicCards(doaNeed.tier3),
-                  ],
-                  if (doaNeed != null && doaNeed.tier3b.isNotEmpty) ...[
-                    _exploreSearchGroupHeader(
-                      key: const Key('doa_need_header_tier3b'),
-                      label: AppLocalizations.getDoaNeedTier3bHeader(lang),
-                    ),
-                    ..._doaNeedTopicCards(doaNeed.tier3b),
-                  ],
-                  ..._catalogKindGroup(
-                    kind: ExploreSearchKind.theme,
-                    hits: catalogHits,
-                    label: AppLocalizations.getDuaCategoryLabel(
-                      'life_theme',
-                      lang,
-                    ),
-                  ),
-                  ..._catalogKindGroup(
-                    kind: ExploreSearchKind.science,
-                    hits: catalogHits,
-                    label: AppLocalizations.getDuaCategoryLabel(
-                      'science',
-                      lang,
-                    ),
-                  ),
-                  ..._catalogKindGroup(
-                    kind: ExploreSearchKind.asma,
-                    hits: catalogHits,
-                    label: AppLocalizations.getDuaCategoryLabel('asma', lang),
-                  ),
-                ]),
-              ),
-            ),
-          ],
         ],
       ),
     );
-  }
-
-  Widget _exploreSearchGroupHeader({
-    required Key key,
-    required String label,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-      child: Text(
-        label,
-        key: key,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-      ),
-    );
-  }
-
-  List<Widget> _doaNeedTopicCards(List<DoaNeedItem> items) {
-    return [
-      for (final item in items) ...[
-        ExploreTopicCard(
-          title: _doaNeedTitle(item),
-          refLabel: _doaNeedSubtitle(item),
-          onTap: () => _openDoaNeedItem(item),
-        ),
-        const SizedBox(height: 8),
-      ],
-    ];
-  }
-
-  List<Widget> _catalogKindGroup({
-    required ExploreSearchKind kind,
-    required List<ExploreSearchHit> hits,
-    required String label,
-  }) {
-    final grouped = hits.where((hit) => hit.kind == kind).toList();
-    if (grouped.isEmpty) return const [];
-    return [
-      Padding(
-        padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-      ),
-      for (final hit in grouped) ...[
-        ExploreTopicCard(
-          title: hit.title,
-          refLabel: hit.subtitle,
-          onTap: () => _openSearchHit(hit),
-        ),
-        const SizedBox(height: 8),
-      ],
-    ];
-  }
-
-  String _ayahLabel(DoaNeedItem item) {
-    final surah = item.hit.surah;
-    final from = item.hit.ayahFrom;
-    if (surah == null || from == null) return item.hit.refKey;
-    return AppLocalizations.formatDuaAyahRef(
-      surah,
-      from,
-      item.hit.ayahTo ?? from,
-      lang,
-    );
-  }
-
-  String _doaNeedTitle(DoaNeedItem item) {
-    switch (item.tier) {
-      case DoaNeedTier.duaCatalog:
-        final dua = _duaByRef(item.hit.refKey);
-        return dua?.title.forLanguage(lang) ?? _ayahLabel(item);
-      case DoaNeedTier.asma:
-        final asma = _asmaByRef(item.hit.refKey);
-        return asma?.transliteration ?? _ayahLabel(item);
-      case DoaNeedTier.quranDua:
-      case DoaNeedTier.relatedAyah:
-      case DoaNeedTier.empty:
-        return _ayahLabel(item);
-    }
-  }
-
-  String _doaNeedSubtitle(DoaNeedItem item) {
-    switch (item.tier) {
-      case DoaNeedTier.duaCatalog:
-        final dua = _duaByRef(item.hit.refKey);
-        if (dua != null) {
-          return _ayahLabel(item);
-        }
-        return AppLocalizations.getDoaNeedTier1Header(lang);
-      case DoaNeedTier.quranDua:
-        return AppLocalizations.getDoaNeedTier2Header(lang);
-      case DoaNeedTier.relatedAyah:
-        return AppLocalizations.getDoaNeedTier3Header(lang);
-      case DoaNeedTier.asma:
-        final asma = _asmaByRef(item.hit.refKey);
-        return asma?.title.forLanguage(lang) ??
-            AppLocalizations.getDoaNeedTier3bHeader(lang);
-      case DoaNeedTier.empty:
-        return AppLocalizations.getDoaNeedEmpty(lang);
-    }
-  }
-
-  DuaEntry? _duaByRef(String refKey) {
-    for (final entry in catalog.entries) {
-      if (entry.id == refKey) return entry;
-    }
-    return null;
-  }
-
-  AsmaEntry? _asmaByRef(String refKey) {
-    final catalog = ref.read(asmaCatalogProvider).value;
-    if (catalog == null) return null;
-    for (final entry in catalog.entries) {
-      if (entry.id == refKey || '${entry.number}' == refKey) return entry;
-    }
-    return null;
-  }
-
-  void _openDoaNeedItem(DoaNeedItem item) {
-    _searchFocusNode.unfocus();
-    FocusManager.instance.primaryFocus?.unfocus();
-    switch (item.tier) {
-      case DoaNeedTier.duaCatalog:
-        final dua = _duaByRef(item.hit.refKey);
-        if (dua != null) {
-          _showDuaDetail(context, ref, dua, lang);
-        } else {
-          _openHitReader(item);
-        }
-        return;
-      case DoaNeedTier.asma:
-        final asma = _asmaByRef(item.hit.refKey);
-        if (asma != null) {
-          _showAsmaDetail(context, ref, asma, lang);
-        } else {
-          _openHitReader(item);
-        }
-        return;
-      case DoaNeedTier.quranDua:
-      case DoaNeedTier.relatedAyah:
-      case DoaNeedTier.empty:
-        _openHitReader(item);
-    }
-  }
-
-  void _openHitReader(DoaNeedItem item) {
-    final surah = item.hit.surah;
-    final from = item.hit.ayahFrom;
-    if (surah == null || from == null) return;
-    openReaderFromAyahRef(
-      ref,
-      DuaAyahRef(surah: surah, from: from, to: item.hit.ayahTo ?? from),
-    );
-    openReaderScreen(context, ref);
   }
 
   void _openProphetHub(
