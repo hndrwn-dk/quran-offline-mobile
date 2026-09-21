@@ -115,6 +115,10 @@ void main() {
   test('Temukan strings exist in all four languages', () {
     expect(AppLocalizations.getAiSearchHeading('id'), "Temukan di Al-Qur'an");
     expect(
+      AppLocalizations.getAiSearchScreenSubtitle('id'),
+      'Dari ayat, tafsir, doa, dan Asmaul Husna',
+    );
+    expect(
       AppLocalizations.getAiSearchPlaceholder('id'),
       'Cari sabar, rezeki, atau 2:255',
     );
@@ -134,6 +138,7 @@ void main() {
     );
     for (final lang in ['id', 'en', 'zh', 'ja']) {
       expect(AppLocalizations.getAiSearchHeading(lang), isNotEmpty);
+      expect(AppLocalizations.getAiSearchScreenSubtitle(lang), isNotEmpty);
       expect(AppLocalizations.getAiSearchPlaceholder(lang), isNotEmpty);
       expect(AppLocalizations.getAiSearchTryLabel(lang), isNotEmpty);
       expect(AppLocalizations.getAiSearchLandingHint(lang), isNotEmpty);
@@ -398,7 +403,7 @@ void main() {
     expect(find.byKey(const Key('ai_search_group_ayah')), findsNothing);
   });
 
-  testWidgets('flag on uses Temukan header, placeholder, Cari nav, no subtitle', (
+  testWidgets('flag on uses Temukan header, subtitle, placeholder, and Cari nav', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -424,6 +429,10 @@ void main() {
         matching: find.text(AppLocalizations.getAiSearchHeading('en')),
       ),
       findsWidgets,
+    );
+    expect(
+      find.text(AppLocalizations.getAiSearchScreenSubtitle('en')),
+      findsOneWidget,
     );
     expect(
       find.text(AppLocalizations.getSubtitleText('search_subtitle', 'en')),
@@ -486,6 +495,57 @@ void main() {
     expect(find.byKey(const Key('tanya_landing_card')), findsNothing);
   });
 
+  testWidgets('flag on search tab shows nav when the field is unfocused', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ..._searchOverrides(
+            aiEnabled: true,
+            classic: const [],
+            tanya: const [],
+            query: '',
+          ),
+          currentTabProvider.overrideWith((ref) => AppTab.search),
+        ],
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final field = tester.widget<TextField>(find.byKey(const Key('search_field')));
+    expect(field.focusNode?.hasFocus, isFalse);
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byKey(const Key('nav_search')), findsOneWidget);
+  });
+
+  testWidgets('flag off search tab shows nav when the field is unfocused', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ..._searchOverrides(
+            aiEnabled: false,
+            classic: const [],
+            tanya: const [],
+            query: '',
+          ),
+          currentTabProvider.overrideWith((ref) => AppTab.search),
+        ],
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final field = tester.widget<TextField>(find.byKey(const Key('search_field')));
+    expect(field.focusNode?.hasFocus, isFalse);
+    expect(find.byType(NavigationBar), findsOneWidget);
+  });
+
   testWidgets('landing is try chips in one row plus hint, no cards', (
     tester,
   ) async {
@@ -512,6 +572,10 @@ void main() {
     expect(find.byKey(const Key('tanya_specific_heading')), findsNothing);
     expect(find.byKey(const Key('tanya_try_label')), findsOneWidget);
     expect(find.byKey(const Key('tanya_landing_hint')), findsOneWidget);
+    expect(
+      find.text(AppLocalizations.getAiSearchScreenSubtitle('en')),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('tanya_example_row')), findsOneWidget);
     expect(find.byKey(const Key('tanya_example_3')), findsOneWidget);
     expect(

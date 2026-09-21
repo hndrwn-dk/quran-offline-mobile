@@ -3357,6 +3357,16 @@ class AppLocalizations {
     };
   }
 
+  static String getAiSearchScreenSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Dari ayat, tafsir, doa, dan Asmaul Husna',
+      'en' => 'From verses, tafsir, dua, and the Names of Allah',
+      'zh' => '来自经文、经注、祈祷和真主的美名',
+      'ja' => '節、タフスィール、祈り、アッラーの美名から',
+      _ => 'From verses, tafsir, dua, and the Names of Allah',
+    };
+  }
+
   static String getAiSearchPlaceholder(String language) {
     return switch (language) {
       'id' => 'Cari sabar, rezeki, atau 2:255',
