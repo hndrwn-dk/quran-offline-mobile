@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quran_offline/core/ai_search/ai_search_config.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/ai_search_provider.dart';
 import 'package:quran_offline/core/providers/enhanced_search_provider.dart'
     show SearchResult, SearchVerseMatchKind, enhancedSearchResultsProvider;
-import 'package:quran_offline/features/search/widgets/ai_result_card.dart';
+import 'package:quran_offline/features/search/widgets/tanya_search_results.dart';
 import 'package:quran_offline/core/utils/arabic_search_normalizer.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
@@ -113,9 +112,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final query = ref.watch(searchQueryProvider);
     final resultsAsync = ref.watch(enhancedSearchResultsProvider);
     final settings = ref.watch(settingsProvider);
-    final tanyaAsync = kAiSearchEnabled
+    final aiEnabled = ref.watch(aiSearchEnabledProvider);
+    final tanyaAsync = aiEnabled
         ? ref.watch(aiSearchResultsProvider)
         : const AsyncValue<AiSearchResults>.data(AiSearchResults.empty);
+    final tanyaCardBuilder = ref.watch(tanyaCardBuilderProvider);
 
     // When user changes the search query, reset type filter to "All" so new results (e.g. terjemahan for "sabar") are visible.
     ref.listen<String>(searchQueryProvider, (prev, next) {
@@ -291,17 +292,49 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   );
                 }
 
-                final filtered = _filterResults(results, _selectedTypeFilter);
                 final colorScheme = Theme.of(context).colorScheme;
                 final textTheme = Theme.of(context).textTheme;
                 final appLanguage = settings.appLanguage;
+                final isTanyaView = aiEnabled && _selectedTypeFilter == 'all';
+                final translationCount = results
+                    .where(
+                      (r) =>
+                          r.type == 'verse' &&
+                          r.verseMatchKind == SearchVerseMatchKind.translation,
+                    )
+                    .length;
                 final tanyaGroups =
                     tanyaAsync.asData?.value.groups ?? const <AiSearchTypeGroup>[];
-                final showTanya = kAiSearchEnabled &&
-                    query.trim().isNotEmpty &&
-                    (tanyaGroups.isNotEmpty || tanyaAsync.isLoading);
 
-                if (filtered.isEmpty && !showTanya) {
+                if (isTanyaView) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTypeFilterChips(
+                        colorScheme: colorScheme,
+                        textTheme: textTheme,
+                        appLanguage: appLanguage,
+                        aiEnabled: aiEnabled,
+                      ),
+                      Expanded(
+                        child: TanyaSearchResults(
+                          groups: tanyaGroups,
+                          lang: appLanguage,
+                          translationCount: translationCount,
+                          cardBuilder: tanyaCardBuilder,
+                          loading: tanyaAsync.isLoading,
+                          onJumpToTranslation: () {
+                            setState(() => _selectedTypeFilter = 'terjemahan');
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                final filtered = _filterResults(results, _selectedTypeFilter);
+
+                if (filtered.isEmpty) {
                   final filterHidesMatches =
                       results.isNotEmpty && _selectedTypeFilter != 'all';
                   final title = AppLocalizations.getSearchText(
@@ -325,6 +358,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         colorScheme: colorScheme,
                         textTheme: textTheme,
                         appLanguage: appLanguage,
+                        aiEnabled: aiEnabled,
                       ),
                       Expanded(
                         child: Center(
@@ -417,6 +451,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       colorScheme: colorScheme,
                       textTheme: textTheme,
                       appLanguage: appLanguage,
+                      aiEnabled: aiEnabled,
                     ),
                     if (filtered.isNotEmpty)
                       Padding(
@@ -429,16 +464,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     Expanded(
                       child: ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
-                        itemCount: filtered.length + (showTanya ? 1 : 0),
+                        itemCount: filtered.length,
                         itemBuilder: (context, index) {
-                          if (showTanya && index >= filtered.length) {
-                            return _buildTanyaSection(
-                              context: context,
-                              appLanguage: appLanguage,
-                              groups: tanyaGroups,
-                              loading: tanyaAsync.isLoading,
-                            );
-                          }
                           final result = filtered[index];
                           IconData icon;
                           Color? iconColor;
@@ -595,59 +622,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildTanyaSection({
-    required BuildContext context,
-    required String appLanguage,
-    required List<AiSearchTypeGroup> groups,
-    required bool loading,
-  }) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 16, 8, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: Text(
-              AppLocalizations.getAiSearchHeading(appLanguage),
-              key: const Key('tanya_al_quran_heading'),
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
-              ),
-            ),
-          ),
-          if (loading && groups.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          for (final group in groups) ...[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Text(
-                AppLocalizations.getAiSearchTypeLabel(group.type, appLanguage),
-                key: Key('ai_search_group_${group.type}'),
-                style: textTheme.labelLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            for (final hit in group.hits)
-              AiSearchHitCard(hit: hit, lang: appLanguage),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildTypeFilterChips({
     required ColorScheme colorScheme,
     required TextTheme textTheme,
     required String appLanguage,
+    required bool aiEnabled,
   }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -658,7 +637,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           children: List.generate(_typeFilterKeys.length, (i) {
             final key = _typeFilterKeys[i];
             final label = key == 'all'
-                ? AppLocalizations.getSettingsText('filter_all', appLanguage)
+                ? (aiEnabled
+                    ? AppLocalizations.getAiSearchHeading(appLanguage)
+                    : AppLocalizations.getSettingsText('filter_all', appLanguage))
                 : key == 'ayat'
                     ? AppLocalizations.getSearchText('verse_label', appLanguage)
                     : key == 'terjemahan'
@@ -673,6 +654,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 right: i < _typeFilterKeys.length - 1 ? 8 : 0,
               ),
               child: Material(
+                key: Key('search_filter_$key'),
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => setState(() => _selectedTypeFilter = key),

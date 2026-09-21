@@ -64,6 +64,8 @@ class AiSearchResults {
   bool get isEmpty => groups.isEmpty;
 }
 
+final aiSearchEnabledProvider = Provider<bool>((ref) => kAiSearchEnabled);
+
 final searchIndexRepositoryProvider = Provider<SearchIndexRepository>((ref) {
   final repo = SearchIndexRepository();
   ref.onDispose(repo.close);
