@@ -6,8 +6,6 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:quran_offline/core/ai_search/ai_search_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// sqlite3 is already pulled by drift / sqlite3_flutter_libs (B0).
-// ignore: depend_on_referenced_packages
 import 'package:sqlite3/sqlite3.dart';
 
 class IndexHit {
