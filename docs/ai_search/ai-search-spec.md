@@ -277,9 +277,17 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
 - Acceptance: tests for every tier, for `recommendedToRecite=false` exclusion, for tier-1/tier-2 dedupe, and that tier 3 only appears when tiers 1–2 are empty.
 
 **E2. Screen**
-- Files: `lib/features/dua/doa_need_screen.dart`, entry point in `lib/features/dua/dua_screen.dart` (single button/search field, flag-guarded), `app_localizations.dart`
-- Tier headers use labels from §6.3. Arabic via existing verse rendering widgets only (R4).
-- Acceptance: widget test renders each tier label; no Arabic string literals in new Dart files.
+- Files: `lib/features/dua/dua_screen.dart` (Jelajahi hub), `lib/features/dua/widgets/explore_hub_search_bar.dart`, `lib/features/dua/explore_search.dart` (existing catalog search; do not remove), `app_localizations.dart`, `test/explore_doa_need_search_test.dart`
+- Doa-by-need lives **inside Jelajahi's existing search field**. There is no separate `doa_need_screen.dart` and no hub card that opens one.
+- When `kAiSearchEnabled` is **false**: Jelajahi is unchanged from main (same search field, position, header, catalog-only results).
+- When `kAiSearchEnabled` is **true**: keep that same search field. Placeholder "Cari doa, tema, atau kebutuhan — mis. anak sakit". Queries run the E1 resolver **and** the existing catalog search on this screen. Results are grouped with §6.3 labels:
+  1. Doa Nabi (tier 1)
+  2. Doa dari Al-Qur'an (tier 2)
+  3. Ayat terkait — bukan lafaz doa (tier 3, only when tiers 1 and 2 are empty)
+  4. Asmaul Husna, Tema hidup, Sains (existing catalog results; resolver tier 3b uses the Asmaul Husna related label)
+- Cards reuse Jelajahi `ExploreTopicCard`, not Cari `ai_result_card`.
+- Arabic via existing verse rendering widgets only (R4).
+- Acceptance: widget tests for flag-off identical hub search; flag-on tier groups on the Jelajahi screen; tier 3 hidden when tier 1 or 2 has results; no `doa_need_screen.dart`; no Arabic string literals in new Dart files.
 
 ### Phase F — Jelajah terkait
 
