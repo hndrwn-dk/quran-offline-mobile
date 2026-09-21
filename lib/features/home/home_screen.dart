@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/notifications/notification_navigation_handler.dart';
-import 'package:quran_offline/core/providers/ai_search_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
@@ -68,7 +67,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final settings = ref.watch(settingsProvider);
     final appLanguage = settings.appLanguage;
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
-    final aiEnabled = ref.watch(aiSearchEnabledProvider);
 
     return AudioDownloadNotifications(
       child: Scaffold(
@@ -114,9 +112,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   key: const Key('nav_search'),
                   icon: const Icon(Icons.travel_explore_outlined),
                   selectedIcon: const Icon(Icons.travel_explore),
-                  label: aiEnabled
-                      ? AppLocalizations.getAiSearchNavLabel(appLanguage)
-                      : AppLocalizations.getNavMenuText('search', appLanguage),
+                  label: AppLocalizations.getNavMenuText('search', appLanguage),
                 ),
                 NavigationDestination(
                   key: const Key('nav_explore'),
