@@ -132,50 +132,45 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: aiEnabled
-                  ? Text(
-                      AppLocalizations.getAiSearchHeading(settings.appLanguage),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.3,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                    )
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppLocalizations.getMenuText(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    aiEnabled
+                        ? AppLocalizations.getAiSearchHeading(
+                            settings.appLanguage,
+                          )
+                        : AppLocalizations.getMenuText(
                             'search',
                             settings.appLanguage,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.3,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.3,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          AppLocalizations.getSubtitleText(
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    aiEnabled
+                        ? AppLocalizations.getAiSearchScreenSubtitle(
+                            settings.appLanguage,
+                          )
+                        : AppLocalizations.getSubtitleText(
                             'search_subtitle',
                             settings.appLanguage,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                              ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
-                      ],
-                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
