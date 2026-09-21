@@ -198,6 +198,16 @@ class AppLocalizations {
     };
   }
 
+  static String getExploreNeedSearchHint(String language) {
+    return switch (language) {
+      'id' => 'Cari doa, tema, atau kebutuhan — mis. anak sakit',
+      'en' => 'Search duas, themes, or a need — e.g. sick child',
+      'zh' => '搜索祈祷、主题或需要 — 例如孩子生病',
+      'ja' => '祈り、テーマ、必要を検索 — 例: 子どもが病気',
+      _ => 'Search duas, themes, or a need — e.g. sick child',
+    };
+  }
+
   static String getExploreSearchEmpty(String language) {
     return switch (language) {
       'id' => 'Tidak ada hasil di Jelajahi',
