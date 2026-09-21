@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/ai_search/ai_search_config.dart';
+import 'package:quran_offline/core/ai_search/id_query_normalizer.dart';
 import 'package:quran_offline/core/ai_search/search_index_repository.dart';
 // ignore: depend_on_referenced_packages
 import 'package:sqlite3/sqlite3.dart';
@@ -115,5 +116,46 @@ void main() {
     final ids = await repo.relatedDocIds(2, 1);
     expect(ids, containsAll(['ayah:2:1:id', 'dua:one:id']));
     expect(ids, isNot(contains('ayah:2:2:id')));
+  });
+
+  test('ftsAnyTermQuery joins terms with OR and keeps synonym groups', () {
+    expect(ftsAnyTermQuery('doa orang tua'), 'doa OR orang OR tua');
+    expect(
+      ftsAnyTermQuery('(rezeki OR rizki) sabar'),
+      '(rezeki OR rizki) OR sabar',
+    );
+  });
+
+  test('doa untuk orang tua ranks both-terms above untuk-only', () async {
+    final db = sqlite3.open(dbPath);
+    void addDoc(String id, String body) {
+      db.execute(
+        '''
+        INSERT INTO docs(doc_id, type, lang, ref_key, surah, ayah_from, ayah_to, title, body_norm)
+        VALUES (?, 'ayah', 'id', ?, 2, 3, 3, ?, ?)
+        ''',
+        [id, id, id, body],
+      );
+      final rowid = db.lastInsertRowId;
+      db.execute(
+        'INSERT INTO docs_fts(rowid, title, body_norm) VALUES (?, ?, ?)',
+        [rowid, id, body],
+      );
+    }
+
+    addDoc('ayah:both:id', 'doa orang tua');
+    addDoc('ayah:untuk:id', 'untuk');
+    db.dispose();
+
+    await repo.openPath(dbPath, readOnly: false);
+    final query = IdQueryNormalizer.normalize('doa untuk orang tua');
+    expect(query, 'doa orang tua');
+    final hits = await repo.keywordSearch(query, lang: 'id');
+    expect(hits, isNotEmpty);
+    expect(hits.first.docId, 'ayah:both:id');
+    final ids = [for (final hit in hits) hit.docId];
+    if (ids.contains('ayah:untuk:id')) {
+      expect(ids.indexOf('ayah:both:id'), lessThan(ids.indexOf('ayah:untuk:id')));
+    }
   });
 }

@@ -7,8 +7,8 @@ import 'package:quran_offline/core/ai_search/id_query_normalizer.dart';
 void main() {
   final vectorsFile = File('tool/fixtures/id_normalizer_vectors.json');
 
-  test('normalizerVersion is 1', () {
-    expect(IdQueryNormalizer.normalizerVersion, 1);
+  test('normalizerVersion is 2', () {
+    expect(IdQueryNormalizer.normalizerVersion, 2);
   });
 
   test('shared vectors match Python suite', () {
@@ -25,7 +25,7 @@ void main() {
         reason: 'in=$input',
       );
     }
-    expect(cases.length, 13);
+    expect(cases.length, 18);
   });
 
   test('empty string', () {
@@ -41,5 +41,11 @@ void main() {
   test('prefix and suffix together', () {
     expect(IdQueryNormalizer.normalize('dikerjakan'), 'kerja');
     expect(IdQueryNormalizer.normalize('pekerjaannya'), 'kerja');
+  });
+
+  test('stopwords dropped after affix stripping', () {
+    expect(IdQueryNormalizer.normalize('doa untuk orang tua'), 'doa orang tua');
+    expect(IdQueryNormalizer.normalize('untuk yang dan'), 'untuk yang dan');
+    expect(IdQueryNormalizer.normalize('the a an'), 'the a an');
   });
 }

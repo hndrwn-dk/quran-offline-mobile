@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Indonesian/English query normaliser (matching only). Version 1.
+"""Indonesian/English query normaliser (matching only). Version 2.
 
-Mirrors docs/ai_search/ai-search-spec.md §6.1 steps 1–4.
+Mirrors docs/ai_search/ai-search-spec.md §6.1.
 Synonym expansion is query-time only and is not applied here.
 """
 
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 
-NORMALIZER_VERSION = 1
+NORMALIZER_VERSION = 2
 
 _HTML = re.compile(r"<[^>]+>")
 _NON_ALNUM = re.compile(r"[^\w]+", re.UNICODE)
@@ -40,6 +40,50 @@ _PREFIXES = (
 )
 _SUFFIXES_DERIV = ("kan", "an", "i")
 _MIN_STEM = 3
+_STOPWORDS = {
+    "untuk",
+    "yang",
+    "dan",
+    "di",
+    "ke",
+    "dari",
+    "dengan",
+    "kepada",
+    "pada",
+    "saat",
+    "ketika",
+    "agar",
+    "supaya",
+    "bagi",
+    "itu",
+    "ini",
+    "ada",
+    "atau",
+    "juga",
+    "akan",
+    "sudah",
+    "telah",
+    "oleh",
+    "dalam",
+    "the",
+    "a",
+    "an",
+    "of",
+    "for",
+    "to",
+    "in",
+    "on",
+    "and",
+    "or",
+    "with",
+    "when",
+    "is",
+    "are",
+}
+
+
+def _is_stopword(original: str, stemmed: str) -> bool:
+    return original in _STOPWORDS or stemmed in _STOPWORDS
 
 
 def _strip_tashkeel_like(text: str) -> str:
@@ -89,12 +133,24 @@ def normalize(text: str) -> str:
     if not s:
         return ""
     s = _strip_tashkeel_like(s)
-    out: list[str] = []
+    originals: list[str] = []
+    kept: list[str] = []
+    all_stop = True
     for token in s.split(" "):
         if not token:
             continue
+        originals.append(token)
         if _ARABIC.search(token):
-            out.append(token)
+            kept.append(token)
+            all_stop = False
         else:
-            out.append(_stem_latin(token))
-    return " ".join(out)
+            stemmed = _stem_latin(token)
+            if _is_stopword(token, stemmed):
+                continue
+            kept.append(stemmed)
+            all_stop = False
+    if not originals:
+        return ""
+    if all_stop:
+        return " ".join(originals)
+    return " ".join(kept)

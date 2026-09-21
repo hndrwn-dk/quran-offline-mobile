@@ -11,5 +11,10 @@
   {"in": "sabarlah", "out": "sabar"},
   {"in": "kesabaran", "out": "sabar"},
   {"in": "bukunya", "out": "buku"},
-  {"in": "123", "out": "123"}
+  {"in": "123", "out": "123"},
+  {"in": "doa untuk orang tua", "out": "doa orang tua"},
+  {"in": "untuk yang dan", "out": "untuk yang dan"},
+  {"in": "the a an", "out": "the a an"},
+  {"in": "patience for the parents", "out": "patience parents"},
+  {"in": "sabar dan buku", "out": "sabar buku"}
 ]
