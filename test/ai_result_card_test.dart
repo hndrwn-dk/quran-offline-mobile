@@ -73,7 +73,7 @@ void main() {
       AppLocalizations.getAiSearchKurasiBadge('id'),
       'Penjelasan kurasi',
     );
-    expect(AppLocalizations.getAiSearchHeading('id'), "Tanya Al-Qur'an");
+    expect(AppLocalizations.getAiSearchHeading('id'), "Temukan di Al-Qur'an");
     for (final lang in ['id', 'en', 'zh', 'ja']) {
       expect(AppLocalizations.getAiSearchTypeLabel('ayah', lang), isNotEmpty);
       expect(AppLocalizations.getAiSearchKurasiBadge(lang), isNotEmpty);

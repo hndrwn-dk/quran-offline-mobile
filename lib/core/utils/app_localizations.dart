@@ -3349,68 +3349,72 @@ class AppLocalizations {
 
   static String getAiSearchHeading(String language) {
     return switch (language) {
-      'id' => 'Tanya Al-Qur\'an',
-      'en' => 'Ask the Qur\'an',
-      'zh' => '询问古兰经',
-      'ja' => 'クルアーンに尋ねる',
-      _ => 'Ask the Qur\'an',
-    };
-  }
-
-  static String getAiSearchNavLabel(String language) {
-    return switch (language) {
-      'id' => 'Tanya',
-      'en' => 'Ask',
-      'zh' => '询问',
-      'ja' => '尋ねる',
-      _ => 'Ask',
-    };
-  }
-
-  static String getAiSearchScreenSubtitle(String language) {
-    return switch (language) {
-      'id' =>
-        'Tanya apa saja, jawabannya dari Al-Qur\'an, tafsir, dan doa di aplikasi ini',
-      'en' =>
-        'Ask anything; answers come from the Qur\'an, tafsir, and dua in this app',
-      'zh' => '随便问，答案来自本应用中的古兰经、经注和祈祷',
-      'ja' => '何でも聞いてください。答えはこのアプリ内のクルアーン、タフスィール、祈りからです',
-      _ =>
-        'Ask anything; answers come from the Qur\'an, tafsir, and dua in this app',
+      'id' => 'Temukan di Al-Qur\'an',
+      'en' => 'Find in the Qur\'an',
+      'zh' => '在古兰经中查找',
+      'ja' => 'クルアーンで見つける',
+      _ => 'Find in the Qur\'an',
     };
   }
 
   static String getAiSearchPlaceholder(String language) {
     return switch (language) {
-      'id' =>
-        'Tanya tentang sabar, rezeki, doa untuk orang tua, atau ketik 2:255',
-      'en' => 'Ask about patience, provision, a dua for parents, or type 2:255',
-      'zh' => '询问忍耐、供养、为父母的祈祷，或输入 2:255',
-      'ja' => '忍耐、糧、両親のための祈りについて尋ねるか、2:255 と入力',
-      _ => 'Ask about patience, provision, a dua for parents, or type 2:255',
+      'id' => 'Cari sabar, rezeki, atau 2:255',
+      'en' => 'Search patience, provision, or 2:255',
+      'zh' => '搜索忍耐、供养或 2:255',
+      'ja' => '忍耐、糧、または 2:255 を検索',
+      _ => 'Search patience, provision, or 2:255',
     };
   }
 
-  static String getAiSearchLandingSubtitle(String language) {
+  static String getAiSearchTryLabel(String language) {
     return switch (language) {
-      'id' =>
-        'Tanya dengan kalimat biasa, hasil dari ayat, tafsir, doa, dan Asmaul Husna',
-      'en' =>
-        'Ask in everyday words; results from verses, tafsir, dua, and the Names of Allah',
-      'zh' => '用平常的话说，结果来自经文、经注、祈祷和真主的尊名',
-      'ja' => 'いつもの言葉で尋ねてください。節、タフスィール、祈り、アッラーの美名から結果が出ます',
-      _ =>
-        'Ask in everyday words; results from verses, tafsir, dua, and the Names of Allah',
+      'id' => 'Coba:',
+      'en' => 'Try:',
+      'zh' => '试试：',
+      'ja' => '試す：',
+      _ => 'Try:',
     };
   }
 
-  static String getAiSearchSpecificHeading(String language) {
+  static String getAiSearchLandingHint(String language) {
     return switch (language) {
-      'id' => 'Atau cari lebih spesifik',
-      'en' => 'Or search more specifically',
-      'zh' => '或更精确地搜索',
-      'ja' => 'または、より具体的に検索',
-      _ => 'Or search more specifically',
+      'id' =>
+        'Bisa juga ketik 2:255, juz 30, halaman 5, atau teks Arab.',
+      'en' => 'You can also type 2:255, juz 30, page 5, or Arabic text.',
+      'zh' => '也可以输入 2:255、juz 30、第 5 页或阿拉伯文。',
+      'ja' => '2:255、juz 30、5ページ、アラビア語も入力できます。',
+      _ => 'You can also type 2:255, juz 30, page 5, or Arabic text.',
+    };
+  }
+
+  static String getAiSearchDirectGroup(String language) {
+    return switch (language) {
+      'id' => 'Langsung ke',
+      'en' => 'Go directly',
+      'zh' => '直接前往',
+      'ja' => '直接移動',
+      _ => 'Go directly',
+    };
+  }
+
+  static String getAiSearchArabicGroup(String language) {
+    return switch (language) {
+      'id' => 'Teks Arab',
+      'en' => 'Arabic text',
+      'zh' => '阿拉伯文',
+      'ja' => 'アラビア語',
+      _ => 'Arabic text',
+    };
+  }
+
+  static String getAiSearchSeeTranslations(String language) {
+    return switch (language) {
+      'id' => 'Lihat hasil terjemahan',
+      'en' => 'See translation results',
+      'zh' => '查看译文结果',
+      'ja' => '翻訳結果を見る',
+      _ => 'See translation results',
     };
   }
 
