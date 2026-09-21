@@ -3103,60 +3103,75 @@ class AppLocalizations {
   }
 
   /// Empty-state hint when a type filter hides all matches.
-  static String getSearchNoResultsForFilter(String language, String filter) {
+  static String getSearchNoResultsForFilter(
+    String language,
+    String filter, {
+    bool tanyaEnabled = false,
+  }) {
+    final allLabel = tanyaEnabled
+        ? getAiSearchHeading(language)
+        : switch (language) {
+            'id' => 'Semua',
+            'zh' => '全部',
+            'ja' => 'すべて',
+            _ => 'All',
+          };
     return switch (filter) {
       'surah' => switch (language) {
           'id' =>
-            'Tidak ada surat pada filter ini. Coba "Semua" atau nama surat lain.',
+            'Tidak ada surat pada filter ini. Coba "$allLabel" atau nama surat lain.',
           'en' =>
-            'No surah matches this filter. Try All or another surah name.',
-          'zh' => '此筛选下没有章节。请尝试“全部”或其他章节名。',
-          'ja' => 'このフィルターに該当するスーラはありません。「すべて」や別の名前をお試しください。',
-          _ => 'No surah matches this filter. Try All or another surah name.',
+            'No surah matches this filter. Try $allLabel or another surah name.',
+          'zh' => '此筛选下没有章节。请尝试“$allLabel”或其他章节名。',
+          'ja' => 'このフィルターに該当するスーラはありません。「$allLabel」や別の名前をお試しください。',
+          _ =>
+            'No surah matches this filter. Try $allLabel or another surah name.',
         },
       'juz' => switch (language) {
           'id' =>
-            'Tidak ada juz pada filter ini. Coba angka 1–30 atau filter "Semua".',
-          'en' => 'No juz matches this filter. Try 1–30 or the All filter.',
-          'zh' => '此筛选下没有卷。请尝试 1–30 或“全部”。',
-          'ja' => 'このフィルターに該当するジュズはありません。1–30 または「すべて」をお試しください。',
-          _ => 'No juz matches this filter. Try 1–30 or the All filter.',
+            'Tidak ada juz pada filter ini. Coba angka 1–30 atau filter "$allLabel".',
+          'en' => 'No juz matches this filter. Try 1–30 or the $allLabel filter.',
+          'zh' => '此筛选下没有卷。请尝试 1–30 或“$allLabel”。',
+          'ja' => 'このフィルターに該当するジュズはありません。1–30 または「$allLabel」をお試しください。',
+          _ => 'No juz matches this filter. Try 1–30 or the $allLabel filter.',
         },
       'page' => switch (language) {
           'id' =>
-            'Tidak ada halaman pada filter ini. Coba nomor halaman atau "Semua".',
-          'en' => 'No page matches this filter. Try a page number or All.',
-          'zh' => '此筛选下没有页。请尝试页码或“全部”。',
-          'ja' => 'このフィルターに該当するページはありません。ページ番号または「すべて」をお試しください。',
-          _ => 'No page matches this filter. Try a page number or All.',
+            'Tidak ada halaman pada filter ini. Coba nomor halaman atau "$allLabel".',
+          'en' => 'No page matches this filter. Try a page number or $allLabel.',
+          'zh' => '此筛选下没有页。请尝试页码或“$allLabel”。',
+          'ja' => 'このフィルターに該当するページはありません。ページ番号または「$allLabel」をお試しください。',
+          _ => 'No page matches this filter. Try a page number or $allLabel.',
         },
       'ayat' => switch (language) {
           'id' =>
-            'Tidak ada ayat pada filter ini. Coba format 2:255, teks Arab ayat, atau filter "Semua".',
+            'Tidak ada ayat pada filter ini. Coba format 2:255, teks Arab ayat, atau filter "$allLabel".',
           'en' =>
-            'No verse matches this filter. Try 2:255, Arabic verse text, or All.',
-          'zh' => '此筛选下没有经文。请尝试 2:255、阿拉伯文经文或“全部”。',
-          'ja' => 'このフィルターに該当する節はありません。2:255、アラビア語、または「すべて」をお試しください。',
+            'No verse matches this filter. Try 2:255, Arabic verse text, or $allLabel.',
+          'zh' => '此筛选下没有经文。请尝试 2:255、阿拉伯文经文或“$allLabel”。',
+          'ja' => 'このフィルターに該当する節はありません。2:255、アラビア語、または「$allLabel」をお試しください。',
           _ =>
-            'No verse matches this filter. Try 2:255, Arabic verse text, or All.',
+            'No verse matches this filter. Try 2:255, Arabic verse text, or $allLabel.',
         },
       'terjemahan' => switch (language) {
           'id' =>
-            'Tidak ada terjemahan pada filter ini. Coba kata dalam teks terjemahan atau filter "Semua".',
+            'Tidak ada terjemahan pada filter ini. Coba kata dalam teks terjemahan atau filter "$allLabel".',
           'en' =>
-            'No translation matches this filter. Try a word from the translation or All.',
-          'zh' => '此筛选下没有翻译结果。请尝试译文中的词或“全部”。',
-          'ja' => 'このフィルターに該当する翻訳はありません。訳文の語句または「すべて」をお試しください。',
+            'No translation matches this filter. Try a word from the translation or $allLabel.',
+          'zh' => '此筛选下没有翻译结果。请尝试译文中的词或“$allLabel”。',
+          'ja' => 'このフィルターに該当する翻訳はありません。訳文の語句または「$allLabel」をお試しください。',
           _ =>
-            'No translation matches this filter. Try a word from the translation or All.',
+            'No translation matches this filter. Try a word from the translation or $allLabel.',
         },
       _ => switch (language) {
           'id' =>
-            'Tidak ada hasil untuk filter ini. Coba filter "Semua" atau kata kunci lain.',
-          'en' => 'No results for this filter. Try All or a different keyword.',
-          'zh' => '此筛选下没有结果。请尝试“全部”或其他关键词。',
-          'ja' => 'このフィルターに結果はありません。「すべて」や別のキーワードをお試しください。',
-          _ => 'No results for this filter. Try All or a different keyword.',
+            'Tidak ada hasil untuk filter ini. Coba filter "$allLabel" atau kata kunci lain.',
+          'en' =>
+            'No results for this filter. Try $allLabel or a different keyword.',
+          'zh' => '此筛选下没有结果。请尝试“$allLabel”或其他关键词。',
+          'ja' => 'このフィルターに結果はありません。「$allLabel」や別のキーワードをお試しください。',
+          _ =>
+            'No results for this filter. Try $allLabel or a different keyword.',
         },
     };
   }
@@ -3339,6 +3354,82 @@ class AppLocalizations {
       'zh' => '询问古兰经',
       'ja' => 'クルアーンに尋ねる',
       _ => 'Ask the Qur\'an',
+    };
+  }
+
+  static String getAiSearchNavLabel(String language) {
+    return switch (language) {
+      'id' => 'Tanya',
+      'en' => 'Ask',
+      'zh' => '询问',
+      'ja' => '尋ねる',
+      _ => 'Ask',
+    };
+  }
+
+  static String getAiSearchScreenSubtitle(String language) {
+    return switch (language) {
+      'id' =>
+        'Tanya apa saja, jawabannya dari Al-Qur\'an, tafsir, dan doa di aplikasi ini',
+      'en' =>
+        'Ask anything; answers come from the Qur\'an, tafsir, and dua in this app',
+      'zh' => '随便问，答案来自本应用中的古兰经、经注和祈祷',
+      'ja' => '何でも聞いてください。答えはこのアプリ内のクルアーン、タフスィール、祈りからです',
+      _ =>
+        'Ask anything; answers come from the Qur\'an, tafsir, and dua in this app',
+    };
+  }
+
+  static String getAiSearchPlaceholder(String language) {
+    return switch (language) {
+      'id' =>
+        'Tanya tentang sabar, rezeki, doa untuk orang tua, atau ketik 2:255',
+      'en' => 'Ask about patience, provision, a dua for parents, or type 2:255',
+      'zh' => '询问忍耐、供养、为父母的祈祷，或输入 2:255',
+      'ja' => '忍耐、糧、両親のための祈りについて尋ねるか、2:255 と入力',
+      _ => 'Ask about patience, provision, a dua for parents, or type 2:255',
+    };
+  }
+
+  static String getAiSearchLandingSubtitle(String language) {
+    return switch (language) {
+      'id' =>
+        'Tanya dengan kalimat biasa, hasil dari ayat, tafsir, doa, dan Asmaul Husna',
+      'en' =>
+        'Ask in everyday words; results from verses, tafsir, dua, and the Names of Allah',
+      'zh' => '用平常的话说，结果来自经文、经注、祈祷和真主的尊名',
+      'ja' => 'いつもの言葉で尋ねてください。節、タフスィール、祈り、アッラーの美名から結果が出ます',
+      _ =>
+        'Ask in everyday words; results from verses, tafsir, dua, and the Names of Allah',
+    };
+  }
+
+  static String getAiSearchSpecificHeading(String language) {
+    return switch (language) {
+      'id' => 'Atau cari lebih spesifik',
+      'en' => 'Or search more specifically',
+      'zh' => '或更精确地搜索',
+      'ja' => 'または、より具体的に検索',
+      _ => 'Or search more specifically',
+    };
+  }
+
+  static List<String> getAiSearchExampleQueries(String language) {
+    return switch (language) {
+      'id' => const [
+          'sabar',
+          'rezeki',
+          'doa untuk orang tua',
+          'hati gelisah',
+        ],
+      'zh' => const ['忍耐', '供养', '为父母祈祷', '内心不安'],
+      'ja' => const ['忍耐', '糧', '両親のための祈り', '落ち着かない心'],
+      _ => const [
+          'patience',
+          'provision',
+          'dua for parents',
+          'restless heart',
+        ],
     };
   }
 

@@ -6,6 +6,8 @@ import 'package:quran_offline/core/providers/ai_search_provider.dart';
 import 'package:quran_offline/core/providers/enhanced_search_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/providers/tab_provider.dart';
+import 'package:quran_offline/features/home/home_screen.dart';
 import 'package:quran_offline/features/search/search_screen.dart';
 import 'package:quran_offline/features/search/widgets/ai_result_card.dart';
 import 'package:quran_offline/features/search/widgets/tanya_search_results.dart';
@@ -44,11 +46,12 @@ List<Override> _searchOverrides({
   required bool aiEnabled,
   required List<SearchResult> classic,
   required List<AiSearchTypeGroup> tanya,
+  String query = 'sabar',
 }) {
   return [
     aiSearchEnabledProvider.overrideWith((ref) => aiEnabled),
     tanyaCardBuilderProvider.overrideWith((ref) => _card),
-    searchQueryProvider.overrideWith((ref) => 'sabar'),
+    searchQueryProvider.overrideWith((ref) => query),
     enhancedSearchResultsProvider.overrideWith((ref) async => classic),
     aiSearchResultsProvider.overrideWith(
       (ref) async => AiSearchResults(groups: tanya),
@@ -74,15 +77,38 @@ void main() {
 
   test('Tanya strings exist in all four languages', () {
     expect(AppLocalizations.getAiSearchHeading('id'), "Tanya Al-Qur'an");
+    expect(AppLocalizations.getAiSearchNavLabel('id'), 'Tanya');
     expect(AppLocalizations.getAiSearchEmpty('id'), 'Belum ditemukan');
     expect(AppLocalizations.getAiSearchSeeAll('id'), 'Lihat semua');
     for (final lang in ['id', 'en', 'zh', 'ja']) {
       expect(AppLocalizations.getAiSearchHeading(lang), isNotEmpty);
+      expect(AppLocalizations.getAiSearchNavLabel(lang), isNotEmpty);
+      expect(AppLocalizations.getAiSearchScreenSubtitle(lang), isNotEmpty);
+      expect(AppLocalizations.getAiSearchPlaceholder(lang), isNotEmpty);
+      expect(AppLocalizations.getAiSearchLandingSubtitle(lang), isNotEmpty);
+      expect(AppLocalizations.getAiSearchSpecificHeading(lang), isNotEmpty);
+      expect(AppLocalizations.getAiSearchExampleQueries(lang), hasLength(4));
       expect(AppLocalizations.getAiSearchEmpty(lang), isNotEmpty);
       expect(AppLocalizations.getAiSearchSeeAll(lang), isNotEmpty);
       expect(
         AppLocalizations.getAiSearchTranslationJump(lang, 7),
         contains('7'),
+      );
+      expect(
+        AppLocalizations.getSearchNoResultsForFilter(
+          lang,
+          'surah',
+          tanyaEnabled: true,
+        ),
+        contains(AppLocalizations.getAiSearchHeading(lang)),
+      );
+      expect(
+        AppLocalizations.getSearchNoResultsForFilter(
+          lang,
+          'surah',
+          tanyaEnabled: false,
+        ),
+        isNot(contains(AppLocalizations.getAiSearchHeading(lang))),
       );
     }
   });
@@ -270,5 +296,185 @@ void main() {
     expect(find.byKey(const Key('tanya_empty')), findsNothing);
     expect(find.byKey(const Key('tanya_translation_jump')), findsNothing);
     expect(find.byKey(const Key('ai_search_group_ayah')), findsNothing);
+  });
+
+  testWidgets('flag on uses Tanya header, placeholder, and nav label', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ..._searchOverrides(
+            aiEnabled: true,
+            classic: const [],
+            tanya: const [],
+            query: '',
+          ),
+          currentTabProvider.overrideWith((ref) => AppTab.search),
+        ],
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text(AppLocalizations.getAiSearchHeading('en')),
+      ),
+      findsWidgets,
+    );
+    expect(
+      find.text(AppLocalizations.getAiSearchScreenSubtitle('en')),
+      findsOneWidget,
+    );
+    expect(
+      find.text(AppLocalizations.getAiSearchPlaceholder('en')),
+      findsOneWidget,
+    );
+    expect(find.text(AppLocalizations.getAiSearchNavLabel('en')), findsOneWidget);
+    final navOn = tester.widget<NavigationDestination>(
+      find.byKey(const Key('nav_search')),
+    );
+    expect(navOn.label, AppLocalizations.getAiSearchNavLabel('en'));
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text(AppLocalizations.getMenuText('search', 'en')),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.text(AppLocalizations.getSearchText('search_placeholder', 'en')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('flag off keeps current header, placeholder, and nav label', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ..._searchOverrides(
+            aiEnabled: false,
+            classic: const [],
+            tanya: const [],
+            query: '',
+          ),
+          currentTabProvider.overrideWith((ref) => AppTab.search),
+        ],
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(AppLocalizations.getMenuText('search', 'en')), findsWidgets);
+    expect(
+      find.text(AppLocalizations.getSubtitleText('search_subtitle', 'en')),
+      findsOneWidget,
+    );
+    expect(
+      find.text(AppLocalizations.getSearchText('search_placeholder', 'en')),
+      findsOneWidget,
+    );
+    final navOff = tester.widget<NavigationDestination>(
+      find.byKey(const Key('nav_search')),
+    );
+    expect(navOff.label, AppLocalizations.getNavMenuText('search', 'en'));
+    expect(find.text(AppLocalizations.getAiSearchNavLabel('en')), findsNothing);
+    expect(find.byKey(const Key('tanya_landing_card')), findsNothing);
+  });
+
+  testWidgets('landing puts Tanya card and example chips above specific search', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: _searchOverrides(
+          aiEnabled: true,
+          classic: const [],
+          tanya: const [],
+          query: '',
+        ),
+        child: const MaterialApp(home: SearchScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final landing = tester.getTopLeft(find.byKey(const Key('tanya_landing_card')));
+    final chip = tester.getTopLeft(find.byKey(const Key('tanya_example_0')));
+    final specific = tester.getTopLeft(
+      find.byKey(const Key('tanya_specific_heading')),
+    );
+    final surah = tester.getTopLeft(
+      find.text(AppLocalizations.getMenuText('surah', 'en')),
+    );
+    expect(landing.dy, lessThan(chip.dy));
+    expect(chip.dy, lessThan(specific.dy));
+    expect(specific.dy, lessThan(surah.dy));
+    expect(find.byKey(const Key('tanya_example_3')), findsOneWidget);
+    expect(
+      find.text(AppLocalizations.getSearchText('search_by_label', 'en')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('example chip fills the query and runs it', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: _searchOverrides(
+          aiEnabled: true,
+          classic: const [],
+          tanya: const [],
+          query: '',
+        ),
+        child: const MaterialApp(home: SearchScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final example = AppLocalizations.getAiSearchExampleQueries('en').first;
+    await tester.tap(find.byKey(const Key('tanya_example_0')));
+    await tester.pump();
+
+    final field = tester.widget<TextField>(find.byKey(const Key('search_field')));
+    expect(field.controller?.text, example);
+  });
+
+  testWidgets('empty-state button switches to the Tanya chip', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: _searchOverrides(
+          aiEnabled: true,
+          classic: [_classicTranslation()],
+          tanya: [_group('ayah', 1)],
+        ),
+        child: const MaterialApp(home: SearchScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    await tester.tap(find.byKey(const Key('search_filter_surah')));
+    await tester.pump();
+
+    expect(find.byKey(const Key('search_show_all_filter')), findsOneWidget);
+    expect(
+      find.text(AppLocalizations.getAiSearchHeading('en')),
+      findsWidgets,
+    );
+    expect(
+      find.text(AppLocalizations.getSearchText('search_show_all_filter', 'en')),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(const Key('search_show_all_filter')));
+    await tester.pump();
+    expect(find.byKey(const Key('ai_search_group_ayah')), findsOneWidget);
   });
 }
