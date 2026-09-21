@@ -6,6 +6,7 @@ import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/utils/system_bottom_inset.dart';
 import 'package:quran_offline/core/widgets/home_widget_navigation.dart';
 import 'package:quran_offline/core/widgets/home_widget_sync.dart';
 import 'package:quran_offline/features/dua/dua_screen.dart';
@@ -66,7 +67,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final currentIndex = ref.watch(currentTabProvider);
     final settings = ref.watch(settingsProvider);
     final appLanguage = settings.appLanguage;
-    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final keyboardOpen = imeVisible(MediaQuery.of(context));
 
     return AudioDownloadNotifications(
       child: Scaffold(
@@ -93,6 +94,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
               selectedIndex: currentIndex,
               onDestinationSelected: (index) {
+                if (index != currentIndex) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                }
                 ref.read(currentTabProvider.notifier).state = index;
               },
               destinations: [
