@@ -3467,6 +3467,26 @@ class AppLocalizations {
     };
   }
 
+  static String getRelatedContentTitle(String language) {
+    return switch (language) {
+      'id' => 'Jelajah terkait',
+      'en' => 'Related content',
+      'zh' => '相关内容',
+      'ja' => '関連コンテンツ',
+      _ => 'Related content',
+    };
+  }
+
+  static String getRelatedContentEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ada konten terkait',
+      'en' => 'No related content yet',
+      'zh' => '暂无相关内容',
+      'ja' => '関連コンテンツはまだありません',
+      _ => 'No related content yet',
+    };
+  }
+
   static String getDoaNeedEmptyLink(String language) {
     return switch (language) {
       'id' => 'Lihat Doa Nabi',
