@@ -77,6 +77,7 @@ flutter:
     - assets/duas/duas_catalog.json
     - assets/ai/quran_dua_ayat_catalog.json
     - assets/ai/search_index.sqlite
+    - assets/ai/synonyms_id.json
     - assets/science/science_catalog.json
     - assets/themes/life_themes_catalog.json
     - assets/reflection/calendar_lenses_catalog.json
