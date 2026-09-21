@@ -8,6 +8,38 @@ import 'package:quran_offline/core/ai_search/ai_search_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqlite3/sqlite3.dart';
 
+/// Turns a space-separated FTS query into any-term OR, keeping `(syn OR syn)` groups intact.
+String ftsAnyTermQuery(String query) {
+  final terms = <String>[];
+  final buf = StringBuffer();
+  var depth = 0;
+  for (var i = 0; i < query.length; i++) {
+    final c = query[i];
+    if (c == '(') {
+      depth++;
+      buf.write(c);
+    } else if (c == ')') {
+      if (depth > 0) depth--;
+      buf.write(c);
+    } else if (c == ' ' && depth == 0) {
+      final token = buf.toString().trim();
+      buf.clear();
+      if (token.isEmpty) continue;
+      if (token.toUpperCase() == 'OR') continue;
+      terms.add(token);
+    } else {
+      buf.write(c);
+    }
+  }
+  final last = buf.toString().trim();
+  if (last.isNotEmpty && last.toUpperCase() != 'OR') {
+    terms.add(last);
+  }
+  if (terms.isEmpty) return query.trim();
+  if (terms.length == 1) return terms.first;
+  return terms.join(' OR ');
+}
+
 class IndexHit {
   final String docId;
   final String type;
@@ -93,7 +125,7 @@ class SearchIndexRepository {
     final db = _db;
     if (db == null || query.trim().isEmpty) return [];
 
-    final match = query.trim();
+    final match = ftsAnyTermQuery(query.trim());
     final rows = db.select(
       '''
       SELECT

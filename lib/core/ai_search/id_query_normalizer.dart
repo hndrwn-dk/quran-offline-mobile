@@ -1,12 +1,12 @@
 import 'package:quran_offline/core/utils/arabic_search_normalizer.dart';
 
-/// Indonesian/English query normaliser (matching only). Version 1.
+/// Indonesian/English query normaliser (matching only). Version 2.
 ///
-/// Port of tool/id_normalizer.py, spec §6.1 steps 1–4.
+/// Port of tool/id_normalizer.py, spec §6.1.
 class IdQueryNormalizer {
   IdQueryNormalizer._();
 
-  static const int normalizerVersion = 1;
+  static const int normalizerVersion = 2;
 
   static final _html = RegExp(r'<[^>]+>');
   static final _nonAlnum = RegExp(r'[^\w]+', unicode: true);
@@ -34,6 +34,51 @@ class IdQueryNormalizer {
   static const _suffixesDeriv = ['kan', 'an', 'i'];
   static const _minStem = 3;
 
+  static const _stopwords = {
+    'untuk',
+    'yang',
+    'dan',
+    'di',
+    'ke',
+    'dari',
+    'dengan',
+    'kepada',
+    'pada',
+    'saat',
+    'ketika',
+    'agar',
+    'supaya',
+    'bagi',
+    'itu',
+    'ini',
+    'ada',
+    'atau',
+    'juga',
+    'akan',
+    'sudah',
+    'telah',
+    'oleh',
+    'dalam',
+    'the',
+    'a',
+    'an',
+    'of',
+    'for',
+    'to',
+    'in',
+    'on',
+    'and',
+    'or',
+    'with',
+    'when',
+    'is',
+    'are',
+  };
+
+  static bool _isStopword(String original, String stemmed) {
+    return _stopwords.contains(original) || _stopwords.contains(stemmed);
+  }
+
   static String normalize(String text) {
     if (text.isEmpty) return '';
     var s = text.toLowerCase();
@@ -42,17 +87,27 @@ class IdQueryNormalizer {
     s = s.replaceAll(_multiSpace, ' ').trim();
     if (s.isEmpty) return '';
 
-    final tokens = s.split(' ');
-    final out = <String>[];
-    for (final token in tokens) {
+    final originals = <String>[];
+    final kept = <String>[];
+    var allStop = true;
+    for (final token in s.split(' ')) {
       if (token.isEmpty) continue;
+      originals.add(token);
       if (_arabic.hasMatch(token)) {
-        out.add(ArabicSearchNormalizer.normalizeForSearch(token));
+        kept.add(ArabicSearchNormalizer.normalizeForSearch(token));
+        allStop = false;
       } else {
-        out.add(_stemLatin(token));
+        final stemmed = _stemLatin(token);
+        if (_isStopword(token, stemmed)) {
+          continue;
+        }
+        kept.add(stemmed);
+        allStop = false;
       }
     }
-    return out.join(' ');
+    if (originals.isEmpty) return '';
+    if (allStop) return originals.join(' ');
+    return kept.join(' ');
   }
 
   static String _stemLatin(String token) {

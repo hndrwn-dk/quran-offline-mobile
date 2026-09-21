@@ -69,6 +69,9 @@ def keyword_search(
     match = normalize(query)
     if not match:
         return []
+    parts = [p for p in match.split(" ") if p and p.upper() != "OR"]
+    if len(parts) > 1:
+        match = " OR ".join(parts)
     rows = con.execute(
         """
         SELECT

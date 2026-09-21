@@ -123,7 +123,7 @@ class BuildIndexTest(unittest.TestCase):
         self.assertEqual(refs, 1)
         meta = dict(con.execute("SELECT key, value FROM meta"))
         self.assertEqual(meta["schema_version"], "1")
-        self.assertEqual(meta["normalizer_version"], "1")
+        self.assertEqual(meta["normalizer_version"], "2")
         self.assertEqual(meta["quran_manifest_version"], "fixture-v1")
         self.assertIn("built_at_utc", meta)
         n = con.execute(

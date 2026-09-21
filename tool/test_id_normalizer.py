@@ -13,8 +13,8 @@ _VECTORS = Path(__file__).resolve().parent / "fixtures" / "id_normalizer_vectors
 
 
 class NormalizeVersionTest(unittest.TestCase):
-    def test_version_is_1(self) -> None:
-        self.assertEqual(NORMALIZER_VERSION, 1)
+    def test_version_is_2(self) -> None:
+        self.assertEqual(NORMALIZER_VERSION, 2)
 
 
 class VectorFileTest(unittest.TestCase):
@@ -40,6 +40,11 @@ class EdgeCaseTest(unittest.TestCase):
     def test_prefix_and_suffix_together(self) -> None:
         self.assertEqual(normalize("dikerjakan"), "kerja")
         self.assertEqual(normalize("pekerjaannya"), "kerja")
+
+    def test_stopwords_dropped_after_stem(self) -> None:
+        self.assertEqual(normalize("doa untuk orang tua"), "doa orang tua")
+        self.assertEqual(normalize("untuk yang dan"), "untuk yang dan")
+        self.assertEqual(normalize("the a an"), "the a an")
 
 
 if __name__ == "__main__":

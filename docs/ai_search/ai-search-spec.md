@@ -21,7 +21,7 @@ Executor: Cursor agent, following `.cursor/rules/ai-search.mdc`
 
 Make everything already inside the app easier to find and learn from:
 
-- **Tanya Al-Qur'an**: one natural-language search across ayat, terjemahan, tafsir, arti/tentang surat, Asmaul Husna, Doa Nabi, Sains, Tema Hidup.
+- **Temukan di Al-Qur'an**: one natural-language search across ayat, terjemahan, tafsir, arti/tentang surat, Asmaul Husna, Doa Nabi, Sains, Tema Hidup.
 - **Doa sesuai kebutuhan**: user describes a need, app returns doa that exist in the app or in the Quran, with honest labels.
 - **Jelajah terkait**: from any ayat or catalog entry, show related content from the app's own data.
 
@@ -152,17 +152,18 @@ Display text is always loaded from the original source (verses table, tafsir SQL
 
 ## 6. Search behaviour
 
-### 6.1 Indonesian/English query normalisation (`normalizer_version = 1`)
+### 6.1 Indonesian/English query normalisation (`normalizer_version = 2`)
 Applied identically in `tool/build_search_index.py` and `lib/core/ai_search/id_query_normalizer.dart`:
 1. Lowercase; strip HTML tags; replace non-letter/digit with space; collapse spaces.
 2. Arabic script: apply `ArabicSearchNormalizer.normalizeForSearch` rules.
 3. Indonesian suffix strip, in order, once each, keep stem length ≥ 3: `-nya`, `-lah`, `-kah`, `-kan`, `-an`, `-i`.
 4. Indonesian prefix strip, once, keep stem length ≥ 3: `meng-`, `meny-`, `mem-`, `men-`, `me-`, `peng-`, `peny-`, `pem-`, `pen-`, `pe-`, `ber-`, `ter-`, `di-`, `ke-`, `se-`.
-5. Synonym expansion from `synonyms_id.json` at query time only (FTS `OR` group).
+5. Drop stopwords after affix stripping. Indonesian: `untuk, yang, dan, di, ke, dari, dengan, kepada, pada, saat, ketika, agar, supaya, bagi, itu, ini, ada, atau, juga, akan, sudah, telah, oleh, dalam`. English: `the, a, an, of, for, to, in, on, and, or, with, when, is, are`. If every token is a stopword, keep the original tokens.
+6. Synonym expansion from `synonyms_id.json` at query time only (FTS `OR` group).
 Parity is proven by both test suites passing the same `id_normalizer_vectors.json`.
 
 ### 6.2 Ranking
-- Phase C: `score = normalised_bm25` in [0,1] per query (min-max over top 100).
+- Phase C: FTS match is **any-term** (`OR`), ranked by `bm25`. Documents matching more terms rank higher. `score = normalised_bm25` in [0,1] per query (min-max over top 100).
 - Phase D (after GATE D0): `score = 0.4 * bm25_norm + 0.6 * cosine`.
 - Type boost (added, then clamp to 1.0): `quran_dua` and `dua` +0.05 when in Doa mode; otherwise none.
 - Threshold constants in `lib/core/ai_search/ai_search_config.dart`: `kMinScoreKeyword = 0.25`, `kMinScoreHybrid = 0.45`, `kMaxResultsPerType = 5`. Tuned only via Phase G eval, by maintainer.
@@ -238,7 +239,7 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
 - API: `Future<List<IndexHit>> keywordSearch(String query, {Set<String>? types, String lang, int limit})`, `Future<List<String>> relatedDocIds(int surah, int ayah)`.
 - Acceptance: widget-free test with a fixture sqlite passes; `kAiSearchEnabled = false` by default.
 
-### Phase C — Tanya Al-Qur'an (keyword)
+### Phase C — Temukan di Al-Qur'an (keyword)
 
 **C1. Provider**
 - Files: `lib/core/providers/ai_search_provider.dart`, `test/ai_search_provider_test.dart`
@@ -246,23 +247,19 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
 - Acceptance: tests cover threshold empty state and grouping.
 
 **C2. UI integration**
-- Files: `lib/features/search/search_screen.dart`, `lib/features/home/home_screen.dart` (nav label only), `lib/features/search/tanya_result_layout.dart`, `lib/features/search/widgets/tanya_search_results.dart`, `lib/features/search/widgets/ai_result_card.dart`, `lib/core/providers/ai_search_provider.dart` (`aiSearchEnabledProvider` for tests), `app_localizations.dart`, `test/tanya_result_layout_test.dart`, `test/tanya_search_view_test.dart`
+- Files: `lib/features/search/search_screen.dart`, `lib/features/home/home_screen.dart` (nav label only), `lib/features/search/tanya_result_layout.dart`, `lib/features/search/widgets/tanya_search_results.dart`, `lib/features/search/widgets/search_result_list.dart`, `lib/features/search/ai_search_query_kind.dart`, `lib/features/search/widgets/ai_result_card.dart`, `lib/core/providers/ai_search_provider.dart` (`aiSearchEnabledProvider` for tests), `app_localizations.dart`, `test/tanya_result_layout_test.dart`, `test/tanya_search_view_test.dart`
 - Card: type label, source ref (R6), "Penjelasan kurasi" badge for science/theme (R9). Tap opens existing reader/detail sheet for that source (reuse explore detail sheet and `ReaderSource`).
-- When `kAiSearchEnabled` is **false**: the screen is unchanged, including the "Semua" chip and the classic result list. Tanya groups are not shown.
+- When `kAiSearchEnabled` is **false**: the screen is unchanged, including the "Semua" chip and the classic result list. Grouped keyword results are not shown.
 - When `kAiSearchEnabled` is **true**:
-  1. Rename the "Semua" chip to "Tanya Al-Qur'an" in all four languages (R12) and keep it the default selected chip.
-  2. That chip shows **only** grouped Tanya results, in this order:
-     - Ayat
-     - Tafsir
-     - Then the remaining groups (Doa Nabi, Doa dari Al-Qur'an, Asmaul Husna, Tema Hidup, Sains, Tentang Surat) sorted by each group's best hit score, highest first. Tie-break in that listed order.
-     Groups with no hits are hidden. Max 3 cards per group; "Lihat semua" expands that group to `kMaxResultsPerType`.
-  3. A last group "Hasil terjemahan (N)" is a **single row** that switches to the existing Terjemahan chip. Do not render classic translation hits inside the Tanya view.
-  4. Surah, Juz, Halaman, Ayat, Terjemahan chips keep their current classic behaviour exactly (no Tanya groups on those chips).
-  5. Empty state (R7) when no Tanya group has hits: "Belum ditemukan", plus the same "Hasil terjemahan" row if classic search has translation results.
-  6. Naming (R12): screen title "Tanya Al-Qur'an"; subtitle "Tanya apa saja, jawabannya dari Al-Qur'an, tafsir, dan doa di aplikasi ini"; bottom nav short label "Tanya" (existing nav icon unchanged). Search-field placeholder "Tanya tentang sabar, rezeki, doa untuk orang tua, atau ketik 2:255".
-  7. Empty-query landing: first card "Tanya Al-Qur'an" with subtitle "Tanya dengan kalimat biasa, hasil dari ayat, tafsir, doa, dan Asmaul Husna", then four example chips (`sabar`, `rezeki`, `doa untuk orang tua`, `hati gelisah` — UI examples only) that fill and run the query, then heading "Atau cari lebih spesifik" above the existing Surah/Juz/Halaman/Ayat/Terjemahan/Teks Arab ayat cards.
-  8. Classic-chip empty states: every "Semua" mention becomes "Tanya Al-Qur'an". The "Tampilkan semua hasil" button is relabelled "Tanya Al-Qur'an" and switches to the Tanya chip with the same query.
-- Acceptance: widget tests for default chip, fixed Ayat-then-Tafsir order, score-sorted remaining groups with tie-break, hidden empty groups, 3-card cap + Lihat semua, the terjemahan jump row, empty state, flag-off unchanged behaviour, header/nav/placeholder flag on and off, landing card order, example chip runs the query, and empty-state button switches to Tanya. Existing search tests still pass.
+  1. Naming (R12). Bottom nav label stays "Cari" (same as flag off). Home "Akses Cepat" tile stays "Cari". Screen header title is "Temukan di Al-Qur'an" only (no subtitle). Search-field placeholder "Cari sabar, rezeki, atau 2:255".
+  2. Empty-query landing: small label "Coba:" followed by four example chips in **one** horizontally scrollable row (`sabar`, `rezeki`, `doa untuk orang tua`, `hati gelisah` — UI examples only) that fill and run the query. One line of small secondary text under the chips: "Bisa juga ketik 2:255, juz 30, halaman 5, atau teks Arab." No landing card, no "Atau cari lebih spesifik" heading, and no Surah/Juz/Halaman/Ayat/Terjemahan/Teks Arab ayat cards (those browse paths already exist on the Baca tab). Generous whitespace otherwise.
+  3. Results do **not** show type-filter chips. Query type is detected from the existing classic parser in `enhanced_search_provider.dart` (not rewritten):
+     - Reference queries (N:N, "juz N", page matches the parser already accepts, surah name or number) → group "Langsung ke" with a single direct classic result.
+     - Arabic-script queries → group "Teks Arab" using the existing Arabic search.
+     - Otherwise → grouped keyword results: Ayat, then Tafsir, then remaining groups (Doa Nabi, Doa dari Al-Qur'an, Asmaul Husna, Tema Hidup, Sains, Tentang Surat) sorted by each group's best hit score, highest first. Tie-break in that listed order. Groups with no hits are hidden. Max 3 cards per group; "Lihat semua" expands that group to `kMaxResultsPerType`.
+  4. "Hasil terjemahan (N)" is a **single row** that opens a full list screen of classic translation results (reuse `SearchResultList`). Do not render classic translation hits inside the grouped view.
+  5. Empty state (R7) when no grouped hits: "Belum ditemukan". Button "Lihat hasil terjemahan" opens that same list when classic search has translation results; otherwise no button.
+- Acceptance: widget tests for flag-on/off naming, landing layout (no subtitle, chips in one row, hint line, no cards), no chip row on results, each query type routing to the right group, translation list screen, empty-state button, fixed Ayat-then-Tafsir order, score-sorted remaining groups with tie-break, hidden empty groups, 3-card cap + Lihat semua, and flag-off unchanged behaviour. Existing search tests still pass.
 
 ### Phase D — Semantic search
 
