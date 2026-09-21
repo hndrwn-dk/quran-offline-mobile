@@ -1,0 +1,20 @@
+[
+  {
+    "q": "surah 36",
+    "lang": "id",
+    "expect": ["surah:36:id"],
+    "example": true
+  },
+  {
+    "q": "ayat kursi",
+    "lang": "id",
+    "expect": ["ayah:2:255:id"],
+    "example": true
+  },
+  {
+    "q": "page 1",
+    "lang": "en",
+    "expect": [],
+    "example": true
+  }
+]
