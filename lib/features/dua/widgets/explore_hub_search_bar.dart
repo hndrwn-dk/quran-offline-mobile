@@ -14,7 +14,6 @@ class ExploreHubSearchBar extends StatelessWidget {
     required this.focusNode,
     required this.onChanged,
     required this.onClear,
-    this.hintText,
   });
 
   final String lang;
@@ -22,14 +21,13 @@ class ExploreHubSearchBar extends StatelessWidget {
   final FocusNode focusNode;
   final ValueChanged<String> onChanged;
   final VoidCallback onClear;
-  final String? hintText;
 
   @override
   Widget build(BuildContext context) {
     return AppSearchField(
       controller: controller,
       focusNode: focusNode,
-      hintText: hintText ?? AppLocalizations.getExploreSearchHint(lang),
+      hintText: AppLocalizations.getExploreSearchHint(lang),
       onChanged: onChanged,
       onClear: onClear,
     );

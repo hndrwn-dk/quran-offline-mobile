@@ -2,7 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/ai_search/search_index_repository.dart';
+import 'package:quran_offline/core/models/dua_entry.dart';
+import 'package:quran_offline/core/models/quran_dua_ayat_entry.dart';
 import 'package:quran_offline/core/providers/ai_search_provider.dart';
+import 'package:quran_offline/core/providers/dua_catalog_provider.dart';
+import 'package:quran_offline/core/providers/quran_dua_ayat_catalog_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
 
 class _FakeIndex extends SearchIndexRepository {
@@ -51,10 +55,41 @@ IndexHit _hit({
   );
 }
 
+DuaEntry _dua(String id) {
+  const text = LocalizedText(id: 't', en: 't', zh: 't', ja: 't');
+  return DuaEntry(
+    id: id,
+    category: 'daily',
+    sort: 1,
+    title: text,
+    summary: text,
+    ayahRefs: const [DuaAyahRef(surah: 2, from: 1, to: 1)],
+  );
+}
+
+QuranDuaAyatEntry _qdua({
+  required String id,
+  required bool recommendedToRecite,
+  required bool inDuaCatalog,
+}) {
+  return QuranDuaAyatEntry(
+    id: id,
+    ref: const DuaAyahRef(surah: 2, from: 1, to: 1),
+    tags: const [],
+    need: const QuranDuaNeed(id: '', en: ''),
+    recommendedToRecite: recommendedToRecite,
+    inDuaCatalog: inDuaCatalog,
+    duaCatalogIds: const [],
+    source: 'test',
+  );
+}
+
 ProviderContainer _container({
   required _FakeIndex repo,
   SynonymGroupsLoader? loader,
   String lang = 'id',
+  List<DuaEntry> duas = const [],
+  List<QuranDuaAyatEntry> quranDua = const [],
 }) {
   return ProviderContainer(
     overrides: [
@@ -62,6 +97,12 @@ ProviderContainer _container({
       aiSearchLangProvider.overrideWith((ref) => lang),
       synonymGroupsLoaderProvider.overrideWith(
         (ref) => loader ?? (() async => <List<String>>[]),
+      ),
+      duaCatalogProvider.overrideWith(
+        (ref) async => DuaCatalog(version: 1, entries: duas),
+      ),
+      quranDuaAyatCatalogProvider.overrideWith(
+        (ref) async => QuranDuaAyatCatalog(version: 1, entries: quranDua),
       ),
     ],
   );
@@ -128,7 +169,7 @@ void main() {
     final results = await container.read(aiSearchResultsProvider.future);
     expect(results.isEmpty, isFalse);
     expect(repo.searches, isNotEmpty);
-    expect(repo.searches.single.contains('OR'), isFalse);
+    expect(repo.searches.first.contains('OR'), isFalse);
   });
 
   test('stale query is discarded', () async {
@@ -142,6 +183,44 @@ void main() {
     container.read(searchQueryProvider.notifier).state = 'beta';
     await container.read(aiSearchResultsProvider.future);
 
-    expect(repo.searches, ['beta']);
+    expect(repo.searches, isNot(contains('alpha')));
+    expect(repo.searches, everyElement('beta'));
+  });
+
+  test('provider Doa groups use resolver and skip related-ayah tier', () async {
+    final repo = _FakeIndex(
+      hits: [
+        _hit(id: 'ayah:2:1:id', type: 'ayah', score: 1.0),
+        _hit(id: 'dua:one:id', type: 'dua', score: 0.9, refKey: 'one'),
+        _hit(id: 'qdua:qd1:id', type: 'quran_dua', score: 0.8, refKey: 'qd1'),
+        _hit(id: 'qdua:skip:id', type: 'quran_dua', score: 0.85, refKey: 'skip'),
+      ],
+    );
+    final container = _container(
+      repo: repo,
+      duas: [_dua('one')],
+      quranDua: [
+        _qdua(id: 'qd1', recommendedToRecite: true, inDuaCatalog: false),
+        _qdua(id: 'skip', recommendedToRecite: false, inDuaCatalog: false),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(searchQueryProvider.notifier).state = 'alpha';
+
+    final results = await container.read(aiSearchResultsProvider.future);
+    expect(results.groups.map((g) => g.type).toList(), contains('ayah'));
+    expect(results.groups.map((g) => g.type).toList(), contains('dua'));
+    expect(results.groups.map((g) => g.type).toList(), contains('quran_dua'));
+    expect(
+      results.groups
+          .firstWhere((g) => g.type == 'quran_dua')
+          .hits
+          .map((h) => h.refKey),
+      ['qd1'],
+    );
+    expect(
+      results.groups.expand((g) => g.hits).map((h) => h.refKey),
+      isNot(contains('skip')),
+    );
   });
 }

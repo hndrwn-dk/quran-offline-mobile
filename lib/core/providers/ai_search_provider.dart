@@ -3,8 +3,11 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/ai_search/ai_search_config.dart';
+import 'package:quran_offline/core/ai_search/doa_need_resolver.dart';
 import 'package:quran_offline/core/ai_search/id_query_normalizer.dart';
 import 'package:quran_offline/core/ai_search/search_index_repository.dart';
+import 'package:quran_offline/core/providers/dua_catalog_provider.dart';
+import 'package:quran_offline/core/providers/quran_dua_ayat_catalog_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 
@@ -143,6 +146,49 @@ AiSearchResults groupHitsByType(List<IndexHit> hits) {
   );
 }
 
+AiSearchHit _hitFromDoaNeed(DoaNeedItem item) {
+  return AiSearchHit(
+    docId: item.hit.docId,
+    type: item.hit.type,
+    lang: item.hit.lang,
+    refKey: item.hit.refKey,
+    surah: item.hit.surah,
+    ayahFrom: item.hit.ayahFrom,
+    ayahTo: item.hit.ayahTo,
+    score: item.score,
+  );
+}
+
+/// Replaces Cari's Doa Nabi / Doa dari Al-Qur'an groups with E1 resolver
+/// tiers. Never adds the related-ayah (tier 3) group — Cari already has Ayat.
+AiSearchResults applyDoaNeedToCariResults(
+  AiSearchResults keyword,
+  DoaNeedResult need,
+) {
+  final kept = [
+    for (final group in keyword.groups)
+      if (group.type != 'dua' && group.type != 'quran_dua') group,
+  ];
+  final extra = <AiSearchTypeGroup>[];
+  if (need.tier1.isNotEmpty) {
+    extra.add(
+      AiSearchTypeGroup(
+        type: 'dua',
+        hits: [for (final item in need.tier1) _hitFromDoaNeed(item)],
+      ),
+    );
+  }
+  if (need.tier2.isNotEmpty) {
+    extra.add(
+      AiSearchTypeGroup(
+        type: 'quran_dua',
+        hits: [for (final item in need.tier2) _hitFromDoaNeed(item)],
+      ),
+    );
+  }
+  return AiSearchResults(groups: [...kept, ...extra]);
+}
+
 final aiSearchResultsProvider = FutureProvider<AiSearchResults>((ref) async {
   final query = ref.watch(searchQueryProvider);
   final lang = ref.watch(aiSearchLangProvider);
@@ -170,5 +216,18 @@ final aiSearchResultsProvider = FutureProvider<AiSearchResults>((ref) async {
   final repo = ref.read(searchIndexRepositoryProvider);
   await repo.ensureReady();
   final hits = await repo.keywordSearch(match, lang: lang);
-  return groupHitsByType(hits);
+  final keyword = groupHitsByType(hits);
+
+  try {
+    final dua = await ref.read(duaCatalogProvider.future);
+    final quranDua = await ref.read(quranDuaAyatCatalogProvider.future);
+    final need = await DoaNeedResolver(
+      index: repo,
+      quranDuaEntries: quranDua.entries,
+      duaEntries: dua.entries,
+    ).resolve(query, lang: lang);
+    return applyDoaNeedToCariResults(keyword, need);
+  } catch (_) {
+    return keyword;
+  }
 });
