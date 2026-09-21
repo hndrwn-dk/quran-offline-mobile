@@ -130,7 +130,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       backgroundColor: HomeBackdrop.topTint(Theme.of(context).colorScheme),
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        toolbarHeight: 68,
+        toolbarHeight: aiEnabled ? 84 : 68,
         centerTitle: false,
         titleSpacing: 16,
         backgroundColor: HomeBackdrop.topTint(Theme.of(context).colorScheme),
@@ -163,7 +163,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppLocalizations.getMenuText('search', settings.appLanguage),
+                    aiEnabled
+                        ? AppLocalizations.getAiSearchHeading(settings.appLanguage)
+                        : AppLocalizations.getMenuText(
+                            'search',
+                            settings.appLanguage,
+                          ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -174,8 +179,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    AppLocalizations.getSubtitleText('search_subtitle', settings.appLanguage),
-                    maxLines: 1,
+                    aiEnabled
+                        ? AppLocalizations.getAiSearchScreenSubtitle(
+                            settings.appLanguage,
+                          )
+                        : AppLocalizations.getSubtitleText(
+                            'search_subtitle',
+                            settings.appLanguage,
+                          ),
+                    maxLines: aiEnabled ? 2 : 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -203,10 +215,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               textFieldKey: const Key('search_field'),
               controller: _searchController,
               focusNode: _searchFocusNode,
-              hintText: AppLocalizations.getSearchText(
-                'search_placeholder',
-                settings.appLanguage,
-              ),
+              hintText: aiEnabled
+                  ? AppLocalizations.getAiSearchPlaceholder(settings.appLanguage)
+                  : AppLocalizations.getSearchText(
+                      'search_placeholder',
+                      settings.appLanguage,
+                    ),
               onChanged: (value) {
                 ref.read(searchQueryProvider.notifier).state = value;
               },
@@ -217,22 +231,64 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               data: (results) {
                 if (query.isEmpty) {
                   final colorScheme = Theme.of(context).colorScheme;
+                  final appLanguage = settings.appLanguage;
+                  final examples =
+                      AppLocalizations.getAiSearchExampleQueries(appLanguage);
                   return SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          AppLocalizations.getSearchText(
-                            'search_by_label',
-                            settings.appLanguage,
+                        if (aiEnabled) ...[
+                          _buildSearchHint(
+                            context,
+                            Icons.travel_explore,
+                            AppLocalizations.getAiSearchHeading(appLanguage),
+                            AppLocalizations.getAiSearchLandingSubtitle(
+                              appLanguage,
+                            ),
+                            '',
+                            colorScheme,
+                            key: const Key('tanya_landing_card'),
+                            applyQuery: false,
                           ),
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.4,
-                              ),
-                        ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (var i = 0; i < examples.length; i++)
+                                ActionChip(
+                                  key: Key('tanya_example_$i'),
+                                  label: Text(examples[i]),
+                                  onPressed: () => _applySampleQuery(examples[i]),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            AppLocalizations.getAiSearchSpecificHeading(
+                              appLanguage,
+                            ),
+                            key: const Key('tanya_specific_heading'),
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.4,
+                                ),
+                          ),
+                        ] else
+                          Text(
+                            AppLocalizations.getSearchText(
+                              'search_by_label',
+                              appLanguage,
+                            ),
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.4,
+                                ),
+                          ),
                         const SizedBox(height: 12),
                         _buildSearchHint(
                           context,
@@ -345,6 +401,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       ? AppLocalizations.getSearchNoResultsForFilter(
                           appLanguage,
                           _selectedTypeFilter,
+                          tanyaEnabled: aiEnabled,
                         )
                       : AppLocalizations.getSearchText(
                           'search_by_label',
@@ -424,14 +481,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                 if (filterHidesMatches) ...[
                                   const SizedBox(height: 20),
                                   FilledButton.tonal(
+                                    key: const Key('search_show_all_filter'),
                                     onPressed: () => setState(
                                       () => _selectedTypeFilter = 'all',
                                     ),
                                     child: Text(
-                                      AppLocalizations.getSearchText(
-                                        'search_show_all_filter',
-                                        appLanguage,
-                                      ),
+                                      aiEnabled
+                                          ? AppLocalizations.getAiSearchHeading(
+                                              appLanguage,
+                                            )
+                                          : AppLocalizations.getSearchText(
+                                              'search_show_all_filter',
+                                              appLanguage,
+                                            ),
                                     ),
                                   ),
                                 ],
@@ -702,12 +764,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     String title,
     String example,
     String sampleQuery,
-    ColorScheme colorScheme,
-  ) {
+    ColorScheme colorScheme, {
+    Key? key,
+    bool applyQuery = true,
+  }) {
     return Material(
+      key: key,
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => _applySampleQuery(sampleQuery),
+        onTap: applyQuery
+            ? () => _applySampleQuery(sampleQuery)
+            : () => _searchFocusNode.requestFocus(),
         borderRadius: BorderRadius.circular(16),
         child: Ink(
           decoration: BoxDecoration(

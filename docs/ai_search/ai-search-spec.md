@@ -246,7 +246,7 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
 - Acceptance: tests cover threshold empty state and grouping.
 
 **C2. UI integration**
-- Files: `lib/features/search/search_screen.dart`, `lib/features/search/tanya_result_layout.dart`, `lib/features/search/widgets/tanya_search_results.dart`, `lib/features/search/widgets/ai_result_card.dart`, `lib/core/providers/ai_search_provider.dart` (`aiSearchEnabledProvider` for tests), `app_localizations.dart`, `test/tanya_result_layout_test.dart`, `test/tanya_search_view_test.dart`
+- Files: `lib/features/search/search_screen.dart`, `lib/features/home/home_screen.dart` (nav label only), `lib/features/search/tanya_result_layout.dart`, `lib/features/search/widgets/tanya_search_results.dart`, `lib/features/search/widgets/ai_result_card.dart`, `lib/core/providers/ai_search_provider.dart` (`aiSearchEnabledProvider` for tests), `app_localizations.dart`, `test/tanya_result_layout_test.dart`, `test/tanya_search_view_test.dart`
 - Card: type label, source ref (R6), "Penjelasan kurasi" badge for science/theme (R9). Tap opens existing reader/detail sheet for that source (reuse explore detail sheet and `ReaderSource`).
 - When `kAiSearchEnabled` is **false**: the screen is unchanged, including the "Semua" chip and the classic result list. Tanya groups are not shown.
 - When `kAiSearchEnabled` is **true**:
@@ -259,7 +259,10 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
   3. A last group "Hasil terjemahan (N)" is a **single row** that switches to the existing Terjemahan chip. Do not render classic translation hits inside the Tanya view.
   4. Surah, Juz, Halaman, Ayat, Terjemahan chips keep their current classic behaviour exactly (no Tanya groups on those chips).
   5. Empty state (R7) when no Tanya group has hits: "Belum ditemukan", plus the same "Hasil terjemahan" row if classic search has translation results.
-- Acceptance: widget tests for default chip, fixed Ayat-then-Tafsir order, score-sorted remaining groups with tie-break, hidden empty groups, 3-card cap + Lihat semua, the terjemahan jump row, empty state, and flag-off unchanged behaviour. Existing search tests still pass.
+  6. Naming (R12): screen title "Tanya Al-Qur'an"; subtitle "Tanya apa saja, jawabannya dari Al-Qur'an, tafsir, dan doa di aplikasi ini"; bottom nav short label "Tanya" (existing nav icon unchanged). Search-field placeholder "Tanya tentang sabar, rezeki, doa untuk orang tua, atau ketik 2:255".
+  7. Empty-query landing: first card "Tanya Al-Qur'an" with subtitle "Tanya dengan kalimat biasa, hasil dari ayat, tafsir, doa, dan Asmaul Husna", then four example chips (`sabar`, `rezeki`, `doa untuk orang tua`, `hati gelisah` — UI examples only) that fill and run the query, then heading "Atau cari lebih spesifik" above the existing Surah/Juz/Halaman/Ayat/Terjemahan/Teks Arab ayat cards.
+  8. Classic-chip empty states: every "Semua" mention becomes "Tanya Al-Qur'an". The "Tampilkan semua hasil" button is relabelled "Tanya Al-Qur'an" and switches to the Tanya chip with the same query.
+- Acceptance: widget tests for default chip, fixed Ayat-then-Tafsir order, score-sorted remaining groups with tie-break, hidden empty groups, 3-card cap + Lihat semua, the terjemahan jump row, empty state, flag-off unchanged behaviour, header/nav/placeholder flag on and off, landing card order, example chip runs the query, and empty-state button switches to Tanya. Existing search tests still pass.
 
 ### Phase D — Semantic search
 
