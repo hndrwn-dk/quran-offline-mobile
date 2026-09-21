@@ -71,6 +71,17 @@ class _TanyaSearchResultsState extends State<TanyaSearchResults> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                if (widget.translationCount > 0 &&
+                    widget.onJumpToTranslation != null) ...[
+                  const SizedBox(height: 20),
+                  FilledButton.tonal(
+                    key: const Key('tanya_see_translations'),
+                    onPressed: widget.onJumpToTranslation,
+                    child: Text(
+                      AppLocalizations.getAiSearchSeeTranslations(widget.lang),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -103,7 +114,8 @@ class _TanyaSearchResultsState extends State<TanyaSearchResults> {
               ),
             ),
         ],
-        if (widget.translationCount > 0) _buildTranslationJump(context),
+        if (laid.isNotEmpty && widget.translationCount > 0)
+          _buildTranslationJump(context),
         ],
       ),
     );
