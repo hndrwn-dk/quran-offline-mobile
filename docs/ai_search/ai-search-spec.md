@@ -246,10 +246,20 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
 - Acceptance: tests cover threshold empty state and grouping.
 
 **C2. UI integration**
-- Files: `lib/features/search/search_screen.dart` (add a grouped "Tanya Al-Qur'an" section **below** existing results when flag on), `lib/features/search/widgets/ai_result_card.dart`, `app_localizations.dart`
+- Files: `lib/features/search/search_screen.dart`, `lib/features/search/tanya_result_layout.dart`, `lib/features/search/widgets/tanya_search_results.dart`, `lib/features/search/widgets/ai_result_card.dart`, `lib/core/providers/ai_search_provider.dart` (`aiSearchEnabledProvider` for tests), `app_localizations.dart`, `test/tanya_result_layout_test.dart`, `test/tanya_search_view_test.dart`
 - Card: type label, source ref (R6), "Penjelasan kurasi" badge for science/theme (R9). Tap opens existing reader/detail sheet for that source (reuse explore detail sheet and `ReaderSource`).
-- Existing verse/surah/juz/page search behaviour must remain unchanged.
-- Acceptance: existing search tests still pass; new widget test for card labels.
+- When `kAiSearchEnabled` is **false**: the screen is unchanged, including the "Semua" chip and the classic result list. Tanya groups are not shown.
+- When `kAiSearchEnabled` is **true**:
+  1. Rename the "Semua" chip to "Tanya Al-Qur'an" in all four languages (R12) and keep it the default selected chip.
+  2. That chip shows **only** grouped Tanya results, in this order:
+     - Ayat
+     - Tafsir
+     - Then the remaining groups (Doa Nabi, Doa dari Al-Qur'an, Asmaul Husna, Tema Hidup, Sains, Tentang Surat) sorted by each group's best hit score, highest first. Tie-break in that listed order.
+     Groups with no hits are hidden. Max 3 cards per group; "Lihat semua" expands that group to `kMaxResultsPerType`.
+  3. A last group "Hasil terjemahan (N)" is a **single row** that switches to the existing Terjemahan chip. Do not render classic translation hits inside the Tanya view.
+  4. Surah, Juz, Halaman, Ayat, Terjemahan chips keep their current classic behaviour exactly (no Tanya groups on those chips).
+  5. Empty state (R7) when no Tanya group has hits: "Belum ditemukan", plus the same "Hasil terjemahan" row if classic search has translation results.
+- Acceptance: widget tests for default chip, fixed Ayat-then-Tafsir order, score-sorted remaining groups with tie-break, hidden empty groups, 3-card cap + Lihat semua, the terjemahan jump row, empty state, and flag-off unchanged behaviour. Existing search tests still pass.
 
 ### Phase D — Semantic search
 

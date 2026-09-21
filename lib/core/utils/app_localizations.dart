@@ -3342,6 +3342,36 @@ class AppLocalizations {
     };
   }
 
+  static String getAiSearchEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ditemukan',
+      'en' => 'Nothing found',
+      'zh' => '尚未找到',
+      'ja' => 'まだ見つかりません',
+      _ => 'Nothing found',
+    };
+  }
+
+  static String getAiSearchSeeAll(String language) {
+    return switch (language) {
+      'id' => 'Lihat semua',
+      'en' => 'See all',
+      'zh' => '查看全部',
+      'ja' => 'すべて見る',
+      _ => 'See all',
+    };
+  }
+
+  static String getAiSearchTranslationJump(String language, int count) {
+    return switch (language) {
+      'id' => 'Hasil terjemahan ($count)',
+      'en' => 'Translation results ($count)',
+      'zh' => '译文结果 ($count)',
+      'ja' => '翻訳結果 ($count)',
+      _ => 'Translation results ($count)',
+    };
+  }
+
   static String getAiSearchKurasiBadge(String language) {
     return switch (language) {
       'id' => 'Penjelasan kurasi',
