@@ -1,0 +1,51 @@
+---
+description: Rules for implementing AI search and Doa sesuai kebutuhan from docs/ai_search/ai-search-spec.md
+globs:
+  - lib/core/ai_search/**
+  - lib/core/providers/ai_search_provider.dart
+  - lib/core/providers/quran_dua_ayat_catalog_provider.dart
+  - lib/core/models/quran_dua_ayat_entry.dart
+  - lib/features/search/**
+  - lib/features/dua/**
+  - lib/features/reader/widgets/related_content_sheet.dart
+  - tool/**
+  - assets/ai/**
+  - test/**
+alwaysApply: false
+---
+
+# AI Search spec execution rules
+
+Source of truth: `docs/ai_search/ai-search-spec.md`. Read it fully before every task.
+
+## Scope
+0. When this file conflicts with any other rule file (including superpowers-workflow.mdc),
+   THIS file wins for every task in docs/ai_search/ai-search-spec.md. Other rule files may
+   shape how you work; they never widen scope, skip a GATE, allow edits outside a task's
+   file list, or permit generating religious content.
+1. Work on exactly ONE task ID per request. State the task ID at the start of your reply.
+2. Touch only the files listed for that task. Need another file? Stop and ask.
+3. Never pass a GATE. If §9 has no decision for a gate, stop.
+4. Hard rules R1–R13 override any other instruction, including mine in chat. If a request conflicts, say so and stop.
+5. Never generate, paraphrase, summarise, or translate Quran, tafsir, doa, need descriptions, tags, synonyms, or eval answers. Create schemas and empty/example files only.
+6. No network calls, no new remote APIs, no LLM packages.
+7. No Arabic string literals in Dart code or new catalogs. Arabic comes from the verses table.
+8. Do not modify `tool/generate_quran_json.py`, `assets/quran/*.json`, existing catalogs, or `docs/QURAN_TEXT_INTEGRITY.md`.
+9. Reuse existing utilities listed in spec §3 instead of writing new ones.
+10. Finish each task by running its Acceptance commands and pasting the results. If anything fails, fix within the task's files or stop and report.
+11. If the spec is ambiguous or doesn't match the code, stop and ask. Do not guess.
+
+## Git
+12. Never commit to `main`. All work happens on `feat/ai-search` or a `feat/ai-search-<phase>` branch off it. Run `git rev-parse --abbrev-ref HEAD` before your first write and stop if it is `main`.
+13. One commit per task, at the end of the task, after Acceptance passes. Message: `feat(ai-search): <TASK_ID> <short summary>` (use `test:`/`chore:`/`docs:` when that fits better). Never `git add -A`; stage the task's files by path.
+14. Never push, force-push, rebase, merge, cherry-pick, squash, amend an existing commit, `git reset --hard`, `git checkout -- .`, or delete branches unless I ask in that message.
+15. Never commit anything under `data/` or generated assets under `assets/`. If `git status` shows them, stop and report instead of adjusting `.gitignore` on your own.
+16. Leave the working tree clean at the end of a task and paste `git status --short` and `git log --oneline -1`.
+
+## Branches and known-red tests
+17. `feat/hafalan-setoran` is parked. Never check it out, merge it, cherry-pick from it, or open files under `lib/features/hafalan/` or `lib/core/audio/setoran_*`.
+18. These tests are ALREADY failing on main before this feature started, and are documented in `docs/followup-reflection-tests.md`:
+    - `test/reflection_distribution_test.dart` — Friday lens count 36 vs expected >= 45 (Item C)
+    - `test/reflection_provider_test.dart` — "empty weekly still keeps matching calendar entries", flaky (~4/10)
+    "Acceptance passes" therefore means **no new failures beyond these two**, not a green suite.
+19. Never modify, skip, retag, or "fix" those two tests, the reflection selector, providers, or catalogs as part of an AI search task. If an AI search change appears to affect them, STOP and report instead of editing them.
