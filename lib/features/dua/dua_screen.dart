@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/ai_search/ai_search_config.dart';
 import 'package:quran_offline/core/models/asma_entry.dart';
+import 'package:quran_offline/features/dua/doa_need_screen.dart';
 import 'package:quran_offline/core/models/dua_entry.dart';
 import 'package:quran_offline/core/models/science_entry.dart';
 import 'package:quran_offline/core/models/theme_entry.dart';
@@ -304,6 +306,41 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
               ),
             ),
           ),
+          if (kAiSearchEnabled)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  kAppContentHorizontalInset,
+                  0,
+                  kAppContentHorizontalInset,
+                  12,
+                ),
+                child: ListTile(
+                  key: const Key('doa_need_entry'),
+                  leading: const Icon(Icons.search),
+                  title: Text(AppLocalizations.getDoaNeedEntryLabel(lang)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.push<void>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DoaNeedScreen(
+                          onOpenDoaNabiList: () {
+                            Navigator.pop(context);
+                            _openProphetHub(
+                              context,
+                              lang,
+                              colorScheme,
+                              prophetGrouped,
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
           if (!isSearching) ...[
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(

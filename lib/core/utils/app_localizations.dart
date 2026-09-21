@@ -3405,6 +3405,78 @@ class AppLocalizations {
     };
   }
 
+  static String getDoaNeedTitle(String language) {
+    return switch (language) {
+      'id' => 'Doa sesuai kebutuhan',
+      'en' => 'Dua for your need',
+      'zh' => '按需要查找祈祷',
+      'ja' => '必要に応じた祈り',
+      _ => 'Dua for your need',
+    };
+  }
+
+  static String getDoaNeedEntryLabel(String language) {
+    return getDoaNeedTitle(language);
+  }
+
+  static String getDoaNeedPrompt(String language) {
+    return switch (language) {
+      'id' => 'Apa yang sedang Anda butuhkan?',
+      'en' => 'What do you need right now?',
+      'zh' => '您现在需要什么？',
+      'ja' => '今、何が必要ですか？',
+      _ => 'What do you need right now?',
+    };
+  }
+
+  static String getDoaNeedTier1Header(String language) {
+    return getAiSearchTypeLabel('dua', language);
+  }
+
+  static String getDoaNeedTier2Header(String language) {
+    return getAiSearchTypeLabel('quran_dua', language);
+  }
+
+  static String getDoaNeedTier3Header(String language) {
+    return switch (language) {
+      'id' => 'Ayat terkait — bukan lafaz doa',
+      'en' => 'Related verses — not a dua formula',
+      'zh' => '相关经文 — 不是祈祷文',
+      'ja' => '関連する節 — 祈り文言ではない',
+      _ => 'Related verses — not a dua formula',
+    };
+  }
+
+  static String getDoaNeedTier3bHeader(String language) {
+    return switch (language) {
+      'id' => 'Asmaul Husna terkait',
+      'en' => 'Related Names of Allah',
+      'zh' => '相关的真主美名',
+      'ja' => '関連するアッラーの美名',
+      _ => 'Related Names of Allah',
+    };
+  }
+
+  static String getDoaNeedEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ditemukan doa untuk kebutuhan ini',
+      'en' => 'No dua found for this need yet',
+      'zh' => '尚未找到符合此需要的祈祷',
+      'ja' => 'この必要に合う祈りはまだ見つかりません',
+      _ => 'No dua found for this need yet',
+    };
+  }
+
+  static String getDoaNeedEmptyLink(String language) {
+    return switch (language) {
+      'id' => 'Lihat Doa Nabi',
+      'en' => 'See prophetic duas',
+      'zh' => '查看先知祈祷',
+      'ja' => '預言者の祈りを見る',
+      _ => 'See prophetic duas',
+    };
+  }
+
   /// Get localized text for settings screen
   static String getSettingsText(String key, String language) {
     return switch (key) {
