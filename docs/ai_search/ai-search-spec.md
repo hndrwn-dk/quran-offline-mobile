@@ -295,7 +295,7 @@ LLMs or any text generation · cloud APIs · user accounts or telemetry of queri
 
 | Gate | Date | Decision |
 |------|------|----------|
-| B0 FTS5 on device | | |
-| D0 model/runtime/delivery | | |
+| B0 FTS5 on device | 2026-09-21 | FTS5 available on Android (sqlite 3.51.1), verified on Pixel 8 Pro |
+| D0 model/runtime/delivery | 2026-09-21 | deferred to post-1.x release; keyword FTS5 search only for this release |
 | Thresholds after G1 | | |
 | Enable `kAiSearchEnabled` | | |
