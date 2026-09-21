@@ -3332,6 +3332,79 @@ class AppLocalizations {
     };
   }
 
+  static String getAiSearchHeading(String language) {
+    return switch (language) {
+      'id' => 'Tanya Al-Qur\'an',
+      'en' => 'Ask the Qur\'an',
+      'zh' => '询问古兰经',
+      'ja' => 'クルアーンに尋ねる',
+      _ => 'Ask the Qur\'an',
+    };
+  }
+
+  static String getAiSearchKurasiBadge(String language) {
+    return switch (language) {
+      'id' => 'Penjelasan kurasi',
+      'en' => 'Curated explanation',
+      'zh' => '编辑说明',
+      'ja' => '編集による解説',
+      _ => 'Curated explanation',
+    };
+  }
+
+  static String getAiSearchTypeLabel(String type, String language) {
+    return switch (type) {
+      'ayah' => switch (language) {
+          'id' => 'Ayat',
+          'zh' => '经文',
+          'ja' => '節',
+          _ => 'Verse',
+        },
+      'tafsir' => getTafsirPanelTitle(language),
+      'surah_info' => getSurahHeaderAboutSurah(language),
+      'dua' => switch (language) {
+          'id' => 'Doa Nabi',
+          'zh' => '先知祈祷',
+          'ja' => '預言者の祈り',
+          _ => 'Prophetic dua',
+        },
+      'quran_dua' => switch (language) {
+          'id' => 'Doa dari Al-Qur\'an',
+          'en' => 'Dua from the Qur\'an',
+          'zh' => '古兰经中的祈祷',
+          'ja' => 'クルアーンの祈り',
+          _ => 'Dua from the Qur\'an',
+        },
+      'asma' => getDuaCategoryLabel('asma', language),
+      'science' => getDuaCategoryLabel('science', language),
+      'theme' => getDuaCategoryLabel('life_theme', language),
+      _ => type,
+    };
+  }
+
+  static String getAiSearchTafsirSource(String language, int surah, int ayah) {
+    final author = switch (language) {
+      'id' => 'As-Sa\'di',
+      'zh' => 'Mokhtasar',
+      'ja' => 'Mokhtasar',
+      _ => 'Ibn Kathir',
+    };
+    return 'Tafsir $author $surah:$ayah';
+  }
+
+  static String getAiSearchAsmaSource(String language, String number) {
+    return '${getDuaCategoryLabel('asma', language)} #$number';
+  }
+
+  static String getAiSearchSurahSource(String language, int surah) {
+    return switch (language) {
+      'id' => 'QS $surah',
+      'zh' => '第$surah章',
+      'ja' => '第$surah章',
+      _ => 'Surah $surah',
+    };
+  }
+
   /// Get localized text for settings screen
   static String getSettingsText(String key, String language) {
     return switch (key) {
