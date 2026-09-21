@@ -127,6 +127,7 @@ assets/qpc-v4-tajweed-15-lines.db.zip
 # Local docs stay untracked except text-integrity note.
 docs/*
 !docs/QURAN_TEXT_INTEGRITY.md
+!docs/followup-anr-input-dispatch-v45.md
 assets/quran/*.json
 
 # Vercel feedback API (Node)
