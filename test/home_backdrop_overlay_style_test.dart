@@ -35,4 +35,39 @@ void main() {
       expect(dark.statusBarBrightness, Brightness.dark);
     });
   });
+
+  test('dark topTint is opaque so pushed Jelajahi routes do not flash', () {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF2E7D32),
+      brightness: Brightness.dark,
+    );
+    final tint = HomeBackdrop.topTint(scheme);
+
+    expect(tint.a, 1.0);
+    expect(tint, isNot(scheme.surface));
+  });
+
+  test('light topTint stays an opaque cream wash', () {
+    final scheme = ColorScheme.fromSeed(seedColor: const Color(0xFF2E7D32));
+    expect(HomeBackdrop.topTint(scheme).a, 1.0);
+  });
+
+  testWidgets('paints a header-only right-corner arc, not over the body', (
+    tester,
+  ) async {
+    final scheme = ColorScheme.fromSeed(seedColor: const Color(0xFF5A7358));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          appBar: AppBar(
+            flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(scheme),
+          ),
+          body: const HomeBackdrop(child: SizedBox.expand()),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('home_corner_arc_bar')), findsOneWidget);
+    expect(find.byKey(const Key('home_corner_arc')), findsNothing);
+  });
 }
