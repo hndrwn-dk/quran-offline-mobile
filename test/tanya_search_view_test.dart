@@ -125,7 +125,9 @@ void main() {
     expect(AppLocalizations.getNavMenuText('search', 'id'), 'Cari');
     expect(AppLocalizations.getAiSearchEmpty('id'), 'Belum ditemukan');
     expect(AppLocalizations.getAiSearchSeeAll('id'), 'Lihat semua');
-    expect(AppLocalizations.getAiSearchTryLabel('id'), 'Coba:');
+    expect(AppLocalizations.getAiSearchTryLabel('id'), 'Coba');
+    expect(AppLocalizations.getAiSearchTypeHintLabel('id'), 'Cara ketik');
+    expect(AppLocalizations.getAiSearchTypeHints('id'), hasLength(3));
     expect(
       AppLocalizations.getAiSearchLandingHint('id'),
       'Bisa juga ketik 2:255, juz 30, halaman 5, atau teks Arab.',
@@ -141,6 +143,8 @@ void main() {
       expect(AppLocalizations.getAiSearchScreenSubtitle(lang), isNotEmpty);
       expect(AppLocalizations.getAiSearchPlaceholder(lang), isNotEmpty);
       expect(AppLocalizations.getAiSearchTryLabel(lang), isNotEmpty);
+      expect(AppLocalizations.getAiSearchTypeHintLabel(lang), isNotEmpty);
+      expect(AppLocalizations.getAiSearchTypeHints(lang), hasLength(3));
       expect(AppLocalizations.getAiSearchLandingHint(lang), isNotEmpty);
       expect(AppLocalizations.getAiSearchDirectGroup(lang), isNotEmpty);
       expect(AppLocalizations.getAiSearchArabicGroup(lang), isNotEmpty);
@@ -546,7 +550,7 @@ void main() {
     expect(find.byType(NavigationBar), findsOneWidget);
   });
 
-  testWidgets('landing is try chips in one row plus hint, no cards', (
+  testWidgets('landing shows every example chip fully on screen plus hint', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(360, 800);
@@ -571,13 +575,15 @@ void main() {
     expect(find.byKey(const Key('tanya_landing_card')), findsNothing);
     expect(find.byKey(const Key('tanya_specific_heading')), findsNothing);
     expect(find.byKey(const Key('tanya_try_label')), findsOneWidget);
-    expect(find.byKey(const Key('tanya_landing_hint')), findsOneWidget);
+    expect(find.byKey(const Key('tanya_landing_hint')), findsNothing);
+    expect(find.byKey(const Key('tanya_type_hint_label')), findsOneWidget);
+    expect(find.byKey(const Key('tanya_type_hint_0')), findsOneWidget);
+    expect(find.byKey(const Key('tanya_type_hint_2')), findsOneWidget);
     expect(
       find.text(AppLocalizations.getAiSearchScreenSubtitle('en')),
       findsOneWidget,
     );
     expect(find.byKey(const Key('tanya_example_row')), findsOneWidget);
-    expect(find.byKey(const Key('tanya_example_3')), findsOneWidget);
     expect(
       find.text(AppLocalizations.getSearchText('search_by_label', 'en')),
       findsNothing,
@@ -586,9 +592,20 @@ void main() {
       find.text(AppLocalizations.getMenuText('surah', 'en')),
       findsNothing,
     );
-    final y0 = tester.getTopLeft(find.byKey(const Key('tanya_example_0'))).dy;
-    final y3 = tester.getTopLeft(find.byKey(const Key('tanya_example_3'))).dy;
-    expect(y0, y3);
+
+    const screen = Rect.fromLTWH(0, 0, 360, 800);
+    for (var i = 0; i < 4; i++) {
+      final chip = find.byKey(Key('tanya_example_$i'));
+      expect(chip, findsOneWidget);
+      final rect = tester.getRect(chip);
+      expect(
+        screen.deflate(8).overlaps(rect) &&
+            rect.left >= 8 &&
+            rect.right <= 360 - 8,
+        isTrue,
+        reason: 'example chip $i must be fully visible, rect=$rect',
+      );
+    }
   });
 
   testWidgets('example chip fills the query and runs it', (tester) async {
@@ -612,6 +629,29 @@ void main() {
 
     final field = tester.widget<TextField>(find.byKey(const Key('search_field')));
     expect(field.controller?.text, example);
+  });
+
+  testWidgets('type-hint row fills the sample query', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: _searchOverrides(
+          aiEnabled: true,
+          classic: const [],
+          tanya: const [],
+          query: '',
+        ),
+        child: const MaterialApp(home: SearchScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final sample = AppLocalizations.getAiSearchTypeHints('en').first.query;
+    await tester.tap(find.byKey(const Key('tanya_type_hint_0')));
+    await tester.pump();
+
+    final field = tester.widget<TextField>(find.byKey(const Key('search_field')));
+    expect(field.controller?.text, sample);
   });
 
   testWidgets('reference query shows Langsung ke, not grouped hits', (
