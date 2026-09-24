@@ -1,12 +1,12 @@
 import 'package:quran_offline/core/utils/arabic_search_normalizer.dart';
 
-/// Indonesian/English query normaliser (matching only). Version 3.
+/// Indonesian/English query normaliser (matching only). Version 4.
 ///
 /// Port of tool/id_normalizer.py, spec §6.1.
 class IdQueryNormalizer {
   IdQueryNormalizer._();
 
-  static const int normalizerVersion = 3;
+  static const int normalizerVersion = 4;
 
   static final _html = RegExp(r'<[^>]+>');
   static final _nonAlnum = RegExp(r'[^\w]+', unicode: true);
@@ -176,6 +176,20 @@ class IdQueryNormalizer {
     return token;
   }
 
+  static String? _applyPrefixes(String token) {
+    var current = token;
+    var applied = false;
+    for (var i = 0; i < 8; i++) {
+      if (_rootWhitelist.contains(current)) return current;
+      final next = _tryPrefix(current);
+      if (next == null) return applied ? current : null;
+      if (next == current) return current;
+      current = next;
+      applied = true;
+    }
+    return current;
+  }
+
   static String _stemLatin(String token) {
     if (_rootWhitelist.contains(token)) return token;
     token = _stripParticle(token);
@@ -184,12 +198,12 @@ class IdQueryNormalizer {
       if (!token.endsWith(suffix)) continue;
       final tentative = token.substring(0, token.length - suffix.length);
       if (tentative.length < _minStem) continue;
-      final stemmed = _tryPrefix(tentative);
+      final stemmed = _applyPrefixes(tentative);
       if (stemmed == null) continue;
       if (stemmed.length >= _minStem || _rootWhitelist.contains(stemmed)) {
         return stemmed;
       }
     }
-    return _tryPrefix(token) ?? token;
+    return _applyPrefixes(token) ?? token;
   }
 }

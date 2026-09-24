@@ -123,7 +123,7 @@ class BuildIndexTest(unittest.TestCase):
         self.assertEqual(refs, 1)
         meta = dict(con.execute("SELECT key, value FROM meta"))
         self.assertEqual(meta["schema_version"], "1")
-        self.assertEqual(meta["normalizer_version"], "3")
+        self.assertEqual(meta["normalizer_version"], "4")
         self.assertEqual(meta["quran_manifest_version"], "fixture-v1")
         self.assertIn("built_at_utc", meta)
         n = con.execute(
@@ -229,6 +229,32 @@ class BuildIndexTest(unittest.TestCase):
         self.assertIn("hari", body)
         n = con.execute(
             "SELECT count(*) FROM docs_fts WHERE docs_fts MATCH 'hari'"
+        ).fetchone()[0]
+        self.assertGreaterEqual(n, 1)
+        con.close()
+
+    def test_index_body_keeps_original_and_stem(self) -> None:
+        _write_json(
+            self.root / "quran" / "s002.json",
+            [
+                {
+                    "s": 2,
+                    "a": 10,
+                    "ar": "Z",
+                    "tr": {"id": "Mereka berpenyakit", "en": "They are ill"},
+                }
+            ],
+        )
+        build_index(quran_dir=self.root / "quran", out_path=self.out)
+        con = sqlite3.connect(self.out)
+        body = con.execute(
+            "SELECT body_norm FROM docs WHERE doc_id='ayah:2:10:id'"
+        ).fetchone()[0]
+        tokens = set(body.split())
+        self.assertIn("berpenyakit", tokens)
+        self.assertIn("sakit", tokens)
+        n = con.execute(
+            "SELECT count(*) FROM docs_fts WHERE docs_fts MATCH 'sakit'"
         ).fetchone()[0]
         self.assertGreaterEqual(n, 1)
         con.close()

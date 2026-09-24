@@ -7,14 +7,14 @@ import json
 import unittest
 from pathlib import Path
 
-from id_normalizer import NORMALIZER_VERSION, normalize
+from id_normalizer import NORMALIZER_VERSION, normalize, normalize_for_index
 
 _VECTORS = Path(__file__).resolve().parent / "fixtures" / "id_normalizer_vectors.json"
 
 
 class NormalizeVersionTest(unittest.TestCase):
-    def test_version_is_3(self) -> None:
-        self.assertEqual(NORMALIZER_VERSION, 3)
+    def test_version_is_4(self) -> None:
+        self.assertEqual(NORMALIZER_VERSION, 4)
 
 
 class VectorFileTest(unittest.TestCase):
@@ -45,6 +45,12 @@ class EdgeCaseTest(unittest.TestCase):
         self.assertEqual(normalize("doa untuk orang tua"), "doa orang tua")
         self.assertEqual(normalize("untuk yang dan"), "untuk yang dan")
         self.assertEqual(normalize("the a an"), "the a an")
+
+    def test_normalize_for_index_writes_original_and_stem(self) -> None:
+        tokens = normalize_for_index("berpenyakit").split()
+        self.assertIn("berpenyakit", tokens)
+        self.assertIn("sakit", tokens)
+        self.assertEqual(normalize_for_index("sakit"), "sakit")
 
 
 if __name__ == "__main__":

@@ -29,5 +29,9 @@
   {"in": "pengetahuan", "out": "tahu"},
   {"in": "kesehatan", "out": "sehat"},
   {"in": "pemberi", "out": "beri"},
-  {"in": "penolong", "out": "tolong"}
+  {"in": "penolong", "out": "tolong"},
+  {"in": "berpenyakit", "out": "sakit"},
+  {"in": "kesakitan", "out": "sakit"},
+  {"in": "penyakitnya", "out": "sakit"},
+  {"in": "berpenyakitan", "out": "sakit"}
 ]
