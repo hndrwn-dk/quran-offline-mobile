@@ -8,6 +8,8 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/arabic_search_normalizer.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
+import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
+import 'package:quran_offline/features/home/widgets/home_cta_buttons.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 
@@ -236,9 +238,17 @@ class TranslationResultsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lang = ref.watch(settingsProvider).appLanguage;
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       key: const Key('translation_results_screen'),
+      backgroundColor: HomeBackdrop.topTint(colorScheme),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: HomeCircleArrowButton.maybeAppBarBack(context),
+        backgroundColor: HomeBackdrop.topTint(colorScheme),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
         title: Text(
           AppLocalizations.getAiSearchTranslationJump(lang, results.length),
         ),

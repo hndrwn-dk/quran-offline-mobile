@@ -3140,7 +3140,8 @@ class AppLocalizations {
       'juz' => switch (language) {
           'id' =>
             'Tidak ada juz pada filter ini. Coba angka 1–30 atau filter "$allLabel".',
-          'en' => 'No juz matches this filter. Try 1–30 or the $allLabel filter.',
+          'en' =>
+            'No juz matches this filter. Try 1–30 or the $allLabel filter.',
           'zh' => '此筛选下没有卷。请尝试 1–30 或“$allLabel”。',
           'ja' => 'このフィルターに該当するジュズはありません。1–30 または「$allLabel」をお試しください。',
           _ => 'No juz matches this filter. Try 1–30 or the $allLabel filter.',
@@ -3148,7 +3149,8 @@ class AppLocalizations {
       'page' => switch (language) {
           'id' =>
             'Tidak ada halaman pada filter ini. Coba nomor halaman atau "$allLabel".',
-          'en' => 'No page matches this filter. Try a page number or $allLabel.',
+          'en' =>
+            'No page matches this filter. Try a page number or $allLabel.',
           'zh' => '此筛选下没有页。请尝试页码或“$allLabel”。',
           'ja' => 'このフィルターに該当するページはありません。ページ番号または「$allLabel」をお試しください。',
           _ => 'No page matches this filter. Try a page number or $allLabel.',
@@ -3389,22 +3391,57 @@ class AppLocalizations {
 
   static String getAiSearchTryLabel(String language) {
     return switch (language) {
-      'id' => 'Coba:',
-      'en' => 'Try:',
-      'zh' => '试试：',
-      'ja' => '試す：',
-      _ => 'Try:',
+      'id' => 'Coba',
+      'en' => 'Try',
+      'zh' => '试试',
+      'ja' => '試す',
+      _ => 'Try',
     };
   }
 
   static String getAiSearchLandingHint(String language) {
     return switch (language) {
-      'id' =>
-        'Bisa juga ketik 2:255, juz 30, halaman 5, atau teks Arab.',
+      'id' => 'Bisa juga ketik 2:255, juz 30, halaman 5, atau teks Arab.',
       'en' => 'You can also type 2:255, juz 30, page 5, or Arabic text.',
       'zh' => '也可以输入 2:255、juz 30、第 5 页或阿拉伯文。',
       'ja' => '2:255、juz 30、5ページ、アラビア語も入力できます。',
       _ => 'You can also type 2:255, juz 30, page 5, or Arabic text.',
+    };
+  }
+
+  static String getAiSearchTypeHintLabel(String language) {
+    return switch (language) {
+      'id' => 'Cara ketik',
+      'en' => 'How to type',
+      'zh' => '输入方式',
+      'ja' => '入力の仕方',
+      _ => 'How to type',
+    };
+  }
+
+  static List<({String sample, String caption, String query})>
+      getAiSearchTypeHints(String language) {
+    return switch (language) {
+      'id' => const [
+          (sample: '2:255', caption: 'Langsung ke ayat', query: '2:255'),
+          (sample: 'juz 30', caption: 'Buka juz', query: 'juz 30'),
+          (sample: 'halaman 5', caption: 'Buka halaman', query: 'halaman 5'),
+        ],
+      'zh' => const [
+          (sample: '2:255', caption: '直达经文', query: '2:255'),
+          (sample: 'juz 30', caption: '打开卷', query: 'juz 30'),
+          (sample: '第 5 页', caption: '打开页', query: 'page 5'),
+        ],
+      'ja' => const [
+          (sample: '2:255', caption: '節へ移動', query: '2:255'),
+          (sample: 'juz 30', caption: 'ジュズを開く', query: 'juz 30'),
+          (sample: '5ページ', caption: 'ページを開く', query: 'page 5'),
+        ],
+      _ => const [
+          (sample: '2:255', caption: 'Go to a verse', query: '2:255'),
+          (sample: 'juz 30', caption: 'Open a juz', query: 'juz 30'),
+          (sample: 'page 5', caption: 'Open a page', query: 'page 5'),
+        ],
     };
   }
 

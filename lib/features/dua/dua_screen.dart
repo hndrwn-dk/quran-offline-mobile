@@ -80,6 +80,7 @@ class DuaScreen extends ConsumerWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
+        flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
         title: Row(
           children: [
             Container(
