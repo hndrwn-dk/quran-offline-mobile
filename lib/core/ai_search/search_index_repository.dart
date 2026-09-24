@@ -64,7 +64,14 @@ class IndexHit {
 
 /// Offline FTS5 index. Returns refs and scores only; never display text.
 class SearchIndexRepository {
-  SearchIndexRepository();
+  SearchIndexRepository({
+    Directory? documentsDirectory,
+    Future<Uint8List> Function()? readBundledBytes,
+  })  : _documentsDirectory = documentsDirectory,
+        _readBundledBytes = readBundledBytes;
+
+  final Directory? _documentsDirectory;
+  final Future<Uint8List> Function()? _readBundledBytes;
 
   Database? _db;
 
@@ -77,7 +84,7 @@ class SearchIndexRepository {
   }
 
   Future<void> ensureReady() async {
-    final docs = await getApplicationDocumentsDirectory();
+    final docs = _documentsDirectory ?? await getApplicationDocumentsDirectory();
     final dir = Directory(p.join(docs.path, 'ai_search'));
     if (!await dir.exists()) {
       await dir.create(recursive: true);
@@ -86,25 +93,55 @@ class SearchIndexRepository {
     final prefs = await SharedPreferences.getInstance();
     final stored = prefs.getString(kSearchIndexBuiltAtPrefKey);
 
+    final bundledBytes = _readBundledBytes != null
+        ? await _readBundledBytes!()
+        : await _loadBundledBytes();
+    final bundledBuiltAt = await _builtAtFromBytes(bundledBytes);
+
     var needCopy = !await localFile.exists();
-    if (!needCopy) {
-      await openPath(localFile.path);
-      final builtAt = _meta('built_at_utc');
-      if (stored != builtAt) needCopy = true;
+    if (stored != bundledBuiltAt) {
+      needCopy = true;
     }
 
     if (needCopy) {
       close();
-      final bytes = await rootBundle.load(kSearchIndexAssetPath);
-      await localFile.writeAsBytes(
-        bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-        flush: true,
-      );
+      await localFile.writeAsBytes(bundledBytes, flush: true);
       await openPath(localFile.path);
-      final builtAt = _meta('built_at_utc') ?? '';
+      final builtAt = _meta('built_at_utc') ?? bundledBuiltAt ?? '';
       await prefs.setString(kSearchIndexBuiltAtPrefKey, builtAt);
     } else if (_db == null) {
       await openPath(localFile.path);
+    }
+  }
+
+  Future<Uint8List> _loadBundledBytes() async {
+    final data = await rootBundle.load(kSearchIndexAssetPath);
+    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  }
+
+  Future<String?> _builtAtFromBytes(Uint8List bytes) async {
+    final tmp = File(
+      p.join(
+        Directory.systemTemp.path,
+        'qo_search_index_meta_${DateTime.now().microsecondsSinceEpoch}.sqlite',
+      ),
+    );
+    await tmp.writeAsBytes(bytes, flush: true);
+    try {
+      final db = sqlite3.open(tmp.path, mode: OpenMode.readOnly);
+      try {
+        final rows = db.select(
+          "SELECT value FROM meta WHERE key = 'built_at_utc'",
+        );
+        if (rows.isEmpty) return null;
+        return rows.first['value'] as String?;
+      } finally {
+        db.dispose();
+      }
+    } finally {
+      if (await tmp.exists()) {
+        await tmp.delete();
+      }
     }
   }
 
