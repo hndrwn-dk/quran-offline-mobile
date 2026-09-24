@@ -1,6 +1,6 @@
 /// Feature flag and ranking constants for AI Search. Maintainer flips
 /// [kAiSearchEnabled] after Phase G eval.
-const bool kAiSearchEnabled = false;
+const bool kAiSearchEnabled = true;
 
 const double kMinScoreKeyword = 0.25;
 

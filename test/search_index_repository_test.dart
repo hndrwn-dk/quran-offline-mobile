@@ -88,8 +88,8 @@ void main() {
     tmp.deleteSync(recursive: true);
   });
 
-  test('kAiSearchEnabled is false by default', () {
-    expect(kAiSearchEnabled, isFalse);
+  test('kAiSearchEnabled is true for v47', () {
+    expect(kAiSearchEnabled, isTrue);
   });
 
   test('keywordSearch ranks better match first and respects type and limit', () async {
