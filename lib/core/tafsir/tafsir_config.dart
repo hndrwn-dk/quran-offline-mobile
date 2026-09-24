@@ -1,6 +1,6 @@
 /// Bundled QUL tafsir SQLite files (read-only at runtime).
 abstract final class TafsirConfig {
-  static const bundleVersion = 1;
+  static const bundleVersion = 2;
 
   static const assetByLanguage = <String, String>{
     'id': 'assets/tafsir/id_as_saadi.sqlite',
