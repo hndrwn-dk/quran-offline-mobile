@@ -12,6 +12,7 @@ import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/home/widgets/home_cta_buttons.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
+import 'package:quran_offline/features/search/widgets/inset_clamping_scroll.dart';
 
 /// Bold-only highlight: first match only; case-insensitive for text, exact for numbers.
 List<TextSpan> searchHighlightSpans(
@@ -53,17 +54,21 @@ class SearchResultList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      itemCount: results.length,
-      itemBuilder: (context, index) {
-        return SearchResultTile(
-          result: results[index],
-          query: query,
-          colorScheme: colorScheme,
-          textTheme: textTheme,
-        );
-      },
+    return InsetClampingScroll(
+      builder: (controller) => ListView.builder(
+        controller: controller,
+        primary: false,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        itemCount: results.length,
+        itemBuilder: (context, index) {
+          return SearchResultTile(
+            result: results[index],
+            query: query,
+            colorScheme: colorScheme,
+            textTheme: textTheme,
+          );
+        },
+      ),
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:quran_offline/core/providers/ai_search_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/search/tanya_result_layout.dart';
 import 'package:quran_offline/features/search/widgets/ai_result_card.dart';
+import 'package:quran_offline/features/search/widgets/inset_clamping_scroll.dart';
 
 typedef TanyaCardBuilder = Widget Function(AiSearchHit hit, String lang);
 
@@ -46,9 +47,13 @@ class _TanyaSearchResultsState extends State<TanyaSearchResults> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
-      child: Column(
+    return InsetClampingScroll(
+      builder: (controller) => SingleChildScrollView(
+        key: const Key('tanya_results_scroll'),
+        controller: controller,
+        primary: false,
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
         if (laid.isEmpty)
@@ -117,6 +122,7 @@ class _TanyaSearchResultsState extends State<TanyaSearchResults> {
         if (laid.isNotEmpty && widget.translationCount > 0)
           _buildTranslationJump(context),
         ],
+      ),
       ),
     );
   }

@@ -108,7 +108,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     });
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       backgroundColor: HomeBackdrop.topTint(Theme.of(context).colorScheme),
       appBar: AppBar(
         automaticallyImplyLeading: false,
