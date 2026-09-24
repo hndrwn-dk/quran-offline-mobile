@@ -4,8 +4,54 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/ai_search/ai_search_config.dart';
 import 'package:quran_offline/core/ai_search/id_query_normalizer.dart';
 import 'package:quran_offline/core/ai_search/search_index_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // ignore: depend_on_referenced_packages
 import 'package:sqlite3/sqlite3.dart';
+
+void _writeMiniIndex(
+  String path, {
+  required String builtAt,
+  required String marker,
+}) {
+  final db = sqlite3.open(path);
+  db.execute('CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+  db.execute('''
+    CREATE TABLE docs (
+      doc_id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      lang TEXT NOT NULL,
+      ref_key TEXT NOT NULL,
+      surah INTEGER,
+      ayah_from INTEGER,
+      ayah_to INTEGER,
+      title TEXT NOT NULL,
+      body_norm TEXT NOT NULL
+    )
+  ''');
+  db.execute('''
+    CREATE VIRTUAL TABLE docs_fts USING fts5(
+      title,
+      body_norm,
+      content='docs',
+      content_rowid='rowid',
+      tokenize='unicode61 remove_diacritics 2'
+    )
+  ''');
+  db.execute(
+    'INSERT INTO docs(doc_id, type, lang, ref_key, surah, ayah_from, ayah_to, title, body_norm) '
+    'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    ['ayah:1:1:id', 'ayah', 'id', '1:1', 1, 1, 1, '1:1', marker],
+  );
+  db.execute(
+    'INSERT INTO docs_fts(rowid, title, body_norm) VALUES (1, ?, ?)',
+    ['1:1', marker],
+  );
+  db.execute(
+    'INSERT INTO meta(key, value) VALUES (?, ?)',
+    ['built_at_utc', builtAt],
+  );
+  db.dispose();
+}
 
 void main() {
   late Directory tmp;
@@ -116,6 +162,47 @@ void main() {
     final ids = await repo.relatedDocIds(2, 1);
     expect(ids, containsAll(['ayah:2:1:id', 'dua:one:id']));
     expect(ids, isNot(contains('ayah:2:2:id')));
+  });
+
+  test('ensureReady recopies when bundled asset built_at is newer than prefs',
+      () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({
+      kSearchIndexBuiltAtPrefKey: '2020-01-01T00:00:00Z',
+    });
+
+    final docsDir = Directory('${tmp.path}/docs')..createSync();
+    final localDir = Directory('${docsDir.path}/ai_search')..createSync();
+    final localPath = '${localDir.path}/search_index.sqlite';
+    _writeMiniIndex(
+      localPath,
+      builtAt: '2020-01-01T00:00:00Z',
+      marker: 'oldmarker',
+    );
+
+    final bundledPath = '${tmp.path}/bundled.sqlite';
+    _writeMiniIndex(
+      bundledPath,
+      builtAt: '2026-09-24T12:00:00Z',
+      marker: 'newmarker',
+    );
+    final bundledBytes = File(bundledPath).readAsBytesSync();
+
+    repo = SearchIndexRepository(
+      documentsDirectory: docsDir,
+      readBundledBytes: () async => bundledBytes,
+    );
+    await repo.ensureReady();
+
+    final fresh = await repo.keywordSearch('newmarker', lang: 'id');
+    expect(fresh, isNotEmpty, reason: 'recopy must expose bundled marker');
+    final stale = await repo.keywordSearch('oldmarker', lang: 'id');
+    expect(stale, isEmpty, reason: 'old local index must be replaced');
+    final prefs = await SharedPreferences.getInstance();
+    expect(
+      prefs.getString(kSearchIndexBuiltAtPrefKey),
+      '2026-09-24T12:00:00Z',
+    );
   });
 
   test('ftsAnyTermQuery joins terms with OR and keeps synonym groups', () {
