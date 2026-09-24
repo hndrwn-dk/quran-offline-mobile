@@ -31,6 +31,9 @@ class LastReadCard extends ConsumerWidget {
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: _HomeLastReadShell(
+          onTap: () {
+            ref.read(currentTabProvider.notifier).state = AppTab.read;
+          },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -216,6 +219,7 @@ class LastReadCard extends ConsumerWidget {
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: _HomeLastReadShell(
+              onTap: onTap,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -409,51 +413,60 @@ class LastReadCard extends ConsumerWidget {
 class _HomeLastReadShell extends StatelessWidget {
   const _HomeLastReadShell({
     required this.child,
+    this.onTap,
   });
 
   final Widget child;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = colorScheme.brightness == Brightness.dark;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: colorScheme.primary.withValues(alpha: isDark ? 0.22 : 0.14),
-        ),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [
-                  colorScheme.primaryContainer.withValues(alpha: 0.42),
-                  colorScheme.surfaceContainerHigh.withValues(alpha: 0.92),
-                ]
-              : [
-                  const Color(0xFFF4F7F0),
-                  const Color(0xFFE8F0E4),
-                  Color.lerp(
-                    const Color(0xFFDCE8D8),
-                    colorScheme.primary,
-                    0.12,
-                  )!,
-                ],
-          stops: isDark ? null : const [0.0, 0.5, 1.0],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.primary.withValues(alpha: isDark ? 0.12 : 0.07),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: colorScheme.primary.withValues(alpha: isDark ? 0.22 : 0.14),
+            ),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark
+                  ? [
+                      colorScheme.primaryContainer.withValues(alpha: 0.42),
+                      colorScheme.surfaceContainerHigh.withValues(alpha: 0.92),
+                    ]
+                  : [
+                      const Color(0xFFF4F7F0),
+                      const Color(0xFFE8F0E4),
+                      Color.lerp(
+                        const Color(0xFFDCE8D8),
+                        colorScheme.primary,
+                        0.12,
+                      )!,
+                    ],
+              stops: isDark ? null : const [0.0, 0.5, 1.0],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.primary.withValues(alpha: isDark ? 0.12 : 0.07),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
-        child: child,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
+            child: child,
+          ),
+        ),
       ),
     );
   }

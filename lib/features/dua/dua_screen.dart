@@ -4,6 +4,7 @@ import 'package:quran_offline/core/models/asma_entry.dart';
 import 'package:quran_offline/core/models/dua_entry.dart';
 import 'package:quran_offline/core/models/science_entry.dart';
 import 'package:quran_offline/core/models/theme_entry.dart';
+import 'package:quran_offline/core/providers/ai_search_provider.dart';
 import 'package:quran_offline/core/providers/asma_catalog_provider.dart';
 import 'package:quran_offline/core/providers/dua_catalog_provider.dart';
 import 'package:quran_offline/core/providers/science_catalog_provider.dart';
@@ -78,6 +79,8 @@ class DuaScreen extends ConsumerWidget {
         backgroundColor: HomeBackdrop.topTint(colorScheme),
         elevation: 0,
         scrolledUnderElevation: 0,
+        systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
+        flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
         title: Row(
           children: [
             Container(
@@ -235,10 +238,11 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
     final scienceCatalog = scienceAsync.value;
     final themeCatalog = themeAsync.value;
 
-    final trimmedQuery = _query.trim();
+    final aiEnabled = ref.watch(aiSearchEnabledProvider);
+    final trimmedQuery = aiEnabled ? '' : _query.trim();
     final isSearching = trimmedQuery.isNotEmpty;
 
-    final searchHits = isSearching
+    final catalogHits = isSearching
         ? searchExploreContent(
             query: trimmedQuery,
             lang: lang,
@@ -261,7 +265,8 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
       _HubSection(
         sectionKey: 'prophet',
         countLabel: AppLocalizations.getDuaProphetCount(prophetCount, lang),
-        onTap: () => _openProphetHub(context, lang, colorScheme, prophetGrouped),
+        onTap: () =>
+            _openProphetHub(context, lang, colorScheme, prophetGrouped),
       ),
       _HubSection(
         sectionKey: 'science',
@@ -287,28 +292,29 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
     return HomeBackdrop(
       child: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(
-            child: AppSearchFieldInset(
-              padding: const EdgeInsets.fromLTRB(
-                kAppContentHorizontalInset,
-                kAppBodyTopInset,
-                kAppContentHorizontalInset,
-                12,
-              ),
-              child: ExploreHubSearchBar(
-                lang: lang,
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                onChanged: _onSearchChanged,
-                onClear: _clearSearch,
+          if (!aiEnabled)
+            SliverToBoxAdapter(
+              child: AppSearchFieldInset(
+                padding: const EdgeInsets.fromLTRB(
+                  kAppContentHorizontalInset,
+                  kAppBodyTopInset,
+                  kAppContentHorizontalInset,
+                  12,
+                ),
+                child: ExploreHubSearchBar(
+                  lang: lang,
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  onChanged: _onSearchChanged,
+                  onClear: _clearSearch,
+                ),
               ),
             ),
-          ),
-          if (!isSearching) ...[
+          if (!isSearching)
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
+              padding: EdgeInsets.fromLTRB(
                 kAppContentHorizontalInset,
-                0,
+                aiEnabled ? kAppBodyTopInset : 0,
                 kAppContentHorizontalInset,
                 24,
               ),
@@ -319,16 +325,21 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
                   final section = sections[index];
                   return ExploreHubSectionCard(
                     sectionKey: section.sectionKey,
-                    title:
-                        AppLocalizations.getDuaCategoryLabel(section.sectionKey, lang),
+                    title: AppLocalizations.getDuaCategoryLabel(
+                      section.sectionKey,
+                      lang,
+                    ),
                     countLabel: section.countLabel,
-                    hint: AppLocalizations.getExploreHubHint(section.sectionKey, lang),
+                    hint: AppLocalizations.getExploreHubHint(
+                      section.sectionKey,
+                      lang,
+                    ),
                     onTap: section.onTap,
                   );
                 },
               ),
-            ),
-          ] else if (searchHits.isEmpty) ...[
+            )
+          else if (catalogHits.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
@@ -343,8 +354,8 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
                   ),
                 ),
               ),
-            ),
-          ] else ...[
+            )
+          else
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(
                 kAppContentHorizontalInset,
@@ -353,10 +364,10 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
                 24,
               ),
               sliver: SliverList.separated(
-                itemCount: searchHits.length,
+                itemCount: catalogHits.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
-                  final hit = searchHits[index];
+                  final hit = catalogHits[index];
                   return ExploreTopicCard(
                     title: hit.title,
                     refLabel: hit.subtitle,
@@ -365,7 +376,6 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
                 },
               ),
             ),
-          ],
         ],
       ),
     );
@@ -740,7 +750,8 @@ class _LifeSituationCategoryGrid extends ConsumerWidget {
             itemBuilder: (context, index) {
               final bucket = orderedBuckets[index];
               final categoryKey = bucket.categoryKey;
-              final countLabel = AppLocalizations.getLifeSituationCategorySubtitle(
+              final countLabel =
+                  AppLocalizations.getLifeSituationCategorySubtitle(
                 bucket.duas.length,
                 bucket.reflections.length,
                 lang,
@@ -805,7 +816,8 @@ class _LifeSituationCategoryGrid extends ConsumerWidget {
             bucket.reflections.length,
             lang,
           ),
-          parentSection: AppLocalizations.getDuaCategoryLabel('life_theme', lang),
+          parentSection:
+              AppLocalizations.getDuaCategoryLabel('life_theme', lang),
           body: _LifeSituationCategoryBody(
             bucket: bucket,
             lang: lang,
@@ -1128,7 +1140,8 @@ class _ExploreTabScrollViewState extends State<_ExploreTabScrollView> {
                           .withValues(alpha: 0.95),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                        color:
+                            colorScheme.outlineVariant.withValues(alpha: 0.5),
                       ),
                     ),
                     child: Padding(
@@ -1147,11 +1160,13 @@ class _ExploreTabScrollViewState extends State<_ExploreTabScrollView> {
                           const SizedBox(width: 4),
                           Text(
                             AppLocalizations.getExploreScrollHint(widget.lang),
-                            style:
-                                Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
                         ],
                       ),
@@ -1278,8 +1293,10 @@ class _ScienceCategoryGrid extends ConsumerWidget {
               }
               return ExploreCategoryCard(
                 icon: ExploreIcons.scienceCategory(categoryKey),
-                title: AppLocalizations.getScienceCategoryLabel(categoryKey, lang),
-                subtitle: AppLocalizations.getScienceTopicCount(items.length, lang),
+                title:
+                    AppLocalizations.getScienceCategoryLabel(categoryKey, lang),
+                subtitle:
+                    AppLocalizations.getScienceTopicCount(items.length, lang),
                 onTap: () => _openScienceTopics(
                   context,
                   categoryKey,
@@ -1397,7 +1414,8 @@ class _ProphetCategoryGrid extends ConsumerWidget {
                 assetPath: ExploreIcons.prophetAsset(prophetKey),
                 icon: ExploreIcons.prophet(prophetKey),
                 title: AppLocalizations.getDuaProphetName(prophetKey, lang),
-                subtitle: AppLocalizations.getDuaProphetCount(items.length, lang),
+                subtitle:
+                    AppLocalizations.getDuaProphetCount(items.length, lang),
                 onTap: () => _openProphetDuas(
                   context,
                   prophetKey,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
+import 'package:quran_offline/features/home/widgets/home_cta_buttons.dart';
 
 /// App bar for screens pushed from Beranda (Tentang, Pengaturan).
 /// Back arrow only — no title; matches Beranda green tint when scrolling.
@@ -20,11 +21,15 @@ class SettingsMenuAppBar extends StatelessWidget implements PreferredSizeWidget 
     final topTint = HomeBackdrop.topTint(colorScheme);
 
     return AppBar(
-      automaticallyImplyLeading: showBackButton,
+      automaticallyImplyLeading: false,
+      leading: showBackButton
+          ? HomeCircleArrowButton.maybeAppBarBack(context)
+          : null,
       backgroundColor: topTint,
       elevation: 0,
       scrolledUnderElevation: 0,
       systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
+      flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
     );
   }
 }

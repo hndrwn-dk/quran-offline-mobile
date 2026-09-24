@@ -8,6 +8,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
+import 'package:quran_offline/features/home/widgets/home_cta_buttons.dart';
 
 /// Manages per-surah recitation downloads for the selected reciter.
 class AudioDownloadsScreen extends ConsumerStatefulWidget {
@@ -135,9 +136,13 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
     return Scaffold(
       backgroundColor: topTint,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: HomeCircleArrowButton.maybeAppBarBack(context),
         backgroundColor: topTint,
         elevation: 0,
         scrolledUnderElevation: 0,
+        systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
+        flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
         titleSpacing: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

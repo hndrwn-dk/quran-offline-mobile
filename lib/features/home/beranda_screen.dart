@@ -115,6 +115,7 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
+        flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
         leadingWidth: 48,
         leading: IconButton(
           icon: const Icon(Icons.menu),

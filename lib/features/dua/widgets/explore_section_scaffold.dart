@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
+import 'package:quran_offline/features/home/widgets/home_cta_buttons.dart';
 
 /// Sub-screen shell for a Jelajahi hub section (back + title + optional drill context).
 class ExploreSectionScaffold extends StatelessWidget {
@@ -31,9 +32,13 @@ class ExploreSectionScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: topTint,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: HomeCircleArrowButton.maybeAppBarBack(context),
         backgroundColor: topTint,
         elevation: 0,
         scrolledUnderElevation: 0,
+        systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
+        flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
         titleSpacing: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

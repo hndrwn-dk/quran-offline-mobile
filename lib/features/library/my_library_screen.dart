@@ -76,6 +76,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
+        flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
