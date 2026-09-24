@@ -1,19 +1,18 @@
 import 'package:quran_offline/core/utils/arabic_search_normalizer.dart';
 
-/// Indonesian/English query normaliser (matching only). Version 2.
+/// Indonesian/English query normaliser (matching only). Version 3.
 ///
 /// Port of tool/id_normalizer.py, spec §6.1.
 class IdQueryNormalizer {
   IdQueryNormalizer._();
 
-  static const int normalizerVersion = 2;
+  static const int normalizerVersion = 3;
 
   static final _html = RegExp(r'<[^>]+>');
   static final _nonAlnum = RegExp(r'[^\w]+', unicode: true);
   static final _multiSpace = RegExp(r'\s+');
   static final _arabic = RegExp(r'[\u0600-\u06FF]');
 
-  static const _suffixesInflect = ['nya', 'lah', 'kah'];
   static const _prefixes = [
     'meng',
     'meny',
@@ -24,15 +23,40 @@ class IdQueryNormalizer {
     'peny',
     'pem',
     'pen',
-    'pe',
+    'per',
     'ber',
     'ter',
+    'pe',
+    'be',
+    'te',
     'di',
     'ke',
     'se',
   ];
-  static const _suffixesDeriv = ['kan', 'an', 'i'];
-  static const _minStem = 3;
+  static const _minStem = 4;
+  static const _vowels = {'a', 'i', 'u', 'e', 'o'};
+  static const _rootWhitelist = {
+    'keluarga',
+    'kerja',
+    'kertas',
+    'kepala',
+    'keras',
+    'kelas',
+    'ketika',
+    'kembali',
+    'kemudian',
+    'kecap',
+    'perang',
+    'perak',
+    'pertama',
+    'perlu',
+    'percaya',
+    'perut',
+    'peta',
+    'pesan',
+    'pekan',
+    'pena',
+  };
 
   static const _stopwords = {
     'untuk',
@@ -110,32 +134,62 @@ class IdQueryNormalizer {
     return kept.join(' ');
   }
 
-  static String _stemLatin(String token) {
-    var t = _stripOneSuffix(token, _suffixesInflect);
-    t = _stripOnePrefix(t);
-    t = _stripOneSuffix(t, _suffixesDeriv);
-    return t;
+  static String _restoreElision(String prefix, String stem) {
+    if (stem.isEmpty) return stem;
+    if (prefix == 'peny' || prefix == 'meny') {
+      if (!stem.startsWith('s')) return 's$stem';
+    } else if (prefix == 'peng' || prefix == 'meng') {
+      if (stem.startsWith('e') && stem.length > 1) {
+        return stem.substring(1);
+      }
+      if ('aiou'.contains(stem[0]) && !stem.startsWith('k')) {
+        return 'k$stem';
+      }
+    } else if (prefix == 'pem' || prefix == 'mem') {
+      if (_vowels.contains(stem[0])) return 'p$stem';
+    } else if (prefix == 'pen' || prefix == 'men') {
+      if (_vowels.contains(stem[0])) return 't$stem';
+    }
+    return stem;
   }
 
-  static String _stripOneSuffix(String token, List<String> suffixes) {
-    for (final suffix in suffixes) {
-      if (token.endsWith(suffix)) {
-        final stem = token.substring(0, token.length - suffix.length);
-        final minLen = suffix == 'kan' ? 4 : _minStem;
-        if (stem.length >= minLen) return stem;
-        return token;
+  static String? _tryPrefix(String token) {
+    if (_rootWhitelist.contains(token)) return token;
+    for (final prefix in _prefixes) {
+      if (!token.startsWith(prefix)) continue;
+      final stem = _restoreElision(prefix, token.substring(prefix.length));
+      if (stem.length >= _minStem || _rootWhitelist.contains(stem)) {
+        return stem;
       }
+      return null;
     }
     return token;
   }
 
-  static String _stripOnePrefix(String token) {
-    for (final prefix in _prefixes) {
-      if (token.startsWith(prefix)) {
-        final stem = token.substring(prefix.length);
+  static String _stripParticle(String token) {
+    for (final suffix in ['nya', 'lah', 'kah']) {
+      if (token.endsWith(suffix)) {
+        final stem = token.substring(0, token.length - suffix.length);
         if (stem.length >= _minStem) return stem;
       }
     }
     return token;
+  }
+
+  static String _stemLatin(String token) {
+    if (_rootWhitelist.contains(token)) return token;
+    token = _stripParticle(token);
+    if (_rootWhitelist.contains(token)) return token;
+    for (final suffix in ['kan', 'an', 'i']) {
+      if (!token.endsWith(suffix)) continue;
+      final tentative = token.substring(0, token.length - suffix.length);
+      if (tentative.length < _minStem) continue;
+      final stemmed = _tryPrefix(tentative);
+      if (stemmed == null) continue;
+      if (stemmed.length >= _minStem || _rootWhitelist.contains(stemmed)) {
+        return stemmed;
+      }
+    }
+    return _tryPrefix(token) ?? token;
   }
 }
