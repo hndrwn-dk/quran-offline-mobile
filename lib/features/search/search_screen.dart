@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quran_offline/core/models/reader_source.dart';
+import 'package:quran_offline/core/providers/ai_search_provider.dart';
 import 'package:quran_offline/core/providers/enhanced_search_provider.dart'
     show SearchResult, SearchVerseMatchKind, enhancedSearchResultsProvider;
-import 'package:quran_offline/core/utils/arabic_search_normalizer.dart';
-import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
-import 'package:quran_offline/features/reader/reader_screen.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
-import 'package:quran_offline/core/constants/quran_fonts.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
-import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
+import 'package:quran_offline/features/search/ai_search_query_kind.dart';
+import 'package:quran_offline/features/search/widgets/search_result_list.dart';
+import 'package:quran_offline/features/search/widgets/tanya_search_results.dart';
 
 /// Type filter for search results (UI-only; applied to provider list).
-const List<String> _typeFilterKeys = ['all', 'surah', 'juz', 'page', 'ayat', 'terjemahan'];
+const List<String> _typeFilterKeys = [
+  'all',
+  'surah',
+  'juz',
+  'page',
+  'ayat',
+  'terjemahan'
+];
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -47,7 +51,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   void _applySampleQuery(String sample) {
     _searchController.text = sample;
-    _searchController.selection = TextSelection.collapsed(offset: sample.length);
+    _searchController.selection =
+        TextSelection.collapsed(offset: sample.length);
     ref.read(searchQueryProvider.notifier).state = sample;
     _searchFocusNode.requestFocus();
   }
@@ -84,32 +89,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
   }
 
-  /// Bold-only highlight: first match only; case-insensitive for text, exact for numbers.
-  List<TextSpan> buildHighlightedSpans(String text, String query, TextStyle normal, TextStyle highlight) {
-    if (query.isEmpty) return [TextSpan(text: text, style: normal)];
-    final q = query.trim();
-    if (q.isEmpty) return [TextSpan(text: text, style: normal)];
-    final isNumeric = int.tryParse(q) != null;
-    int start;
-    if (isNumeric) {
-      start = text.indexOf(q);
-    } else {
-      start = text.toLowerCase().indexOf(q.toLowerCase());
-    }
-    if (start == -1) return [TextSpan(text: text, style: normal)];
-    final end = start + q.length;
-    return [
-      if (start > 0) TextSpan(text: text.substring(0, start), style: normal),
-      TextSpan(text: text.substring(start, end), style: highlight),
-      if (end < text.length) TextSpan(text: text.substring(end), style: normal),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
     final query = ref.watch(searchQueryProvider);
     final resultsAsync = ref.watch(enhancedSearchResultsProvider);
     final settings = ref.watch(settingsProvider);
+    final aiEnabled = ref.watch(aiSearchEnabledProvider);
+    final tanyaAsync = aiEnabled
+        ? ref.watch(aiSearchResultsProvider)
+        : const AsyncValue<AiSearchResults>.data(AiSearchResults.empty);
+    final tanyaCardBuilder = ref.watch(tanyaCardBuilderProvider);
 
     // When user changes the search query, reset type filter to "All" so new results (e.g. terjemahan for "sabar") are visible.
     ref.listen<String>(searchQueryProvider, (prev, next) {
@@ -129,6 +118,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         backgroundColor: HomeBackdrop.topTint(Theme.of(context).colorScheme),
         elevation: 0,
         scrolledUnderElevation: 0,
+        systemOverlayStyle: HomeBackdrop.overlayStyle(
+          Theme.of(context).colorScheme,
+        ),
+        flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(
+          Theme.of(context).colorScheme,
+        ),
         title: Row(
           children: [
             Container(
@@ -136,9 +131,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.08),
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.18),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.18),
                   width: 1,
                 ),
               ),
@@ -156,7 +157,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppLocalizations.getMenuText('search', settings.appLanguage),
+                    aiEnabled
+                        ? AppLocalizations.getAiSearchHeading(
+                            settings.appLanguage,
+                          )
+                        : AppLocalizations.getMenuText(
+                            'search',
+                            settings.appLanguage,
+                          ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -167,7 +175,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    AppLocalizations.getSubtitleText('search_subtitle', settings.appLanguage),
+                    aiEnabled
+                        ? AppLocalizations.getAiSearchScreenSubtitle(
+                            settings.appLanguage,
+                          )
+                        : AppLocalizations.getSubtitleText(
+                            'search_subtitle',
+                            settings.appLanguage,
+                          ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -184,395 +199,422 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           child: Divider(
             height: 1,
             thickness: 1,
-            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+            color: Theme.of(context)
+                .colorScheme
+                .outlineVariant
+                .withValues(alpha: 0.3),
           ),
         ),
       ),
       body: HomeBackdrop(
         child: Column(
-        children: [
-          AppSearchFieldInset(
-            child: AppSearchField(
-              textFieldKey: const Key('search_field'),
-              controller: _searchController,
-              focusNode: _searchFocusNode,
-              hintText: AppLocalizations.getSearchText(
-                'search_placeholder',
-                settings.appLanguage,
+          children: [
+            AppSearchFieldInset(
+              child: AppSearchField(
+                textFieldKey: const Key('search_field'),
+                controller: _searchController,
+                focusNode: _searchFocusNode,
+                hintText: aiEnabled
+                    ? AppLocalizations.getAiSearchPlaceholder(
+                        settings.appLanguage)
+                    : AppLocalizations.getSearchText(
+                        'search_placeholder',
+                        settings.appLanguage,
+                      ),
+                onChanged: (value) {
+                  ref.read(searchQueryProvider.notifier).state = value;
+                },
               ),
-              onChanged: (value) {
-                ref.read(searchQueryProvider.notifier).state = value;
-              },
             ),
-          ),
-          Expanded(
-            child: resultsAsync.when(
-              data: (results) {
-                if (query.isEmpty) {
+            Expanded(
+              child: resultsAsync.when(
+                data: (results) {
+                  if (query.isEmpty) {
+                    final colorScheme = Theme.of(context).colorScheme;
+                    final appLanguage = settings.appLanguage;
+                    if (aiEnabled) {
+                      return _AiSearchLanding(
+                        language: appLanguage,
+                        examples: AppLocalizations.getAiSearchExampleQueries(
+                          appLanguage,
+                        ),
+                        onExampleTap: _applySampleQuery,
+                      );
+                    }
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 24, 16, 48),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            AppLocalizations.getSearchText(
+                              'search_by_label',
+                              appLanguage,
+                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.4,
+                                ),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildSearchHint(
+                            context,
+                            Icons.book,
+                            AppLocalizations.getMenuText(
+                              'surah',
+                              settings.appLanguage,
+                            ),
+                            AppLocalizations.getSearchText(
+                              'surah_example',
+                              settings.appLanguage,
+                            ),
+                            AppLocalizations.getSearchSampleQuery(
+                              'surah',
+                              settings.appLanguage,
+                            ),
+                            colorScheme,
+                          ),
+                          const SizedBox(height: 8),
+                          _buildSearchHint(
+                            context,
+                            Icons.format_list_numbered,
+                            AppLocalizations.getMenuText(
+                              'juz',
+                              settings.appLanguage,
+                            ),
+                            AppLocalizations.getSearchText(
+                              'juz_example',
+                              settings.appLanguage,
+                            ),
+                            AppLocalizations.getSearchSampleQuery(
+                              'juz',
+                              settings.appLanguage,
+                            ),
+                            colorScheme,
+                          ),
+                          const SizedBox(height: 8),
+                          _buildSearchHint(
+                            context,
+                            Icons.pages,
+                            AppLocalizations.getMenuText(
+                              'page',
+                              settings.appLanguage,
+                            ),
+                            AppLocalizations.getSearchText(
+                              'page_example',
+                              settings.appLanguage,
+                            ),
+                            AppLocalizations.getSearchSampleQuery(
+                              'page',
+                              settings.appLanguage,
+                            ),
+                            colorScheme,
+                          ),
+                          const SizedBox(height: 8),
+                          _buildSearchHint(
+                            context,
+                            Icons.numbers,
+                            AppLocalizations.getSearchText(
+                              'verse_label',
+                              settings.appLanguage,
+                            ),
+                            AppLocalizations.getSearchText(
+                              'verse_example',
+                              settings.appLanguage,
+                            ),
+                            AppLocalizations.getSearchSampleQuery(
+                              'ayat',
+                              settings.appLanguage,
+                            ),
+                            colorScheme,
+                          ),
+                          const SizedBox(height: 8),
+                          _buildSearchHint(
+                            context,
+                            Icons.translate,
+                            AppLocalizations.getSearchText(
+                              'translation_label',
+                              settings.appLanguage,
+                            ),
+                            AppLocalizations.getSearchText(
+                              'translation_example',
+                              settings.appLanguage,
+                            ),
+                            AppLocalizations.getSearchSampleQuery(
+                              'terjemahan',
+                              settings.appLanguage,
+                            ),
+                            colorScheme,
+                          ),
+                          const SizedBox(height: 8),
+                          _buildSearchHint(
+                            context,
+                            Icons.language,
+                            AppLocalizations.getSearchText(
+                              'arabic_label',
+                              settings.appLanguage,
+                            ),
+                            AppLocalizations.getSearchText(
+                              'arabic_example',
+                              settings.appLanguage,
+                            ),
+                            AppLocalizations.getSearchSampleQuery(
+                              'arabic',
+                              settings.appLanguage,
+                            ),
+                            colorScheme,
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
                   final colorScheme = Theme.of(context).colorScheme;
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                    child: Column(
+                  final textTheme = Theme.of(context).textTheme;
+                  final appLanguage = settings.appLanguage;
+                  final translations = translationSearchResults(results);
+                  final translationCount = translations.length;
+                  final tanyaGroups = tanyaAsync.asData?.value.groups ??
+                      const <AiSearchTypeGroup>[];
+
+                  if (aiEnabled) {
+                    final kind = detectAiSearchQueryKind(query, results);
+                    if (kind == AiSearchQueryKind.direct) {
+                      final direct = pickDirectSearchResult(results);
+                      if (direct != null) {
+                        return _buildClassicGroup(
+                          context,
+                          heading: AppLocalizations.getAiSearchDirectGroup(
+                            appLanguage,
+                          ),
+                          headingKey: const Key('ai_search_group_direct'),
+                          results: [direct],
+                          query: query,
+                        );
+                      }
+                    } else if (kind == AiSearchQueryKind.arabic) {
+                      return _buildClassicGroup(
+                        context,
+                        heading: AppLocalizations.getAiSearchArabicGroup(
+                          appLanguage,
+                        ),
+                        headingKey: const Key('ai_search_group_arabic'),
+                        results: arabicSearchResults(results),
+                        query: query,
+                      );
+                    }
+                    return TanyaSearchResults(
+                      groups: tanyaGroups,
+                      lang: appLanguage,
+                      translationCount: translationCount,
+                      cardBuilder: tanyaCardBuilder,
+                      loading: tanyaAsync.isLoading,
+                      onJumpToTranslation: () {
+                        _openTranslationResults(translations, query);
+                      },
+                    );
+                  }
+
+                  final filtered = _filterResults(results, _selectedTypeFilter);
+
+                  if (filtered.isEmpty) {
+                    final filterHidesMatches =
+                        results.isNotEmpty && _selectedTypeFilter != 'all';
+                    final title = AppLocalizations.getSearchText(
+                      'no_results',
+                      appLanguage,
+                    );
+                    final subtitle = filterHidesMatches
+                        ? AppLocalizations.getSearchNoResultsForFilter(
+                            appLanguage,
+                            _selectedTypeFilter,
+                            tanyaEnabled: aiEnabled,
+                          )
+                        : AppLocalizations.getSearchText(
+                            'search_by_label',
+                            appLanguage,
+                          );
+
+                    return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          AppLocalizations.getSearchText(
-                            'search_by_label',
-                            settings.appLanguage,
-                          ),
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.4,
+                        _buildTypeFilterChips(
+                          colorScheme: colorScheme,
+                          textTheme: textTheme,
+                          appLanguage: appLanguage,
+                          aiEnabled: aiEnabled,
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 24,
                               ),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildSearchHint(
-                          context,
-                          Icons.book,
-                          AppLocalizations.getMenuText('surah', settings.appLanguage),
-                          AppLocalizations.getSearchText('surah_example', settings.appLanguage),
-                          AppLocalizations.getSearchSampleQuery('surah', settings.appLanguage),
-                          colorScheme,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildSearchHint(
-                          context,
-                          Icons.format_list_numbered,
-                          AppLocalizations.getMenuText('juz', settings.appLanguage),
-                          AppLocalizations.getSearchText('juz_example', settings.appLanguage),
-                          AppLocalizations.getSearchSampleQuery('juz', settings.appLanguage),
-                          colorScheme,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildSearchHint(
-                          context,
-                          Icons.pages,
-                          AppLocalizations.getMenuText('page', settings.appLanguage),
-                          AppLocalizations.getSearchText('page_example', settings.appLanguage),
-                          AppLocalizations.getSearchSampleQuery('page', settings.appLanguage),
-                          colorScheme,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildSearchHint(
-                          context,
-                          Icons.numbers,
-                          AppLocalizations.getSearchText('verse_label', settings.appLanguage),
-                          AppLocalizations.getSearchText('verse_example', settings.appLanguage),
-                          AppLocalizations.getSearchSampleQuery('ayat', settings.appLanguage),
-                          colorScheme,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildSearchHint(
-                          context,
-                          Icons.translate,
-                          AppLocalizations.getSearchText('translation_label', settings.appLanguage),
-                          AppLocalizations.getSearchText('translation_example', settings.appLanguage),
-                          AppLocalizations.getSearchSampleQuery('terjemahan', settings.appLanguage),
-                          colorScheme,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildSearchHint(
-                          context,
-                          Icons.language,
-                          AppLocalizations.getSearchText('arabic_label', settings.appLanguage),
-                          AppLocalizations.getSearchText('arabic_example', settings.appLanguage),
-                          AppLocalizations.getSearchSampleQuery('arabic', settings.appLanguage),
-                          colorScheme,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.search_off,
+                                    size: 56,
+                                    color: colorScheme.onSurface
+                                        .withValues(alpha: 0.35),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    title,
+                                    textAlign: TextAlign.center,
+                                    style: textTheme.titleMedium?.copyWith(
+                                      color: colorScheme.onSurface,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  if (query.trim().isNotEmpty) ...[
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: colorScheme
+                                            .surfaceContainerHighest
+                                            .withValues(alpha: 0.6),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: colorScheme.outlineVariant
+                                              .withValues(alpha: 0.4),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        query.trim(),
+                                        textAlign: TextAlign.center,
+                                        style: textTheme.bodyMedium?.copyWith(
+                                          color: colorScheme.onSurface,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    subtitle,
+                                    textAlign: TextAlign.center,
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                      height: 1.45,
+                                    ),
+                                  ),
+                                  if (filterHidesMatches) ...[
+                                    const SizedBox(height: 20),
+                                    FilledButton.tonal(
+                                      key: const Key('search_show_all_filter'),
+                                      onPressed: () => setState(
+                                        () => _selectedTypeFilter = 'all',
+                                      ),
+                                      child: Text(
+                                        aiEnabled
+                                            ? AppLocalizations
+                                                .getAiSearchHeading(
+                                                appLanguage,
+                                              )
+                                            : AppLocalizations.getSearchText(
+                                                'search_show_all_filter',
+                                                appLanguage,
+                                              ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ],
-                    ),
-                  );
-                }
-
-                final filtered = _filterResults(results, _selectedTypeFilter);
-                final colorScheme = Theme.of(context).colorScheme;
-                final textTheme = Theme.of(context).textTheme;
-                final appLanguage = settings.appLanguage;
-
-                if (filtered.isEmpty) {
-                  final filterHidesMatches =
-                      results.isNotEmpty && _selectedTypeFilter != 'all';
-                  final title = AppLocalizations.getSearchText(
-                    'no_results',
-                    appLanguage,
-                  );
-                  final subtitle = filterHidesMatches
-                      ? AppLocalizations.getSearchNoResultsForFilter(
-                          appLanguage,
-                          _selectedTypeFilter,
-                        )
-                      : AppLocalizations.getSearchText(
-                          'search_by_label',
-                          appLanguage,
-                        );
+                    );
+                  }
 
                   return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildTypeFilterChips(
                         colorScheme: colorScheme,
                         textTheme: textTheme,
                         appLanguage: appLanguage,
+                        aiEnabled: aiEnabled,
                       ),
-                      Expanded(
-                        child: Center(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 24,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.search_off,
-                                  size: 56,
-                                  color: colorScheme.onSurface
-                                      .withValues(alpha: 0.35),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  title,
-                                  textAlign: TextAlign.center,
-                                  style: textTheme.titleMedium?.copyWith(
-                                    color: colorScheme.onSurface,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                if (query.trim().isNotEmpty) ...[
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: colorScheme
-                                          .surfaceContainerHighest
-                                          .withValues(alpha: 0.6),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: colorScheme.outlineVariant
-                                            .withValues(alpha: 0.4),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      query.trim(),
-                                      textAlign: TextAlign.center,
-                                      style: textTheme.bodyMedium?.copyWith(
-                                        color: colorScheme.onSurface,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                                const SizedBox(height: 12),
-                                Text(
-                                  subtitle,
-                                  textAlign: TextAlign.center,
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                    height: 1.45,
-                                  ),
-                                ),
-                                if (filterHidesMatches) ...[
-                                  const SizedBox(height: 20),
-                                  FilledButton.tonal(
-                                    onPressed: () => setState(
-                                      () => _selectedTypeFilter = 'all',
-                                    ),
-                                    child: Text(
-                                      AppLocalizations.getSearchText(
-                                        'search_show_all_filter',
-                                        appLanguage,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
+                      if (filtered.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 12, 16, 4),
+                          child: Text(
+                            '${AppLocalizations.getSearchText('results_heading', appLanguage)} • ${filtered.length}',
+                            style: textTheme.bodySmall
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
+                        ),
+                      Expanded(
+                        child: SearchResultList(
+                          results: filtered,
+                          query: query,
                         ),
                       ),
                     ],
                   );
-                }
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTypeFilterChips(
-                      colorScheme: colorScheme,
-                      textTheme: textTheme,
-                      appLanguage: appLanguage,
-                    ),
-                    // Result count header
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 12, 16, 4),
-                      child: Text(
-                        '${AppLocalizations.getSearchText('results_heading', appLanguage)} • ${filtered.length}',
-                        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final result = filtered[index];
-                          IconData icon;
-                          Color? iconColor;
-
-                          switch (result.type) {
-                            case 'surah':
-                              icon = Icons.book;
-                              iconColor = Colors.blue;
-                              break;
-                            case 'juz':
-                              icon = Icons.format_list_numbered;
-                              iconColor = Colors.green;
-                              break;
-                            case 'page':
-                              icon = Icons.pages;
-                              iconColor = Colors.orange;
-                              break;
-                            default:
-                              icon = Icons.text_fields;
-                              iconColor = null;
-                          }
-
-                          final titleStyle = textTheme.titleMedium ?? const TextStyle();
-                          final subtitleStyle = textTheme.bodySmall ?? const TextStyle();
-                          final highlightStyle = (query.isEmpty ? titleStyle : titleStyle.copyWith(fontWeight: FontWeight.bold));
-                          final subtitleHighlightStyle = (query.isEmpty ? subtitleStyle : subtitleStyle.copyWith(fontWeight: FontWeight.bold));
-
-                          final isArabicTitle =
-                              result.verseMatchKind == SearchVerseMatchKind.arabic;
-                          final titleAlign = isArabicTitle
-                              ? TextAlign.right
-                              : TextAlign.start;
-                          final highlightQuery = isArabicTitle
-                              ? ArabicSearchNormalizer.normalizeForSearch(query)
-                              : query;
-
-                          Widget titleWidget = query.isEmpty
-                              ? Text(
-                                  result.title,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: titleAlign,
-                                )
-                              : RichText(
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: titleAlign,
-                                  text: TextSpan(
-                                    style: titleStyle.copyWith(
-                                      color: colorScheme.onSurface,
-                                      fontFamily: isArabicTitle
-                                          ? QuranFonts.digitalKhattV2
-                                          : null,
-                                      fontFamilyFallback: isArabicTitle
-                                          ? QuranFonts.digitalKhattFallbacks
-                                          : null,
-                                    ),
-                                    children: buildHighlightedSpans(
-                                      isArabicTitle
-                                          ? ArabicSearchNormalizer.normalizeForSearch(
-                                              result.title,
-                                            )
-                                          : result.title,
-                                      highlightQuery,
-                                      titleStyle.copyWith(color: colorScheme.onSurface),
-                                      highlightStyle.copyWith(color: colorScheme.onSurface),
-                                    ),
-                                  ),
-                                );
-                          if (isArabicTitle) {
-                            titleWidget = Directionality(
-                              textDirection: TextDirection.rtl,
-                              child: titleWidget,
-                            );
-                          }
-                          Widget? subtitleWidget;
-                          if (result.type == 'surah' && result.source is SurahSource) {
-                            subtitleWidget = SurahNameSearchGlyph(
-                              surahId: (result.source as SurahSource).surahId,
-                            );
-                          } else if (result.subtitle != null) {
-                            subtitleWidget = query.isEmpty
-                                ? Text(
-                                    result.subtitle!,
-                                    style: subtitleStyle,
-                                  )
-                                : RichText(
-                                    text: TextSpan(
-                                      style: subtitleStyle.copyWith(color: colorScheme.onSurfaceVariant),
-                                      children: buildHighlightedSpans(
-                                        result.subtitle!,
-                                        query,
-                                        subtitleStyle.copyWith(color: colorScheme.onSurfaceVariant),
-                                        subtitleHighlightStyle.copyWith(color: colorScheme.onSurfaceVariant),
-                                      ),
-                                    ),
-                                  );
-                          }
-
-                          return Card(
-                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: iconColor?.withValues(alpha: 0.1),
-                                child: Icon(icon, color: iconColor),
-                              ),
-                              title: titleWidget,
-                              subtitle: subtitleWidget,
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () {
-                                if (result.type == 'page' && result.source is PageSource) {
-                                  final pageSource = result.source as PageSource;
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MushafPageView(
-                                        initialPage: pageSource.pageNo,
-                                      ),
-                                    ),
-                                  );
-                                } else {
-                                  ref.read(readerSourceProvider.notifier).state = result.source;
-                                  if (result.source is SurahSource) {
-                                    final surahSource = result.source as SurahSource;
-                                    ref.read(targetAyahProvider.notifier).state = surahSource.targetAyahNo;
-                                  } else {
-                                    ref.read(targetAyahProvider.notifier).state = null;
-                                  }
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const ReaderScreen(),
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Center(
-                child: Text('Error: $error'),
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, stack) => Center(
+                  child: Text('Error: $error'),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
         ),
       ),
+    );
+  }
+
+  void _openTranslationResults(List<SearchResult> translations, String query) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => TranslationResultsScreen(
+          results: translations,
+          query: query,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildClassicGroup(
+    BuildContext context, {
+    required String heading,
+    required Key headingKey,
+    required List<SearchResult> results,
+    required String query,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Text(
+            heading,
+            key: headingKey,
+            style: textTheme.labelLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Expanded(
+          child: SearchResultList(results: results, query: query),
+        ),
+      ],
     );
   }
 
@@ -580,6 +622,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     required ColorScheme colorScheme,
     required TextTheme textTheme,
     required String appLanguage,
+    required bool aiEnabled,
   }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -590,7 +633,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           children: List.generate(_typeFilterKeys.length, (i) {
             final key = _typeFilterKeys[i];
             final label = key == 'all'
-                ? AppLocalizations.getSettingsText('filter_all', appLanguage)
+                ? (aiEnabled
+                    ? AppLocalizations.getAiSearchHeading(appLanguage)
+                    : AppLocalizations.getSettingsText(
+                        'filter_all', appLanguage))
                 : key == 'ayat'
                     ? AppLocalizations.getSearchText('verse_label', appLanguage)
                     : key == 'terjemahan'
@@ -605,6 +651,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 right: i < _typeFilterKeys.length - 1 ? 8 : 0,
               ),
               child: Material(
+                key: Key('search_filter_$key'),
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => setState(() => _selectedTypeFilter = key),
@@ -652,12 +699,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     String title,
     String example,
     String sampleQuery,
-    ColorScheme colorScheme,
-  ) {
+    ColorScheme colorScheme, {
+    Key? key,
+    bool applyQuery = true,
+  }) {
     return Material(
+      key: key,
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => _applySampleQuery(sampleQuery),
+        onTap: applyQuery
+            ? () => _applySampleQuery(sampleQuery)
+            : () => _searchFocusNode.requestFocus(),
         borderRadius: BorderRadius.circular(16),
         child: Ink(
           decoration: BoxDecoration(
@@ -743,3 +795,211 @@ class _SearchHintIconBox extends StatelessWidget {
   }
 }
 
+class _AiSearchLanding extends StatelessWidget {
+  const _AiSearchLanding({
+    required this.language,
+    required this.examples,
+    required this.onExampleTap,
+  });
+
+  final String language;
+  final List<String> examples;
+  final ValueChanged<String> onExampleTap;
+
+  static const _typeHintIcons = <IconData>[
+    Icons.numbers,
+    Icons.format_list_numbered,
+    Icons.pages,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final typeHints = AppLocalizations.getAiSearchTypeHints(language);
+
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  AppLocalizations.getAiSearchTryLabel(language),
+                  key: const Key('tanya_try_label'),
+                  style: textTheme.labelSmall?.copyWith(
+                    letterSpacing: 1.1,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  key: const Key('tanya_example_row'),
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (var i = 0; i < examples.length; i++)
+                      _SearchExampleChip(
+                        key: Key('tanya_example_$i'),
+                        label: examples[i],
+                        onPressed: () => onExampleTap(examples[i]),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  AppLocalizations.getAiSearchTypeHintLabel(language),
+                  key: const Key('tanya_type_hint_label'),
+                  style: textTheme.labelSmall?.copyWith(
+                    letterSpacing: 1.1,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                for (var i = 0; i < typeHints.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 8),
+                  _SearchTypeHintRow(
+                    key: Key('tanya_type_hint_$i'),
+                    icon: _typeHintIcons[i],
+                    sample: typeHints[i].sample,
+                    caption: typeHints[i].caption,
+                    onTap: () => onExampleTap(typeHints[i].query),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SearchExampleChip extends StatelessWidget {
+  const _SearchExampleChip({
+    super.key,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final maxChipWidth = MediaQuery.sizeOf(context).width - 32;
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxChipWidth),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(20),
+          child: Ink(
+            decoration: BoxDecoration(
+              color: colorScheme.surface.withValues(alpha: 0.94),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.55),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Text(
+                label,
+                style: textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchTypeHintRow extends StatelessWidget {
+  const _SearchTypeHintRow({
+    super.key,
+    required this.icon,
+    required this.sample,
+    required this.caption,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String sample;
+  final String caption;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: colorScheme.surface.withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.55),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                _SearchHintIconBox(
+                  icon: icon,
+                  colorScheme: colorScheme,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        sample,
+                        style: textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        caption,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: colorScheme.onSurfaceVariant,
+                  size: 22,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

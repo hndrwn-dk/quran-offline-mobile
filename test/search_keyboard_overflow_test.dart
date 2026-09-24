@@ -96,4 +96,53 @@ void main() {
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'search tab shows bottom nav when the field is unfocused',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 1920);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentTabProvider.overrideWith((ref) => AppTab.search),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      final field = tester.widget<TextField>(find.byKey(const Key('search_field')));
+      expect(field.focusNode?.hasFocus, isFalse);
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byKey(const Key('nav_search')), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'search tab keeps bottom nav when a system-nav inset is present',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 48);
+      tester.view.viewPadding = const FakeViewPadding(bottom: 48);
+      tester.view.padding = const FakeViewPadding(bottom: 48);
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentTabProvider.overrideWith((ref) => AppTab.search),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(NavigationBar), findsOneWidget);
+    },
+  );
 }

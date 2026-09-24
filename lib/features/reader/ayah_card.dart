@@ -10,7 +10,9 @@ import 'package:quran_offline/core/providers/notes_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/providers/transliteration_provider.dart';
+import 'package:quran_offline/core/ai_search/ai_search_config.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/features/reader/widgets/related_content_sheet.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 import 'package:quran_offline/core/share/verse_share.dart';
@@ -364,6 +366,23 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                 await _checkBookmark();
               },
             ),
+            if (kAiSearchEnabled)
+              ListTile(
+                key: const Key('related_content_action'),
+                leading: const Icon(Icons.hub_outlined),
+                title: Text(
+                  AppLocalizations.getRelatedContentTitle(settings.appLanguage),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  showRelatedContentSheet(
+                    context: context,
+                    surah: widget.verse.surahId,
+                    ayah: widget.verse.ayahNo,
+                    lang: settings.appLanguage,
+                  );
+                },
+              ),
           ],
         ),
       ),

@@ -1,0 +1,20 @@
+[
+  {"in": "HELLO", "out": "hello"},
+  {"in": "Hello, World!", "out": "hello world"},
+  {"in": "  extra   spaces  ", "out": "extra spaces"},
+  {"in": "foo\tbar\nbaz", "out": "foo bar baz"},
+  {"in": "abc-123", "out": "abc 123"},
+  {"in": "item #42.", "out": "item 42"},
+  {"in": "<b>Hello</b> there", "out": "hello there"},
+  {"in": "pekerjaan", "out": "kerja"},
+  {"in": "dimakan", "out": "makan"},
+  {"in": "sabarlah", "out": "sabar"},
+  {"in": "kesabaran", "out": "sabar"},
+  {"in": "bukunya", "out": "buku"},
+  {"in": "123", "out": "123"},
+  {"in": "doa untuk orang tua", "out": "doa orang tua"},
+  {"in": "untuk yang dan", "out": "untuk yang dan"},
+  {"in": "the a an", "out": "the a an"},
+  {"in": "patience for the parents", "out": "patience parents"},
+  {"in": "sabar dan buku", "out": "sabar buku"}
+]
