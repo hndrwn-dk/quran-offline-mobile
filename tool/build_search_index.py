@@ -11,7 +11,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from id_normalizer import NORMALIZER_VERSION, normalize
+from id_normalizer import NORMALIZER_VERSION, normalize_for_index
 
 SIZE_BUDGET_BYTES = 20 * 1024 * 1024
 SCHEMA_VERSION = "1"
@@ -55,8 +55,8 @@ def _insert_doc(
     body: str,
     refs: list[tuple[int, int]],
 ) -> None:
-    title_n = normalize(title)
-    body_n = normalize(body)
+    title_n = normalize_for_index(title)
+    body_n = normalize_for_index(body)
     cur.execute(
         """
         INSERT INTO docs (

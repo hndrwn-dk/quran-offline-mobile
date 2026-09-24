@@ -7,8 +7,8 @@ import 'package:quran_offline/core/ai_search/id_query_normalizer.dart';
 void main() {
   final vectorsFile = File('tool/fixtures/id_normalizer_vectors.json');
 
-  test('normalizerVersion is 3', () {
-    expect(IdQueryNormalizer.normalizerVersion, 3);
+  test('normalizerVersion is 4', () {
+    expect(IdQueryNormalizer.normalizerVersion, 4);
   });
 
   test('shared vectors match Python suite', () {
@@ -25,7 +25,7 @@ void main() {
         reason: 'in=$input',
       );
     }
-    expect(cases.length, 31);
+    expect(cases.length, 35);
   });
 
   test('empty string', () {
