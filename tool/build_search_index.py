@@ -358,7 +358,28 @@ def _add_asma(cur: sqlite3.Cursor, path: Path) -> int:
     return count
 
 
-def _add_quran_dua(cur: sqlite3.Cursor, path: Path) -> int:
+def _verse_translations(quran_dir: Path) -> dict[tuple[int, int, str], str]:
+    out: dict[tuple[int, int, str], str] = {}
+    for s in range(1, 115):
+        path = quran_dir / f"s{s:03d}.json"
+        if not path.is_file():
+            continue
+        for v in load_json(path):
+            surah = int(v["s"])
+            ayah = int(v["a"])
+            tr = v.get("tr") or {}
+            for lang in ("id", "en"):
+                text = clean_translation(tr.get(lang))
+                if text:
+                    out[(surah, ayah, lang)] = text
+    return out
+
+
+def _add_quran_dua(
+    cur: sqlite3.Cursor,
+    path: Path,
+    verse_tr: dict[tuple[int, int, str], str],
+) -> int:
     data = load_json(path)
     count = 0
     for entry in data.get("entries", []):
@@ -371,7 +392,14 @@ def _add_quran_dua(cur: sqlite3.Cursor, path: Path) -> int:
         tags = entry.get("tags") or []
         for lang in ("id", "en"):
             title = str(need.get(lang) or need.get("en") or eid)
-            body = " ".join([title, " ".join(str(t) for t in tags)])
+            verses = [
+                verse_tr[(surah, a, lang)]
+                for a in range(frm, to + 1)
+                if (surah, a, lang) in verse_tr
+            ]
+            body = " ".join(
+                [title, " ".join(str(t) for t in tags), " ".join(verses)]
+            )
             _insert_doc(
                 cur,
                 doc_id=f"qdua:{eid}:{lang}",
@@ -479,7 +507,9 @@ def build_index(
             _warn_skip(theme_catalog)
     if quran_dua_catalog is not None:
         if quran_dua_catalog.is_file():
-            counts["quran_dua"] = _add_quran_dua(cur, quran_dua_catalog)
+            counts["quran_dua"] = _add_quran_dua(
+                cur, quran_dua_catalog, _verse_translations(quran_dir)
+            )
         else:
             _warn_skip(quran_dua_catalog)
 

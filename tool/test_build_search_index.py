@@ -123,7 +123,7 @@ class BuildIndexTest(unittest.TestCase):
         self.assertEqual(refs, 1)
         meta = dict(con.execute("SELECT key, value FROM meta"))
         self.assertEqual(meta["schema_version"], "1")
-        self.assertEqual(meta["normalizer_version"], "2")
+        self.assertEqual(meta["normalizer_version"], "3")
         self.assertEqual(meta["quran_manifest_version"], "fixture-v1")
         self.assertIn("built_at_utc", meta)
         n = con.execute(
@@ -190,6 +190,48 @@ class BuildIndexTest(unittest.TestCase):
             include_en_tafsir=False,
         )
         self.assertNotIn("tafsir", stats["counts"])
+
+    def test_quran_dua_body_includes_kemenag_translation(self) -> None:
+        _write_json(
+            self.root / "quran_dua.json",
+            {
+                "version": 1,
+                "entries": [
+                    {
+                        "id": "qd_001_001_002",
+                        "surah": 1,
+                        "from": 1,
+                        "to": 2,
+                        "category": "faith",
+                        "tags": ["pujian"],
+                        "need": {
+                            "id": "Saat memuji tuhan.",
+                            "en": "When praising the lord.",
+                        },
+                        "recommendedToRecite": True,
+                        "inDuaCatalog": False,
+                    }
+                ],
+            },
+        )
+        stats = build_index(
+            quran_dir=self.root / "quran",
+            out_path=self.out,
+            quran_dua_catalog=self.root / "quran_dua.json",
+        )
+        self.assertEqual(stats["counts"]["quran_dua"], 2)
+        con = sqlite3.connect(self.out)
+        body = con.execute(
+            "SELECT body_norm FROM docs WHERE doc_id='qdua:qd_001_001_002:id'"
+        ).fetchone()[0]
+        self.assertIn("puji", body)
+        self.assertIn("tuhan", body)
+        self.assertIn("hari", body)
+        n = con.execute(
+            "SELECT count(*) FROM docs_fts WHERE docs_fts MATCH 'hari'"
+        ).fetchone()[0]
+        self.assertGreaterEqual(n, 1)
+        con.close()
 
     def test_size_budget(self) -> None:
         with self.assertRaises(SystemExit) as ctx:
