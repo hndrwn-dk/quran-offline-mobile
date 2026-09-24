@@ -3,29 +3,40 @@
 Feature: Temukan di Al-Qur'an (`kAiSearchEnabled = true`).
 Phase G eval gate waived by maintainer; Phase D (hybrid ranking) deferred.
 
-The previous chat prompt did not include ready-to-paste id/en store copy.
-This text matches what shipped in v47.
+Play Console paste file (gitignored): `bundles_release/play-console/PLAY_CONSOLE_1.0.6+47.txt`
+
+## en-US
+
+- Search in your own words: type "patience", "provision", or "dua for parents" and find verses, tafsir, duas, and the Names of Allah together
+- Duas from the Qur'an, matched to what you need
+- Jump straight to a verse, juz, or page: type 2:255, juz 30, or page 5
+- Tap anywhere on the Home last-read card to continue reading
+
+Still fully offline. Thank you for reading with Quran Offline Apps.
 
 ## id
 
-- Temukan di Al-Qur'an: cari ayat, tafsir, doa, dan Asmaul Husna dengan bahasa sehari-hari.
-- Jelajahi untuk menjelajah katalog; pencarian ada di tab Cari.
-- Doa dari Al-Qur'an: 99 ayat doa yang sudah ditinjau (34 belum ada di katalog doa lama).
-- Kartu bacaan terakhir di Beranda bisa diketuk seluruhnya untuk lanjut membaca.
+- Cari dengan kalimat sendiri: ketik "sabar", "rezeki", atau "doa untuk orang tua", lalu temukan ayat, tafsir, doa, dan Asmaul Husna sekaligus
+- Doa dari Al-Qur'an, sesuai kebutuhan Anda
+- Langsung ke tujuan: ketik 2:255, juz 30, atau halaman 5
+- Kartu bacaan terakhir di Beranda bisa diketuk seluruhnya untuk lanjut membaca
 
-## en
+Tetap sepenuhnya offline. Terima kasih sudah membaca dengan Quran Offline Apps.
 
-- Find in the Qur'an: search verses, tafsir, dua, and the Names of Allah in everyday language.
-- Explore is for browsing catalogs; search lives on the Search tab.
-- Duas from the Qur'an: 99 reviewed verses (34 not in the older dua catalog).
-- Tap anywhere on the Home last-read card to continue reading.
+## ja-JP
 
-## Play Console
+- 自分の言葉で検索：「忍耐」「糧」「親のための祈り」と入力すると、節、タフスィール、祈り、アッラーの美名をまとめて見つけられます
+- クルアーンの祈りを、必要なことに合わせて
+- 節・ジュズ・ページへ直接移動：2:255、juz 30、page 5 と入力
+- ホームの前回の読書カードをどこでもタップして続きから読めます
 
-Paste file (gitignored): `bundles_release/play-console/PLAY_CONSOLE_1.0.6+47.txt`
+完全にオフラインのままです。Quran Offline Appsで読んでいただき、ありがとうございます。
 
-## Catalog
+## zh-CN
 
-- 99 approved `quran_dua` entries (0 pending, 0 overlap).
-- 17:24-24 rejected as a duplicate of narrowed 17:23-24.
-- Search index includes `quran_dua` (198 id+en docs).
+- 用自己的话搜索：输入“忍耐”、“给养”或“为父母的祈祷”，即可同时找到经文、经注、祈祷和真主的美名
+- 古兰经中的祈祷，对应您的需要
+- 直接跳到经文、卷次或页码：输入 2:255、juz 30 或 page 5
+- 点击首页上次阅读卡片的任意位置即可继续阅读
+
+仍然完全离线。感谢使用 Quran Offline Apps 阅读。
