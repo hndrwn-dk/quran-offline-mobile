@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/features/home/widgets/home_cta_buttons.dart';
 
 /// Shared reader AppBar chrome — matches [ExploreSectionScaffold] title rhythm.
 class ReaderAppBarTitleColumn extends StatelessWidget {
@@ -59,5 +60,5 @@ PreferredSizeWidget readerAppBarBottomDivider(ColorScheme colorScheme) {
 }
 
 Widget? readerAppBarBackButton(BuildContext context) {
-  return Navigator.canPop(context) ? const BackButton() : null;
+  return HomeCircleArrowButton.maybeAppBarBack(context);
 }

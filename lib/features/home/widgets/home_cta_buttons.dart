@@ -9,12 +9,31 @@ class HomeCircleArrowButton extends StatelessWidget {
     this.semanticsLabel,
     /// Frosted circle on soft gradient cards (e.g. Lanjutkan baca).
     this.onTintedCard = false,
+    this.icon = Icons.arrow_forward_rounded,
   });
+
+  /// AppBar back that matches the Beranda card arrow, including dark theme.
+  static Widget? maybeAppBarBack(BuildContext context) {
+    if (!Navigator.canPop(context)) return null;
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: HomeCircleArrowButton(
+          icon: Icons.arrow_back_rounded,
+          onTintedCard: true,
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          onPressed: () => Navigator.maybePop(context),
+        ),
+      ),
+    );
+  }
 
   final VoidCallback onPressed;
   final String? tooltip;
   final String? semanticsLabel;
   final bool onTintedCard;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +80,7 @@ class HomeCircleArrowButton extends StatelessWidget {
           decoration: decoration,
           child: Padding(
             padding: const EdgeInsets.all(10),
-            child: Icon(Icons.arrow_forward_rounded, size: 18, color: iconColor),
+            child: Icon(icon, size: 18, color: iconColor),
           ),
         ),
       ),

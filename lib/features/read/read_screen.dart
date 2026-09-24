@@ -23,9 +23,6 @@ class ReadScreen extends ConsumerStatefulWidget {
 }
 
 class _ReadScreenState extends ConsumerState<ReadScreen> {
-  double _swipeStartX = 0.0;
-  double _swipeStartY = 0.0;
-  bool _isSwiping = false;
   final _searchBarKey = GlobalKey<QuickSearchBarState>();
 
   @override
@@ -89,39 +86,10 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
                       onModeChanged: _setReadMode,
                     ),
                     Expanded(
-                      child: GestureDetector(
-                        onHorizontalDragStart: (details) {
-                          _swipeStartX = details.globalPosition.dx;
-                          _swipeStartY = details.globalPosition.dy;
-                          _isSwiping = false;
-                        },
-                        onHorizontalDragUpdate: (details) {
-                          final deltaX = details.globalPosition.dx - _swipeStartX;
-                          final deltaY = details.globalPosition.dy - _swipeStartY;
-                          if (deltaX.abs() > 20 &&
-                              deltaX.abs() > deltaY.abs() * 1.5) {
-                            _isSwiping = true;
-                          }
-                        },
-                        onHorizontalDragEnd: (details) {
-                          if (!_isSwiping) return;
-
-                          final deltaX = details.velocity.pixelsPerSecond.dx;
-                          final deltaY = details.velocity.pixelsPerSecond.dy;
-                          const swipeThreshold = 300.0;
-
-                          if (deltaX.abs() > swipeThreshold &&
-                              deltaX.abs() > deltaY.abs()) {
-                            _handleModeNavigation(readMode, deltaX < 0);
-                          }
-
-                          _isSwiping = false;
-                        },
-                        child: switch (readMode) {
-                          ReadMode.surah => const SurahListView(),
-                          ReadMode.juz => const JuzListView(),
-                          ReadMode.pages => const PageListView(),
-                        },
+                      child: _ReadModeStack(
+                        readMode: readMode,
+                        onSwipe: (isNext) =>
+                            _handleModeNavigation(readMode, isNext),
                       ),
                     ),
                   ],
@@ -151,6 +119,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
+        flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
         title: _ReadScreenTitle(appLanguage: appLanguage),
         actions: [
           IconButton(
@@ -181,26 +150,10 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
               onModeChanged: _setReadMode,
             ),
             Expanded(
-              child: switch (readMode) {
-                ReadMode.surah => _HorizontalSwipeShell(
-                    readMode: readMode,
-                    onSwipe: (isNext) =>
-                        _handleModeNavigation(readMode, isNext),
-                    child: const SurahListView(),
-                  ),
-                ReadMode.juz => _HorizontalSwipeShell(
-                    readMode: readMode,
-                    onSwipe: (isNext) =>
-                        _handleModeNavigation(readMode, isNext),
-                    child: const JuzListView(),
-                  ),
-                ReadMode.pages => _HorizontalSwipeShell(
-                    readMode: readMode,
-                    onSwipe: (isNext) =>
-                        _handleModeNavigation(readMode, isNext),
-                    child: const PageListView(),
-                  ),
-              },
+              child: _ReadModeStack(
+                readMode: readMode,
+                onSwipe: (isNext) => _handleModeNavigation(readMode, isNext),
+              ),
             ),
           ],
         ),
@@ -259,6 +212,41 @@ class _ReadScreenTitle extends StatelessWidget {
                   ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Keeps Surah/Juz/Mushaf lists mounted so tab switches do not flash an empty body.
+class _ReadModeStack extends StatelessWidget {
+  const _ReadModeStack({
+    required this.readMode,
+    required this.onSwipe,
+  });
+
+  final ReadMode readMode;
+  final ValueChanged<bool> onSwipe;
+
+  @override
+  Widget build(BuildContext context) {
+    return IndexedStack(
+      index: readMode.index,
+      children: [
+        _HorizontalSwipeShell(
+          readMode: ReadMode.surah,
+          onSwipe: onSwipe,
+          child: const SurahListView(),
+        ),
+        _HorizontalSwipeShell(
+          readMode: ReadMode.juz,
+          onSwipe: onSwipe,
+          child: const JuzListView(),
+        ),
+        _HorizontalSwipeShell(
+          readMode: ReadMode.pages,
+          onSwipe: onSwipe,
+          child: const PageListView(),
         ),
       ],
     );

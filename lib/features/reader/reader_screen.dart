@@ -635,6 +635,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     if (source == null && !isLargeScreen) {
       return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: readerAppBarBackButton(context),
           title: Text(AppLocalizations.getReaderTitle(appLanguage)),
         ),
         body: Center(
