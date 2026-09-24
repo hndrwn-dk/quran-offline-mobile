@@ -16,5 +16,18 @@
   {"in": "untuk yang dan", "out": "untuk yang dan"},
   {"in": "the a an", "out": "the a an"},
   {"in": "patience for the parents", "out": "patience parents"},
-  {"in": "sabar dan buku", "out": "sabar buku"}
+  {"in": "sabar dan buku", "out": "sabar buku"},
+  {"in": "kematian", "out": "mati"},
+  {"in": "ketakutan", "out": "takut"},
+  {"in": "kemudahan", "out": "mudah"},
+  {"in": "penyakit", "out": "sakit"},
+  {"in": "pertolongan", "out": "tolong"},
+  {"in": "keluarga", "out": "keluarga"},
+  {"in": "kebaikan", "out": "baik"},
+  {"in": "perang", "out": "perang"},
+  {"in": "perlindungan", "out": "lindung"},
+  {"in": "pengetahuan", "out": "tahu"},
+  {"in": "kesehatan", "out": "sehat"},
+  {"in": "pemberi", "out": "beri"},
+  {"in": "penolong", "out": "tolong"}
 ]

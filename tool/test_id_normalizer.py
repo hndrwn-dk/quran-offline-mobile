@@ -13,8 +13,8 @@ _VECTORS = Path(__file__).resolve().parent / "fixtures" / "id_normalizer_vectors
 
 
 class NormalizeVersionTest(unittest.TestCase):
-    def test_version_is_2(self) -> None:
-        self.assertEqual(NORMALIZER_VERSION, 2)
+    def test_version_is_3(self) -> None:
+        self.assertEqual(NORMALIZER_VERSION, 3)
 
 
 class VectorFileTest(unittest.TestCase):

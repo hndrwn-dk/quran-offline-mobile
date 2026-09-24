@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Indonesian/English query normaliser (matching only). Version 2.
+"""Indonesian/English query normaliser (matching only). Version 3.
 
 Mirrors docs/ai_search/ai-search-spec.md §6.1.
 Synonym expansion is query-time only and is not applied here.
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 
-NORMALIZER_VERSION = 2
+NORMALIZER_VERSION = 3
 
 _HTML = re.compile(r"<[^>]+>")
 _NON_ALNUM = re.compile(r"[^\w]+", re.UNICODE)
@@ -18,9 +18,8 @@ _ARABIC = re.compile(r"[\u0600-\u06FF]")
 _TASHKEEL = re.compile(r"[\u064B-\u065F\u0670\u06D6-\u06ED]")
 _ALIF_VARIANTS = re.compile(r"[\u0622\u0623\u0625\u0671]")
 
-# Inflectional suffixes first, then prefixes, then derivational suffixes.
-# Applying -kan/-an/-i before prefixes overstems dimakan (example in B1).
-_SUFFIXES_INFLECT = ("nya", "lah", "kah")
+# Particle suffixes first, then -kan/-an/-i. Under 4 chars keeps the longer form.
+# Longer / per-ber-ter before pe-be-te so perang/pertolongan are not pe-.
 _PREFIXES = (
     "meng",
     "meny",
@@ -31,15 +30,40 @@ _PREFIXES = (
     "peny",
     "pem",
     "pen",
-    "pe",
+    "per",
     "ber",
     "ter",
+    "pe",
+    "be",
+    "te",
     "di",
     "ke",
     "se",
 )
-_SUFFIXES_DERIV = ("kan", "an", "i")
-_MIN_STEM = 3
+_MIN_STEM = 4
+_VOWELS = set("aiueo")
+_ROOT_WHITELIST = {
+    "keluarga",
+    "kerja",
+    "kertas",
+    "kepala",
+    "keras",
+    "kelas",
+    "ketika",
+    "kembali",
+    "kemudian",
+    "kecap",
+    "perang",
+    "perak",
+    "pertama",
+    "perlu",
+    "percaya",
+    "perut",
+    "peta",
+    "pesan",
+    "pekan",
+    "pena",
+}
 _STOPWORDS = {
     "untuk",
     "yang",
@@ -95,32 +119,70 @@ def _strip_tashkeel_like(text: str) -> str:
     return s
 
 
-def _strip_one_suffix(token: str, suffixes: tuple[str, ...]) -> str:
-    for suffix in suffixes:
-        if token.endswith(suffix):
-            stem = token[: -len(suffix)]
-            # -kan on "makan" would leave "ma"; do not fall through to -an.
-            min_len = 4 if suffix == "kan" else _MIN_STEM
-            if len(stem) >= min_len:
-                return stem
-            return token
+def _restore_elision(prefix: str, stem: str) -> str:
+    if not stem:
+        return stem
+    if prefix in ("peny", "meny"):
+        if not stem.startswith("s"):
+            return "s" + stem
+    elif prefix in ("peng", "meng"):
+        if stem[0] == "e" and len(stem) > 1:
+            return stem[1:]
+        if stem[0] in "aiou" and not stem.startswith("k"):
+            return "k" + stem
+    elif prefix in ("pem", "mem"):
+        if stem[0] in _VOWELS:
+            return "p" + stem
+    elif prefix in ("pen", "men"):
+        if stem[0] in _VOWELS:
+            return "t" + stem
+    return stem
+
+
+def _try_prefix(token: str) -> str | None:
+    """Apply the longest matching prefix. None means it over-stripped."""
+    if token in _ROOT_WHITELIST:
+        return token
+    for prefix in _PREFIXES:
+        if not token.startswith(prefix):
+            continue
+        stem = _restore_elision(prefix, token[len(prefix) :])
+        if len(stem) >= _MIN_STEM or stem in _ROOT_WHITELIST:
+            return stem
+        return None
     return token
 
 
-def _strip_one_prefix(token: str) -> str:
-    for prefix in _PREFIXES:
-        if token.startswith(prefix):
-            stem = token[len(prefix) :]
+def _strip_particle(token: str) -> str:
+    for suffix in ("nya", "lah", "kah"):
+        if token.endswith(suffix):
+            stem = token[: -len(suffix)]
             if len(stem) >= _MIN_STEM:
                 return stem
     return token
 
 
 def _stem_latin(token: str) -> str:
-    token = _strip_one_suffix(token, _SUFFIXES_INFLECT)
-    token = _strip_one_prefix(token)
-    token = _strip_one_suffix(token, _SUFFIXES_DERIV)
-    return token
+    if token in _ROOT_WHITELIST:
+        return token
+    token = _strip_particle(token)
+    if token in _ROOT_WHITELIST:
+        return token
+    for suffix in ("kan", "an", "i"):
+        if not token.endswith(suffix):
+            continue
+        tentative = token[: -len(suffix)]
+        if len(tentative) < _MIN_STEM:
+            continue
+        stemmed = _try_prefix(tentative)
+        if stemmed is None:
+            continue
+        if len(stemmed) >= _MIN_STEM or stemmed in _ROOT_WHITELIST:
+            return stemmed
+    stemmed = _try_prefix(token)
+    if stemmed is None:
+        return token
+    return stemmed
 
 
 def normalize(text: str) -> str:
