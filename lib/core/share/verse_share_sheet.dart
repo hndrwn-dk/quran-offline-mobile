@@ -72,7 +72,7 @@ Future<void> _shareFromSheet(
 
   try {
     // Image only — verse + Play link are already on the PNG; no duplicate caption.
-    await Share.shareXFiles([XFile(file.path)]);
+    await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
   } finally {
     await _deleteQuietly(file);
     if (dialogContext.mounted) {
@@ -82,7 +82,9 @@ Future<void> _shareFromSheet(
 }
 
 Future<void> _shareTextOnly(VerseShareContent content) async {
-  await Share.share(content.buildShareCaption());
+  await SharePlus.instance.share(
+    ShareParams(text: content.buildShareCaption()),
+  );
 }
 
 Future<void> _deleteQuietly(File file) async {

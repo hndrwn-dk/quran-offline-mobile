@@ -26,7 +26,9 @@ class SettingsLinkActions {
       _openUrl(context, Uri.parse(AppLinks.playStoreForLocale(appLanguage)));
 
   static Future<void> shareApp(String appLanguage) async {
-    await Share.share(AppLinks.shareAppMessage(appLanguage));
+    await SharePlus.instance.share(
+      ShareParams(text: AppLinks.shareAppMessage(appLanguage)),
+    );
   }
 
   static void showSupportInfo(BuildContext context, WidgetRef ref) {

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/dua_entry.dart';
 import 'package:quran_offline/core/models/reflection_lens.dart';
+import 'package:quran_offline/core/providers/reflection_history_provider.dart';
 import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,6 +30,9 @@ ProviderContainer _container({
   return ProviderContainer(
     overrides: [
       reflectionNowProvider.overrideWith((ref) => now),
+      // Without this the install salt is random per run, and the selector's
+      // borrow draw makes the pick flaky.
+      reflectionInstallSaltProvider.overrideWith((ref) async => 'test-salt'),
       calendarLensesProvider.overrideWith(
         (ref) async => ReflectionCatalog(version: 1, entries: calendar),
       ),

@@ -28,6 +28,8 @@ class VerseShare {
       transliterationText: transliteration,
     );
 
-    await Share.share(content.buildShareCaption());
+    await SharePlus.instance.share(
+      ShareParams(text: content.buildShareCaption()),
+    );
   }
 }
