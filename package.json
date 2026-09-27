@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:server": "npx --yes tsx server/feedback_guard_ip.test.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
