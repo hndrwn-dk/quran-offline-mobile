@@ -1,0 +1,23 @@
+---
+description: Keep R8 optimized resource shrinking and AGP versions Flutter supports
+globs: android/**/*
+alwaysApply: false
+---
+
+# Android memory / R8
+
+Play asked for R8 optimized shrinking. Keep it on for every release build.
+
+## Required
+
+- `android/gradle.properties` must keep `android.r8.optimizedResourceShrinking=true`.
+- Do not set `isMinifyEnabled = false` or `isShrinkResources = false` on the app `release` build type. Flutter's Gradle plugin turns both on for release.
+- Stay on Flutter-supported AGP / Gradle / Kotlin (today: AGP 9.1.x, Gradle 9.3.x, Kotlin 2.4.x). Do not jump to a newer AGP major without a clean `bash scripts/qo.sh apk` first.
+
+## Do not
+
+- Do not add `androidx.activity.EdgeToEdge` as a "memory" or display fix.
+- Do not turn `android.enableJetifier` off in the same change as an AGP bump unless every plugin is AndroidX-only and you have rebuilt release.
+- Do not ship a release with `android.builtInKotlin=true` until plugins that still apply KGP (`share_plus`, `package_info_plus`, `home_widget`, …) are upgraded.
+
+After any Android Gradle change: `bash scripts/qo.sh apk` (or `submit`) and confirm `minifyReleaseWithR8` / `optimizeReleaseResources` still run.

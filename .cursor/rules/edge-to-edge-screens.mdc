@@ -1,0 +1,37 @@
+---
+description: New screens and sheets must support Flutter edge-to-edge (insets), not opt out
+globs: lib/**/*.dart
+alwaysApply: false
+---
+
+# Edge-to-edge on new screens
+
+The app is already edge-to-edge (`SystemUiMode.edgeToEdge` in `lib/main.dart`). New screens, sheets, and dialogs **must support that**, not turn it off and not draw under system bars.
+
+## Required
+
+- Keep status/nav/gesture bars visible. Do not call `SystemChrome.setEnabledSystemUIMode` on a screen to disable edge-to-edge or hide chrome.
+- Clear system insets: wrap page content in `SafeArea`, or pad with `systemBottomInset(MediaQuery.of(context))` from `lib/core/utils/system_bottom_inset.dart` (use this for scrollables / bottom chrome; it uses the larger of `viewPadding` and `padding`).
+- Bottom sheets: `useSafeArea: true` and wrap the sheet body in `SafeArea` when it has its own scroll/actions (see Reader, bookmarks, explore sheets).
+- Icon contrast only via `SystemUiOverlayStyle` (see `HomeBackdrop.overlayStyle`). Do not set deprecated status/nav bar colors.
+
+## Do not
+
+- Do not import or call `androidx.activity.EdgeToEdge` in Kotlin. That API is not on this app's classpath and fails release compile. Flutter's `SystemUiMode.edgeToEdge` is the only enablement.
+- Do not assume `padding.bottom == 0` is "no nav bar". Under edge-to-edge, use `systemBottomInset`.
+- Do not treat a tiny `viewInsets.bottom` as the keyboard. Use `imeVisible()` from the same file.
+
+```dart
+// BAD — content sits under the gesture bar
+return Scaffold(body: ListView(children: items));
+
+// GOOD
+return Scaffold(
+  body: SafeArea(
+    child: ListView(
+      padding: EdgeInsets.only(bottom: systemBottomInset(MediaQuery.of(context))),
+      children: items,
+    ),
+  ),
+);
+```
