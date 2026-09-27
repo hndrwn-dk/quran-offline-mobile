@@ -317,7 +317,13 @@ void main() {
     }
     expect(fridayKahf, greaterThan(0));
     expect(fridayShalat, greaterThan(0));
-    expect(fridayKahf + fridayShalat, greaterThanOrEqualTo(45));
+    // Only two weekday entries are eligible on Friday, so the selector borrows
+    // three ambient entries and draws from them on 30% of days; Ramadan also
+    // outranks the weekday tier. Friday lenses therefore take ~70% of Fridays.
+    expect(
+      (fridayKahf + fridayShalat) / fridayCount,
+      inInclusiveRange(0.60, 0.80),
+    );
     expect(fridayCount, 52);
     expect(
       saturdayIstighfar / saturdayCount,

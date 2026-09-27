@@ -47,7 +47,7 @@ class AppLinks {
     };
   }
 
-  /// Localized one-line invite + Play Store URL for [Share.share].
+  /// Localized one-line invite + Play Store URL for the system share sheet.
   static String shareAppMessage(String appLanguage) {
     final url = playStoreForLocale(appLanguage);
     return switch (appLanguage) {
