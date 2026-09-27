@@ -14,6 +14,7 @@ Serverless endpoint used by the Quran Offline app to create GitHub Issues.
 | `PLAY_INTEGRITY_SERVICE_ACCOUNT_JSON` | GCP service account JSON (Play Integrity API). Required; API fails closed without it |
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL. Durable 5/hour rate limit + nonce replay |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token |
+| `HEALTH_CHECK_SECRET` | Optional. Bearer / `X-Health-Secret` for `/api/health` config booleans only |
 
 3. In Play Console, link the Cloud project under **Protected with Play → Play Integrity API settings** (the legacy **Setup → API access** page no longer exists).
 4. Deploy. Note the production URL (e.g. `https://your-project.vercel.app`).
@@ -46,7 +47,15 @@ Serverless endpoint used by the Quran Offline app to create GitHub Issues.
 - Sideload / adb / missing Play services: API rejects; the app opens email fallback
 - `type`: `bug` → label `bug`; `feature` → label `new feature`
 - Rate limit: 5 requests per IP per hour (Upstash when configured)
+- Rate-limit IP comes from Vercel `x-real-ip` / `x-vercel-forwarded-for` only (not client `X-Forwarded-For`)
 - Each nonce can be used once (5 minute TTL)
+
+## Health
+
+`GET /api/health`
+
+- Unauthenticated: `{ "ok": true }` only (no secret material, no outbound credentialed calls)
+- With `Authorization: Bearer $HEALTH_CHECK_SECRET` or `X-Health-Secret`: adds boolean config flags only (`playIntegrityConfigured`, `githubConfigured`, `upstashConfigured`)
 
 ## Local typecheck
 
