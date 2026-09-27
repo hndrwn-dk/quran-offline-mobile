@@ -35,3 +35,35 @@ export function verifyFeedbackProofOfWork(
 export function isBrowserOrigin(origin: unknown): boolean {
   return typeof origin === 'string' && origin.length > 0;
 }
+
+function headerValue(value: string | string[] | undefined): string | null {
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return value.trim();
+  }
+  if (Array.isArray(value) && typeof value[0] === 'string' && value[0].trim()) {
+    return value[0].trim();
+  }
+  return null;
+}
+
+/**
+ * Client IP for rate limiting. Prefer platform-set headers only.
+ * Do not trust client-supplied `x-forwarded-for` (leftmost hop is spoofable).
+ */
+export function trustedClientIp(
+  headers: Record<string, string | string[] | undefined>,
+  socketRemoteAddress?: string | null,
+): string {
+  const realIp = headerValue(headers['x-real-ip']);
+  if (realIp) return realIp;
+
+  const vercelForwarded = headerValue(headers['x-vercel-forwarded-for']);
+  if (vercelForwarded) {
+    return vercelForwarded.split(',')[0]?.trim() || 'unknown';
+  }
+
+  if (typeof socketRemoteAddress === 'string' && socketRemoteAddress.trim()) {
+    return socketRemoteAddress.trim();
+  }
+  return 'unknown';
+}
