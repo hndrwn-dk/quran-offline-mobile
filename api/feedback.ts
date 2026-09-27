@@ -1,5 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { isBrowserOrigin, neutralizeGithubMentions } from '../server/feedback_guard.js';
+import {
+  isBrowserOrigin,
+  neutralizeGithubMentions,
+  trustedClientIp,
+} from '../server/feedback_guard.js';
 import {
   decodePlayIntegrityToken,
   evaluatePlayIntegrityVerdict,
@@ -88,14 +92,7 @@ async function consumeNonce(nonce: string): Promise<boolean> {
 }
 
 function clientIp(req: VercelRequest): string {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.length > 0) {
-    return forwarded.split(',')[0]?.trim() ?? 'unknown';
-  }
-  if (Array.isArray(forwarded) && forwarded.length > 0) {
-    return forwarded[0]?.split(',')[0]?.trim() ?? 'unknown';
-  }
-  return req.socket.remoteAddress ?? 'unknown';
+  return trustedClientIp(req.headers, req.socket?.remoteAddress);
 }
 
 function isRateLimitedMemory(ip: string): boolean {
