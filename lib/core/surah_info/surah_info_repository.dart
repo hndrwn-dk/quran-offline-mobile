@@ -7,7 +7,7 @@ import 'package:quran_offline/core/models/surah_qul_info.dart';
 import 'package:quran_offline/core/surah_info/surah_info_config.dart';
 import 'package:quran_offline/core/surah_info/surah_info_html.dart';
 import 'package:quran_offline/core/utils/async_once.dart';
-import 'package:quran_offline/core/utils/atomic_file_write.dart';
+import 'package:quran_offline/core/utils/sqlite_bundle.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -40,23 +40,19 @@ class SurahInfoRepository {
     final versionKey = 'surah_info_bundle_${qulLanguage}_v';
     final storedVersion = prefs.getInt(versionKey) ?? 0;
 
-    if (!await localFile.exists() ||
-        storedVersion != SurahInfoConfig.bundleVersion) {
-      final bytes = await rootBundle.load(assetPath);
-      await writeBytesAtomically(
-        localFile,
-        bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-      );
-    }
-
-    final db = await openDatabase(
-      localFile.path,
-      readOnly: true,
-      singleInstance: true,
+    final copied = await openOrRecopySqliteFile(
+      localFile: localFile,
+      needsCopy: !await localFile.exists() ||
+          storedVersion != SurahInfoConfig.bundleVersion,
+      loadBytes: () async {
+        final bytes = await rootBundle.load(assetPath);
+        return bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes);
+      },
+      openAndValidate: (path) async {
+        _openByLanguage[qulLanguage] = await openSqfliteReadOnlyValidated(path);
+      },
     );
-    _openByLanguage[qulLanguage] = db;
-    // Stamp only after a successful open so a failed copy/open can retry.
-    if (storedVersion != SurahInfoConfig.bundleVersion) {
+    if (copied) {
       await prefs.setInt(versionKey, SurahInfoConfig.bundleVersion);
     }
   }

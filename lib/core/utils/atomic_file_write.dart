@@ -22,7 +22,7 @@ Future<void> writeBytesAtomically(File target, List<int> bytes) async {
 
   try {
     await tmp.writeAsBytes(bytes, flush: true);
-    await tmp.rename(target.path);
+    await _replaceWithRename(tmp, target);
   } catch (_) {
     if (await tmp.exists()) {
       try {
@@ -31,4 +31,30 @@ Future<void> writeBytesAtomically(File target, List<int> bytes) async {
     }
     rethrow;
   }
+}
+
+/// POSIX rename replaces. Windows often cannot rename onto an existing path.
+Future<void> _replaceWithRename(File tmp, File target) async {
+  try {
+    await tmp.rename(target.path);
+    return;
+  } on FileSystemException {
+    if (!await target.exists()) rethrow;
+  }
+
+  final bak = File(
+    '${target.path}.bak.$pid.${DateTime.now().microsecondsSinceEpoch}',
+  );
+  await target.rename(bak.path);
+  try {
+    await tmp.rename(target.path);
+  } catch (_) {
+    if (await bak.exists() && !await target.exists()) {
+      await bak.rename(target.path);
+    }
+    rethrow;
+  }
+  try {
+    await bak.delete();
+  } catch (_) {}
 }

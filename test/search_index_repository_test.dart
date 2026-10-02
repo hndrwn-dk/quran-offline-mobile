@@ -206,6 +206,43 @@ void main() {
     );
   });
 
+  test('ensureReady recopies when local file is corrupt but prefs already match',
+      () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({
+      kSearchIndexBuiltAtPrefKey: '2026-09-24T12:00:00Z',
+    });
+
+    final docsDir = Directory('${tmp.path}/docs_corrupt')..createSync();
+    final localDir = Directory('${docsDir.path}/ai_search')..createSync();
+    final localFile = File('${localDir.path}/search_index.sqlite');
+    await localFile.writeAsBytes(
+      const [0, 1, 2, 3, 4, 5, 6, 7],
+      flush: true,
+    );
+
+    final bundledPath = '${tmp.path}/bundled_corrupt.sqlite';
+    _writeMiniIndex(
+      bundledPath,
+      builtAt: '2026-09-24T12:00:00Z',
+      marker: 'healedmarker',
+    );
+    final bundledBytes = File(bundledPath).readAsBytesSync();
+
+    repo = SearchIndexRepository(
+      documentsDirectory: docsDir,
+      readBundledBytes: () async => bundledBytes,
+    );
+    await repo.ensureReady();
+
+    final hits = await repo.keywordSearch('healedmarker', lang: 'id');
+    expect(
+      hits,
+      isNotEmpty,
+      reason: 'sticky truncated DB must be replaced from the bundle',
+    );
+  });
+
   test('concurrent ensureReady copies bundled index only once', () async {
     TestWidgetsFlutterBinding.ensureInitialized();
     SharedPreferences.setMockInitialValues({});

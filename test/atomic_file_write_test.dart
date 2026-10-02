@@ -59,25 +59,35 @@ void main() {
       }
     });
 
-    test('replaces target without leaving a truncated original on failure',
-        () async {
+    test('replaces an existing target file', () async {
       final target = File('${tmp.path}/bundle.sqlite');
       await target.writeAsBytes(Uint8List.fromList([1, 2, 3, 4]), flush: true);
-
-      // Simulate an interrupted in-place write: truncate then fail.
-      // Atomic helper must keep the prior complete bytes when rename never runs.
-      final before = await target.readAsBytes();
-      expect(before, [1, 2, 3, 4]);
 
       await writeBytesAtomically(target, Uint8List.fromList([9, 8, 7, 6, 5]));
       expect(await target.readAsBytes(), [9, 8, 7, 6, 5]);
 
-      // Temp files must not linger next to the target.
       final leftovers = tmp
           .listSync()
           .whereType<File>()
-          .where((f) => f.path.contains('.tmp.'));
+          .where((f) => f.path.contains('.tmp.') || f.path.contains('.bak.'));
       expect(leftovers, isEmpty);
+    });
+
+    test('keeps existing bytes when the replacement file cannot be created',
+        () async {
+      final target = File('${tmp.path}/bundle.sqlite');
+      await target.writeAsBytes(Uint8List.fromList([1, 2, 3, 4]), flush: true);
+
+      // Parent path exists as a file, so the temp write cannot complete.
+      final blockedParent = File('${tmp.path}/blocked');
+      await blockedParent.writeAsBytes(Uint8List.fromList([0]), flush: true);
+      final nested = File('${blockedParent.path}/bundle.sqlite');
+
+      await expectLater(
+        writeBytesAtomically(nested, Uint8List.fromList([9, 8, 7])),
+        throwsA(isA<FileSystemException>()),
+      );
+      expect(await target.readAsBytes(), [1, 2, 3, 4]);
     });
 
     test('creates parent directories as needed', () async {
