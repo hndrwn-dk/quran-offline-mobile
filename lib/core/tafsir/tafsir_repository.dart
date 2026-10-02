@@ -7,7 +7,7 @@ import 'package:quran_offline/core/models/tafsir_entry.dart';
 import 'package:quran_offline/core/tafsir/tafsir_config.dart';
 import 'package:quran_offline/core/tafsir/tafsir_content_parser.dart';
 import 'package:quran_offline/core/utils/async_once.dart';
-import 'package:quran_offline/core/utils/atomic_file_write.dart';
+import 'package:quran_offline/core/utils/sqlite_bundle.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -47,23 +47,20 @@ class TafsirRepository {
     final versionKey = 'tafsir_bundle_${translationLanguage}_v';
     final storedVersion = prefs.getInt(versionKey) ?? 0;
 
-    if (!await localFile.exists() ||
-        storedVersion != TafsirConfig.bundleVersion) {
-      final bytes = await rootBundle.load(assetPath);
-      await writeBytesAtomically(
-        localFile,
-        bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-      );
-    }
-
-    final db = await openDatabase(
-      localFile.path,
-      readOnly: true,
-      singleInstance: true,
+    final copied = await openOrRecopySqliteFile(
+      localFile: localFile,
+      needsCopy: !await localFile.exists() ||
+          storedVersion != TafsirConfig.bundleVersion,
+      loadBytes: () async {
+        final bytes = await rootBundle.load(assetPath);
+        return bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes);
+      },
+      openAndValidate: (path) async {
+        _openByLanguage[translationLanguage] =
+            await openSqfliteReadOnlyValidated(path);
+      },
     );
-    _openByLanguage[translationLanguage] = db;
-    // Stamp only after a successful open so a failed copy/open can retry.
-    if (storedVersion != TafsirConfig.bundleVersion) {
+    if (copied) {
       await prefs.setInt(versionKey, TafsirConfig.bundleVersion);
     }
   }

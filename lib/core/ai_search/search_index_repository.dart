@@ -6,7 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:quran_offline/core/ai_search/ai_search_config.dart';
 import 'package:quran_offline/core/utils/async_once.dart';
-import 'package:quran_offline/core/utils/atomic_file_write.dart';
+import 'package:quran_offline/core/utils/sqlite_bundle.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqlite3/sqlite3.dart';
 
@@ -103,19 +103,25 @@ class SearchIndexRepository {
         : await _loadBundledBytes();
     final bundledBuiltAt = await _builtAtFromBytes(bundledBytes);
 
-    var needCopy = !await localFile.exists();
-    if (stored != bundledBuiltAt) {
-      needCopy = true;
-    }
-
-    if (needCopy) {
-      _disposeDb();
-      await writeBytesAtomically(localFile, bundledBytes);
-      await openPath(localFile.path);
+    final copied = await openOrRecopySqliteFile(
+      localFile: localFile,
+      needsCopy: !await localFile.exists() || stored != bundledBuiltAt,
+      loadBytes: () async => bundledBytes,
+      openAndValidate: _openAndValidate,
+    );
+    if (copied) {
       final builtAt = _meta('built_at_utc') ?? bundledBuiltAt ?? '';
       await prefs.setString(kSearchIndexBuiltAtPrefKey, builtAt);
-    } else if (_db == null) {
-      await openPath(localFile.path);
+    }
+  }
+
+  Future<void> _openAndValidate(String path) async {
+    await openPath(path);
+    try {
+      _db!.select('SELECT 1 FROM sqlite_master LIMIT 1');
+    } catch (_) {
+      _disposeDb();
+      rethrow;
     }
   }
 
