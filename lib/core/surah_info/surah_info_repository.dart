@@ -6,6 +6,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:quran_offline/core/models/surah_qul_info.dart';
 import 'package:quran_offline/core/surah_info/surah_info_config.dart';
 import 'package:quran_offline/core/surah_info/surah_info_html.dart';
+import 'package:quran_offline/core/utils/async_once.dart';
+import 'package:quran_offline/core/utils/atomic_file_write.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -13,12 +15,21 @@ class SurahInfoRepository {
   SurahInfoRepository();
 
   final Map<String, Database> _openByLanguage = {};
+  final Map<String, AsyncOnce> _ensureOnceByLanguage = {};
   Directory? _rootDir;
 
-  Future<void> ensureLanguageReady(String qulLanguage) async {
+  Future<void> ensureLanguageReady(String qulLanguage) {
     final assetPath = SurahInfoConfig.assetPathForLanguage(qulLanguage);
-    if (assetPath == null) return;
+    if (assetPath == null) return Future.value();
 
+    final once = _ensureOnceByLanguage.putIfAbsent(qulLanguage, AsyncOnce.new);
+    return once.run(() => _ensureLanguageReadyBody(qulLanguage, assetPath));
+  }
+
+  Future<void> _ensureLanguageReadyBody(
+    String qulLanguage,
+    String assetPath,
+  ) async {
     if (_openByLanguage.containsKey(qulLanguage)) return;
 
     _rootDir ??= await _surahInfoRoot();
@@ -32,11 +43,10 @@ class SurahInfoRepository {
     if (!await localFile.exists() ||
         storedVersion != SurahInfoConfig.bundleVersion) {
       final bytes = await rootBundle.load(assetPath);
-      await localFile.writeAsBytes(
+      await writeBytesAtomically(
+        localFile,
         bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-        flush: true,
       );
-      await prefs.setInt(versionKey, SurahInfoConfig.bundleVersion);
     }
 
     final db = await openDatabase(
@@ -45,6 +55,10 @@ class SurahInfoRepository {
       singleInstance: true,
     );
     _openByLanguage[qulLanguage] = db;
+    // Stamp only after a successful open so a failed copy/open can retry.
+    if (storedVersion != SurahInfoConfig.bundleVersion) {
+      await prefs.setInt(versionKey, SurahInfoConfig.bundleVersion);
+    }
   }
 
   Future<SurahQulInfoEntry?> getForSurah(
@@ -93,5 +107,6 @@ class SurahInfoRepository {
       await db.close();
     }
     _openByLanguage.clear();
+    _ensureOnceByLanguage.clear();
   }
 }

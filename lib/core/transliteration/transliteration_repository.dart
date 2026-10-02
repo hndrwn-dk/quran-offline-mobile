@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:quran_offline/core/transliteration/transliteration_config.dart';
+import 'package:quran_offline/core/utils/async_once.dart';
+import 'package:quran_offline/core/utils/atomic_file_write.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -11,10 +13,13 @@ class TransliterationRepository {
   TransliterationRepository();
 
   Database? _db;
+  final AsyncOnce _ensureOnce = AsyncOnce();
 
   static String _ayahKey(int surahId, int ayahNo) => '$surahId:$ayahNo';
 
-  Future<void> ensureReady() async {
+  Future<void> ensureReady() => _ensureOnce.run(_ensureReadyBody);
+
+  Future<void> _ensureReadyBody() async {
     if (_db != null) return;
 
     final rootDir = await _transliterationRoot();
@@ -27,11 +32,10 @@ class TransliterationRepository {
     if (!await localFile.exists() ||
         storedVersion != TransliterationConfig.bundleVersion) {
       final bytes = await rootBundle.load(TransliterationConfig.assetPath);
-      await localFile.writeAsBytes(
+      await writeBytesAtomically(
+        localFile,
         bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-        flush: true,
       );
-      await prefs.setInt(versionKey, TransliterationConfig.bundleVersion);
     }
 
     _db = await openDatabase(
@@ -39,6 +43,10 @@ class TransliterationRepository {
       readOnly: true,
       singleInstance: true,
     );
+    // Stamp only after a successful open so a failed copy/open can retry.
+    if (storedVersion != TransliterationConfig.bundleVersion) {
+      await prefs.setInt(versionKey, TransliterationConfig.bundleVersion);
+    }
   }
 
   Future<String?> getForAyah(int surahId, int ayahNo) async {
@@ -72,5 +80,6 @@ class TransliterationRepository {
   Future<void> dispose() async {
     await _db?.close();
     _db = null;
+    _ensureOnce.reset();
   }
 }
