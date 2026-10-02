@@ -6,6 +6,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:quran_offline/core/models/tafsir_entry.dart';
 import 'package:quran_offline/core/tafsir/tafsir_config.dart';
 import 'package:quran_offline/core/tafsir/tafsir_content_parser.dart';
+import 'package:quran_offline/core/utils/async_once.dart';
+import 'package:quran_offline/core/utils/atomic_file_write.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -13,14 +15,28 @@ class TafsirRepository {
   TafsirRepository();
 
   final Map<String, Database> _openByLanguage = {};
+  final Map<String, AsyncOnce> _ensureOnceByLanguage = {};
   Directory? _rootDir;
 
   static String _ayahKey(int surahId, int ayahNo) => '$surahId:$ayahNo';
 
-  Future<void> ensureLanguageReady(String translationLanguage) async {
+  Future<void> ensureLanguageReady(String translationLanguage) {
     final assetPath = TafsirConfig.assetPathForLanguage(translationLanguage);
-    if (assetPath == null) return;
+    if (assetPath == null) return Future.value();
 
+    final once = _ensureOnceByLanguage.putIfAbsent(
+      translationLanguage,
+      AsyncOnce.new,
+    );
+    return once.run(
+      () => _ensureLanguageReadyBody(translationLanguage, assetPath),
+    );
+  }
+
+  Future<void> _ensureLanguageReadyBody(
+    String translationLanguage,
+    String assetPath,
+  ) async {
     if (_openByLanguage.containsKey(translationLanguage)) return;
 
     _rootDir ??= await _tafsirRoot();
@@ -34,11 +50,10 @@ class TafsirRepository {
     if (!await localFile.exists() ||
         storedVersion != TafsirConfig.bundleVersion) {
       final bytes = await rootBundle.load(assetPath);
-      await localFile.writeAsBytes(
+      await writeBytesAtomically(
+        localFile,
         bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-        flush: true,
       );
-      await prefs.setInt(versionKey, TafsirConfig.bundleVersion);
     }
 
     final db = await openDatabase(
@@ -47,6 +62,10 @@ class TafsirRepository {
       singleInstance: true,
     );
     _openByLanguage[translationLanguage] = db;
+    // Stamp only after a successful open so a failed copy/open can retry.
+    if (storedVersion != TafsirConfig.bundleVersion) {
+      await prefs.setInt(versionKey, TafsirConfig.bundleVersion);
+    }
   }
 
   Future<TafsirEntry?> getForAyah(
@@ -134,5 +153,6 @@ class TafsirRepository {
       await db.close();
     }
     _openByLanguage.clear();
+    _ensureOnceByLanguage.clear();
   }
 }

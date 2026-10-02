@@ -5,6 +5,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_assets.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
+import 'package:quran_offline/core/utils/async_once.dart';
+import 'package:quran_offline/core/utils/atomic_file_write.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -25,6 +27,7 @@ class QpcV2Repository {
   Database? _layoutDb;
   Database? _wordsDb;
   Directory? _rootDir;
+  final AsyncOnce _ensureOnce = AsyncOnce();
 
   static Future<bool> assetsAvailable() async {
     try {
@@ -37,7 +40,9 @@ class QpcV2Repository {
     }
   }
 
-  Future<void> ensureReady() async {
+  Future<void> ensureReady() => _ensureOnce.run(_ensureReadyBody);
+
+  Future<void> _ensureReadyBody() async {
     if (_layoutDb != null && _wordsDb != null) return;
 
     _rootDir ??= await _mushafRoot();
@@ -50,17 +55,17 @@ class QpcV2Repository {
 
     if (!await layoutFile.exists() || storedVersion != bundleVersion) {
       final bytes = await rootBundle.load(QpcV2Assets.layoutSqlite);
-      await layoutFile.writeAsBytes(
+      await writeBytesAtomically(
+        layoutFile,
         bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-        flush: true,
       );
     }
 
     if (!await wordsFile.exists() || storedVersion != bundleVersion) {
       final bytes = await rootBundle.load(QpcV2Assets.wordsSqlite);
-      await wordsFile.writeAsBytes(
+      await writeBytesAtomically(
+        wordsFile,
         bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-        flush: true,
       );
     }
 
@@ -70,7 +75,6 @@ class QpcV2Repository {
       _validatedPages.clear();
       _layoutCacheVersionChecked = false;
       _bismillahGlyphTextCache = null;
-      await prefs.setInt(versionKey, bundleVersion);
     }
 
     _layoutDb ??= await openDatabase(
@@ -83,6 +87,10 @@ class QpcV2Repository {
       readOnly: true,
       singleInstance: true,
     );
+    // Stamp only after both DBs open so a failed copy/open can retry.
+    if (storedVersion != bundleVersion) {
+      await prefs.setInt(versionKey, bundleVersion);
+    }
   }
 
   Future<List<QpcV2Line>> getPageLines(int pageNumber) async {

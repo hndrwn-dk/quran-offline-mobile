@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -203,6 +204,45 @@ void main() {
       prefs.getString(kSearchIndexBuiltAtPrefKey),
       '2026-09-24T12:00:00Z',
     );
+  });
+
+  test('concurrent ensureReady copies bundled index only once', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+
+    final docsDir = Directory('${tmp.path}/docs_once')..createSync();
+    final bundledPath = '${tmp.path}/bundled_once.sqlite';
+    _writeMiniIndex(
+      bundledPath,
+      builtAt: '2026-09-24T12:00:00Z',
+      marker: 'oncemarker',
+    );
+    final bundledBytes = File(bundledPath).readAsBytesSync();
+
+    var loads = 0;
+    final gate = Completer<void>();
+    repo = SearchIndexRepository(
+      documentsDirectory: docsDir,
+      readBundledBytes: () async {
+        loads++;
+        await gate.future;
+        return bundledBytes;
+      },
+    );
+
+    final first = repo.ensureReady();
+    final second = repo.ensureReady();
+    // Wait until the shared in-flight body reaches the gated load.
+    for (var i = 0; i < 100 && loads == 0; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+    }
+    expect(loads, 1);
+    gate.complete();
+    await Future.wait([first, second]);
+    expect(loads, 1);
+
+    final hits = await repo.keywordSearch('oncemarker', lang: 'id');
+    expect(hits, isNotEmpty);
   });
 
   test('ftsAnyTermQuery joins terms with OR and keeps synonym groups', () {
