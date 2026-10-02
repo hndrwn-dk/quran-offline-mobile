@@ -5,6 +5,9 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_assets.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
+import 'package:quran_offline/core/utils/async_once.dart';
+import 'package:quran_offline/core/utils/atomic_file_write.dart';
+import 'package:quran_offline/core/utils/sqlite_bundle.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -25,6 +28,7 @@ class QpcV2Repository {
   Database? _layoutDb;
   Database? _wordsDb;
   Directory? _rootDir;
+  final AsyncOnce _ensureOnce = AsyncOnce();
 
   static Future<bool> assetsAvailable() async {
     try {
@@ -37,7 +41,9 @@ class QpcV2Repository {
     }
   }
 
-  Future<void> ensureReady() async {
+  Future<void> ensureReady() => _ensureOnce.run(_ensureReadyBody);
+
+  Future<void> _ensureReadyBody() async {
     if (_layoutDb != null && _wordsDb != null) return;
 
     _rootDir ??= await _mushafRoot();
@@ -48,20 +54,52 @@ class QpcV2Repository {
     final layoutFile = File(p.join(_rootDir!.path, 'qpc_v2_layout.sqlite'));
     final wordsFile = File(p.join(_rootDir!.path, 'qpc_v2_words.sqlite'));
 
-    if (!await layoutFile.exists() || storedVersion != bundleVersion) {
-      final bytes = await rootBundle.load(QpcV2Assets.layoutSqlite);
-      await layoutFile.writeAsBytes(
-        bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-        flush: true,
+    var copied = storedVersion != bundleVersion ||
+        !await layoutFile.exists() ||
+        !await wordsFile.exists();
+
+    Future<void> copyBoth() async {
+      final layoutBytes = await rootBundle.load(QpcV2Assets.layoutSqlite);
+      await writeBytesAtomically(
+        layoutFile,
+        layoutBytes.buffer.asUint8List(
+          layoutBytes.offsetInBytes,
+          layoutBytes.lengthInBytes,
+        ),
       );
+      final wordsBytes = await rootBundle.load(QpcV2Assets.wordsSqlite);
+      await writeBytesAtomically(
+        wordsFile,
+        wordsBytes.buffer.asUint8List(
+          wordsBytes.offsetInBytes,
+          wordsBytes.lengthInBytes,
+        ),
+      );
+      copied = true;
     }
 
-    if (!await wordsFile.exists() || storedVersion != bundleVersion) {
-      final bytes = await rootBundle.load(QpcV2Assets.wordsSqlite);
-      await wordsFile.writeAsBytes(
-        bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-        flush: true,
-      );
+    Future<void> closeDbs() async {
+      await _layoutDb?.close();
+      await _wordsDb?.close();
+      _layoutDb = null;
+      _wordsDb = null;
+    }
+
+    Future<void> openBoth() async {
+      await closeDbs();
+      _layoutDb = await openSqfliteReadOnlyValidated(layoutFile.path);
+      _wordsDb = await openSqfliteReadOnlyValidated(wordsFile.path);
+    }
+
+    if (copied) {
+      await copyBoth();
+    }
+    try {
+      await openBoth();
+    } catch (_) {
+      await closeDbs();
+      await copyBoth();
+      await openBoth();
     }
 
     if (storedVersion != bundleVersion) {
@@ -70,19 +108,10 @@ class QpcV2Repository {
       _validatedPages.clear();
       _layoutCacheVersionChecked = false;
       _bismillahGlyphTextCache = null;
+    }
+    if (copied) {
       await prefs.setInt(versionKey, bundleVersion);
     }
-
-    _layoutDb ??= await openDatabase(
-      layoutFile.path,
-      readOnly: true,
-      singleInstance: true,
-    );
-    _wordsDb ??= await openDatabase(
-      wordsFile.path,
-      readOnly: true,
-      singleInstance: true,
-    );
   }
 
   Future<List<QpcV2Line>> getPageLines(int pageNumber) async {
@@ -424,6 +453,7 @@ class QpcV2Repository {
     await _wordsDb?.close();
     _layoutDb = null;
     _wordsDb = null;
+    _ensureOnce.reset();
   }
 
   Future<Directory> _mushafRoot() async {

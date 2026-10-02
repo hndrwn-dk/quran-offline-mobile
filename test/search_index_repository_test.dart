@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -203,6 +204,82 @@ void main() {
       prefs.getString(kSearchIndexBuiltAtPrefKey),
       '2026-09-24T12:00:00Z',
     );
+  });
+
+  test('ensureReady recopies when local file is corrupt but prefs already match',
+      () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({
+      kSearchIndexBuiltAtPrefKey: '2026-09-24T12:00:00Z',
+    });
+
+    final docsDir = Directory('${tmp.path}/docs_corrupt')..createSync();
+    final localDir = Directory('${docsDir.path}/ai_search')..createSync();
+    final localFile = File('${localDir.path}/search_index.sqlite');
+    await localFile.writeAsBytes(
+      const [0, 1, 2, 3, 4, 5, 6, 7],
+      flush: true,
+    );
+
+    final bundledPath = '${tmp.path}/bundled_corrupt.sqlite';
+    _writeMiniIndex(
+      bundledPath,
+      builtAt: '2026-09-24T12:00:00Z',
+      marker: 'healedmarker',
+    );
+    final bundledBytes = File(bundledPath).readAsBytesSync();
+
+    repo = SearchIndexRepository(
+      documentsDirectory: docsDir,
+      readBundledBytes: () async => bundledBytes,
+    );
+    await repo.ensureReady();
+
+    final hits = await repo.keywordSearch('healedmarker', lang: 'id');
+    expect(
+      hits,
+      isNotEmpty,
+      reason: 'sticky truncated DB must be replaced from the bundle',
+    );
+  });
+
+  test('concurrent ensureReady copies bundled index only once', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+
+    final docsDir = Directory('${tmp.path}/docs_once')..createSync();
+    final bundledPath = '${tmp.path}/bundled_once.sqlite';
+    _writeMiniIndex(
+      bundledPath,
+      builtAt: '2026-09-24T12:00:00Z',
+      marker: 'oncemarker',
+    );
+    final bundledBytes = File(bundledPath).readAsBytesSync();
+
+    var loads = 0;
+    final gate = Completer<void>();
+    repo = SearchIndexRepository(
+      documentsDirectory: docsDir,
+      readBundledBytes: () async {
+        loads++;
+        await gate.future;
+        return bundledBytes;
+      },
+    );
+
+    final first = repo.ensureReady();
+    final second = repo.ensureReady();
+    // Wait until the shared in-flight body reaches the gated load.
+    for (var i = 0; i < 100 && loads == 0; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+    }
+    expect(loads, 1);
+    gate.complete();
+    await Future.wait([first, second]);
+    expect(loads, 1);
+
+    final hits = await repo.keywordSearch('oncemarker', lang: 'id');
+    expect(hits, isNotEmpty);
   });
 
   test('ftsAnyTermQuery joins terms with OR and keeps synonym groups', () {

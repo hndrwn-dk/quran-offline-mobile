@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:quran_offline/core/ai_search/ai_search_config.dart';
+import 'package:quran_offline/core/utils/async_once.dart';
+import 'package:quran_offline/core/utils/sqlite_bundle.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqlite3/sqlite3.dart';
 
@@ -74,16 +76,19 @@ class SearchIndexRepository {
   final Future<Uint8List> Function()? _readBundledBytes;
 
   Database? _db;
+  final AsyncOnce _ensureOnce = AsyncOnce();
 
   Future<void> openPath(String path, {bool readOnly = true}) async {
-    close();
+    _disposeDb();
     _db = sqlite3.open(
       path,
       mode: readOnly ? OpenMode.readOnly : OpenMode.readWrite,
     );
   }
 
-  Future<void> ensureReady() async {
+  Future<void> ensureReady() => _ensureOnce.run(_ensureReadyBody);
+
+  Future<void> _ensureReadyBody() async {
     final docs = _documentsDirectory ?? await getApplicationDocumentsDirectory();
     final dir = Directory(p.join(docs.path, 'ai_search'));
     if (!await dir.exists()) {
@@ -98,19 +103,25 @@ class SearchIndexRepository {
         : await _loadBundledBytes();
     final bundledBuiltAt = await _builtAtFromBytes(bundledBytes);
 
-    var needCopy = !await localFile.exists();
-    if (stored != bundledBuiltAt) {
-      needCopy = true;
-    }
-
-    if (needCopy) {
-      close();
-      await localFile.writeAsBytes(bundledBytes, flush: true);
-      await openPath(localFile.path);
+    final copied = await openOrRecopySqliteFile(
+      localFile: localFile,
+      needsCopy: !await localFile.exists() || stored != bundledBuiltAt,
+      loadBytes: () async => bundledBytes,
+      openAndValidate: _openAndValidate,
+    );
+    if (copied) {
       final builtAt = _meta('built_at_utc') ?? bundledBuiltAt ?? '';
       await prefs.setString(kSearchIndexBuiltAtPrefKey, builtAt);
-    } else if (_db == null) {
-      await openPath(localFile.path);
+    }
+  }
+
+  Future<void> _openAndValidate(String path) async {
+    await openPath(path);
+    try {
+      _db!.select('SELECT 1 FROM sqlite_master LIMIT 1');
+    } catch (_) {
+      _disposeDb();
+      rethrow;
     }
   }
 
@@ -234,8 +245,13 @@ class SearchIndexRepository {
     return [for (final row in rows) row['doc_id'] as String];
   }
 
-  void close() {
+  void _disposeDb() {
     _db?.dispose();
     _db = null;
+  }
+
+  void close() {
+    _disposeDb();
+    _ensureOnce.reset();
   }
 }
