@@ -5,6 +5,7 @@ import 'package:quran_offline/core/constants/app_links.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/ramadan_promo_schedule.dart';
+import 'package:quran_offline/core/utils/ramadan_tracker_opener.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Method channel to Android PackageManager — package_info_plus only reads this app.
@@ -31,6 +32,19 @@ Future<bool> isRamadanTrackerInstalled() async {
   }
 }
 
+/// Launches Ramadan Tracker via PackageManager launcher Intent.
+Future<bool> launchRamadanTrackerPackage() async {
+  try {
+    final launched = await _appCheckChannel.invokeMethod<bool>(
+      'launchPackage',
+      {'packageName': AppLinks.ramadanTrackerPackageId},
+    );
+    return launched ?? false;
+  } catch (_) {
+    return false;
+  }
+}
+
 /// Clears session install cache (tests only).
 @visibleForTesting
 void resetRamadanTrackerInstallCacheForTest() {
@@ -39,7 +53,7 @@ void resetRamadanTrackerInstallCacheForTest() {
 
 typedef RamadanPromoAnalyticsEvent = void Function(String eventName);
 
-/// Beranda promo card for Ramadan Tracker with smart deep-link vs Play Store fallback.
+/// Beranda promo card for Ramadan Tracker: launch installed app, else Play Store.
 class RamadanPromoBanner extends ConsumerStatefulWidget {
   const RamadanPromoBanner({
     super.key,
@@ -51,7 +65,7 @@ class RamadanPromoBanner extends ConsumerStatefulWidget {
   /// Optional override for tests or custom navigation.
   final VoidCallback? onTapTryApp;
 
-  /// Fires `promo_tap_deeplink` or `promo_tap_store` after install check.
+  /// Fires `promo_tap_deeplink` or `promo_tap_store` after a successful open.
   final RamadanPromoAnalyticsEvent? onAnalyticsEvent;
 
   /// Called when user taps close; parent may hide the banner.
@@ -89,32 +103,37 @@ class _RamadanPromoBannerState extends ConsumerState<RamadanPromoBanner> {
       setState(() => _installed = installed);
     }
 
-    if (installed) {
-      widget.onAnalyticsEvent?.call('promo_tap_deeplink');
-      await _openRamadanTrackerDeepLink();
-    } else {
-      widget.onAnalyticsEvent?.call('promo_tap_store');
-      await _openRamadanTrackerStore();
+    final result = await RamadanTrackerOpener.open(
+      installed: installed,
+      launchPackage: (_) => launchRamadanTrackerPackage(),
+      launchDeepLink: _tryRamadanTrackerDeepLink,
+      openStore: _openRamadanTrackerStore,
+    );
+
+    switch (result) {
+      case RamadanTrackerOpenResult.launchedApp:
+        widget.onAnalyticsEvent?.call('promo_tap_deeplink');
+      case RamadanTrackerOpenResult.openedStore:
+        widget.onAnalyticsEvent?.call('promo_tap_store');
+      case RamadanTrackerOpenResult.failed:
+        break;
     }
   }
 
-  Future<void> _openRamadanTrackerDeepLink() async {
+  Future<bool> _tryRamadanTrackerDeepLink() async {
     final deepLink = Uri.parse(AppLinks.ramadanTrackerDeepLink);
     try {
       if (await canLaunchUrl(deepLink)) {
-        final launched = await launchUrl(
+        return await launchUrl(
           deepLink,
           mode: LaunchMode.externalApplication,
         );
-        if (launched) return;
       }
     } catch (_) {}
-
-    widget.onAnalyticsEvent?.call('promo_tap_store');
-    await _openRamadanTrackerStore();
+    return false;
   }
 
-  Future<void> _openRamadanTrackerStore() async {
+  Future<bool> _openRamadanTrackerStore() async {
     final marketUri = Uri.parse(AppLinks.ramadanTrackerMarketUrl());
     final httpsUri = Uri.parse(
       AppLinks.ramadanTrackerPlayStoreForLocale(
@@ -128,15 +147,19 @@ class _RamadanPromoBannerState extends ConsumerState<RamadanPromoBanner> {
           marketUri,
           mode: LaunchMode.externalApplication,
         );
-        if (launched) return;
+        if (launched) return true;
       }
     } catch (_) {}
 
     try {
       if (await canLaunchUrl(httpsUri)) {
-        await launchUrl(httpsUri, mode: LaunchMode.externalApplication);
+        return await launchUrl(
+          httpsUri,
+          mode: LaunchMode.externalApplication,
+        );
       }
     } catch (_) {}
+    return false;
   }
 
   @override
