@@ -1,5 +1,6 @@
 package com.tursinalabs.quranoffline
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import com.google.android.play.core.integrity.IntegrityManagerFactory
 import com.google.android.play.core.integrity.IntegrityTokenRequest
@@ -26,6 +27,14 @@ class MainActivity : AudioServiceActivity() {
                             result.success(false)
                         } else {
                             result.success(isPackageInstalled(packageName))
+                        }
+                    }
+                    "launchPackage" -> {
+                        val packageName = call.argument<String>("packageName")
+                        if (packageName.isNullOrBlank()) {
+                            result.success(false)
+                        } else {
+                            result.success(launchPackage(packageName))
                         }
                     }
                     else -> result.notImplemented()
@@ -68,6 +77,18 @@ class MainActivity : AudioServiceActivity() {
             packageManager.getPackageInfo(packageName, 0)
             true
         } catch (_: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
+    /** Opens the app's launcher activity; more reliable than custom-scheme deep links. */
+    private fun launchPackage(packageName: String): Boolean {
+        return try {
+            val intent = packageManager.getLaunchIntentForPackage(packageName) ?: return false
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            true
+        } catch (_: Exception) {
             false
         }
     }
