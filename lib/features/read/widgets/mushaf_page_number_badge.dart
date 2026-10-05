@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/core/constants/app_colors.dart';
 
 /// Decorative page marker at the bottom of a Mushaf page view.
 class MushafPageNumberBadge extends StatelessWidget {
@@ -27,7 +28,7 @@ class MushafPageNumberBadge extends StatelessWidget {
         : colorScheme.surface.withValues(alpha: 0.94);
     final fillBottom = isDark
         ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
-        : const Color(0xFFE8EDE3).withValues(alpha: 0.45);
+        : AppColors.neutralCream.withValues(alpha: 0.45);
     final accentLine = colorScheme.primary.withValues(alpha: isDark ? 0.4 : 0.24);
 
     const outerSize = 44.0;

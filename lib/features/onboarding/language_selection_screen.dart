@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quran_offline/core/constants/app_colors.dart';
 import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
@@ -315,7 +316,7 @@ class _OnboardingBackdrop extends StatelessWidget {
 
     final topTint = isDark
         ? colorScheme.primary.withValues(alpha: 0.12)
-        : const Color(0xFFE8EDE3);
+        : AppColors.neutralCream;
     final bottomTint = isDark
         ? colorScheme.surface
         : colorScheme.surface.withValues(alpha: 0.98);

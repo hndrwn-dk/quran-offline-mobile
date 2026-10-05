@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:quran_offline/core/constants/app_colors.dart';
 
 /// Cream wash for tab roots, plus a header-only right-corner hairline arc.
 ///
@@ -16,7 +17,7 @@ class HomeBackdrop extends StatelessWidget {
 
   static Color topTint(ColorScheme colorScheme) {
     final isDark = colorScheme.brightness == Brightness.dark;
-    if (!isDark) return const Color(0xFFE8EDE3);
+    if (!isDark) return AppColors.neutralCream;
     // Blend onto surface so Scaffold/AppBar stay opaque. A 12% primary
     // wash as backgroundColor composites during Android page transitions
     // and flashes the previous Jelajahi list in dark mode.
