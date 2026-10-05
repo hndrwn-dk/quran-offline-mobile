@@ -13,8 +13,8 @@ class VerseShareCard extends StatelessWidget {
 
   final VerseShareContent content;
 
-  static const Color _creamTop = Color(0xFFE8EDE3);
-  static const Color _creamBottom = Color(0xFFF4F6F0);
+  static const Color _creamTop = AppColors.neutralCream;
+  static const Color _creamBottom = AppColors.neutralCreamLift;
 
   @override
   Widget build(BuildContext context) {

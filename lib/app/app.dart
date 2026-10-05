@@ -65,7 +65,7 @@ class _QuranOfflineAppState extends ConsumerState<QuranOfflineApp> {
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.warmPrimaryLight,
-            foregroundColor: const Color(0xFF1A281C),
+            foregroundColor: AppColors.onPrimaryDark,
           ),
         ),
         textButtonTheme: TextButtonThemeData(
