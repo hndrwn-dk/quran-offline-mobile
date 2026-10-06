@@ -8,67 +8,84 @@ Related: [docs/QURAN_TEXT_INTEGRITY.md](../../QURAN_TEXT_INTEGRITY.md), [DATA_SO
 
 ## Goal
 
-Optional colored tajwid on **Reader and Juz** Arabic, using the **current Digital Khatt V2** face and the **same** Uthmani `ar` string already on screen. Default off. Mushaf unchanged.
+Optional colored tajwid on **Reader and Juz** using **the Arabic font already on that surface** (`DigitalKhattV2`) and the **same** Uthmani `ar` string already on screen. Default off. Mushaf unchanged.
 
 Success:
 
-- With the toggle off, Arabic is identical to today (one Digital Khatt string, `onSurface`).
-- With the toggle on, letters that have a trusted rule show a distinct color; letters without a rule stay `onSurface`.
-- Concatenation of painted substrings equals `ar` exactly. No U+25CC. No U+0672 introduced into display.
+- Toggle off: Arabic is identical to today (one Digital Khatt string, `onSurface`).
+- Toggle on: letters that match a Hafs rule show a distinct color; others stay `onSurface`.
+- Painted substring concatenation equals `ar` exactly. Harakat stay attached. No dotted circles. No missing or cut glyphs.
 - Share cards stay uncolored plain `ar`.
 
-## Current surface
+## Current surface (do not change the face)
 
-Reader and Juz are one list: `ReaderScreen` (`JuzSource` / `SurahInJuzSource` / surah) builds `AyahCard`.
+Reader and Juz share `AyahCard` → `QuranArabicText` as a single `SelectableText` of `verse.arabic`.
 
-`AyahCard._buildPlainArabicText` uses `QuranArabicText` as a single `SelectableText` of `verse.arabic`.
-
-| Piece | Today |
-|-------|--------|
-| Font | `DigitalKhattV2` (`assets/fonts/DigitalKhattV2.otf`, QUL #247). Unicode OpenType, not COLR. Color is Flutter `TextStyle.color`. |
-| Text | Quran Foundation `text_uthmani` in JSON `ar`. Codepoint-for-codepoint. |
-| Size | `arabicFontSize` (16–48, default 30), Reader applies `* 1.15`. No user font-family switch. |
-| Highlights | Whole-card chrome (audio / user highlight). No per-letter spans. |
-| Latin | QUL `transliteration-tajweed.db` — pronunciation, not Arabic color. |
+| Piece | Today — keep this |
+|-------|-------------------|
+| Font | **DigitalKhattV2** (`assets/fonts/DigitalKhattV2.otf`, QUL #247). Unicode OpenType. Not a color font. |
+| Text | Bundled JSON `ar` (Uthmani Hafs). Codepoint-for-codepoint. |
+| Size | `arabicFontSize` (16–48, default 30), Reader `* 1.15`. No family picker. |
+| Latin | QUL `transliteration-tajweed.db` stays Latin-only. Not the Arabic color source. |
 | Mushaf | QPC V2 page fonts, monochrome. Out of scope. |
 
-`QuranArabicText` contract: no letter rewriting, no span coalescing, no sukun substitution.
+Do not switch Reader to Uthmanic, KFGQPC, Scheherazade, or QPC page fonts for this feature.
 
-## Why Quran.com HTML is not the displayed text
+## Why A, not B or C (old tajwid experience)
 
-`text_uthmani_tajweed` is a different character lineage than `ar`. Example 1:6: `ar` has U+0670; tajweed HTML has U+0672. Overlaying stripped HTML onto `ar` produced dotted circles and wrong letters.
+The old feature failed in **two** ways. They are not the same bug.
 
-`tool/generate_quran_json.py` rejects `text_uthmani_tajweed`. `VerseModel` has no `tj`. Drift schema v6 dropped `verses.tajweed`. Do not restore either.
+1. **Second Arabic string** — coloring data that was not our `ar` (different letters, U+0670 vs another alef, tatweel-only HTML) forced rewrite or overlay. Result: dotted circles and wrong letters.
+2. **Flutter span split** — even with the right letters, `TextSpan` boundaries between a letter and its harakat (or madda `ـٰ`) made marks vanish or clip. That is the Digital Khatt + rich-text issue, not “wrong font.”
 
-Integrity tests (`test/quran_text_integrity_test.dart`) forbid U+25CC and U+0672 in bundled `ar`.
+| Option | Rule source | Second corpus? | Fit to current Reader font (`DigitalKhattV2` + `ar`) |
+|--------|-------------|----------------|------------------------------------------------------|
+| **A — Hafs rules on `ar`** | Scholarly Hafs ‘an ‘Asim table, generated from the string we already paint | No | Best. Indices cannot drift. Renderer only has to keep clusters whole. |
+| **B — QUL Unicode tajwid export** | QUL annotation tool / Digital Khatt script | Yes, unless QUL text **equals** our QF `ar` byte-for-byte | Risky. QUL Digital Khatt script is not proven identical to JSON `ar`. Alignment is the old overlay bug again. |
+| **C — King Fahd / QPC coloring** | Madinah mushaf color convention | Yes if taken from QPC V4 glyphs | Wrong surface. QPC V4 is page fonts (QUL has even disabled V4 pending proofread). Reader does not use those glyphs. Taxonomy of rules can inform **A**; the font path must not. |
 
-## Decision: sidecar ranges, not HTML in JSON
+**Pick A.** Same Digital Khatt face, same `ar`. Colors from theme tokens. Rendering must be cluster-safe color-only spans (or word-level fallback) so harakat do not drop — that fix is required for A, B, or C.
 
-Keep `ar` as the only Arabic source of truth. Color is a separate index into that string.
+B is only worth revisiting if a QUL dump is hashed equal to our `ar` per ayah. C’s rule *names* can be copied into A’s table; C’s glyphs must not be.
 
-Rejected:
+**Source of which letter gets which rule:** standard **Hafs ‘an ‘Asim** tajwid as taught for the Madinah Hafs mushaf (noon/mim sakinah, tanween, qalqalah letters ق ط ب ج د, madd, ghunnah on shadda ن/م, lam shamsiyah/qamariyah, hamzat al-wasl). Apply those rules **to our existing `ar`**.
 
-- Displaying QF HTML as the on-screen Arabic.
-- Putting `tj` back into `s###.json` or SQLite.
-- Runtime-only rule engine as the primary dataset (incomplete madd/ikhfa; allowed only as a later fallback for unaligned ayahs).
-- Coloring Mushaf QPC V2 glyphs.
-- Coloring Latin instead of Arabic.
+The sidecar is **generated from `ar`**. Indices always refer to that string. There is no second Arabic corpus.
 
-## Data
+**Not used as a data source (do not revive):**
 
-### Sidecar (canonical, gitignored like other bundled data)
+- Quran Foundation / Quran.com colored HTML as a coloring dataset
+- JSON `tj` / SQLite `verses.tajweed`
+- QPC V4 tajweed page fonts (wrong script; glyph-based, not Digital Khatt)
+- QUL Latin `transliteration-tajweed.db` as Arabic color
 
-Path (proposed):
+QUL Digital Khatt remains the **font**. QUL Latin tajweed remains **transliteration**. Neither is the Arabic color table.
 
-- Canonical: `data/bundled/quran/tajweed/tajweed_spans.json` (or per-surah `tajweed/s001.json` if one file is too large)
+v1 rule set (applied to `ar`):
+
+| id | Trigger on `ar` (Hafs) |
+|----|------------------------|
+| `izhar` | Noon sakinah / tanween before throat letters |
+| `idgham` | Noon sakinah / tanween before يرملون (with/without ghunnah as sub-id if needed) |
+| `iqlab` | Noon sakinah / tanween before ب |
+| `ikhfa` | Noon sakinah / tanween before remaining letters |
+| `ikhfa_shafawi` | Mim sakinah before ب |
+| `idgham_shafawi` | Mim sakinah before م |
+| `qalqalah` | ق ط ب ج د with sukun (or waqf) |
+| `ghunnah` | نّ / مّ |
+| `madd` | Madd letters with the usual Hafs length classes collapsed to one legend color in v1 |
+| `laam_shamsiyah` | ال + sun letter |
+| `ham_wasl` | U+0671 / wasl contexts |
+
+Unknown ids ignored. Legend lists only rules that appear.
+
+Colors are **this app’s theme tokens** (`ColorScheme` tints), not a third-party CSS sheet. Same roles in Light and Forest.
+
+## Sidecar (generated, gitignored)
+
+- Canonical: `data/bundled/quran/tajweed/tajweed_spans.json` (or per-surah files)
 - Sync: `assets/quran/tajweed/` via `qo sync`
-- Verify: add to the `qo` required-file list (today 738 files)
-
-Not committed. Not merged into `s###.json`.
-
-### Record shape
-
-Per ayah:
+- Not committed. Not merged into `s###.json`. Do not restore `verses.tajweed`.
 
 ```json
 {
@@ -81,90 +98,59 @@ Per ayah:
 }
 ```
 
-- `start` / `end` are Unicode **extended grapheme cluster** indices into that ayah’s `ar` (half-open `[start, end)`).
-- A cluster is a base letter plus following combining marks. Waqf/saktah (U+06D6–U+06DC) plus the following space they attach to (Digital Khatt GPOS) is one cluster and must not be split.
-- `arHash` must match the imported `ar`. Mismatch → ignore spans, paint plain.
-- Missing ayah → paint plain. Never rewrite `ar` to force a match.
+- `start` / `end`: extended grapheme-cluster indices into that ayah’s `ar` (`[start, end)`).
+- Cluster = base letter + following combining marks (harakat, shadda, sukun, superscript alef U+0670).
+- Waqf/saktah U+06D6–U+06DC plus the following space they attach to in Digital Khatt GPOS: **one cluster**.
+- If a rule would split a cluster, **color the whole cluster**. Never emit a span that starts with a combining mark.
+- `arHash` mismatch → plain paint. Never rewrite `ar`.
 
-### Build-time alignment
+Generator: offline script that reads bundled `s###.json` `ar` only, walks letters with a Hafs rule table, writes the sidecar. Unit-test the walker on goldens (1:1, 1:6 keep U+0670, 2:1, a qalqalah ayah, an ikhfa ayah).
 
-QF `text_uthmani_tajweed` HTML is a **hint only**.
+## Rendering on Digital Khatt (why harakat used to vanish)
 
-1. Fetch HTML (local leftover `scripts/fetch_tajweed_data.py` may help; output must not land in verse JSON).
-2. Strip tags. Align stripped text to `ar` (LCS / token aligner). Extend `tool/audit_tj_ar.py` from report-only to emit ranges or skip.
-3. Map CSS classes onto `rule` ids. Drop any alignment that would display U+0672 or change letters.
-4. If alignment is not 1:1 on letters (tatweel-only differences may be skipped in the hint stream, not inserted into `ar`), omit that ayah.
+Previous coloring cut glyphs and dropped harakat because Flutter **shapes each `TextSpan` separately**. If a tag split `مَ` from `ـٰ`, or a letter from its fatha, the mark was laid out without its base (see historical notes in `docs/TAJWEED_RENDERING_ANALYSIS.md`). That was a **span-boundary** bug, not a Digital Khatt bug.
 
-Coverage may be less than 6236 ayahs. Incomplete coverage is acceptable; wrong letters are not.
+This feature must keep Digital Khatt and avoid that split:
 
-### Rule ids (v1)
+1. **One font on every span:** `DigitalKhattV2` + existing fallbacks, same size, height `1.7`, `locale: ar`. Missing family on a child span is what used to tofu U+0671.
+2. **Color is the only style difference.** No fontWeight, letterSpacing, or backgroundColor on letter spans (those break joining).
+3. **Never split inside a cluster.** Harakat always live in the same span as their base. If needed, color the whole word rather than cut lam-alif or shadda+haraka apart.
+4. Concatenation of span texts equals `ar` exactly.
+5. Toggle off / bad hash: current single `SelectableText` (proven path).
 
-Stable ids used in sidecar and theme:
+If device QA still shows joining breaks with color-only cluster spans, fall back to **word-level** color (one color per space-delimited word) rather than changing font or changing `ar`.
 
-| id | Meaning |
-|----|---------|
-| `ghunnah` | Ghunnah |
-| `idgham` | Idgham |
-| `ikhfa` | Ikhfa |
-| `iqlab` | Iqlab |
-| `qalqalah` | Qalqalah |
-| `madd` | Madd (collapse madda_normal / permissible / necessary for v1 legend) |
-| `ham_wasl` | Hamzat al-wasl |
-| `laam_shamsiyah` | Lam shamsiyah |
-
-Unknown ids in the sidecar are ignored (paint `onSurface`).
-
-v1 may ship a subset if alignment is weak for some classes. Legend only lists rules that actually appear in the sidecar.
-
-## Rendering
-
-Font stays `DigitalKhattV2` with the same fallbacks, size, height `1.7`, `locale: ar`, RTL.
-
-When the toggle is on and spans are valid:
-
-- `QuranArabicText` optional rich path: `SelectableText.rich` / `Text.rich`.
-- Adjacent `TextSpan`s share font, size, height, locale. **Only `color` differs.** No fontWeight, letterSpacing, or backgroundColor on letter spans (those break Arabic joining).
-- Span texts concatenated in order equal `ar`.
-- Clusters with no rule use `colorScheme.onSurface`.
-
-When the toggle is off, spans missing, or `arHash` fails: current single-style `SelectableText`.
-
-Bismillah block: same toggle if a sidecar row exists for that string; otherwise plain.
-
-### Theme
-
-Map `rule` → semantic colors via theme tokens / `ColorScheme` tints. No raw hex in widgets. Same roles in Light and Forest; contrast must hold on both.
+Bismillah: same font and same generator if we color it; otherwise leave the existing block plain.
 
 ## UI
 
-- Setting: boolean, persisted, **default false**. Place with Reader text settings (`TextSettingsDialog`), not Mushaf settings.
-- When on: compact legend under the first visible ayah or in the text-settings sheet (ghunnah, idgham, ikhfa, iqlab, qalqalah, madd — plus extras if present).
-- Share PNG / share text: always plain `ar`.
-- Explore sheets that reuse `QuranArabicText`: follow the same toggle if they show a full ayah; do not special-case Mushaf.
+- Persisted toggle, **default false**, in Reader `TextSettingsDialog` (not Mushaf).
+- Compact legend when on.
+- Share PNG / text: always plain `ar`.
 
-## Integrity constraints (non-negotiable)
+## Integrity constraints
 
-1. Do not rewrite `ar` (no sukun U+0652 → U+06E1, no U+0670 → U+0672).
-2. Do not display QF HTML as Arabic.
-3. Do not restore `verses.tajweed` or JSON `tj`.
-4. Do not split a base letter from harakat; do not split waqf-mark + attaching space.
-5. Do not color QPC V2 Mushaf pages in this feature.
+1. Do not rewrite `ar` (including no sukun substitution).
+2. Do not import a second Arabic coloring corpus.
+3. Do not restore JSON `tj` or SQLite `tajweed`.
+4. Do not split harakat from their letter.
+5. Do not color Mushaf QPC V2 in this feature.
+6. Do not change Reader’s Arabic family away from Digital Khatt V2.
 
 ## Tests (when implemented)
 
-- Concatenation of rich spans equals `ar` for every ayah that has sidecar rows.
-- `arHash` mismatch paints plain.
-- Corpus still has no U+25CC / U+0672 in `ar`.
-- Goldens: 1:1, 1:6 (must keep U+0670), 2:1.
-- Joining smoke: lam-alif and shadda+haraka with a color change on a neighboring letter.
-- Toggle off: widget tree uses the single-style path.
+- Span concat equals `ar`.
+- No span starts with a combining mark.
+- 1:6 still contains U+0670, never U+0672.
+- No U+25CC in display strings.
+- Joining smoke: lam-alif, shadda+haraka, waqf-on-space — with an adjacent colored cluster.
+- Toggle off uses the single-style path.
 
 ## Docs to update at implementation time
 
-- [docs/QURAN_TEXT_INTEGRITY.md](../../QURAN_TEXT_INTEGRITY.md) — colored display is sidecar-on-`ar`, not QF HTML overlay; span split is color-only and cluster-safe.
-- [DATA_SOURCES.md](../../../DATA_SOURCES.md) — sidecar path, license/source of the hint HTML, still “HTML is not imported into verse JSON”.
-- `qo` verify count when the sidecar is added.
+- `QURAN_TEXT_INTEGRITY.md` — coloring is Hafs-rule sidecar on `ar` + Digital Khatt; cluster-safe spans.
+- `DATA_SOURCES.md` — sidecar is generated from bundled `ar`; list the Hafs rule table as the scholarly baseline, not a third-party HTML dump.
 
 ## Out of scope
 
-Mushaf QPC V2 coloring, changing the Reader Arabic font, putting tajweed HTML in verse JSON, rewriting sukun, making Latin coloring a substitute for Arabic coloring, hafalan scoring changes.
+Mushaf coloring, QPC V4 fonts, changing Digital Khatt, Latin-as-substitute, hafalan scoring, runtime “guessing” that mutates letters.
