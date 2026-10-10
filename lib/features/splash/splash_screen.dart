@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/importer.dart';
 import 'package:quran_offline/core/providers/import_progress_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
-import 'package:quran_offline/core/widgets/nav_read_icon.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
 import 'package:quran_offline/core/utils/coachmark_prefs.dart';
 import 'package:quran_offline/features/onboarding/language_selection_screen.dart';
@@ -73,11 +72,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           // First launch: show language selection; otherwise go to home (upgraders with existing appLanguage skip picker)
           if (mounted) {
             await LanguageSelectionScreen.migrateLegacyIfNeeded();
-            if (!context.mounted) return;
+            if (!mounted) return;
             final done = await LanguageSelectionScreen.hasCompletedSelection();
-            if (!context.mounted) return;
-            await NavReadIcon.precache(context);
-            if (!context.mounted) return;
+            if (!mounted) return;
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                 builder: (_) => done
@@ -96,8 +93,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         if (!mounted) return;
         final done = await LanguageSelectionScreen.hasCompletedSelection();
         if (!mounted) return;
-        await NavReadIcon.precache(context);
-        if (!mounted) return;
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => done
@@ -115,11 +110,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     super.dispose();
   }
 
-  Widget _buildSplashIcon(double size) {
+  Widget _buildSplashIcon(double size, String assetPath) {
     final cachePx =
         (size * MediaQuery.devicePixelRatioOf(context)).ceil();
     return Image.asset(
-      'assets/icon/splash_icon_display.png',
+      assetPath,
       width: size,
       height: size,
       fit: BoxFit.contain,
@@ -131,6 +126,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Widget build(BuildContext context) {
     final progress = ref.watch(importProgressProvider);
     final colorScheme = Theme.of(context).colorScheme;
+    final splashLogo = colorScheme.brightness == Brightness.dark
+        ? 'assets/icon/splash_logo_cream.png'
+        : 'assets/icon/splash_logo_green.png';
     final isInitializing = progress != null && !progress.isComplete;
     final splashLang = AppLocalizations.normalizeLanguageCode(
       Localizations.localeOf(context).languageCode,
@@ -147,7 +145,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildSplashIcon(120),
+                  _buildSplashIcon(120, splashLogo),
                   const SizedBox(height: 32),
                   Text(
                     'Quran Offline',

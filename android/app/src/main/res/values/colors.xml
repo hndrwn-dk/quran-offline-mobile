@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Material 3 Surface colors matching Flutter theme -->
-    <color name="splash_background_light">#FFFFFF</color>
-    <color name="splash_background_dark">#121212</color>
-    <color name="ic_launcher_background">#E8EDE3</color>
+    <color name="splash_background_light">#F7FBF2</color>
+    <color name="splash_background_dark">#10140F</color>
+    <color name="ic_launcher_background">#EDF1D9</color>
 </resources>
