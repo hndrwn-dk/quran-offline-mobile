@@ -1,6 +1,6 @@
 /// Bundled QUL tajweed transliteration SQLite (read-only at runtime).
 abstract final class TransliterationConfig {
-  static const bundleVersion = 1;
+  static const bundleVersion = 2;
 
   static const assetPath =
       'assets/quran/transliteration/transliteration-tajweed.db';
