@@ -22,9 +22,8 @@ class CoverageUpdate {
 
 /// Unique ayahs read in the current khatam cycle. 6236 bits, local only.
 class KhatamCoverage {
-  KhatamCoverage({int cycle = 1, Uint8List? bits})
-      : cycle = cycle,
-        bits = bits ?? Uint8List(byteLength) {
+  KhatamCoverage({this.cycle = 1, Uint8List? bits})
+      : bits = bits ?? Uint8List(byteLength) {
     markedCount = _countSet(this.bits);
     _completed = _completedJuzCount();
   }

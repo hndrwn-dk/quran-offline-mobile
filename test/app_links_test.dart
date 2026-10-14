@@ -16,11 +16,6 @@ void main() {
     });
   });
 
-  test('donateUrl points to Ko-fi profile', () {
-    expect(AppLinks.donateUrl, 'https://ko-fi.com/hendrawandaryonokarso');
-    expect(AppLinks.donateUrl, isNot(contains('buymeacoffee')));
-  });
-
   group('AppLinks.ramadanTrackerPlayStoreForLocale', () {
     test('includes Ramadan Tracker package id', () {
       final url = AppLinks.ramadanTrackerPlayStoreForLocale('id');

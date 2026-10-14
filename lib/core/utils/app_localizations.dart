@@ -1,3 +1,4 @@
+import 'package:quran_offline/core/support/reading_milestone.dart';
 import 'package:quran_offline/core/utils/hijri_date.dart';
 
 /// Utility class for app UI localization
@@ -2218,46 +2219,225 @@ class AppLocalizations {
     };
   }
 
-  static String getSupportCoachmarkTitle(String language) {
+  static String supportTooltip(String language) {
     return switch (language) {
-      'id' => 'Suka aplikasinya? 🤍',
-      'en' => 'Enjoying the app? 🤍',
-      'zh' => '喜欢这个应用吗？🤍',
-      'ja' => 'アプリは気に入りましたか？🤍',
-      _ => 'Enjoying the app? 🤍',
+      'id' => 'Dukung aplikasi',
+      'en' => 'Support the app',
+      'zh' => '支持应用',
+      'ja' => 'アプリを支援',
+      _ => 'Support the app',
     };
   }
 
-  static String getSupportCoachmarkBody(String language) {
+  static String supportSettingsTitle(String language) {
+    return switch (language) {
+      'id' => 'Dukung aplikasi ini',
+      'en' => 'Support this app',
+      'zh' => '支持这个应用',
+      'ja' => 'このアプリを支援',
+      _ => 'Support this app',
+    };
+  }
+
+  static String supportSettingsSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Lewat Google Play, untuk pengembangan dan perawatan',
+      'en' => 'Through Google Play, for development and upkeep',
+      'zh' => '通过 Google Play，用于开发和维护',
+      'ja' => 'Google Play 経由。開発と維持のため',
+      _ => 'Through Google Play, for development and upkeep',
+    };
+  }
+
+  static String supportSheetTitle(String language) {
+    return switch (language) {
+      'id' => 'Dukung Quran Offline',
+      'en' => 'Support Quran Offline',
+      'zh' => '支持 Quran Offline',
+      'ja' => 'Quran Offline を支援',
+      _ => 'Support Quran Offline',
+    };
+  }
+
+  static String supportSheetBody(String language) {
     return switch (language) {
       'id' =>
-        'Dukung pengembangan Quran Offline di sini, yuk. App ini gratis selamanya & tanpa iklan.',
+        'Gratis, tanpa iklan, tanpa akun. Dukunganmu dipakai untuk pengembangan fitur dan perawatan aplikasi.',
       'en' =>
-        'Support Quran Offline development here. The app is free forever with no ads.',
-      'zh' => '在这里支持 Quran Offline 的开发。应用永久免费，无广告。',
-      'ja' => 'こちらから Quran Offline の開発をサポートしてください。アプリは永久無料・広告なしです。',
+        'Free, with no ads and no account. Your support goes to new features and keeping the app running.',
+      'zh' => '免费、无广告、无需账户。你的支持用于功能开发和日常维护。',
+      'ja' => '無料、広告なし、アカウント不要。支援は機能の開発とアプリの維持に使われます。',
       _ =>
-        'Support Quran Offline development here. The app is free forever with no ads.',
+        'Free, with no ads and no account. Your support goes to new features and keeping the app running.',
     };
   }
 
-  static String getSupportCoachmarkDismiss(String language) {
-    return switch (language) {
-      'id' => 'Nanti',
-      'en' => 'Later',
-      'zh' => '稍后',
-      'ja' => 'あとで',
-      _ => 'Later',
+  static String supportTierLabel(String language, String productId) {
+    return switch (productId) {
+      'support_10k' => switch (language) {
+          'id' => 'Segelas kopi',
+          'en' => 'A cup of coffee',
+          'zh' => '一杯咖啡',
+          'ja' => '一杯のコーヒー',
+          _ => 'A cup of coffee',
+        },
+      'support_50k' => switch (language) {
+          'id' => 'Dukung penuh',
+          'en' => 'Full support',
+          'zh' => '全力支持',
+          'ja' => 'フルサポート',
+          _ => 'Full support',
+        },
+      _ => switch (language) {
+          'id' => 'Makan siang',
+          'en' => 'Lunch',
+          'zh' => '一顿午餐',
+          'ja' => 'ランチ',
+          _ => 'Lunch',
+        },
     };
   }
 
-  static String getSupportCoachmarkCta(String language) {
+  static String supportContinuePlay(String language) {
     return switch (language) {
-      'id' => 'Lihat →',
-      'en' => 'View →',
-      'zh' => '查看 →',
-      'ja' => '見る →',
-      _ => 'View →',
+      'id' => 'Lanjut ke Google Play',
+      'en' => 'Continue to Google Play',
+      'zh' => '继续前往 Google Play',
+      'ja' => 'Google Play に進む',
+      _ => 'Continue to Google Play',
+    };
+  }
+
+  static String supportFootnote(String language) {
+    return switch (language) {
+      'id' =>
+        'Pembayaran lewat Google Play. Tidak membuka fitur apa pun — semua fitur tetap gratis untuk semua orang.',
+      'en' =>
+        'Payment through Google Play. This does not unlock anything — every feature stays free for everyone.',
+      'zh' => '通过 Google Play 付款。不会解锁任何功能——所有功能对所有人保持免费。',
+      'ja' => '支払いは Google Play 経由です。機能は解放されません。すべての機能は、すべての人に無料のままです。',
+      _ =>
+        'Payment through Google Play. This does not unlock anything — every feature stays free for everyone.',
+    };
+  }
+
+  static String supportPaymentPending(String language) {
+    return switch (language) {
+      'id' => 'Pembayaran sedang diproses',
+      'en' => 'Payment is processing',
+      'zh' => '付款处理中',
+      'ja' => '支払いを処理しています',
+      _ => 'Payment is processing',
+    };
+  }
+
+  static String supportUnavailable(String language) {
+    return switch (language) {
+      'id' => 'Belum tersedia di perangkat ini',
+      'en' => 'Not available on this device yet',
+      'zh' => '此设备上暂不可用',
+      'ja' => 'この端末ではまだ利用できません',
+      _ => 'Not available on this device yet',
+    };
+  }
+
+  static String supportPurchaseError(String language) {
+    return switch (language) {
+      'id' => 'Pembayaran tidak selesai',
+      'en' => 'Payment did not finish',
+      'zh' => '付款未完成',
+      'ja' => '支払いが完了しませんでした',
+      _ => 'Payment did not finish',
+    };
+  }
+
+  static String supportThanksTitle(String language) {
+    return switch (language) {
+      _ => 'Jazakallahu khairan',
+    };
+  }
+
+  static String supportThanksBody(String language) {
+    return switch (language) {
+      'id' =>
+        'Terima kasih sudah mendukung Quran Offline. Semoga menjadi kebaikan untukmu.',
+      'en' => 'Thank you for supporting Quran Offline. May it be a good deed for you.',
+      'zh' => '感谢你支持 Quran Offline。愿这成为你的善行。',
+      'ja' => 'Quran Offline を支えてくれてありがとう。あなたにとっての善い行いとなりますように。',
+      _ => 'Thank you for supporting Quran Offline. May it be a good deed for you.',
+    };
+  }
+
+  static String supportClose(String language) {
+    return switch (language) {
+      'id' => 'Tutup',
+      'en' => 'Close',
+      'zh' => '关闭',
+      'ja' => '閉じる',
+      _ => 'Close',
+    };
+  }
+
+  static String supportAlhamdulillah(String language) {
+    return switch (language) {
+      _ => 'Alhamdulillah',
+    };
+  }
+
+  static String supportMilestoneTitle(String language, ReadingMilestone milestone) {
+    return switch (milestone.kind) {
+      ReadingMilestoneKind.khatam => switch (language) {
+          'id' => 'Khatam 30 juz',
+          'en' => 'Khatam, all 30 juz',
+          'zh' => '30卷诵读完成',
+          'ja' => '30ジュズを読み終えました',
+          _ => 'Khatam, all 30 juz',
+        },
+      ReadingMilestoneKind.ten || ReadingMilestoneKind.twenty => switch (language) {
+          'id' => '${milestone.completedJuz} juz selesai dibaca',
+          'en' => '${milestone.completedJuz} juz read',
+          'zh' => '已读完${milestone.completedJuz}卷',
+          'ja' => '${milestone.completedJuz}ジュズを読み終えました',
+          _ => '${milestone.completedJuz} juz read',
+        },
+      ReadingMilestoneKind.juz => switch (language) {
+          'id' => 'Juz ${milestone.juzNumber} selesai dibaca',
+          'en' => 'Juz ${milestone.juzNumber} finished',
+          'zh' => '第${milestone.juzNumber}卷已读完',
+          'ja' => '第${milestone.juzNumber}ジュズを読み終えました',
+          _ => 'Juz ${milestone.juzNumber} finished',
+        },
+    };
+  }
+
+  static String supportMilestoneSubtitle(String language, int completed) {
+    return switch (language) {
+      'id' => '$completed dari 30 juz · siklus khatam ini',
+      'en' => '$completed of 30 juz · this khatam cycle',
+      'zh' => '本轮诵读 $completed/30 卷',
+      'ja' => 'このキータム周期 · 30ジュズ中$completed',
+      _ => '$completed of 30 juz · this khatam cycle',
+    };
+  }
+
+  static String supportAskBody(String language) {
+    return switch (language) {
+      'id' =>
+        'Kalau Quran Offline menemani bacaanmu, kamu bisa ikut mendukung pengembangannya.',
+      'en' => 'If Quran Offline has kept you company, you can help support its development.',
+      'zh' => '如果 Quran Offline 陪伴了你的诵读，你可以一起支持它的开发。',
+      'ja' => 'Quran Offline が読みの伴になっているなら、開発を支えることができます。',
+      _ => 'If Quran Offline has kept you company, you can help support its development.',
+    };
+  }
+
+  static String supportAskButton(String language) {
+    return switch (language) {
+      'id' => 'Dukung',
+      'en' => 'Support',
+      'zh' => '支持',
+      'ja' => '支援する',
+      _ => 'Support',
     };
   }
 

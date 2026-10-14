@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/constants/app_colors.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/providers/support_provider.dart';
 import 'package:quran_offline/features/splash/splash_screen.dart';
 
 class QuranOfflineApp extends ConsumerStatefulWidget {
@@ -12,6 +13,11 @@ class QuranOfflineApp extends ConsumerStatefulWidget {
 }
 
 class _QuranOfflineAppState extends ConsumerState<QuranOfflineApp> {
+  @override
+  void initState() {
+    super.initState();
+    ref.read(supportPurchaseProvider).start();
+  }
 
   @override
   Widget build(BuildContext context) {

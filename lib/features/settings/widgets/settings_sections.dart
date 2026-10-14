@@ -15,6 +15,7 @@ import 'package:quran_offline/features/settings/feedback_form_sheet.dart';
 import 'package:quran_offline/features/settings/audio_downloads_screen.dart';
 import 'package:quran_offline/features/settings/settings_link_actions.dart';
 import 'package:quran_offline/features/settings/widgets/about_data_sources_tile.dart';
+import 'package:quran_offline/features/support/support_sheet.dart';
 
 String settingsLanguageName(String lang) {
   return switch (lang) {
@@ -508,12 +509,10 @@ class SettingsAboutSupportSection extends ConsumerWidget {
           title: AppLocalizations.getSettingsText('about_support_section', appLanguage),
         ),
         ListTile(
-          leading: Icon(Icons.favorite, color: colorScheme.primary),
-          title: Text(AppLocalizations.getSettingsText('support_title', appLanguage)),
-          subtitle: Text(AppLocalizations.getSettingsText('support_subtitle', appLanguage)),
-          trailing: const Icon(Icons.open_in_new, size: 18),
-          onTap: () => SettingsLinkActions.openDonate(context),
-          onLongPress: () => SettingsLinkActions.showSupportInfo(context, ref),
+          leading: Icon(Icons.favorite_border, color: colorScheme.primary),
+          title: Text(AppLocalizations.supportSettingsTitle(appLanguage)),
+          subtitle: Text(AppLocalizations.supportSettingsSubtitle(appLanguage)),
+          onTap: () => showSupportSheet(context),
         ),
       ],
     );
