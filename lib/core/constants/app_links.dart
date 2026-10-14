@@ -12,8 +12,6 @@ class AppLinks {
   static const String productPage =
       'https://www.tursinalabs.com/products/quranoffline';
 
-  static const String donateUrl = 'https://ko-fi.com/hendrawandaryonokarso';
-
   /// Play Store listing with store UI language from app/translation locale.
   /// Note: `id=` is the Android package name, not Indonesian — use `hl=` for locale.
   static String playStoreForLocale(String locale) {
