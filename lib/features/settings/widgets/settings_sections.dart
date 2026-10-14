@@ -569,22 +569,6 @@ class SettingsAboutFeedbackSection extends ConsumerWidget {
           title: AppLocalizations.getSettingsText('about_feedback_section', appLanguage),
         ),
         ListTile(
-          leading: Icon(Icons.lightbulb_outline, color: colorScheme.primary),
-          title: Text(
-            AppLocalizations.getSettingsText('suggest_feature_title', appLanguage),
-          ),
-          subtitle: Text(
-            AppLocalizations.getSettingsText('suggest_feature_subtitle', appLanguage),
-          ),
-          onTap: () {
-            showFeedbackForm(
-              context,
-              type: FeedbackType.feature,
-              language: appLanguage,
-            );
-          },
-        ),
-        ListTile(
           leading: Icon(Icons.bug_report, color: colorScheme.primary),
           title: Text(
             AppLocalizations.getSettingsText('report_bug_title', appLanguage),
