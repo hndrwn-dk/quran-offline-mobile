@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart' show Verse;
+import 'package:quran_offline/core/explore/explore_favorite.dart';
 import 'package:quran_offline/core/models/dua_entry.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/models/surah_qul_info.dart';
@@ -180,6 +181,8 @@ Future<void> openAiSearchHit({
         title: entry.title,
         summary: entry.summary,
         ayahRefs: entry.ayahRefs,
+        favoriteKind: ExploreFavoriteKind.dua,
+        favoriteId: entry.id,
         onOpenReader: (ayahRef) {
           openReaderFromAyahRef(ref, ayahRef);
           openReaderScreen(context, ref);
@@ -200,6 +203,8 @@ Future<void> openAiSearchHit({
           sectionNote: e.scienceNote,
           sectionHeading: AppLocalizations.getScienceNoteHeading(lang),
           ayahRefs: e.ayahRefs,
+          favoriteKind: ExploreFavoriteKind.science,
+          favoriteId: e.id,
           onOpenReader: (ayahRef) {
             openReaderFromAyahRef(ref, ayahRef);
             openReaderScreen(context, ref);
@@ -222,6 +227,8 @@ Future<void> openAiSearchHit({
           sectionNote: e.reflection,
           sectionHeading: AppLocalizations.getThemeReflectionHeading(lang),
           ayahRefs: e.ayahRefs,
+          favoriteKind: ExploreFavoriteKind.theme,
+          favoriteId: e.id,
           onOpenReader: (ayahRef) {
             openReaderFromAyahRef(ref, ayahRef);
             openReaderScreen(context, ref);
@@ -248,6 +255,8 @@ Future<void> openAiSearchHit({
           sectionHeading: AppLocalizations.getAsmaReflectionHeading(lang),
           headerArabic: e.arabic,
           ayahRefs: e.ayahRefs,
+          favoriteKind: ExploreFavoriteKind.asma,
+          favoriteId: e.id,
           onOpenReader: (ayahRef) {
             openReaderFromAyahRef(ref, ayahRef);
             openReaderScreen(context, ref);

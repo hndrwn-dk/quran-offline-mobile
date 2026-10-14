@@ -7,6 +7,7 @@ import 'package:quran_offline/core/utils/responsive.dart';
 import 'package:quran_offline/core/widgets/coachmark/support_coachmark.dart';
 import 'package:quran_offline/features/home/widgets/home_activity_section.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
+import 'package:quran_offline/features/home/widgets/home_explore_favorites_section.dart';
 import 'package:quran_offline/features/home/widgets/home_hero_card.dart';
 import 'package:quran_offline/features/home/widgets/home_notes_section.dart';
 import 'package:quran_offline/features/home/widgets/home_quick_actions.dart';
@@ -69,6 +70,7 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
         const WeeklyReflectionCard(forHome: true),
         const HomeQuickActions(),
         const LastReadCard(forHome: true),
+        const HomeExploreFavoritesSection(),
         const HomeNotesSection(),
         const HomeActivitySection(),
         const SizedBox(height: 8),
@@ -96,6 +98,7 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 LastReadCard(forHome: true),
+                HomeExploreFavoritesSection(),
                 HomeNotesSection(),
                 HomeActivitySection(),
               ],

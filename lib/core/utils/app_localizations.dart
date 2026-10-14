@@ -66,7 +66,73 @@ class AppLocalizations {
           'ja' => '生活のテーマ',
           _ => 'Life themes',
         },
+      'favorite' => switch (language) {
+          'id' => 'Favorit',
+          'zh' => '收藏',
+          'ja' => 'お気に入り',
+          _ => 'Favorites',
+        },
       _ => category,
+    };
+  }
+
+  static String getExploreFavoritesTitle(String language) {
+    return switch (language) {
+      'id' => 'Favorit',
+      'zh' => '收藏',
+      'ja' => 'お気に入り',
+      _ => 'Favorites',
+    };
+  }
+
+  static String getExploreFavoritesCount(int count, String language) {
+    return switch (language) {
+      'id' => '$count tersimpan',
+      'zh' => '已收藏 $count',
+      'ja' => '$count 件',
+      _ => '$count saved',
+    };
+  }
+
+  static String getExploreFavoriteKindLabel(String kind, String language) {
+    return switch (kind) {
+      'dua' => switch (language) {
+          'id' => 'Doa',
+          'zh' => '祈祷',
+          'ja' => '祈り',
+          _ => 'Dua',
+        },
+      'science' => getDuaCategoryLabel('science', language),
+      'asma' => getDuaCategoryLabel('asma', language),
+      'theme' => getDuaCategoryLabel('life_theme', language),
+      _ => kind,
+    };
+  }
+
+  static String getHomeAllFavoritesLink(String language) {
+    return switch (language) {
+      'id' => 'Semua',
+      'zh' => '全部',
+      'ja' => 'すべて',
+      _ => 'All',
+    };
+  }
+
+  static String getExploreFavoriteAddTooltip(String language) {
+    return switch (language) {
+      'id' => 'Tandai favorit',
+      'zh' => '加入收藏',
+      'ja' => 'お気に入りに追加',
+      _ => 'Save favorite',
+    };
+  }
+
+  static String getExploreFavoriteRemoveTooltip(String language) {
+    return switch (language) {
+      'id' => 'Hapus favorit',
+      'zh' => '取消收藏',
+      'ja' => 'お気に入りから外す',
+      _ => 'Remove favorite',
     };
   }
 
@@ -101,6 +167,12 @@ class AppLocalizations {
           'zh' => '日常祈祷与经文思考',
           'ja' => '日常の祈りと節の味わい',
           _ => 'Duas, dhikr, and verse reflections',
+        },
+      'favorite' => switch (language) {
+          'id' => 'Doa, sains, Asma, dan tema yang ditandai',
+          'zh' => '已收藏的祈祷、科学、尊名与主题',
+          'ja' => '保存した祈り、科学、美名、テーマ',
+          _ => 'Saved duas, science, names, and themes',
         },
       _ => section,
     };

@@ -21,6 +21,7 @@ class ExploreIcons {
       'science' => Icons.biotech_outlined,
       'asma' => Icons.auto_awesome_outlined,
       'life_theme' => Icons.self_improvement_outlined,
+      'favorite' => Icons.favorite_border,
       _ => Icons.category_outlined,
     };
   }

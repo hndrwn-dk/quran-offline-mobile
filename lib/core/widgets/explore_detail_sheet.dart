@@ -9,6 +9,8 @@ import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
+import 'package:quran_offline/core/explore/explore_favorite.dart';
+import 'package:quran_offline/core/providers/explore_favorites_provider.dart';
 import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
 void openReaderFromAyahRef(WidgetRef ref, DuaAyahRef ayahRef) {
@@ -95,6 +97,8 @@ Future<void> showExploreDetailSheet({
   LocalizedText? sectionNote,
   String? sectionHeading,
   String? headerArabic,
+  ExploreFavoriteKind? favoriteKind,
+  String? favoriteId,
 }) async {
   final db = ref.read(databaseProvider);
   final preloadedVerses = <String, List<Verse>>{};
@@ -130,6 +134,8 @@ Future<void> showExploreDetailSheet({
           sectionNote: sectionNote,
           sectionHeading: sectionHeading,
           headerArabic: headerArabic,
+          favoriteKind: favoriteKind,
+          favoriteId: favoriteId,
           ayahRefs: ayahRefs,
           preloadedVerses: preloadedVerses,
           lang: lang,
@@ -156,6 +162,8 @@ class ExploreDetailSheet extends ConsumerWidget {
     this.sectionNote,
     this.sectionHeading,
     this.headerArabic,
+    this.favoriteKind,
+    this.favoriteId,
   });
 
   final LocalizedText title;
@@ -168,6 +176,8 @@ class ExploreDetailSheet extends ConsumerWidget {
   final void Function(DuaAyahRef ayahRef) onOpenReader;
   final double? maxBodyHeight;
   final String? headerArabic;
+  final ExploreFavoriteKind? favoriteKind;
+  final String? favoriteId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -272,13 +282,27 @@ class ExploreDetailSheet extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 8),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: colorScheme.onSurface.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(2),
-            ),
+          Row(
+            children: [
+              const SizedBox(width: 48),
+              Expanded(
+                child: Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: colorScheme.onSurface.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ),
+              _FavoriteButton(
+                kind: favoriteKind,
+                id: favoriteId,
+                lang: lang,
+              ),
+            ],
           ),
           if (maxBodyHeight != null)
             ConstrainedBox(
@@ -517,6 +541,42 @@ class ExploreVersePassage extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+class _FavoriteButton extends ConsumerWidget {
+  const _FavoriteButton({
+    required this.kind,
+    required this.id,
+    required this.lang,
+  });
+
+  final ExploreFavoriteKind? kind;
+  final String? id;
+  final String lang;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favoriteKind = kind;
+    final favoriteId = id;
+    if (favoriteKind == null || favoriteId == null || favoriteId.isEmpty) {
+      return const SizedBox(width: 48);
+    }
+    final marked = ref.watch(exploreFavoritesProvider).any(
+          (item) => item.kind == favoriteKind && item.id == favoriteId,
+        );
+    return IconButton(
+      tooltip: marked
+          ? AppLocalizations.getExploreFavoriteRemoveTooltip(lang)
+          : AppLocalizations.getExploreFavoriteAddTooltip(lang),
+      onPressed: () {
+        ref.read(exploreFavoritesProvider.notifier).toggle(
+              favoriteKind,
+              favoriteId,
+            );
+      },
+      icon: Icon(marked ? Icons.favorite : Icons.favorite_border),
     );
   }
 }

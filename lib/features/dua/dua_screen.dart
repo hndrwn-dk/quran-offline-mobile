@@ -17,6 +17,9 @@ import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 import 'package:quran_offline/features/dua/life_situation.dart';
 import 'package:quran_offline/features/dua/explore_icons.dart';
 import 'package:quran_offline/features/dua/explore_search.dart';
+import 'package:quran_offline/core/explore/explore_favorite.dart';
+import 'package:quran_offline/core/providers/explore_favorites_provider.dart';
+import 'package:quran_offline/features/dua/open_explore_favorite.dart';
 import 'package:quran_offline/features/dua/widgets/explore_hub_search_bar.dart';
 import 'package:quran_offline/features/dua/widgets/explore_hub_section_card.dart';
 import 'package:quran_offline/features/dua/widgets/explore_section_scaffold.dart';
@@ -261,7 +264,25 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
     final asmaCount = asmaCatalog?.entries.length ?? 0;
     final themeCount = themeCatalog?.entries.length ?? 0;
 
+    final favoriteViews = resolveExploreFavorites(
+      favorites: ref.watch(exploreFavoritesProvider),
+      lang: lang,
+      duas: catalog.entries,
+      science: scienceCatalog?.entries ?? const [],
+      asma: asmaCatalog?.entries ?? const [],
+      themes: themeCatalog?.entries ?? const [],
+    );
+
     final sections = [
+      if (favoriteViews.isNotEmpty)
+        _HubSection(
+          sectionKey: 'favorite',
+          countLabel: AppLocalizations.getExploreFavoritesCount(
+            favoriteViews.length,
+            lang,
+          ),
+          onTap: () => openExploreFavoritesPage(context),
+        ),
       _HubSection(
         sectionKey: 'prophet',
         countLabel: AppLocalizations.getDuaProphetCount(prophetCount, lang),
@@ -1469,6 +1490,8 @@ Future<void> _showDuaDetail(
     title: entry.title,
     summary: entry.summary,
     ayahRefs: entry.ayahRefs,
+    favoriteKind: ExploreFavoriteKind.dua,
+    favoriteId: entry.id,
     onOpenReader: (ayahRef) {
       openReaderFromAyahRef(ref, ayahRef);
       openReaderScreen(context, ref);
@@ -1491,6 +1514,8 @@ Future<void> _showScienceDetail(
     sectionNote: entry.scienceNote,
     sectionHeading: AppLocalizations.getScienceNoteHeading(lang),
     ayahRefs: entry.ayahRefs,
+    favoriteKind: ExploreFavoriteKind.science,
+    favoriteId: entry.id,
     onOpenReader: (ayahRef) {
       openReaderFromAyahRef(ref, ayahRef);
       openReaderScreen(context, ref);
@@ -1514,6 +1539,8 @@ Future<void> _showAsmaDetail(
     sectionHeading: AppLocalizations.getAsmaReflectionHeading(lang),
     headerArabic: entry.arabic,
     ayahRefs: entry.ayahRefs,
+    favoriteKind: ExploreFavoriteKind.asma,
+    favoriteId: entry.id,
     onOpenReader: (ayahRef) {
       openReaderFromAyahRef(ref, ayahRef);
       openReaderScreen(context, ref);
@@ -1536,6 +1563,8 @@ Future<void> _showThemeDetail(
     sectionNote: entry.reflection,
     sectionHeading: AppLocalizations.getThemeReflectionHeading(lang),
     ayahRefs: entry.ayahRefs,
+    favoriteKind: ExploreFavoriteKind.theme,
+    favoriteId: entry.id,
     onOpenReader: (ayahRef) {
       openReaderFromAyahRef(ref, ayahRef);
       openReaderScreen(context, ref);
@@ -1554,6 +1583,8 @@ Future<void> _showExploreDetail({
   LocalizedText? sectionNote,
   String? sectionHeading,
   String? headerArabic,
+  ExploreFavoriteKind? favoriteKind,
+  String? favoriteId,
 }) {
   return showExploreDetailSheet(
     context: context,
@@ -1564,6 +1595,8 @@ Future<void> _showExploreDetail({
     sectionNote: sectionNote,
     sectionHeading: sectionHeading,
     headerArabic: headerArabic,
+    favoriteKind: favoriteKind,
+    favoriteId: favoriteId,
     ayahRefs: ayahRefs,
     onOpenReader: onOpenReader,
   );
