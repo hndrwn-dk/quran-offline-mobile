@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:quran_offline/core/support/support_billing_client.dart';
 import 'package:quran_offline/core/support/support_products.dart';
@@ -44,44 +45,101 @@ class SupportPurchaseService extends ChangeNotifier {
       );
     } catch (_) {
       phase = SupportUiPhase.unavailable;
+      return;
     }
+    unawaited(_prefetchDetails());
   }
 
+  /// Fills [_details] after the purchase listener is attached. Does not change
+  /// phase and does not block startup.
+  Future<void> _prefetchDetails() async {
+    try {
+      await _readProducts();
+    } catch (_) {}
+  }
+
+  bool get _cacheComplete => SupportProducts.ids.every(_details.containsKey);
+
+  bool get _holdsPurchasePhase =>
+      phase == SupportUiPhase.pending || phase == SupportUiPhase.thanks;
+
   Future<void> prepare() async {
-    if (phase != SupportUiPhase.pending && phase != SupportUiPhase.thanks) {
+    if (_cacheComplete) {
+      _publishOffers(updatePhase: true);
+      unawaited(_refreshPrices());
+      return;
+    }
+    if (!_holdsPurchasePhase && phase != SupportUiPhase.loading) {
       phase = SupportUiPhase.loading;
       _notify();
     }
     try {
-      final available = await _client.isAvailable();
-      if (!available) {
-        phase = SupportUiPhase.unavailable;
-        offers = const [];
-        _notify();
+      final stored = await _readProducts();
+      if (_disposed) return;
+      if (!stored && !_cacheComplete) {
+        _markUnavailable();
         return;
       }
-      final response = await _client.queryProductDetails(SupportProducts.ids);
-      _details
-        ..clear()
-        ..addEntries(response.productDetails.map((product) => MapEntry(product.id, product)));
-      offers = [
-        for (final id in SupportProducts.ordered)
-          if (_details[id] != null) SupportOffer(id: id, price: _details[id]!.price),
-      ];
-      if (offers.isEmpty) {
-        phase = SupportUiPhase.unavailable;
-      } else {
-        if (!offers.any((offer) => offer.id == selectedId)) {
-          selectedId = offers.length >= 2 ? offers[1].id : offers.first.id;
-        }
-        if (phase != SupportUiPhase.pending && phase != SupportUiPhase.thanks) {
-          phase = SupportUiPhase.catalog;
-        }
-      }
+      _publishOffers(updatePhase: true);
     } catch (_) {
-      phase = SupportUiPhase.unavailable;
-      offers = const [];
+      if (_disposed) return;
+      _markUnavailable();
     }
+  }
+
+  Future<void> _refreshPrices() async {
+    try {
+      final changed = await _readProducts();
+      if (_disposed || !changed) return;
+      _publishOffers(updatePhase: false);
+    } catch (_) {}
+  }
+
+  /// Returns whether cached prices changed. A partial Play response leaves the
+  /// existing cache in place.
+  Future<bool> _readProducts() async {
+    final available = await _client.isAvailable();
+    if (!available || _disposed) return false;
+    final response = await _client.queryProductDetails(SupportProducts.ids);
+    if (_disposed) return false;
+    final incoming = {
+      for (final product in response.productDetails) product.id: product,
+    };
+    if (!SupportProducts.ids.every(incoming.containsKey)) return false;
+    final changed = SupportProducts.ordered.any(
+      (id) => _details[id]?.price != incoming[id]!.price,
+    );
+    _details
+      ..clear()
+      ..addAll(incoming);
+    return changed;
+  }
+
+  void _publishOffers({required bool updatePhase}) {
+    offers = [
+      for (final id in SupportProducts.ordered)
+        if (_details[id] != null)
+          SupportOffer(id: id, price: _details[id]!.price),
+    ];
+    if (offers.isNotEmpty && !offers.any((offer) => offer.id == selectedId)) {
+      selectedId = offers.length >= 2 ? offers[1].id : offers.first.id;
+    }
+    if (_holdsPurchasePhase) {
+      _notify();
+      return;
+    }
+    if (offers.isEmpty) {
+      _markUnavailable();
+      return;
+    }
+    if (updatePhase) phase = SupportUiPhase.catalog;
+    _notify();
+  }
+
+  void _markUnavailable() {
+    if (_holdsPurchasePhase || _cacheComplete) return;
+    phase = SupportUiPhase.unavailable;
+    offers = const [];
     _notify();
   }
 
@@ -163,6 +221,13 @@ class SupportPurchaseService extends ChangeNotifier {
 
   void _notify() {
     if (_disposed) return;
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (!_disposed) notifyListeners();
+      });
+      return;
+    }
     notifyListeners();
   }
 
