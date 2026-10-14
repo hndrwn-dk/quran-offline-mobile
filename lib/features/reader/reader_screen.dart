@@ -23,6 +23,7 @@ import 'package:quran_offline/features/reader/surah_header_card.dart';
 import 'package:quran_offline/features/reader/widgets/reader_bismillah_block.dart';
 import 'package:quran_offline/features/reader/widgets/reader_loading_placeholder.dart';
 import 'package:quran_offline/features/reader/widgets/go_to_ayah_sheet.dart';
+import 'package:quran_offline/features/reader/visible_reader_item.dart';
 import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
 import 'package:quran_offline/features/reader/text_settings_dialog.dart';
 
@@ -81,42 +82,16 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     // Get current item positions
     final positions = _itemPositionsListener.itemPositions.value;
     if (positions.isEmpty) return;
-    
-    // Find the item that is currently at the top of the viewport
-    // itemLeadingEdge: position of leading edge (0 = top of viewport, negative = above, >1 = below)
-    // itemTrailingEdge: position of trailing edge
-    // We want the item whose leading edge is closest to 0 (top of viewport) but still visible
-    final visiblePositions = positions.where((pos) {
-      // Item is visible if it has passed the top (trailingEdge > 0) and hasn't completely passed bottom (leadingEdge < 1)
-      return pos.itemTrailingEdge > 0 && pos.itemLeadingEdge < 1.0 && pos.index >= 0;
-    }).toList();
-    
-    int? targetIndex;
-    if (visiblePositions.isNotEmpty) {
-      // Sort by itemLeadingEdge ascending - the one with smallest leading edge is closest to top
-      visiblePositions.sort((a, b) => a.itemLeadingEdge.compareTo(b.itemLeadingEdge));
-      // Take the first one (closest to top, but make sure it's actually visible)
-      final topItem = visiblePositions.first;
-      // Use the item that is most visible at the top
-      // If the top item's leading edge is very negative (way above viewport), use the next one
-      // Otherwise, use the top item
-      if (topItem.itemLeadingEdge < -0.3 && visiblePositions.length > 1) {
-        // Top item is too far above, use the next visible item
-        targetIndex = visiblePositions[1].index;
-      } else {
-        // Use the top item (closest to top of viewport)
-        targetIndex = topItem.index;
-      }
-    }
-    
-    // Fallback: if no good match, use the first item that has passed top
-    if (targetIndex == null) {
-      final passedTop = positions.where((pos) => pos.itemTrailingEdge > 0 && pos.index >= 0).toList();
-      if (passedTop.isNotEmpty) {
-        passedTop.sort((a, b) => a.itemTrailingEdge.compareTo(b.itemTrailingEdge));
-        targetIndex = passedTop.first.index;
-      }
-    }
+
+    final verses = ref.read(readerVersesProvider(source)).valueOrNull;
+    final isSurahSource = source is SurahSource || source is SurahInJuzSource;
+    final lastItemIndex = verses == null || verses.isEmpty
+        ? null
+        : (isSurahSource ? verses.length : verses.length - 1);
+    final targetIndex = visibleReaderItemIndex(
+      positions,
+      lastItemIndex: lastItemIndex,
+    );
     
     if (targetIndex == null || targetIndex < 0) return;
     
