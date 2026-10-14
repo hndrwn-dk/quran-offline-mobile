@@ -16,6 +16,7 @@ import 'package:quran_offline/features/read/widgets/last_read_card.dart';
 import 'package:quran_offline/features/read/widgets/weekly_reflection_card.dart';
 import 'package:quran_offline/features/settings/about_screen.dart';
 import 'package:quran_offline/features/settings/settings_screen.dart';
+import 'package:quran_offline/features/support/support_heart_mark.dart';
 import 'package:quran_offline/features/support/support_sheet.dart';
 
 class BerandaScreen extends ConsumerStatefulWidget {
@@ -114,7 +115,8 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
         leading: IconButton(
           icon: const Icon(Icons.menu),
           iconSize: 22,
-          tooltip: AppLocalizations.getSettingsText('about_header', appLanguage),
+          tooltip:
+              AppLocalizations.getSettingsText('about_header', appLanguage),
           onPressed: () {
             Navigator.push<void>(
               context,
@@ -125,28 +127,21 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border),
-            color: colorScheme.onSurfaceVariant,
-            iconSize: 22,
+          SupportAppBarButton(
             tooltip: AppLocalizations.supportTooltip(appLanguage),
-            style: IconButton.styleFrom(
-              fixedSize: const Size(44, 44),
-              minimumSize: const Size(44, 44),
-              padding: EdgeInsets.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
             onPressed: () => showSupportSheet(context),
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             iconSize: 22,
-            tooltip: AppLocalizations.getSettingsText('settings_title', appLanguage),
+            tooltip:
+                AppLocalizations.getSettingsText('settings_title', appLanguage),
             onPressed: () {
               Navigator.push<void>(
                 context,
                 MaterialPageRoute<void>(
-                  builder: (context) => const SettingsScreen(showBackButton: true),
+                  builder: (context) =>
+                      const SettingsScreen(showBackButton: true),
                 ),
               );
             },

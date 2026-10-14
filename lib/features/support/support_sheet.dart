@@ -4,6 +4,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/support_provider.dart';
 import 'package:quran_offline/core/support/support_purchase_service.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/features/support/support_heart_mark.dart';
 
 Future<void> showSupportSheet(BuildContext context) {
   return showModalBottomSheet<void>(
@@ -52,7 +53,8 @@ class _SupportSheetState extends ConsumerState<SupportSheet> {
       Navigator.of(context).pop();
       if (failed) {
         messenger.showSnackBar(
-          SnackBar(content: Text(AppLocalizations.supportPurchaseError(language))),
+          SnackBar(
+              content: Text(AppLocalizations.supportPurchaseError(language))),
         );
       }
       return;
@@ -109,7 +111,8 @@ class _SupportSheetState extends ConsumerState<SupportSheet> {
                               language,
                               service.offers[i].id,
                             ),
-                            selected: service.offers[i].id == service.selectedId,
+                            selected:
+                                service.offers[i].id == service.selectedId,
                             onTap: () => service.select(service.offers[i].id),
                           ),
                         ),
@@ -129,7 +132,9 @@ class _SupportSheetState extends ConsumerState<SupportSheet> {
                       ),
                     ),
                   FilledButton(
-                    onPressed: service.phase == SupportUiPhase.pending ? null : service.buySelected,
+                    onPressed: service.phase == SupportUiPhase.pending
+                        ? null
+                        : service.buySelected,
                     child: Text(AppLocalizations.supportContinuePlay(language)),
                   ),
                 ],
@@ -205,12 +210,11 @@ class _Thanks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 8),
-        Icon(Icons.favorite, color: colorScheme.primary, size: 36),
+        const SupportThanksHeart(),
         const SizedBox(height: 12),
         Text(
           AppLocalizations.supportThanksTitle(language),
