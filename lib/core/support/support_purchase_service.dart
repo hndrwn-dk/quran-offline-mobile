@@ -5,6 +5,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:quran_offline/core/support/support_billing_client.dart';
 import 'package:quran_offline/core/support/support_products.dart';
+import 'package:quran_offline/core/support/support_purchase_quantity.dart';
 
 enum SupportUiPhase { loading, catalog, pending, thanks, unavailable }
 
@@ -34,6 +35,8 @@ class SupportPurchaseService extends ChangeNotifier {
   bool sheetOpen = false;
   bool closeRequested = false;
   bool errorRequested = false;
+  int purchasedQuantity = 1;
+  String? purchasedProductId;
 
   void start() {
     if (_started) return;
@@ -198,6 +201,8 @@ class SupportPurchaseService extends ChangeNotifier {
             await _client.completePurchase(purchase);
           }
           _recordOnce(purchase);
+          purchasedProductId = purchase.productID;
+          purchasedQuantity = supportPurchaseQuantity(purchase);
           phase = sheetOpen ? SupportUiPhase.thanks : SupportUiPhase.catalog;
         case PurchaseStatus.canceled:
           phase = SupportUiPhase.catalog;

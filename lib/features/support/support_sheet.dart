@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/support_provider.dart';
 import 'package:quran_offline/core/support/support_products.dart';
+import 'package:quran_offline/core/support/support_purchase_quantity.dart';
 import 'package:quran_offline/core/support/support_purchase_service.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/support/support_heart_mark.dart';
@@ -87,6 +88,8 @@ class _SupportSheetState extends ConsumerState<SupportSheet> {
               ? _Thanks(
                   key: const ValueKey('support_thanks'),
                   language: language,
+                  productId: service.purchasedProductId,
+                  quantity: service.purchasedQuantity,
                 )
               : _Catalog(
                   key: const ValueKey('support_catalog'),
@@ -162,6 +165,14 @@ class _Catalog extends StatelessWidget {
                 ),
               ],
             ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            AppLocalizations.supportQuantityHint(language),
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
           ),
           const SizedBox(height: 16),
           if (service.phase == SupportUiPhase.pending)
@@ -264,12 +275,25 @@ class _TierTile extends StatelessWidget {
 }
 
 class _Thanks extends StatelessWidget {
-  const _Thanks({super.key, required this.language});
+  const _Thanks({
+    super.key,
+    required this.language,
+    required this.productId,
+    required this.quantity,
+  });
 
   final String language;
+  final String? productId;
+  final int quantity;
 
   @override
   Widget build(BuildContext context) {
+    final quantityLine = supportThanksQuantityLine(
+      language: language,
+      productId: productId,
+      quantity: quantity,
+    );
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -286,6 +310,16 @@ class _Thanks extends StatelessWidget {
           AppLocalizations.supportThanksBody(language),
           textAlign: TextAlign.center,
         ),
+        if (quantityLine != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            quantityLine,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+          ),
+        ],
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
