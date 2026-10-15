@@ -12,6 +12,8 @@ import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/core/explore/explore_favorite.dart';
 import 'package:quran_offline/core/providers/explore_favorites_provider.dart';
 import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
+import 'package:quran_offline/features/dua/open_explore_favorite.dart'
+    show ExploreFavoritesPage;
 
 void openReaderFromAyahRef(WidgetRef ref, DuaAyahRef ayahRef) {
   ref.read(readerSourceProvider.notifier).state =
@@ -121,10 +123,10 @@ Future<void> showExploreDetailSheet({
     builder: (sheetContext) {
       final media = MediaQuery.of(sheetContext);
       // Usable height after keyboard + safe area — not full screen.
-      final availableHeight = media.size.height -
-          media.viewInsets.bottom -
-          media.padding.vertical;
-      final maxSheetHeight = (availableHeight * 0.88).clamp(160.0, media.size.height);
+      final availableHeight =
+          media.size.height - media.viewInsets.bottom - media.padding.vertical;
+      final maxSheetHeight =
+          (availableHeight * 0.88).clamp(160.0, media.size.height);
       return Padding(
         padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
         child: ExploreDetailSheet(
@@ -192,21 +194,21 @@ class ExploreDetailSheet extends ConsumerWidget {
       shrinkWrap: true,
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       children: [
-        if (headerArabicText != null)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  title.forLanguage(lang),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Text(
+                title.forLanguage(lang),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
               ),
+            ),
+            if (headerArabicText != null) ...[
               const SizedBox(width: 12),
               SizedBox(
-                width: 112,
+                width: 96,
                 height: 48,
                 child: Align(
                   alignment: Alignment.centerRight,
@@ -229,14 +231,14 @@ class ExploreDetailSheet extends ConsumerWidget {
                 ),
               ),
             ],
-          )
-        else
-          Text(
-            title.forLanguage(lang),
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-          ),
+            const SizedBox(width: 8),
+            _FavoriteButton(
+              kind: favoriteKind,
+              id: favoriteId,
+              lang: lang,
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         Text(
           summary.forLanguage(lang),
@@ -275,18 +277,19 @@ class ExploreDetailSheet extends ConsumerWidget {
       ],
     );
 
-    return Material(
-      color: colorScheme.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const SizedBox(width: 48),
-              Expanded(
-                child: Center(
+    return ScaffoldMessenger(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Align(
+          alignment: Alignment.bottomCenter,
+          child: Material(
+            color: colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Center(
                   child: Container(
                     width: 40,
                     height: 4,
@@ -296,52 +299,47 @@ class ExploreDetailSheet extends ConsumerWidget {
                     ),
                   ),
                 ),
-              ),
-              _FavoriteButton(
-                kind: favoriteKind,
-                id: favoriteId,
-                lang: lang,
-              ),
-            ],
-          ),
-          if (maxBodyHeight != null)
-            ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: maxBodyHeight!),
-              child: body,
-            )
-          else
-            body,
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-            child: SafeArea(
-              top: false,
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: ayahRefs.isEmpty
-                      ? null
-                      : () async {
-                          if (ayahRefs.length == 1) {
-                            onOpenReader(ayahRefs.first);
-                            return;
-                          }
-                          final picked = await showExploreAyahRefPicker(
-                            context: context,
-                            lang: lang,
-                            ayahRefs: ayahRefs,
-                            surahNames: surahNames,
-                          );
-                          if (picked != null) {
-                            onOpenReader(picked);
-                          }
-                        },
-                  icon: const Icon(Icons.menu_book_outlined),
-                  label: Text(AppLocalizations.getDuaOpenInReader(lang)),
+                if (maxBodyHeight != null)
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: maxBodyHeight!),
+                    child: body,
+                  )
+                else
+                  body,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                  child: SafeArea(
+                    top: false,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: ayahRefs.isEmpty
+                            ? null
+                            : () async {
+                                if (ayahRefs.length == 1) {
+                                  onOpenReader(ayahRefs.first);
+                                  return;
+                                }
+                                final picked = await showExploreAyahRefPicker(
+                                  context: context,
+                                  lang: lang,
+                                  ayahRefs: ayahRefs,
+                                  surahNames: surahNames,
+                                );
+                                if (picked != null) {
+                                  onOpenReader(picked);
+                                }
+                              },
+                        icon: const Icon(Icons.menu_book_outlined),
+                        label: Text(AppLocalizations.getDuaOpenInReader(lang)),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -410,20 +408,22 @@ class ExploreAyahBlock extends ConsumerWidget {
                     children: [
                       Text(
                         surahInfo.englishName,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                              color: colorScheme.onSurface,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18,
+                                  color: colorScheme.onSurface,
+                                ),
                       ),
                       if (surahInfo.getMeaning(lang).isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
                           child: Text(
                             surahInfo.getMeaning(lang),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
                           ),
                         ),
                     ],
@@ -566,17 +566,91 @@ class _FavoriteButton extends ConsumerWidget {
     final marked = ref.watch(exploreFavoritesProvider).any(
           (item) => item.kind == favoriteKind && item.id == favoriteId,
         );
-    return IconButton(
-      tooltip: marked
-          ? AppLocalizations.getExploreFavoriteRemoveTooltip(lang)
-          : AppLocalizations.getExploreFavoriteAddTooltip(lang),
-      onPressed: () {
-        ref.read(exploreFavoritesProvider.notifier).toggle(
-              favoriteKind,
-              favoriteId,
+    final colorScheme = Theme.of(context).colorScheme;
+    final label = marked
+        ? AppLocalizations.getExploreFavoritesSavedPill(lang)
+        : AppLocalizations.getExploreFavoritesSavePill(lang);
+    return Material(
+      color: marked ? colorScheme.primaryContainer : colorScheme.surface,
+      shape: StadiumBorder(
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.7),
+        ),
+      ),
+      child: InkWell(
+        customBorder: const StadiumBorder(),
+        onTap: () {
+          final wasMarked = marked;
+          ExploreFavorite? existing;
+          for (final item in ref.read(exploreFavoritesProvider)) {
+            if (item.kind == favoriteKind && item.id == favoriteId) {
+              existing = item;
+            }
+          }
+          final removed = existing;
+          ref.read(exploreFavoritesProvider.notifier).toggle(
+                favoriteKind,
+                favoriteId,
+              );
+          final messenger = ScaffoldMessenger.of(context);
+          messenger.hideCurrentSnackBar();
+          if (wasMarked && removed != null) {
+            messenger.showSnackBar(
+              SnackBar(
+                content:
+                    Text(AppLocalizations.getExploreFavoritesRemoved(lang)),
+                action: SnackBarAction(
+                  label: AppLocalizations.getExploreFavoritesUndo(lang),
+                  onPressed: () {
+                    ref
+                        .read(exploreFavoritesProvider.notifier)
+                        .restore(removed);
+                  },
+                ),
+              ),
             );
-      },
-      icon: Icon(marked ? Icons.favorite : Icons.favorite_border),
+            return;
+          }
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.getExploreFavoritesSaved(lang)),
+              action: SnackBarAction(
+                label: AppLocalizations.getExploreFavoritesView(lang),
+                onPressed: () {
+                  final navigator = Navigator.of(context);
+                  navigator.pop();
+                  navigator.push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const ExploreFavoritesPage(),
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                marked ? Icons.favorite : Icons.favorite_border,
+                size: 18,
+                color: colorScheme.primary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
