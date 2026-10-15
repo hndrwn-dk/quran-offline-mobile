@@ -11,7 +11,9 @@ import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/last_read_resolve.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/providers/support_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/support/ayah_dwell.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/utils/juz_info.dart';
@@ -46,6 +48,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   int? _lastFollowedAyah;
   /// Topmost visible ayah while reading a surah (for AppBar progress chip).
   int _visibleAyahNo = 1;
+  final AyahDwell _ayahDwell = AyahDwell();
+  Timer? _dwellTimer;
+  AyahRef? _dwellAyah;
 
   @override
   void didChangeDependencies() {
@@ -94,11 +99,38 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
     
     if (targetIndex == null || targetIndex < 0) return;
-    
+    final index = targetIndex;
+    if (verses != null) {
+      final verseIndex = isSurahSource ? index - 1 : index;
+      if (verseIndex >= 0 && verseIndex < verses.length) {
+        _noteVisibleAyah(verses[verseIndex]);
+      }
+    }
+
     // Debounce: wait 500ms after scroll stops before updating
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       if (mounted) {
-        _updateLastRead(source, targetIndex!);
+        _updateLastRead(source, index);
+      }
+    });
+  }
+
+  void _noteVisibleAyah(Verse verse) {
+    final ayah = AyahRef(verse.surahId, verse.ayahNo);
+    final ready = _ayahDwell.onVisible(ayah, DateTime.now());
+    if (ready != null) {
+      _dwellTimer?.cancel();
+      ref.read(readingCoverageProvider).markDwelled(ready);
+      return;
+    }
+    if (_dwellAyah == ayah && (_dwellTimer?.isActive ?? false)) return;
+    _dwellAyah = ayah;
+    _dwellTimer?.cancel();
+    _dwellTimer = Timer(AyahDwell.threshold, () {
+      if (!mounted) return;
+      final counted = _ayahDwell.onVisible(ayah, DateTime.now());
+      if (counted != null) {
+        ref.read(readingCoverageProvider).markDwelled(counted);
       }
     });
   }
@@ -146,6 +178,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   @override
   void dispose() {
     _debounceTimer?.cancel();
+    _dwellTimer?.cancel();
     _itemPositionsListener.itemPositions.removeListener(_onItemPositionsChanged);
     super.dispose();
   }
