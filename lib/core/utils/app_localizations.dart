@@ -5951,10 +5951,10 @@ class AppLocalizations {
   static String _getLibrarySubtitle(String language) {
     return switch (language) {
       'id' => 'Ayat yang kamu simpan dan renungkan',
-      'en' => "Verses you've saved and reflected on",
-      'zh' => '你收藏和沉思的经文',
-      'ja' => '保存して思いを巡らせた節',
-      _ => "Verses you've saved and reflected on",
+      'en' => 'Verses you save and reflect on',
+      'zh' => '你保存并思索的经文',
+      'ja' => '保存して思い巡らす節',
+      _ => 'Verses you save and reflect on',
     };
   }
 

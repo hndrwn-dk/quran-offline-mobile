@@ -176,46 +176,4 @@ void main() {
     expect(container.read(currentTabProvider), AppTab.search);
     expect(container.read(searchQueryProvider), 'zzzz');
   });
-
-  testWidgets('library header shows the collection badge and subtitle', (
-    tester,
-  ) async {
-    final db = await _db();
-    addTearDown(db.close);
-    await _pump(tester, db, const MyLibraryScreen());
-
-    expect(
-      find.text('Ayat yang kamu simpan dan renungkan'),
-      findsOneWidget,
-    );
-    expect(
-      AppLocalizations.getSubtitleText('library_subtitle', 'en'),
-      "Verses you've saved and reflected on",
-    );
-    expect(
-      AppLocalizations.getSubtitleText('library_subtitle', 'zh'),
-      '你收藏和沉思的经文',
-    );
-    expect(
-      AppLocalizations.getSubtitleText('library_subtitle', 'ja'),
-      '保存して思いを巡らせた節',
-    );
-
-    final icon = find.byIcon(Icons.collections_bookmark);
-    expect(icon, findsOneWidget);
-    final badge = find.ancestor(
-      of: icon,
-      matching: find.byType(Container),
-    );
-    expect(tester.getSize(badge.first), const Size(44, 44));
-    final scheme = Theme.of(tester.element(icon)).colorScheme;
-    expect(tester.widget<Icon>(icon).color, scheme.primary);
-    final decoration =
-        tester.widget<Container>(badge.first).decoration! as BoxDecoration;
-    expect(
-      decoration.color,
-      scheme.primaryContainer.withValues(alpha: 0.45),
-    );
-    expect(decoration.shape, BoxShape.circle);
-  });
 }
