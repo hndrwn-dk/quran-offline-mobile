@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/support_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
 import 'package:quran_offline/features/home/widgets/home_activity_section.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
@@ -149,11 +150,13 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
         ],
       ),
       body: HomeBackdrop(
-        child: SafeArea(
-          top: false,
-          bottom: false,
-          child: SingleChildScrollView(
-            child: isLargeScreen ? tabletBody : phoneBody,
+        child: FloatingNavBarInset(
+          child: SafeArea(
+            top: false,
+            bottom: false,
+            child: SingleChildScrollView(
+              child: isLargeScreen ? tabletBody : phoneBody,
+            ),
           ),
         ),
       ),

@@ -73,6 +73,12 @@ class AppColors {
       onPrimary: onPrimaryDark,
       primaryContainer: primaryDeep,
       onPrimaryContainer: primaryContainer,
+      // Seed surfaceContainerHigh is #272B26, too gray for the dark capsule
+      // on artboard 15. Primary at 42% over onPrimaryDark is #354835.
+      surfaceContainerHigh: Color.alphaBlend(
+        primary.withValues(alpha: 0.42),
+        onPrimaryDark,
+      ),
       outline: primaryBright.withValues(alpha: 0.45),
       outlineVariant: primaryBright.withValues(alpha: 0.28),
     );

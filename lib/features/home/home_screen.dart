@@ -7,6 +7,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/system_bottom_inset.dart';
+import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/core/widgets/home_widget_navigation.dart';
 import 'package:quran_offline/core/widgets/home_widget_sync.dart';
 import 'package:quran_offline/features/dua/dua_screen.dart';
@@ -71,70 +72,76 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     return AudioDownloadNotifications(
       child: Scaffold(
-      resizeToAvoidBottomInset: true,
-      body: IndexedStack(
-        index: currentIndex,
-        children: const [
-          BerandaScreen(),
-          ReadScreen(),
-          SearchScreen(),
-          DuaScreen(),
-          MyLibraryScreen(),
-        ],
-      ),
-      bottomNavigationBar: keyboardOpen
-          ? null
-          : SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const GlobalRecitationBar(padForSystemBottomInset: false),
-            NavigationBar(
-              labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-              selectedIndex: currentIndex,
-              onDestinationSelected: (index) {
-                if (index != currentIndex) {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                }
-                ref.read(currentTabProvider.notifier).state = index;
-              },
-              destinations: [
-                NavigationDestination(
-                  key: const Key('nav_home'),
-                  icon: const Icon(Icons.foundation_outlined),
-                  selectedIcon: const Icon(Icons.foundation),
-                  label: AppLocalizations.getNavMenuText('home', appLanguage),
-                ),
-                NavigationDestination(
-                  key: const Key('nav_read'),
-                  icon: const Icon(Icons.auto_stories_outlined),
-                  selectedIcon: const Icon(Icons.auto_stories),
-                  label: AppLocalizations.getNavMenuText('read', appLanguage),
-                ),
-                NavigationDestination(
-                  key: const Key('nav_search'),
-                  icon: const Icon(Icons.travel_explore_outlined),
-                  selectedIcon: const Icon(Icons.travel_explore),
-                  label: AppLocalizations.getNavMenuText('search', appLanguage),
-                ),
-                NavigationDestination(
-                  key: const Key('nav_explore'),
-                  icon: const Icon(Icons.library_books_outlined),
-                  selectedIcon: const Icon(Icons.library_books),
-                  label: AppLocalizations.getNavMenuText('dua', appLanguage),
-                ),
-                NavigationDestination(
-                  key: const Key('nav_library'),
-                  icon: const Icon(Icons.collections_bookmark_outlined),
-                  selectedIcon: const Icon(Icons.collections_bookmark),
-                  label: AppLocalizations.getNavMenuText('library', appLanguage),
-                ),
-              ],
-            ),
+        extendBody: true,
+        resizeToAvoidBottomInset: true,
+        body: IndexedStack(
+          index: currentIndex,
+          children: const [
+            BerandaScreen(),
+            ReadScreen(),
+            SearchScreen(),
+            DuaScreen(),
+            MyLibraryScreen(),
           ],
         ),
-      ),
+        bottomNavigationBar: keyboardOpen
+            ? null
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const GlobalRecitationBar(padForSystemBottomInset: false),
+                  FloatingNavBar(
+                    selectedIndex: currentIndex,
+                    onDestinationSelected: (index) {
+                      if (index != currentIndex) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      }
+                      ref.read(currentTabProvider.notifier).state = index;
+                    },
+                    destinations: [
+                      FloatingNavDestination(
+                        key: const Key('nav_home'),
+                        icon: Icons.foundation_outlined,
+                        selectedIcon: Icons.foundation,
+                        label: AppLocalizations.getNavMenuText(
+                            'home', appLanguage),
+                      ),
+                      FloatingNavDestination(
+                        key: const Key('nav_read'),
+                        icon: Icons.auto_stories_outlined,
+                        selectedIcon: Icons.auto_stories,
+                        label: AppLocalizations.getNavMenuText(
+                            'read', appLanguage),
+                      ),
+                      FloatingNavDestination(
+                        key: const Key('nav_search'),
+                        icon: Icons.travel_explore_outlined,
+                        selectedIcon: Icons.travel_explore,
+                        label: AppLocalizations.getNavMenuText(
+                          'search',
+                          appLanguage,
+                        ),
+                      ),
+                      FloatingNavDestination(
+                        key: const Key('nav_explore'),
+                        icon: Icons.library_books_outlined,
+                        selectedIcon: Icons.library_books,
+                        label:
+                            AppLocalizations.getNavMenuText('dua', appLanguage),
+                      ),
+                      FloatingNavDestination(
+                        key: const Key('nav_library'),
+                        icon: Icons.collections_bookmark_outlined,
+                        selectedIcon: Icons.collections_bookmark,
+                        label: AppLocalizations.getNavMenuText(
+                          'library',
+                          appLanguage,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
       ),
     );
   }

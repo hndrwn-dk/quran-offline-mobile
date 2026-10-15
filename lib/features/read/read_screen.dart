@@ -6,6 +6,7 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/read/juz_list_view.dart';
@@ -142,20 +143,22 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
         ),
       ),
       body: HomeBackdrop(
-        child: Column(
-          children: [
-            QuickSearchBar(key: _searchBarKey),
-            ReadModeSegmentTabs(
-              selectedMode: readMode,
-              onModeChanged: _setReadMode,
-            ),
-            Expanded(
-              child: _ReadModeStack(
-                readMode: readMode,
-                onSwipe: (isNext) => _handleModeNavigation(readMode, isNext),
+        child: FloatingNavBarInset(
+          child: Column(
+            children: [
+              QuickSearchBar(key: _searchBarKey),
+              ReadModeSegmentTabs(
+                selectedMode: readMode,
+                onModeChanged: _setReadMode,
               ),
-            ),
-          ],
+              Expanded(
+                child: _ReadModeStack(
+                  readMode: readMode,
+                  onSwipe: (isNext) => _handleModeNavigation(readMode, isNext),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
