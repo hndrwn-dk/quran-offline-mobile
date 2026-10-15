@@ -14,6 +14,8 @@ class QuranArabicText extends StatelessWidget {
   final TextAlign textAlign;
   final double height;
   final bool selectable;
+  final int? maxLines;
+  final TextOverflow? overflow;
   /// Defaults to [QuranFonts.digitalKhattV2]. Pass [QuranFonts.uthmanicHafsV22]
   /// only when a non-Mushaf caller must keep the old Uthmanic face.
   final String? fontFamily;
@@ -27,6 +29,8 @@ class QuranArabicText extends StatelessWidget {
     this.textAlign = TextAlign.right,
     this.height = 1.7,
     this.selectable = true,
+    this.maxLines,
+    this.overflow,
     this.fontFamily,
   });
 
@@ -75,12 +79,15 @@ class QuranArabicText extends StatelessWidget {
               style: style,
               textDirection: textDirection,
               textAlign: textAlign,
+              maxLines: maxLines,
             )
           : Text(
               arabic,
               style: style,
               textDirection: textDirection,
               textAlign: textAlign,
+              maxLines: maxLines,
+              overflow: overflow,
             ),
     );
   }

@@ -22,6 +22,15 @@ Future<void> toggleBookmark(
   ref.invalidate(bookmarksProvider);
 }
 
+Future<void> restoreBookmarkEntry(WidgetRef ref, Bookmark entry) async {
+  final db = ref.read(databaseProvider);
+  await db.restoreBookmark(entry);
+  ref.read(bookmarkRefreshProvider.notifier).state++;
+  ref.invalidate(bookmarksProvider);
+  ref.invalidate(bookmarkFoldersProvider);
+  ref.invalidate(bookmarkTagsProvider);
+}
+
 Future<void> deleteBookmarksBulk(WidgetRef ref, List<Bookmark> items) async {
   final db = ref.read(databaseProvider);
   await db.deleteBookmarks(items);
