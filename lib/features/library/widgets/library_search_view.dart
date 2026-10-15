@@ -5,8 +5,6 @@ import 'package:quran_offline/core/providers/highlights_provider.dart';
 import 'package:quran_offline/core/providers/notes_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/widgets/app_filter_chip.dart';
-import 'package:quran_offline/core/widgets/app_surface_card.dart';
 import 'package:quran_offline/core/widgets/undoable_dismissible.dart';
 import 'package:quran_offline/features/bookmarks/open_bookmark.dart';
 import 'package:quran_offline/features/library/library_index.dart';
@@ -112,9 +110,15 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
                           : () => widget.onSearchQuran(query),
                     )
                   : ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                       children: [
-                        for (final section in _sections(visible, lang)) ...section,
+                        for (final kind in LibrarySearchKind.values)
+                          if (_kind == null || _kind == kind)
+                            ..._section(
+                              kind,
+                              visible.where((row) => row.item.kind == kind).toList(),
+                              lang,
+                            ),
                       ],
                     ),
             ),
@@ -132,30 +136,19 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
     int count,
     String lang,
   ) {
-    return AppFilterChip(
-      label: AppLocalizations.libraryFilterChip(label, count),
+    return FilterChip(
+      label: Text(AppLocalizations.libraryFilterChip(label, count)),
       selected: _kind == kind,
       onSelected: (_) => setState(() => _kind = kind),
     );
   }
 
-  List<List<Widget>> _sections(List<LibrarySearchRow> visible, String lang) {
-    final sections = <List<Widget>>[];
-    for (final kind in LibrarySearchKind.values) {
-      if (_kind != null && _kind != kind) continue;
-      final rows = visible.where((row) => row.item.kind == kind).toList();
-      if (rows.isEmpty) continue;
-      sections.add(_section(kind, rows, lang, first: sections.isEmpty));
-    }
-    return sections;
-  }
-
   List<Widget> _section(
     LibrarySearchKind kind,
     List<LibrarySearchRow> rows,
-    String lang, {
-    required bool first,
-  }) {
+    String lang,
+  ) {
+    if (rows.isEmpty) return const [];
     final label = switch (kind) {
       LibrarySearchKind.bookmark => AppLocalizations.getMenuText('bookmarks', lang),
       LibrarySearchKind.note => AppLocalizations.getMenuText('notes', lang),
@@ -163,7 +156,7 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
     };
     return [
       Padding(
-        padding: EdgeInsets.only(top: first ? 8 : 20, bottom: 8),
+        padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
         child: Text(
           '${label.toUpperCase()} · ${rows.length}',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -173,15 +166,16 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
               ),
         ),
       ),
-      for (var i = 0; i < rows.length; i++) ...[
-        if (i > 0) const SizedBox(height: 12),
-        _SearchCard(
-          row: rows[i],
-          query: widget.query,
-          lang: lang,
-          onDelete: () => _delete(rows[i], lang),
+      for (final row in rows)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: _SearchCard(
+            row: row,
+            query: widget.query,
+            lang: lang,
+            onDelete: () => _delete(row, lang),
+          ),
         ),
-      ],
     ];
   }
 
@@ -252,11 +246,19 @@ class _SearchCard extends ConsumerWidget {
     return UndoableDismissible(
       dismissKey: ValueKey('search-${row.entryKey}'),
       backgroundLabel: AppLocalizations.librarySwipeDelete(lang),
-      borderRadius: AppSurfaceCard.borderRadius,
       onDismissed: onDelete,
-      child: AppSurfaceCard(
-        onTap: () => _open(context, ref),
-        onLongPress: () {
+      child: Material(
+        color: colorScheme.surface.withValues(alpha: 0.94),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.55),
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => _open(context, ref),
+          onLongPress: () {
             showLibraryActionSheet(
               context: context,
               language: lang,
@@ -285,8 +287,10 @@ class _SearchCard extends ConsumerWidget {
               onCopy: () => copyLibraryText(copyText),
               onDelete: onDelete,
             );
-        },
-        child: Column(
+          },
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
@@ -339,7 +343,9 @@ class _SearchCard extends ConsumerWidget {
                 ],
               ],
             ),
+          ),
         ),
+      ),
     );
   }
 

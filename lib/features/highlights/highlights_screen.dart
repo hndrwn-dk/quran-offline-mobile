@@ -6,8 +6,6 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/widgets/app_filter_chip.dart';
-import 'package:quran_offline/core/widgets/app_surface_card.dart';
 import 'package:quran_offline/core/widgets/undoable_dismissible.dart';
 import 'package:quran_offline/features/library/library_index.dart';
 import 'package:quran_offline/features/library/library_relative_time.dart';
@@ -67,12 +65,12 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                   height: 48,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                     children: [
-                      AppFilterChip(
+                      _FilterPill(
                         label: AppLocalizations.getSettingsText('filter_all', lang),
                         selected: _filterColor == null,
-                        onSelected: (_) => setState(() => _filterColor = null),
+                        onTap: () => setState(() => _filterColor = null),
                       ),
                       for (final color in usedColors) ...[
                         const SizedBox(width: 8),
@@ -101,12 +99,12 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                           icon: Icons.highlight_outlined,
                         )
                       : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                           itemCount: filtered.length,
                           itemBuilder: (context, index) {
                             final highlight = filtered[index];
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.only(bottom: 10),
                               child: _HighlightCard(
                                 highlight: highlight,
                                 surah: librarySurah(surahs, highlight.surahId),
@@ -155,6 +153,41 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
       undoLabel: AppLocalizations.libraryUndo(lang),
       delete: () => removeHighlight(ref, highlight.surahId, highlight.ayahNo),
       restore: () => restoreHighlightEntry(ref, highlight),
+    );
+  }
+}
+
+class _FilterPill extends StatelessWidget {
+  const _FilterPill({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Material(
+      color: selected ? colorScheme.primary : colorScheme.surface.withValues(alpha: 0.94),
+      shape: const StadiumBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const StadiumBorder(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -245,16 +278,24 @@ class _HighlightCard extends ConsumerWidget {
         return UndoableDismissible(
           dismissKey: ValueKey('highlight-${highlight.surahId}-${highlight.ayahNo}'),
           backgroundLabel: AppLocalizations.librarySwipeDelete(appLanguage),
-          borderRadius: AppSurfaceCard.borderRadius,
           onDismissed: onDelete,
-          child: AppSurfaceCard(
-            onTap: () => openLibraryReader(
-              context,
-              ref,
-              highlight.surahId,
-              highlight.ayahNo,
+          child: Material(
+            color: colorScheme.surface.withValues(alpha: 0.94),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.55),
+              ),
             ),
-            onLongPress: () {
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => openLibraryReader(
+                context,
+                ref,
+                highlight.surahId,
+                highlight.ayahNo,
+              ),
+              onLongPress: () {
                 showLibraryActionSheet(
                   context: context,
                   language: appLanguage,
@@ -274,8 +315,10 @@ class _HighlightCard extends ConsumerWidget {
                   onCopy: () => copyLibraryText(copyText),
                   onDelete: onDelete,
                 );
-            },
-            child: Column(
+              },
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Row(
@@ -320,6 +363,8 @@ class _HighlightCard extends ConsumerWidget {
                       ),
                     ],
                   ],
+                ),
+              ),
             ),
           ),
         );
