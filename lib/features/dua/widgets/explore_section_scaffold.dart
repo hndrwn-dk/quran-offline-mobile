@@ -10,6 +10,7 @@ class ExploreSectionScaffold extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.parentSection,
+    this.actions,
     required this.body,
   });
 
@@ -19,6 +20,7 @@ class ExploreSectionScaffold extends StatelessWidget {
   /// When set, subtitle becomes "$countOrSubtitle · $parentSection" if [subtitle]
   /// looks like a count label; otherwise uses [subtitle] as-is.
   final String? parentSection;
+  final List<Widget>? actions;
   final Widget body;
 
   @override
@@ -61,6 +63,7 @@ class ExploreSectionScaffold extends StatelessWidget {
             ],
           ],
         ),
+        actions: actions,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Divider(

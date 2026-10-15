@@ -92,11 +92,13 @@ class ExploreTopicCard extends StatelessWidget {
     required this.title,
     required this.refLabel,
     required this.onTap,
+    this.isFavorite = false,
   });
 
   final String title;
   final String refLabel;
   final VoidCallback onTap;
+  final bool isFavorite;
 
   @override
   Widget build(BuildContext context) {
@@ -142,6 +144,14 @@ class ExploreTopicCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (isFavorite) ...[
+                  Icon(
+                    Icons.favorite,
+                    size: 16,
+                    color: colorScheme.primary,
+                  ),
+                  const SizedBox(width: 4),
+                ],
                 Icon(
                   Icons.chevron_right,
                   color: colorScheme.onSurfaceVariant,
