@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Filled heart on a primary container circle. Theme tokens only.
+/// Support mark on a primary container circle. Theme tokens only.
 class SupportHeartMark extends StatelessWidget {
   const SupportHeartMark({
     super.key,
@@ -33,7 +33,7 @@ class SupportHeartMark extends StatelessWidget {
         ),
         child: Center(
           child: Icon(
-            Icons.favorite_rounded,
+            Icons.volunteer_activism_rounded,
             size: iconSize,
             color: colorScheme.primary,
           ),

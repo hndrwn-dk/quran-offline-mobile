@@ -4,7 +4,7 @@ import 'package:quran_offline/core/constants/app_colors.dart';
 import 'package:quran_offline/features/support/support_heart_mark.dart';
 
 void main() {
-  testWidgets('app bar mark is a filled heart in a primaryContainer circle', (
+  testWidgets('app bar mark is a support icon in a primaryContainer circle', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -16,7 +16,7 @@ void main() {
       ),
     );
 
-    final icon = tester.widget<Icon>(find.byIcon(Icons.favorite_rounded));
+    final icon = tester.widget<Icon>(find.byIcon(Icons.volunteer_activism_rounded));
     expect(icon.size, 20);
     expect(icon.color, AppColors.lightColorScheme().primary);
 
@@ -44,7 +44,7 @@ void main() {
       dark.primaryContainer.withValues(alpha: 0.6),
     );
     expect(
-      tester.widget<Icon>(find.byIcon(Icons.favorite_rounded)).color,
+      tester.widget<Icon>(find.byIcon(Icons.volunteer_activism_rounded)).color,
       dark.primary,
     );
   });
@@ -64,7 +64,7 @@ void main() {
 
     expect(_markDecoration(tester).color, dark.primaryContainer);
     expect(tester.getSize(find.byType(SupportHeartMark)), const Size(72, 72));
-    expect(tester.widget<Icon>(find.byIcon(Icons.favorite_rounded)).size, 36);
+    expect(tester.widget<Icon>(find.byIcon(Icons.volunteer_activism_rounded)).size, 36);
   });
 
   testWidgets('thanks heart skips the pop when animations are disabled', (
@@ -119,7 +119,7 @@ void main() {
     final button = tester.widget<IconButton>(find.byType(IconButton));
     expect(button.tooltip, 'Dukung aplikasi');
     expect(tester.getSize(find.byType(IconButton)), const Size(48, 48));
-    expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.volunteer_activism_rounded), findsOneWidget);
   });
 }
 
