@@ -21,10 +21,29 @@ import 'package:quran_offline/core/explore/explore_favorite.dart';
 import 'package:quran_offline/core/providers/explore_favorites_provider.dart';
 import 'package:quran_offline/features/dua/open_explore_favorite.dart';
 import 'package:quran_offline/features/dua/widgets/explore_hub_search_bar.dart';
+import 'package:quran_offline/features/dua/widgets/explore_favorites_hub_card.dart';
 import 'package:quran_offline/features/dua/widgets/explore_hub_section_card.dart';
 import 'package:quran_offline/features/dua/widgets/explore_section_scaffold.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/reader/open_reader_screen.dart';
+
+bool _entryIsFavorite(WidgetRef ref, ExploreFavoriteKind kind, String id) {
+  return ref.watch(exploreFavoritesProvider).any(
+        (item) => item.kind == kind && item.id == id,
+      );
+}
+
+bool _searchHitIsFavorite(WidgetRef ref, ExploreSearchHit hit) {
+  final kind = switch (hit.kind) {
+    ExploreSearchKind.dua => ExploreFavoriteKind.dua,
+    ExploreSearchKind.science => ExploreFavoriteKind.science,
+    ExploreSearchKind.theme => ExploreFavoriteKind.theme,
+    ExploreSearchKind.asma => ExploreFavoriteKind.asma,
+  };
+  final id = hit.dua?.id ?? hit.science?.id ?? hit.theme?.id ?? hit.asma?.id;
+  if (id == null) return false;
+  return _entryIsFavorite(ref, kind, id);
+}
 
 class _CatalogLoadError extends StatelessWidget {
   const _CatalogLoadError({
@@ -273,16 +292,32 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
       themes: themeCatalog?.entries ?? const [],
     );
 
-    final sections = [
-      if (favoriteViews.isNotEmpty)
-        _HubSection(
-          sectionKey: 'favorite',
-          countLabel: AppLocalizations.getExploreFavoritesCount(
-            favoriteViews.length,
+    final favoriteKindCounts = <ExploreFavoriteKind, int>{};
+    for (final view in favoriteViews) {
+      final kind = view.favorite.kind;
+      favoriteKindCounts[kind] = (favoriteKindCounts[kind] ?? 0) + 1;
+    }
+    final favoriteChips = [
+      for (final kind in ExploreFavoriteKind.values)
+        if (favoriteKindCounts[kind] != null)
+          AppLocalizations.getExploreFavoriteKindCount(
+            kind.name,
+            favoriteKindCounts[kind]!,
             lang,
           ),
-          onTap: () => openExploreFavoritesPage(context),
-        ),
+    ];
+
+    final sections = [
+      _HubSection(
+        sectionKey: 'favorite',
+        countLabel: favoriteViews.isEmpty
+            ? AppLocalizations.getExploreFavoritesHubEmpty(lang)
+            : AppLocalizations.getExploreFavoritesCount(
+                favoriteViews.length,
+                lang,
+              ),
+        onTap: () => openExploreFavoritesPage(context),
+      ),
       _HubSection(
         sectionKey: 'prophet',
         countLabel: AppLocalizations.getDuaProphetCount(prophetCount, lang),
@@ -344,6 +379,14 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final section = sections[index];
+                  if (section.sectionKey == 'favorite') {
+                    return ExploreFavoritesHubCard(
+                      title: AppLocalizations.getExploreFavoritesHubTitle(lang),
+                      subtitle: section.countLabel,
+                      chips: favoriteViews.isEmpty ? const [] : favoriteChips,
+                      onTap: section.onTap,
+                    );
+                  }
                   return ExploreHubSectionCard(
                     sectionKey: section.sectionKey,
                     title: AppLocalizations.getDuaCategoryLabel(
@@ -392,6 +435,7 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
                   return ExploreTopicCard(
                     title: hit.title,
                     refLabel: hit.subtitle,
+                    isFavorite: _searchHitIsFavorite(ref, hit),
                     onTap: () => _openSearchHit(hit),
                   );
                 },
@@ -548,6 +592,11 @@ class _AsmaListView extends ConsumerWidget {
                 entry: entry,
                 lang: lang,
                 colorScheme: colorScheme,
+                isFavorite: _entryIsFavorite(
+                  ref,
+                  ExploreFavoriteKind.asma,
+                  entry.id,
+                ),
                 onTap: () => _showAsmaDetail(context, ref, entry, lang),
               );
             },
@@ -564,12 +613,14 @@ class _AsmaListTile extends StatelessWidget {
     required this.lang,
     required this.colorScheme,
     required this.onTap,
+    this.isFavorite = false,
   });
 
   final AsmaEntry entry;
   final String lang;
   final ColorScheme colorScheme;
   final VoidCallback onTap;
+  final bool isFavorite;
 
   @override
   Widget build(BuildContext context) {
@@ -645,6 +696,14 @@ class _AsmaListTile extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (isFavorite) ...[
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.favorite,
+                    size: 16,
+                    color: colorScheme.primary,
+                  ),
+                ],
                 const SizedBox(width: 8),
                 SizedBox(
                   width: 88,
@@ -899,6 +958,11 @@ class _LifeSituationCategoryBody extends ConsumerWidget {
               return ExploreTopicCard(
                 title: entry.title.forLanguage(lang),
                 refLabel: refLabel,
+                isFavorite: _entryIsFavorite(
+                  ref,
+                  ExploreFavoriteKind.dua,
+                  entry.id,
+                ),
                 onTap: () => _showDuaDetail(context, ref, entry, lang),
               );
             },
@@ -941,6 +1005,11 @@ class _LifeSituationCategoryBody extends ConsumerWidget {
               return ExploreTopicCard(
                 title: entry.title.forLanguage(lang),
                 refLabel: refLabel,
+                isFavorite: _entryIsFavorite(
+                  ref,
+                  ExploreFavoriteKind.theme,
+                  entry.id,
+                ),
                 onTap: () => _showThemeDetail(context, ref, entry, lang),
               );
             },
@@ -1240,6 +1309,11 @@ class _DuaListView extends ConsumerWidget {
               return ExploreTopicCard(
                 title: entry.title.forLanguage(lang),
                 refLabel: refLabel,
+                isFavorite: _entryIsFavorite(
+                  ref,
+                  ExploreFavoriteKind.dua,
+                  entry.id,
+                ),
                 onTap: () => _showDuaDetail(context, ref, entry, lang),
               );
             },
@@ -1391,6 +1465,11 @@ class _ScienceTopicListView extends ConsumerWidget {
               return ExploreTopicCard(
                 title: entry.title.forLanguage(lang),
                 refLabel: refLabel,
+                isFavorite: _entryIsFavorite(
+                  ref,
+                  ExploreFavoriteKind.science,
+                  entry.id,
+                ),
                 onTap: () => _showScienceDetail(context, ref, entry, lang),
               );
             },
