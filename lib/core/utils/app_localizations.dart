@@ -137,6 +137,244 @@ class AppLocalizations {
     };
   }
 
+  static String getExploreFavoriteAsmaSource(int number, String language) {
+    return switch (language) {
+      'zh' => '第$number',
+      'ja' => '第$number',
+      _ => 'No. $number',
+    };
+  }
+
+  static String getHomeFavoritesSectionTitle(String language) {
+    return switch (language) {
+      'id' => 'FAVORIT',
+      'zh' => '收藏',
+      'ja' => 'お気に入り',
+      _ => 'FAVORITES',
+    };
+  }
+
+  static String getHomeAllFavoritesCountLink(int count, String language) {
+    return switch (language) {
+      'id' => 'Semua ($count)',
+      'zh' => '全部 ($count)',
+      'ja' => 'すべて ($count)',
+      _ => 'All ($count)',
+    };
+  }
+
+  static String getExploreFavoritesHubTitle(String language) {
+    return switch (language) {
+      'id' => 'Favorit saya',
+      'zh' => '我的收藏',
+      'ja' => 'マイお気に入り',
+      _ => 'My favorites',
+    };
+  }
+
+  static String getExploreFavoritesHubEmpty(String language) {
+    return switch (language) {
+      'id' => 'Belum ada · Ketuk ♡ untuk menyimpan',
+      'zh' => '还没有 · 点 ♡ 收藏',
+      'ja' => 'まだありません · ♡ で保存',
+      _ => 'None yet · Tap ♡ to save',
+    };
+  }
+
+  static String getExploreFavoriteKindCount(
+    String kind,
+    int count,
+    String language,
+  ) {
+    return switch (kind) {
+      'dua' => switch (language) {
+          'id' => '$count doa',
+          'zh' => '$count 则祈祷',
+          'ja' => '祈り $count',
+          _ => '$count duas',
+        },
+      'science' => switch (language) {
+          'id' => '$count sains',
+          'zh' => '$count 科学',
+          'ja' => '科学 $count',
+          _ => '$count science',
+        },
+      'asma' => switch (language) {
+          'id' => '$count Asma',
+          'zh' => '$count 美名',
+          'ja' => '美名 $count',
+          _ => '$count Asma',
+        },
+      'theme' => switch (language) {
+          'id' => '$count tema',
+          'zh' => '$count 主题',
+          'ja' => 'テーマ $count',
+          _ => '$count themes',
+        },
+      _ => '$count',
+    };
+  }
+
+  static String getExploreFavoriteFilterChip(
+    String kind,
+    int count,
+    String language,
+  ) {
+    final label = switch (kind) {
+      'all' => switch (language) {
+          'id' => 'Semua',
+          'zh' => '全部',
+          'ja' => 'すべて',
+          _ => 'All',
+        },
+      'dua' => switch (language) {
+          'id' => 'Doa',
+          'zh' => '祈祷',
+          'ja' => '祈り',
+          _ => 'Dua',
+        },
+      'science' => switch (language) {
+          'id' => 'Sains',
+          'zh' => '科学',
+          'ja' => '科学',
+          _ => 'Science',
+        },
+      'asma' => switch (language) {
+          'id' => 'Asma',
+          'zh' => '美名',
+          'ja' => '美名',
+          _ => 'Asma',
+        },
+      'theme' => switch (language) {
+          'id' => 'Tema',
+          'zh' => '主题',
+          'ja' => 'テーマ',
+          _ => 'Themes',
+        },
+      _ => kind,
+    };
+    return '$label · $count';
+  }
+
+  static String getExploreFavoritesEmptyTitle(String language) {
+    return switch (language) {
+      'id' => 'Simpan yang menyentuh hati',
+      'zh' => '收藏触动心灵的内容',
+      'ja' => '心に残るものを保存',
+      _ => 'Save what stays with you',
+    };
+  }
+
+  static String getExploreFavoritesEmptyBody(String language) {
+    return switch (language) {
+      'id' =>
+        'Ketuk ikon hati pada doa, ayat sains, Asmaul Husna, atau tema hidup. Semuanya akan terkumpul di sini dan di Beranda.',
+      'zh' => '在祈祷、科学经文、真主美名或生活主题上点爱心。它们会集中在这里和首页。',
+      'ja' => '祈り、科学の節、アッラーの美名、生活のテーマのハートをタップ。こことホームに集まります。',
+      _ =>
+        'Tap the heart on a dua, science verse, name of Allah, or life theme. They gather here and on Home.',
+    };
+  }
+
+  static String getExploreFavoritesEmptyCta(String language) {
+    return switch (language) {
+      'id' => 'Jelajahi doa',
+      'zh' => '浏览祈祷',
+      'ja' => '祈りを探す',
+      _ => 'Explore duas',
+    };
+  }
+
+  static String getExploreFavoritesEmptySubtitle(String language) {
+    return switch (language) {
+      'id' => 'Belum ada yang tersimpan',
+      'zh' => '还没有收藏',
+      'ja' => 'まだ保存されていません',
+      _ => 'Nothing saved yet',
+    };
+  }
+
+  static String getExploreFavoritesSaved(String language) {
+    return switch (language) {
+      'id' => 'Disimpan ke Favorit',
+      'zh' => '已加入收藏',
+      'ja' => 'お気に入りに保存しました',
+      _ => 'Saved to Favorites',
+    };
+  }
+
+  static String getExploreFavoritesRemoved(String language) {
+    return switch (language) {
+      'id' => 'Dihapus dari Favorit',
+      'zh' => '已从收藏中移除',
+      'ja' => 'お気に入りから外しました',
+      _ => 'Removed from Favorites',
+    };
+  }
+
+  static String getExploreFavoritesUndo(String language) {
+    return switch (language) {
+      'id' => 'Batal',
+      'zh' => '撤销',
+      'ja' => '取り消す',
+      _ => 'Undo',
+    };
+  }
+
+  static String getExploreFavoritesView(String language) {
+    return switch (language) {
+      'id' => 'Lihat',
+      'zh' => '查看',
+      'ja' => '見る',
+      _ => 'View',
+    };
+  }
+
+  static String getExploreFavoritesSavePill(String language) {
+    return switch (language) {
+      'id' => 'Simpan',
+      'zh' => '保存',
+      'ja' => '保存',
+      _ => 'Save',
+    };
+  }
+
+  static String getExploreFavoritesSavedPill(String language) {
+    return switch (language) {
+      'id' => 'Favorit',
+      'zh' => '收藏',
+      'ja' => 'お気に入り',
+      _ => 'Favorite',
+    };
+  }
+
+  static String getExploreFavoritesRemoveSemantics(String language) {
+    return switch (language) {
+      'id' => 'Hapus dari favorit',
+      'zh' => '从收藏中移除',
+      'ja' => 'お気に入りから外す',
+      _ => 'Remove from favorites',
+    };
+  }
+
+  static String getExploreFavoritesSwipeDelete(String language) {
+    return switch (language) {
+      'id' => 'Hapus',
+      'zh' => '删除',
+      'ja' => '削除',
+      _ => 'Remove',
+    };
+  }
+
+  static String getExploreFavoritesSearchHint(String language) {
+    return switch (language) {
+      'id' => 'Cari favorit',
+      'zh' => '搜索收藏',
+      'ja' => 'お気に入りを検索',
+      _ => 'Search favorites',
+    };
+  }
+
   static String getExploreHubHint(String section, String language) {
     return switch (section) {
       'daily' => switch (language) {
@@ -2300,11 +2538,14 @@ class AppLocalizations {
 
   static String supportQuantityHint(String language) {
     return switch (language) {
-      'id' => 'Ingin memberi lebih? Kamu bisa memilih jumlah di layar Google Play.',
-      'en' => 'Want to give more? You can choose a quantity on the Google Play screen.',
+      'id' =>
+        'Ingin memberi lebih? Kamu bisa memilih jumlah di layar Google Play.',
+      'en' =>
+        'Want to give more? You can choose a quantity on the Google Play screen.',
       'zh' => '想多支持一些？你可以在 Google Play 页面选择数量。',
       'ja' => 'もっと支援しますか？数量は Google Play の画面で選べます。',
-      _ => 'Want to give more? You can choose a quantity on the Google Play screen.',
+      _ =>
+        'Want to give more? You can choose a quantity on the Google Play screen.',
     };
   }
 
@@ -2371,10 +2612,12 @@ class AppLocalizations {
     return switch (language) {
       'id' =>
         'Terima kasih sudah mendukung Quran Offline. Semoga menjadi kebaikan untukmu.',
-      'en' => 'Thank you for supporting Quran Offline. May it be a good deed for you.',
+      'en' =>
+        'Thank you for supporting Quran Offline. May it be a good deed for you.',
       'zh' => '感谢你支持 Quran Offline。愿这成为你的善行。',
       'ja' => 'Quran Offline を支えてくれてありがとう。あなたにとっての善い行いとなりますように。',
-      _ => 'Thank you for supporting Quran Offline. May it be a good deed for you.',
+      _ =>
+        'Thank you for supporting Quran Offline. May it be a good deed for you.',
     };
   }
 
@@ -2394,7 +2637,8 @@ class AppLocalizations {
     };
   }
 
-  static String supportMilestoneTitle(String language, ReadingMilestone milestone) {
+  static String supportMilestoneTitle(
+      String language, ReadingMilestone milestone) {
     return switch (milestone.kind) {
       ReadingMilestoneKind.khatam => switch (language) {
           'id' => 'Khatam 30 juz',
@@ -2403,7 +2647,8 @@ class AppLocalizations {
           'ja' => '30ジュズを読み終えました',
           _ => 'Khatam, all 30 juz',
         },
-      ReadingMilestoneKind.ten || ReadingMilestoneKind.twenty => switch (language) {
+      ReadingMilestoneKind.ten || ReadingMilestoneKind.twenty => switch (
+            language) {
           'id' => '${milestone.completedJuz} juz selesai dibaca',
           'en' => '${milestone.completedJuz} juz read',
           'zh' => '已读完${milestone.completedJuz}卷',
@@ -2434,10 +2679,12 @@ class AppLocalizations {
     return switch (language) {
       'id' =>
         'Kalau Quran Offline menemani bacaanmu, kamu bisa ikut mendukung pengembangannya.',
-      'en' => 'If Quran Offline has kept you company, you can help support its development.',
+      'en' =>
+        'If Quran Offline has kept you company, you can help support its development.',
       'zh' => '如果 Quran Offline 陪伴了你的诵读，你可以一起支持它的开发。',
       'ja' => 'Quran Offline が読みの伴になっているなら、開発を支えることができます。',
-      _ => 'If Quran Offline has kept you company, you can help support its development.',
+      _ =>
+        'If Quran Offline has kept you company, you can help support its development.',
     };
   }
 
