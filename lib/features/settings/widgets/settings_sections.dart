@@ -509,7 +509,7 @@ class SettingsAboutSupportSection extends ConsumerWidget {
           title: AppLocalizations.getSettingsText('about_support_section', appLanguage),
         ),
         ListTile(
-          leading: Icon(Icons.favorite_border, color: colorScheme.primary),
+          leading: Icon(Icons.volunteer_activism_outlined, color: colorScheme.primary),
           title: Text(AppLocalizations.supportSettingsTitle(appLanguage)),
           subtitle: Text(AppLocalizations.supportSettingsSubtitle(appLanguage)),
           onTap: () => showSupportSheet(context),
