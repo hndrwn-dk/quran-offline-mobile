@@ -5,6 +5,7 @@ import 'package:quran_offline/core/providers/ai_search_provider.dart';
 import 'package:quran_offline/core/providers/enhanced_search_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
+import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
 import 'package:quran_offline/features/search/widgets/tanya_search_results.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,7 +89,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(TanyaSearchResults), findsOneWidget);
-      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.byType(FloatingNavBar), findsNothing);
 
       final withKeyboard = _resultsScrollable(tester).position;
       expect(withKeyboard.maxScrollExtent, greaterThan(0));

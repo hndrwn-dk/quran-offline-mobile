@@ -7,6 +7,7 @@ import 'package:quran_offline/core/providers/enhanced_search_provider.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
+import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
 import 'package:quran_offline/features/search/ai_search_query_kind.dart';
 import 'package:quran_offline/features/search/search_screen.dart';
@@ -446,10 +447,10 @@ void main() {
       find.text(AppLocalizations.getAiSearchPlaceholder('en')),
       findsOneWidget,
     );
-    final navOn = tester.widget<NavigationDestination>(
-      find.byKey(const Key('nav_search')),
+    expect(
+      tester.getSemantics(find.byKey(const Key('nav_search'))).label,
+      AppLocalizations.getNavMenuText('search', 'en'),
     );
-    expect(navOn.label, AppLocalizations.getNavMenuText('search', 'en'));
     expect(
       find.descendant(
         of: find.byType(AppBar),
@@ -492,10 +493,10 @@ void main() {
       find.text(AppLocalizations.getSearchText('search_placeholder', 'en')),
       findsOneWidget,
     );
-    final navOff = tester.widget<NavigationDestination>(
-      find.byKey(const Key('nav_search')),
+    expect(
+      tester.getSemantics(find.byKey(const Key('nav_search'))).label,
+      AppLocalizations.getNavMenuText('search', 'en'),
     );
-    expect(navOff.label, AppLocalizations.getNavMenuText('search', 'en'));
     expect(find.byKey(const Key('tanya_landing_card')), findsNothing);
   });
 
@@ -521,7 +522,7 @@ void main() {
 
     final field = tester.widget<TextField>(find.byKey(const Key('search_field')));
     expect(field.focusNode?.hasFocus, isFalse);
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(FloatingNavBar), findsOneWidget);
     expect(find.byKey(const Key('nav_search')), findsOneWidget);
   });
 
@@ -547,7 +548,7 @@ void main() {
 
     final field = tester.widget<TextField>(find.byKey(const Key('search_field')));
     expect(field.focusNode?.hasFocus, isFalse);
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(FloatingNavBar), findsOneWidget);
   });
 
   testWidgets('landing shows every example chip fully on screen plus hint', (

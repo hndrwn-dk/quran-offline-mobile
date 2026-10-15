@@ -12,6 +12,7 @@ import 'package:quran_offline/core/providers/theme_catalog_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
+import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/core/widgets/explore_detail_sheet.dart';
 import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 import 'package:quran_offline/features/dua/life_situation.dart';
@@ -346,102 +347,105 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
     ];
 
     return HomeBackdrop(
-      child: CustomScrollView(
-        slivers: [
-          if (!aiEnabled)
-            SliverToBoxAdapter(
-              child: AppSearchFieldInset(
-                padding: const EdgeInsets.fromLTRB(
-                  kAppContentHorizontalInset,
-                  kAppBodyTopInset,
-                  kAppContentHorizontalInset,
-                  12,
-                ),
-                child: ExploreHubSearchBar(
-                  lang: lang,
-                  controller: _searchController,
-                  focusNode: _searchFocusNode,
-                  onChanged: _onSearchChanged,
-                  onClear: _clearSearch,
-                ),
-              ),
-            ),
-          if (!isSearching)
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(
-                kAppContentHorizontalInset,
-                aiEnabled ? kAppBodyTopInset : 0,
-                kAppContentHorizontalInset,
-                24,
-              ),
-              sliver: SliverList.separated(
-                itemCount: sections.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, index) {
-                  final section = sections[index];
-                  if (section.sectionKey == 'favorite') {
-                    return ExploreFavoritesHubCard(
-                      title: AppLocalizations.getExploreFavoritesHubTitle(lang),
-                      subtitle: section.countLabel,
-                      chips: favoriteViews.isEmpty ? const [] : favoriteChips,
-                      onTap: section.onTap,
-                    );
-                  }
-                  return ExploreHubSectionCard(
-                    sectionKey: section.sectionKey,
-                    title: AppLocalizations.getDuaCategoryLabel(
-                      section.sectionKey,
-                      lang,
-                    ),
-                    countLabel: section.countLabel,
-                    hint: AppLocalizations.getExploreHubHint(
-                      section.sectionKey,
-                      lang,
-                    ),
-                    onTap: section.onTap,
-                  );
-                },
-              ),
-            )
-          else if (catalogHits.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    AppLocalizations.getExploreSearchEmpty(lang),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+      child: FloatingNavBarInset(
+        child: CustomScrollView(
+          slivers: [
+            if (!aiEnabled)
+              SliverToBoxAdapter(
+                child: AppSearchFieldInset(
+                  padding: const EdgeInsets.fromLTRB(
+                    kAppContentHorizontalInset,
+                    kAppBodyTopInset,
+                    kAppContentHorizontalInset,
+                    12,
+                  ),
+                  child: ExploreHubSearchBar(
+                    lang: lang,
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                    onChanged: _onSearchChanged,
+                    onClear: _clearSearch,
                   ),
                 ),
               ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                kAppContentHorizontalInset,
-                0,
-                kAppContentHorizontalInset,
-                24,
+            if (!isSearching)
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  kAppContentHorizontalInset,
+                  aiEnabled ? kAppBodyTopInset : 0,
+                  kAppContentHorizontalInset,
+                  24,
+                ),
+                sliver: SliverList.separated(
+                  itemCount: sections.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final section = sections[index];
+                    if (section.sectionKey == 'favorite') {
+                      return ExploreFavoritesHubCard(
+                        title:
+                            AppLocalizations.getExploreFavoritesHubTitle(lang),
+                        subtitle: section.countLabel,
+                        chips: favoriteViews.isEmpty ? const [] : favoriteChips,
+                        onTap: section.onTap,
+                      );
+                    }
+                    return ExploreHubSectionCard(
+                      sectionKey: section.sectionKey,
+                      title: AppLocalizations.getDuaCategoryLabel(
+                        section.sectionKey,
+                        lang,
+                      ),
+                      countLabel: section.countLabel,
+                      hint: AppLocalizations.getExploreHubHint(
+                        section.sectionKey,
+                        lang,
+                      ),
+                      onTap: section.onTap,
+                    );
+                  },
+                ),
+              )
+            else if (catalogHits.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      AppLocalizations.getExploreSearchEmpty(lang),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  kAppContentHorizontalInset,
+                  0,
+                  kAppContentHorizontalInset,
+                  24,
+                ),
+                sliver: SliverList.separated(
+                  itemCount: catalogHits.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    final hit = catalogHits[index];
+                    return ExploreTopicCard(
+                      title: hit.title,
+                      refLabel: hit.subtitle,
+                      isFavorite: _searchHitIsFavorite(ref, hit),
+                      onTap: () => _openSearchHit(hit),
+                    );
+                  },
+                ),
               ),
-              sliver: SliverList.separated(
-                itemCount: catalogHits.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (context, index) {
-                  final hit = catalogHits[index];
-                  return ExploreTopicCard(
-                    title: hit.title,
-                    refLabel: hit.subtitle,
-                    isFavorite: _searchHitIsFavorite(ref, hit),
-                    onTap: () => _openSearchHit(hit),
-                  );
-                },
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

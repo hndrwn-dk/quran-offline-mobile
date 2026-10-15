@@ -11,6 +11,7 @@ import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
+import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/features/bookmarks/widgets/bookmarks_tab_content.dart';
 import 'package:quran_offline/features/highlights/highlights_screen.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
@@ -134,48 +135,50 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
         ),
       ),
       body: HomeBackdrop(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const LibraryStatsRow(),
-            AppSearchFieldInset(
-              padding: const EdgeInsets.fromLTRB(
-                kAppContentHorizontalInset,
-                4,
-                kAppContentHorizontalInset,
-                8,
-              ),
-              child: AppSearchField(
-                controller: _globalSearchController,
-                hintText: AppLocalizations.getSubtitleText(
-                  'library_search_hint',
-                  appLanguage,
+        child: FloatingNavBarInset(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const LibraryStatsRow(),
+              AppSearchFieldInset(
+                padding: const EdgeInsets.fromLTRB(
+                  kAppContentHorizontalInset,
+                  4,
+                  kAppContentHorizontalInset,
+                  8,
+                ),
+                child: AppSearchField(
+                  controller: _globalSearchController,
+                  hintText: AppLocalizations.getSubtitleText(
+                    'library_search_hint',
+                    appLanguage,
+                  ),
                 ),
               ),
-            ),
-            if (!isSearching)
-              LibrarySegmentTabs(
-                labels: [
-                  AppLocalizations.getMenuText('bookmarks', appLanguage),
-                  AppLocalizations.getMenuText('notes', appLanguage),
-                  AppLocalizations.getMenuText('highlights', appLanguage),
-                ],
-                selectedIndex: _selectedTab,
-                onChanged: (index) => setState(() => _selectedTab = index),
+              if (!isSearching)
+                LibrarySegmentTabs(
+                  labels: [
+                    AppLocalizations.getMenuText('bookmarks', appLanguage),
+                    AppLocalizations.getMenuText('notes', appLanguage),
+                    AppLocalizations.getMenuText('highlights', appLanguage),
+                  ],
+                  selectedIndex: _selectedTab,
+                  onChanged: (index) => setState(() => _selectedTab = index),
+                ),
+              Expanded(
+                child: isSearching
+                    ? _buildGlobalSearchResults(query, appLanguage)
+                    : IndexedStack(
+                        index: _selectedTab,
+                        children: const [
+                          BookmarksTabContent(),
+                          NotesTabContent(),
+                          HighlightsScreen(),
+                        ],
+                      ),
               ),
-            Expanded(
-              child: isSearching
-                  ? _buildGlobalSearchResults(query, appLanguage)
-                  : IndexedStack(
-                      index: _selectedTab,
-                      children: const [
-                        BookmarksTabContent(),
-                        NotesTabContent(),
-                        HighlightsScreen(),
-                      ],
-                    ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -260,9 +263,10 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                             'library_no_results',
                             appLanguage,
                           ),
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                         ),
                       );
                     }
@@ -328,7 +332,8 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                       ],
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (error, _) => Center(child: Text('Error: $error')),
                 );
               },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
+import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
 
 void main() {
@@ -38,7 +39,7 @@ void main() {
 
       expect(overflow, isNull, reason: overflow?.message);
       expect(tester.takeException(), isNull);
-      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.byType(FloatingNavBar), findsNothing);
     },
   );
 
@@ -74,7 +75,7 @@ void main() {
 
       expect(overflow, isNull, reason: overflow?.message);
       expect(tester.takeException(), isNull);
-      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.byType(FloatingNavBar), findsNothing);
     },
   );
 
@@ -93,7 +94,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(FloatingNavBar), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -117,7 +118,7 @@ void main() {
 
       final field = tester.widget<TextField>(find.byKey(const Key('search_field')));
       expect(field.focusNode?.hasFocus, isFalse);
-      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byType(FloatingNavBar), findsOneWidget);
       expect(find.byKey(const Key('nav_search')), findsOneWidget);
     },
   );
@@ -142,7 +143,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byType(FloatingNavBar), findsOneWidget);
     },
   );
 }
