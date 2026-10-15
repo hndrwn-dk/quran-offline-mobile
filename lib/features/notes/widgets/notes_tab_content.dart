@@ -6,6 +6,7 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_surface_card.dart';
 import 'package:quran_offline/core/widgets/undoable_dismissible.dart';
 import 'package:quran_offline/features/library/library_index.dart';
 import 'package:quran_offline/features/library/library_relative_time.dart';
@@ -50,13 +51,13 @@ class _NotesTabContentState extends ConsumerState<NotesTabContent> {
               );
             }
             return ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
               itemCount: visible.length,
               itemBuilder: (context, index) {
                 final note = visible[index];
                 final surah = librarySurah(surahs, note.surahId);
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.only(bottom: 12),
                   child: _NoteCard(
                     note: note,
                     surah: surah,
@@ -133,19 +134,11 @@ class _NoteCard extends ConsumerWidget {
         return UndoableDismissible(
           dismissKey: ValueKey('note-${note.surahId}-${note.ayahNo}'),
           backgroundLabel: AppLocalizations.librarySwipeDelete(appLanguage),
+          borderRadius: AppSurfaceCard.borderRadius,
           onDismissed: onDelete,
-          child: Material(
-            color: colorScheme.surface.withValues(alpha: 0.94),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-              ),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: () => openLibraryReader(context, ref, note.surahId, note.ayahNo),
-              onLongPress: () {
+          child: AppSurfaceCard(
+            onTap: () => openLibraryReader(context, ref, note.surahId, note.ayahNo),
+            onLongPress: () {
                 showLibraryActionSheet(
                   context: context,
                   language: appLanguage,
@@ -168,9 +161,7 @@ class _NoteCard extends ConsumerWidget {
                   onDelete: onDelete,
                 );
               },
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                child: Column(
+            child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Row(
@@ -224,8 +215,6 @@ class _NoteCard extends ConsumerWidget {
                       ),
                     ),
                   ],
-                ),
-              ),
             ),
           ),
         );

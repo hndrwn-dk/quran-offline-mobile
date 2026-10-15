@@ -10,6 +10,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/providers/theme_catalog_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_filter_chip.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/core/widgets/undoable_dismissible.dart';
 import 'package:quran_offline/core/widgets/explore_detail_sheet.dart';
@@ -309,10 +310,8 @@ class _FavoritesFilters extends StatelessWidget {
   }
 
   Widget _chip(ExploreFavoriteKind? kind, String key, int count) {
-    return FilterChip(
-      label: Text(
-        AppLocalizations.getExploreFavoriteFilterChip(key, count, lang),
-      ),
+    return AppFilterChip(
+      label: AppLocalizations.getExploreFavoriteFilterChip(key, count, lang),
       selected: selected == kind,
       onSelected: (_) =>
           onSelected(selected == kind && kind != null ? null : kind),

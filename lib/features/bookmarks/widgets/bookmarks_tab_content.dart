@@ -6,6 +6,7 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_surface_card.dart';
 import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 import 'package:quran_offline/core/widgets/undoable_dismissible.dart';
 import 'package:quran_offline/features/bookmarks/open_bookmark.dart';
@@ -61,10 +62,10 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
                 : AppLocalizations.getSettingsText('sort_surah', lang);
 
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 4, 0, 8),
+                  padding: const EdgeInsets.fromLTRB(0, 4, 0, 8),
                   child: Row(
                     children: [
                       Expanded(
@@ -111,13 +112,14 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
                     ],
                   ),
                 ),
-                for (final group in groups)
+                for (var i = 0; i < groups.length; i++)
                   _SurahGroup(
-                    group: group,
-                    surah: librarySurah(surahs, group.surahId),
+                    group: groups[i],
+                    surah: librarySurah(surahs, groups[i].surahId),
                     language: settings.language,
                     appLanguage: lang,
                     query: widget.query,
+                    isLast: i == groups.length - 1,
                     onOpen: (bookmark) => openBookmarkLocation(context, ref, bookmark),
                     onCopy: (text) => copyLibraryText(text),
                     onDelete: (bookmark) => _delete(bookmark, lang),
@@ -156,6 +158,7 @@ class _SurahGroup extends ConsumerWidget {
     required this.language,
     required this.appLanguage,
     required this.query,
+    required this.isLast,
     required this.onOpen,
     required this.onCopy,
     required this.onDelete,
@@ -166,6 +169,7 @@ class _SurahGroup extends ConsumerWidget {
   final String language;
   final String appLanguage;
   final String query;
+  final bool isLast;
   final Future<void> Function(Bookmark bookmark) onOpen;
   final Future<void> Function(String text) onCopy;
   final void Function(Bookmark bookmark) onDelete;
@@ -173,81 +177,66 @@ class _SurahGroup extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.94),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.55),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LibraryMarkedText(
+                      text: surah.englishName,
+                      query: query,
+                      maxLines: 1,
+                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      AppLocalizations.librarySurahBookmarkMeta(
+                        surah.id,
+                        group.items.length,
+                        appLanguage,
+                      ),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              if (surah.arabicName.isNotEmpty)
+                QuranArabicText(
+                  arabic: surah.arabicName,
+                  fontSize: 18,
+                  defaultColor: colorScheme.primary.withValues(alpha: 0.7),
+                  height: 1.4,
+                  selectable: false,
+                ),
+            ],
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        LibraryMarkedText(
-                          text: surah.englishName,
-                          query: query,
-                          maxLines: 1,
-                          style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          AppLocalizations.librarySurahBookmarkMeta(
-                            surah.id,
-                            group.items.length,
-                            appLanguage,
-                          ),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (surah.arabicName.isNotEmpty)
-                    QuranArabicText(
-                      arabic: surah.arabicName,
-                      fontSize: 18,
-                      defaultColor: colorScheme.primary.withValues(alpha: 0.7),
-                      height: 1.4,
-                      selectable: false,
-                    ),
-                ],
-              ),
-            ),
-            for (var i = 0; i < group.items.length; i++) ...[
-              if (i > 0)
-                Divider(
-                  height: 1,
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.45),
-                ),
-              _BookmarkRow(
-                bookmark: group.items[i],
-                surah: surah,
-                language: language,
-                appLanguage: appLanguage,
-                query: query,
-                onOpen: onOpen,
-                onCopy: onCopy,
-                onDelete: onDelete,
-              ),
-            ],
-          ],
-        ),
-      ),
+        for (var i = 0; i < group.items.length; i++) ...[
+          if (i > 0) const SizedBox(height: 12),
+          _BookmarkRow(
+            bookmark: group.items[i],
+            surah: surah,
+            language: language,
+            appLanguage: appLanguage,
+            query: query,
+            onOpen: onOpen,
+            onCopy: onCopy,
+            onDelete: onDelete,
+          ),
+        ],
+        if (!isLast) const SizedBox(height: 20),
+      ],
     );
   }
 }
@@ -298,62 +287,56 @@ class _BookmarkRow extends ConsumerWidget {
         return UndoableDismissible(
           dismissKey: ValueKey('bookmark-${bookmark.surahId}-${bookmark.ayahNo}'),
           backgroundLabel: AppLocalizations.librarySwipeDelete(appLanguage),
-          borderRadius: BorderRadius.zero,
+          borderRadius: AppSurfaceCard.borderRadius,
           onDismissed: () => onDelete(bookmark),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => onOpen(bookmark),
-              onLongPress: () {
-                showLibraryActionSheet(
-                  context: context,
-                  language: appLanguage,
-                  title: '${surah.englishName} · QS ${bookmark.surahId}:${bookmark.ayahNo}',
-                  preview: translation,
-                  copyLabel: AppLocalizations.libraryCopy(appLanguage),
-                  deleteLabel: AppLocalizations.libraryDeleteAction(
-                    'bookmark',
+          child: AppSurfaceCard(
+            onTap: () => onOpen(bookmark),
+            onLongPress: () {
+              showLibraryActionSheet(
+                context: context,
+                language: appLanguage,
+                title: '${surah.englishName} · QS ${bookmark.surahId}:${bookmark.ayahNo}',
+                preview: translation,
+                copyLabel: AppLocalizations.libraryCopy(appLanguage),
+                deleteLabel: AppLocalizations.libraryDeleteAction(
+                  'bookmark',
+                  appLanguage,
+                ),
+                onOpen: () => onOpen(bookmark),
+                onCopy: () => onCopy(copyText),
+                onDelete: () => onDelete(bookmark),
+              );
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                LibraryArabicLine(
+                  arabic: arabic,
+                  query: query,
+                  ayahNo: bookmark.ayahNo,
+                ),
+                if (translation.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  LibraryMarkedText(
+                    text: translation,
+                    query: query,
+                    maxLines: 2,
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          height: 1.35,
+                        ),
+                  ),
+                ],
+                const SizedBox(height: 6),
+                Text(
+                  AppLocalizations.libraryAyahMeta(
+                    bookmark.ayahNo,
+                    when,
                     appLanguage,
                   ),
-                  onOpen: () => onOpen(bookmark),
-                  onCopy: () => onCopy(copyText),
-                  onDelete: () => onDelete(bookmark),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    LibraryArabicLine(
-                      arabic: arabic,
-                      query: query,
-                      ayahNo: bookmark.ayahNo,
-                    ),
-                    if (translation.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      LibraryMarkedText(
-                        text: translation,
-                        query: query,
-                        maxLines: 2,
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              height: 1.35,
-                            ),
-                      ),
-                    ],
-                    const SizedBox(height: 6),
-                    Text(
-                      AppLocalizations.libraryAyahMeta(
-                        bookmark.ayahNo,
-                        when,
-                        appLanguage,
-                      ),
-                      style: libraryMetaStyle(context),
-                    ),
-                  ],
+                  style: libraryMetaStyle(context),
                 ),
-              ),
+              ],
             ),
           ),
         );
