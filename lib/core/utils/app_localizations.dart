@@ -2298,6 +2298,16 @@ class AppLocalizations {
     };
   }
 
+  static String supportQuantityHint(String language) {
+    return switch (language) {
+      'id' => 'Ingin memberi lebih? Kamu bisa memilih jumlah di layar Google Play.',
+      'en' => 'Want to give more? You can choose a quantity on the Google Play screen.',
+      'zh' => '想多支持一些？你可以在 Google Play 页面选择数量。',
+      'ja' => 'もっと支援しますか？数量は Google Play の画面で選べます。',
+      _ => 'Want to give more? You can choose a quantity on the Google Play screen.',
+    };
+  }
+
   static String supportContinuePlay(String language) {
     return switch (language) {
       'id' => 'Lanjut ke Google Play',
