@@ -57,6 +57,19 @@ List<ExploreFavorite> toggleExploreFavorite(
   ];
 }
 
+typedef FavoriteEntry = ExploreFavorite;
+
+List<ExploreFavorite> restoreExploreFavorite(
+  List<ExploreFavorite> current,
+  FavoriteEntry entry,
+) {
+  final next = [
+    ...current.where((item) => item.key != entry.key),
+    entry,
+  ]..sort((a, b) => b.markedAtMillis.compareTo(a.markedAtMillis));
+  return next;
+}
+
 String encodeExploreFavorites(List<ExploreFavorite> favorites) {
   return jsonEncode(favorites.map((item) => item.toJson()).toList());
 }
