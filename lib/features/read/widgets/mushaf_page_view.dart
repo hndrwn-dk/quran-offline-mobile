@@ -24,6 +24,7 @@ import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
 import 'package:quran_offline/core/utils/system_bottom_inset.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
+import 'package:quran_offline/core/widgets/inline_ayah_number.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/core/feedback/feedback_context.dart';
 import 'package:quran_offline/core/feedback/feedback_type.dart';
@@ -1000,7 +1001,7 @@ class _FlowingMushafText extends ConsumerWidget {
               key: ayahKey,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 3),
-                child: _InlineAyahNumber(
+                child: InlineAyahNumber(
                   ayahNo: block.ayahNo!,
                   fontSize: fontSize,
                   colorScheme: colorScheme,
@@ -1040,125 +1041,6 @@ class _FlowingMushafText extends ConsumerWidget {
     );
   }
 
-}
-
-/// Widget untuk nomor ayat inline dengan bookmark support
-class _InlineAyahNumber extends ConsumerStatefulWidget {
-  final int ayahNo;
-  final double fontSize;
-  final ColorScheme colorScheme;
-  final int? surahId;
-  final bool isReciting;
-
-  const _InlineAyahNumber({
-    required this.ayahNo,
-    required this.fontSize,
-    required this.colorScheme,
-    this.surahId,
-    this.isReciting = false,
-  });
-
-  @override
-  ConsumerState<_InlineAyahNumber> createState() => _InlineAyahNumberState();
-}
-
-class _InlineAyahNumberState extends ConsumerState<_InlineAyahNumber> {
-  bool _isBookmarked = false;
-  bool _isCheckingBookmark = true;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.surahId != null) {
-      _checkBookmark();
-    } else {
-      _isCheckingBookmark = false;
-    }
-  }
-
-  Future<void> _checkBookmark() async {
-    if (widget.surahId == null) {
-      setState(() {
-        _isCheckingBookmark = false;
-      });
-      return;
-    }
-
-    final bookmarked = await isBookmarked(
-      ref,
-      widget.surahId!,
-      widget.ayahNo,
-    );
-    
-    if (mounted) {
-      setState(() {
-        _isBookmarked = bookmarked;
-        _isCheckingBookmark = false;
-      });
-    }
-  }
-
-  Future<void> _toggleBookmark() async {
-    if (widget.surahId == null) return;
-    
-    await toggleBookmark(
-      ref,
-      widget.surahId!,
-      widget.ayahNo,
-      openContext: BookmarkOpenContext.mushaf,
-    );
-    
-    await _checkBookmark();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final displayNumber = MushafLayout.toArabicIndicDigits(widget.ayahNo.toString());
-    
-    // Listen to bookmark refresh
-    ref.listen(bookmarkRefreshProvider, (previous, next) {
-      if (previous != next && widget.surahId != null) {
-        _checkBookmark();
-      }
-    });
-    
-    final reciting = widget.isReciting;
-    final borderColor = _isBookmarked
-        ? widget.colorScheme.primary
-        : widget.colorScheme.outline.withValues(alpha: 0.3);
-
-    return GestureDetector(
-      onTap: widget.surahId != null && !_isCheckingBookmark ? _toggleBookmark : null,
-      child: Container(
-        padding: EdgeInsets.all(widget.fontSize * 0.2),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: borderColor,
-            width: _isBookmarked ? 2.0 : 1.5,
-          ),
-          color: reciting
-              ? widget.colorScheme.primary.withValues(alpha: 0.12)
-              : _isBookmarked
-                  ? widget.colorScheme.primary.withValues(alpha: 0.1)
-                  : Colors.transparent,
-        ),
-        child: Text(
-          displayNumber,
-          style: TextStyle(
-            fontSize: widget.fontSize * 1.0,
-            fontFamily: 'UthmanicHafsV22',
-            fontFamilyFallback: const ['UthmanicHafs'],
-            color: reciting || _isBookmarked
-                ? widget.colorScheme.primary
-                : widget.colorScheme.onSurface,
-            height: 1.0,
-            fontWeight: reciting || _isBookmarked ? FontWeight.w700 : FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 /// Nusuk-style bottom sheet: Meaning (translation) + Share, Bookmark, Copy

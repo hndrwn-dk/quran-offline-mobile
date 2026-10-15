@@ -311,16 +311,12 @@ class _SearchCard extends ConsumerWidget {
                         text: '${item.surahName} · QS ${item.surahId}:${item.ayahNo}',
                         query: query,
                         maxLines: 1,
-                        style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                        style: libraryMetaStyle(context),
                       ),
                     ),
                     Text(
                       when,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                      style: libraryMetaStyle(context),
                     ),
                   ],
                 ),

@@ -227,11 +227,6 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                       AppLocalizations.getMenuText('notes', appLanguage),
                       AppLocalizations.getMenuText('highlights', appLanguage),
                     ],
-                    icons: const [
-                      Icons.bookmark_outline_rounded,
-                      Icons.edit_note_outlined,
-                      Icons.highlight_outlined,
-                    ],
                     onChanged: (index) => setState(() => _selectedTab = index),
                   ),
                   Expanded(
