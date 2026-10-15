@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart' show Verse;
@@ -277,68 +279,63 @@ class ExploreDetailSheet extends ConsumerWidget {
       ],
     );
 
-    return ScaffoldMessenger(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Align(
-          alignment: Alignment.bottomCenter,
-          child: Material(
-            color: colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 8),
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: colorScheme.onSurface.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
+    return _ExploreSheetShell(
+      child: Material(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colorScheme.onSurface.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                if (maxBodyHeight != null)
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxHeight: maxBodyHeight!),
-                    child: body,
-                  )
-                else
-                  body,
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                  child: SafeArea(
-                    top: false,
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: ayahRefs.isEmpty
-                            ? null
-                            : () async {
-                                if (ayahRefs.length == 1) {
-                                  onOpenReader(ayahRefs.first);
-                                  return;
-                                }
-                                final picked = await showExploreAyahRefPicker(
-                                  context: context,
-                                  lang: lang,
-                                  ayahRefs: ayahRefs,
-                                  surahNames: surahNames,
-                                );
-                                if (picked != null) {
-                                  onOpenReader(picked);
-                                }
-                              },
-                        icon: const Icon(Icons.menu_book_outlined),
-                        label: Text(AppLocalizations.getDuaOpenInReader(lang)),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+            if (maxBodyHeight != null)
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: maxBodyHeight!),
+                child: body,
+              )
+            else
+              body,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+              child: SafeArea(
+                top: false,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: ayahRefs.isEmpty
+                        ? null
+                        : () async {
+                            if (ayahRefs.length == 1) {
+                              onOpenReader(ayahRefs.first);
+                              return;
+                            }
+                            final picked = await showExploreAyahRefPicker(
+                              context: context,
+                              lang: lang,
+                              ayahRefs: ayahRefs,
+                              surahNames: surahNames,
+                            );
+                            if (picked != null) {
+                              onOpenReader(picked);
+                            }
+                          },
+                    icon: const Icon(Icons.menu_book_outlined),
+                    label: Text(AppLocalizations.getDuaOpenInReader(lang)),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -545,6 +542,138 @@ class ExploreVersePassage extends StatelessWidget {
   }
 }
 
+class _SheetNotice {
+  const _SheetNotice({
+    required this.message,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  final String message;
+  final String actionLabel;
+  final VoidCallback onAction;
+}
+
+class _SheetNoticeHost extends InheritedWidget {
+  const _SheetNoticeHost({
+    required this.show,
+    required super.child,
+  });
+
+  final void Function(_SheetNotice notice) show;
+
+  static _SheetNoticeHost of(BuildContext context) {
+    final host = context.dependOnInheritedWidgetOfExactType<_SheetNoticeHost>();
+    assert(host != null, 'Favorite notice host is missing');
+    return host!;
+  }
+
+  @override
+  bool updateShouldNotify(_SheetNoticeHost oldWidget) => show != oldWidget.show;
+}
+
+class _ExploreSheetShell extends StatefulWidget {
+  const _ExploreSheetShell({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_ExploreSheetShell> createState() => _ExploreSheetShellState();
+}
+
+class _ExploreSheetShellState extends State<_ExploreSheetShell> {
+  _SheetNotice? _notice;
+  Timer? _hideTimer;
+
+  void _show(_SheetNotice notice) {
+    _hideTimer?.cancel();
+    setState(() => _notice = notice);
+    _hideTimer = Timer(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _notice = null);
+    });
+  }
+
+  void _dismiss() {
+    _hideTimer?.cancel();
+    if (_notice != null) setState(() => _notice = null);
+  }
+
+  @override
+  void dispose() {
+    _hideTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final notice = _notice;
+    return _SheetNoticeHost(
+      show: _show,
+      child: Stack(
+        children: [
+          widget.child,
+          if (notice != null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _SheetNoticeBar(
+                notice: notice,
+                onDismiss: _dismiss,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SheetNoticeBar extends StatelessWidget {
+  const _SheetNoticeBar({
+    required this.notice,
+    required this.onDismiss,
+  });
+
+  final _SheetNotice notice;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Material(
+      color: colorScheme.inverseSurface,
+      child: Padding(
+        padding: const EdgeInsetsDirectional.only(start: 16, end: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                notice.message,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onInverseSurface,
+                    ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                onDismiss();
+                notice.onAction();
+              },
+              child: Text(
+                notice.actionLabel,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: colorScheme.inversePrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _FavoriteButton extends ConsumerWidget {
   const _FavoriteButton({
     required this.kind,
@@ -592,40 +721,32 @@ class _FavoriteButton extends ConsumerWidget {
                 favoriteKind,
                 favoriteId,
               );
-          final messenger = ScaffoldMessenger.of(context);
-          messenger.hideCurrentSnackBar();
+          final host = _SheetNoticeHost.of(context);
           if (wasMarked && removed != null) {
-            messenger.showSnackBar(
-              SnackBar(
-                content:
-                    Text(AppLocalizations.getExploreFavoritesRemoved(lang)),
-                action: SnackBarAction(
-                  label: AppLocalizations.getExploreFavoritesUndo(lang),
-                  onPressed: () {
-                    ref
-                        .read(exploreFavoritesProvider.notifier)
-                        .restore(removed);
-                  },
-                ),
+            host.show(
+              _SheetNotice(
+                message: AppLocalizations.getExploreFavoritesRemoved(lang),
+                actionLabel: AppLocalizations.getExploreFavoritesUndo(lang),
+                onAction: () {
+                  ref.read(exploreFavoritesProvider.notifier).restore(removed);
+                },
               ),
             );
             return;
           }
-          messenger.showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.getExploreFavoritesSaved(lang)),
-              action: SnackBarAction(
-                label: AppLocalizations.getExploreFavoritesView(lang),
-                onPressed: () {
-                  final navigator = Navigator.of(context);
-                  navigator.pop();
-                  navigator.push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const ExploreFavoritesPage(),
-                    ),
-                  );
-                },
-              ),
+          host.show(
+            _SheetNotice(
+              message: AppLocalizations.getExploreFavoritesSaved(lang),
+              actionLabel: AppLocalizations.getExploreFavoritesView(lang),
+              onAction: () {
+                final navigator = Navigator.of(context);
+                navigator.pop();
+                navigator.push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ExploreFavoritesPage(),
+                  ),
+                );
+              },
             ),
           );
         },
