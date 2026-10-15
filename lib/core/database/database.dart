@@ -70,6 +70,9 @@ class AppDatabase extends _$AppDatabase {
 
   factory AppDatabase() => openAppDatabase();
 
+  /// In-memory connection for tests. Does not replace the shared app database.
+  AppDatabase.forTest(super.e);
+
   @override
   int get schemaVersion => 6;
 
@@ -284,6 +287,14 @@ class AppDatabase extends _$AppDatabase {
     await delete(bookmarks).go();
   }
 
+  /// Puts [entry] back with its primary key and original timestamp.
+  Future<void> restoreBookmark(Bookmark entry) {
+    return into(bookmarks).insert(
+      entry.toCompanion(false),
+      mode: InsertMode.insertOrReplace,
+    );
+  }
+
   Future<List<Bookmark>> getAllBookmarks() {
     return (select(bookmarks)
           ..orderBy([(b) => OrderingTerm(expression: b.createdAt, mode: OrderingMode.desc)]))
@@ -321,6 +332,14 @@ class AppDatabase extends _$AppDatabase {
     await (delete(this.notes)
           ..where((n) => n.surahId.equals(surahId) & n.ayahNo.equals(ayahNo)))
         .go();
+  }
+
+  /// Puts [entry] back with its text and original created/updated timestamps.
+  Future<void> restoreNote(Note entry) {
+    return into(notes).insert(
+      entry.toCompanion(false),
+      mode: InsertMode.insertOrReplace,
+    );
   }
 
   Future<List<Note>> getNotesBySurah(int surahId) {
@@ -374,6 +393,16 @@ class AppDatabase extends _$AppDatabase {
     await (delete(highlights)
           ..where((h) => h.surahId.equals(surahId) & h.ayahNo.equals(ayahNo)))
         .go();
+  }
+
+  /// Puts [entry] back with its color and original timestamp.
+  ///
+  /// Highlights do not store a word range, so callers tint the whole ayah.
+  Future<void> restoreHighlight(Highlight entry) {
+    return into(highlights).insert(
+      entry.toCompanion(false),
+      mode: InsertMode.insertOrReplace,
+    );
   }
 
   Future<List<Highlight>> getHighlightsBySurah(int surahId) {

@@ -5950,11 +5950,11 @@ class AppLocalizations {
 
   static String _getLibrarySubtitle(String language) {
     return switch (language) {
-      'id' => 'Koleksi pribadi Anda',
-      'en' => 'Your personal collection',
-      'zh' => '您的个人收藏',
-      'ja' => 'あなたの個人的なコレクション',
-      _ => 'Your personal collection',
+      'id' => 'Ayat yang kamu simpan dan renungkan',
+      'en' => 'Verses you save and reflect on',
+      'zh' => '你保存并思索的经文',
+      'ja' => '保存して思い巡らす節',
+      _ => 'Verses you save and reflect on',
     };
   }
 
@@ -6027,6 +6027,212 @@ class AppLocalizations {
       _ => 'No results found',
     };
   }
+
+  static String libraryJustNow(String language) {
+    return switch (language) {
+      'id' => 'Baru saja',
+      'zh' => '刚刚',
+      'ja' => 'たった今',
+      _ => 'Just now',
+    };
+  }
+
+  static String libraryMinutesAgo(int count, String language) {
+    return switch (language) {
+      'id' => '$count menit lalu',
+      'zh' => '$count 分钟前',
+      'ja' => '$count分前',
+      _ => '$count min ago',
+    };
+  }
+
+  static String libraryHoursAgo(int count, String language) {
+    return switch (language) {
+      'id' => '$count jam lalu',
+      'zh' => '$count 小时前',
+      'ja' => '$count時間前',
+      _ => '$count hr ago',
+    };
+  }
+
+  static String libraryYesterday(String language) {
+    return switch (language) {
+      'id' => 'Kemarin',
+      'zh' => '昨天',
+      'ja' => '昨日',
+      _ => 'Yesterday',
+    };
+  }
+
+  static String libraryDaysAgo(int count, String language) {
+    return switch (language) {
+      'id' => '$count hari lalu',
+      'zh' => '$count 天前',
+      'ja' => '$count日前',
+      _ => '$count days ago',
+    };
+  }
+
+  static String librarySurahBookmarkMeta(
+    int surahNo,
+    int count,
+    String language,
+  ) {
+    return switch (language) {
+      'id' => 'Surah ke-$surahNo · $count penanda',
+      'zh' => '第$surahNo章 · $count 个书签',
+      'ja' => 'スーラ $surahNo · ブックマーク $count',
+      _ =>
+        'Surah $surahNo · $count ${count == 1 ? 'bookmark' : 'bookmarks'}',
+    };
+  }
+
+  static String libraryPerSurah(String language) {
+    return switch (language) {
+      'id' => 'Per surah',
+      'zh' => '按章',
+      'ja' => 'スーラ別',
+      _ => 'By surah',
+    };
+  }
+
+  static String librarySortNewest(String language) {
+    return switch (language) {
+      'id' => 'Terbaru',
+      'zh' => '最新',
+      'ja' => '新しい順',
+      _ => 'Newest',
+    };
+  }
+
+  static String libraryDeleted(String kind, String language) {
+    return switch (kind) {
+      'note' => switch (language) {
+          'id' => 'Catatan dihapus',
+          'zh' => '笔记已删除',
+          'ja' => 'メモを削除しました',
+          _ => 'Note deleted',
+        },
+      'highlight' => switch (language) {
+          'id' => 'Sorotan dihapus',
+          'zh' => '高亮已删除',
+          'ja' => 'ハイライトを削除しました',
+          _ => 'Highlight deleted',
+        },
+      _ => switch (language) {
+          'id' => 'Penanda dihapus',
+          'zh' => '书签已删除',
+          'ja' => 'ブックマークを削除しました',
+          _ => 'Bookmark deleted',
+        },
+    };
+  }
+
+  static String libraryUndo(String language) {
+    return switch (language) {
+      'id' => 'Batal',
+      'zh' => '撤销',
+      'ja' => '取り消す',
+      _ => 'Undo',
+    };
+  }
+
+  static String libraryOpenInReader(String language) {
+    return switch (language) {
+      'id' => 'Buka di Reader',
+      'zh' => '在阅读器中打开',
+      'ja' => 'リーダーで開く',
+      _ => 'Open in Reader',
+    };
+  }
+
+  static String libraryEditNote(String language) {
+    return switch (language) {
+      'id' => 'Edit catatan',
+      'zh' => '编辑笔记',
+      'ja' => 'メモを編集',
+      _ => 'Edit note',
+    };
+  }
+
+  static String libraryCopy(String language) {
+    return switch (language) {
+      'id' => 'Salin',
+      'zh' => '复制',
+      'ja' => 'コピー',
+      _ => 'Copy',
+    };
+  }
+
+  static String libraryCopyVerseAndNote(String language) {
+    return switch (language) {
+      'id' => 'Salin ayat & catatan',
+      'zh' => '复制经文和笔记',
+      'ja' => '節とメモをコピー',
+      _ => 'Copy verse & note',
+    };
+  }
+
+  static String libraryDeleteAction(String kind, String language) {
+    return switch (kind) {
+      'note' => switch (language) {
+          'id' => 'Hapus catatan',
+          'zh' => '删除笔记',
+          'ja' => 'メモを削除',
+          _ => 'Delete note',
+        },
+      'highlight' => switch (language) {
+          'id' => 'Hapus sorotan',
+          'zh' => '删除高亮',
+          'ja' => 'ハイライトを削除',
+          _ => 'Delete highlight',
+        },
+      _ => switch (language) {
+          'id' => 'Hapus penanda',
+          'zh' => '删除书签',
+          'ja' => 'ブックマークを削除',
+          _ => 'Delete bookmark',
+        },
+    };
+  }
+
+  static String librarySwipeDelete(String language) {
+    return switch (language) {
+      'id' => 'Hapus',
+      'zh' => '删除',
+      'ja' => '削除',
+      _ => 'Delete',
+    };
+  }
+
+  static String librarySearchScope(String language) {
+    return switch (language) {
+      'id' => 'Mencari di terjemahan, catatan, nama surah, dan nomor ayat',
+      'zh' => '在译文、笔记、章名和经文编号中搜索',
+      'ja' => '訳、メモ、スーラ名、節番号を検索します',
+      _ => 'Searches translation, notes, surah names, and verse numbers',
+    };
+  }
+
+  static String librarySearchEmpty(String query, String language) {
+    return switch (language) {
+      'id' => "Tidak ada yang cocok dengan '$query'",
+      'zh' => '没有与「$query」匹配的内容',
+      'ja' => '「$query」に一致するものはありません',
+      _ => "Nothing matches '$query'",
+    };
+  }
+
+  static String librarySearchInQuran(String language) {
+    return switch (language) {
+      'id' => "Cari di Al-Qur'an",
+      'zh' => '在古兰经中搜索',
+      'ja' => 'クルアーンで検索',
+      _ => "Search the Qur'an",
+    };
+  }
+
+  static String libraryFilterChip(String label, int count) => '$label · $count';
 
   // Highlight Guide Localizations
   static String _getHighlightGuideTitle(String language) {

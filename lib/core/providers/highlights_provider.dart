@@ -87,6 +87,15 @@ Future<void> toggleHighlight(WidgetRef ref, int surahId, int ayahNo, int color) 
   ref.invalidate(highlightsBySurahProvider(surahId));
 }
 
+Future<void> restoreHighlightEntry(WidgetRef ref, Highlight entry) async {
+  final db = ref.read(databaseProvider);
+  await db.restoreHighlight(entry);
+  ref.read(highlightRefreshProvider.notifier).state++;
+  ref.invalidate(highlightProvider((surahId: entry.surahId, ayahNo: entry.ayahNo)));
+  ref.invalidate(highlightsProvider);
+  ref.invalidate(highlightsBySurahProvider(entry.surahId));
+}
+
 Future<void> removeHighlight(WidgetRef ref, int surahId, int ayahNo) async {
   final db = ref.read(databaseProvider);
   await db.removeHighlight(surahId, ayahNo);
