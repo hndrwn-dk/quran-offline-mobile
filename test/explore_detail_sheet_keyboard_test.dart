@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_offline/core/explore/explore_favorite.dart';
 import 'package:quran_offline/core/models/dua_entry.dart';
 import 'package:quran_offline/core/widgets/explore_detail_sheet.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   testWidgets(
@@ -62,4 +64,94 @@ void main() {
       expect(find.byType(FilledButton), findsOneWidget);
     },
   );
+
+  testWidgets('detail sheet hugs its content instead of filling the screen', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.bottomCenter,
+              child: ExploreDetailSheet(
+                title: const LocalizedText(
+                  id: 'Pasangan',
+                  en: 'Pairs',
+                  zh: 'Pairs',
+                  ja: 'Pairs',
+                ),
+                summary: const LocalizedText(
+                  id: 'Ringkas.',
+                  en: 'Short.',
+                  zh: 'Short.',
+                  ja: 'Short.',
+                ),
+                ayahRefs: const [],
+                lang: 'id',
+                onOpenReader: (_) {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+        tester.getSize(find.byType(ExploreDetailSheet)).height, lessThan(500));
+  });
+
+  testWidgets('save notice stays inside a content-sized sheet', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.bottomCenter,
+              child: ExploreDetailSheet(
+                title: const LocalizedText(
+                  id: 'Pasangan',
+                  en: 'Pairs',
+                  zh: 'Pairs',
+                  ja: 'Pairs',
+                ),
+                summary: const LocalizedText(
+                  id: 'Ringkas.',
+                  en: 'Short.',
+                  zh: 'Short.',
+                  ja: 'Short.',
+                ),
+                ayahRefs: const [],
+                lang: 'id',
+                favoriteKind: ExploreFavoriteKind.science,
+                favoriteId: 'pairs',
+                onOpenReader: (_) {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Simpan'));
+    await tester.pump();
+
+    expect(find.text('Disimpan ke Favorit'), findsOneWidget);
+    expect(find.text('Lihat'), findsOneWidget);
+    expect(
+        tester.getSize(find.byType(ExploreDetailSheet)).height, lessThan(500));
+
+    await tester.pump(const Duration(seconds: 4));
+  });
 }
