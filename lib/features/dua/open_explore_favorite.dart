@@ -11,6 +11,7 @@ import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/providers/theme_catalog_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
+import 'package:quran_offline/core/widgets/undoable_dismissible.dart';
 import 'package:quran_offline/core/widgets/explore_detail_sheet.dart';
 import 'package:quran_offline/features/dua/widgets/explore_section_scaffold.dart';
 import 'package:quran_offline/features/dua/widgets/favorite_item_card.dart';
@@ -216,11 +217,12 @@ class _ExploreFavoritesPageState extends ConsumerState<ExploreFavoritesPage> {
                   index -= 1;
                 }
                 final display = visible[index];
-                return Dismissible(
-                  key: ValueKey(display.favorite.key),
-                  direction: DismissDirection.endToStart,
-                  background: _RemoveBackground(lang: lang),
-                  onDismissed: (_) => _remove(display.favorite, lang),
+                return UndoableDismissible(
+                  dismissKey: ValueKey(display.favorite.key),
+                  backgroundLabel:
+                      AppLocalizations.getExploreFavoritesSwipeDelete(lang),
+                  backgroundIcon: Icons.heart_broken_outlined,
+                  onDismissed: () => _remove(display.favorite, lang),
                   child: FavoriteItemCard(
                     display: display,
                     removeLabel:
@@ -239,17 +241,13 @@ class _ExploreFavoritesPageState extends ConsumerState<ExploreFavoritesPage> {
 
   void _remove(ExploreFavorite entry, String lang) {
     ref.read(exploreFavoritesProvider.notifier).toggle(entry.kind, entry.id);
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.getExploreFavoritesRemoved(lang)),
-        action: SnackBarAction(
-          label: AppLocalizations.getExploreFavoritesUndo(lang),
-          onPressed: () {
-            ref.read(exploreFavoritesProvider.notifier).restore(entry);
-          },
-        ),
-      ),
+    showUndoSnackBar(
+      context,
+      message: AppLocalizations.getExploreFavoritesRemoved(lang),
+      actionLabel: AppLocalizations.getExploreFavoritesUndo(lang),
+      onAction: () {
+        ref.read(exploreFavoritesProvider.notifier).restore(entry);
+      },
     );
   }
 }
@@ -318,39 +316,6 @@ class _FavoritesFilters extends StatelessWidget {
       selected: selected == kind,
       onSelected: (_) =>
           onSelected(selected == kind && kind != null ? null : kind),
-    );
-  }
-}
-
-class _RemoveBackground extends StatelessWidget {
-  const _RemoveBackground({required this.lang});
-
-  final String lang;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      alignment: Alignment.centerRight,
-      padding: const EdgeInsets.only(right: 20),
-      decoration: BoxDecoration(
-        color: colorScheme.error,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.heart_broken_outlined, color: colorScheme.onError),
-          const SizedBox(width: 8),
-          Text(
-            AppLocalizations.getExploreFavoritesSwipeDelete(lang),
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: colorScheme.onError,
-                  fontWeight: FontWeight.w700,
-                ),
-          ),
-        ],
-      ),
     );
   }
 }
