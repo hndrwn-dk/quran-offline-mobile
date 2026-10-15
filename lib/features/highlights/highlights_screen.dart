@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
+import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/highlights_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/widgets/undoable_dismissible.dart';
-import 'package:quran_offline/features/library/library_index.dart';
-import 'package:quran_offline/features/library/library_relative_time.dart';
-import 'package:quran_offline/features/library/verse_translation.dart';
-import 'package:quran_offline/features/library/widgets/library_action_sheet.dart';
+import 'package:quran_offline/core/utils/translation_cleaner.dart';
+import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/features/library/widgets/library_empty_state.dart';
-import 'package:quran_offline/features/library/widgets/library_marked_text.dart';
+import 'package:quran_offline/features/library/widgets/library_item_card.dart';
+import 'package:quran_offline/features/reader/reader_screen.dart';
+import 'package:quran_offline/features/reader/widgets/highlight_color_picker.dart';
 
 class HighlightsScreen extends ConsumerStatefulWidget {
-  const HighlightsScreen({super.key, this.query = ''});
-
-  final String query;
+  const HighlightsScreen({super.key});
 
   @override
   ConsumerState<HighlightsScreen> createState() => _HighlightsScreenState();
@@ -25,10 +23,6 @@ class HighlightsScreen extends ConsumerStatefulWidget {
 
 class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
   int? _filterColor;
-  final Set<String> _hidden = {};
-
-  String _keyFor(Highlight highlight) =>
-      'highlight:${highlight.surahId}:${highlight.ayahNo}';
 
   @override
   Widget build(BuildContext context) {
@@ -36,343 +30,453 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
     final highlightsAsync = ref.watch(highlightsProvider);
     final surahsAsync = ref.watch(surahNamesProvider);
     final settings = ref.watch(settingsProvider);
-    final lang = settings.appLanguage;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return highlightsAsync.when(
-      data: (highlights) {
-        return surahsAsync.when(
-          data: (surahs) {
-            final visible = highlights
-                .where((highlight) => !_hidden.contains(_keyFor(highlight)))
-                .toList();
-            final usedColors = _usedColors(visible);
-            final filtered = visible.where((highlight) {
-              if (_filterColor == null) return true;
-              return highlightColorsMatch(highlight.color, _filterColor!);
-            }).toList()
-              ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-            if (visible.isEmpty) {
-              return LibraryEmptyState(
-                message: AppLocalizations.getSubtitleText('highlights_empty', lang),
-                icon: Icons.highlight_outlined,
-              );
-            }
-
-            return Column(
+    return Column(
+      children: [
+        // Color filter chips with info icon (no search button - use global search in AppBar)
+        Padding(
+            padding: const EdgeInsets.fromLTRB(
+              kAppContentHorizontalInset,
+              8,
+              kAppContentHorizontalInset,
+              8,
+            ),
+            child: Row(
               children: [
-                SizedBox(
-                  height: 48,
-                  child: ListView(
+                Expanded(
+                  child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    children: [
-                      _FilterPill(
-                        label: AppLocalizations.getSettingsText('filter_all', lang),
-                        selected: _filterColor == null,
-                        onTap: () => setState(() => _filterColor = null),
-                      ),
-                      for (final color in usedColors) ...[
-                        const SizedBox(width: 8),
-                        _ColorDot(
-                          color: highlightDisplayColor(color),
-                          selected: _filterColor != null &&
-                              highlightColorsMatch(_filterColor!, color),
-                          onTap: () => setState(() {
-                            _filterColor = _filterColor != null &&
-                                    highlightColorsMatch(_filterColor!, color)
-                                ? null
-                                : color;
-                          }),
+                    child: Row(
+                      children: [
+                        _buildColorChip(
+                          context,
+                          null,
+                          'All',
+                          colorScheme,
+                          _filterColor == null,
+                          () => setState(() => _filterColor = null),
                         ),
+                        const SizedBox(width: 8),
+                        ...highlightColors.map((colorValue) {
+                          final color = Color(colorValue);
+                          final isSelected = _filterColor != null &&
+                              highlightColorsMatch(_filterColor!, colorValue);
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _buildColorChip(
+                              context,
+                              color,
+                              null,
+                              colorScheme,
+                              isSelected,
+                              () => setState(() => _filterColor = isSelected ? null : colorValue),
+                            ),
+                          );
+                        }),
                       ],
-                    ],
+                    ),
                   ),
                 ),
-                Expanded(
-                  child: filtered.isEmpty
-                      ? LibraryEmptyState(
-                          message: AppLocalizations.getSubtitleText(
-                            'highlights_no_results',
-                            lang,
-                          ),
-                          icon: Icons.highlight_outlined,
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                          itemCount: filtered.length,
-                          itemBuilder: (context, index) {
-                            final highlight = filtered[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: _HighlightCard(
-                                highlight: highlight,
-                                surah: librarySurah(surahs, highlight.surahId),
-                                language: settings.language,
-                                appLanguage: lang,
-                                query: widget.query,
-                                onDelete: () => _delete(highlight, lang),
-                              ),
-                            );
-                          },
-                        ),
+                IconButton(
+                  icon: Icon(Icons.info_outline, size: 20, color: colorScheme.onSurfaceVariant),
+                  tooltip: AppLocalizations.getActionTooltip(
+                    'highlight_color_guide',
+                    settings.appLanguage,
+                  ),
+                  onPressed: () => _showHighlightGuide(context, settings),
                 ),
               ],
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text('Error: $error')),
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Error: $error')),
-    );
-  }
-
-  List<int> _usedColors(List<Highlight> highlights) {
-    final present = highlights.map((h) => normalizeHighlightColor(h.color)).toSet();
-    final ordered = <int>[];
-    for (final color in highlightColors) {
-      final normalized = normalizeHighlightColor(color);
-      if (present.contains(normalized)) ordered.add(normalized);
-    }
-    for (final color in present) {
-      if (!ordered.contains(color)) ordered.add(color);
-    }
-    return ordered;
-  }
-
-  void _delete(Highlight highlight, String lang) {
-    beginLibraryUndoDelete(
-      isMounted: () => mounted,
-      setState: setState,
-      hidden: _hidden,
-      entryKey: _keyFor(highlight),
-      context: context,
-      message: AppLocalizations.libraryDeleted('highlight', lang),
-      undoLabel: AppLocalizations.libraryUndo(lang),
-      delete: () => removeHighlight(ref, highlight.surahId, highlight.ayahNo),
-      restore: () => restoreHighlightEntry(ref, highlight),
-    );
-  }
-}
-
-class _FilterPill extends StatelessWidget {
-  const _FilterPill({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Material(
-      color: selected ? colorScheme.primary : colorScheme.surface.withValues(alpha: 0.94),
-      shape: const StadiumBorder(),
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const StadiumBorder(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ColorDot extends StatelessWidget {
-  const _ColorDot({
-    required this.color,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final Color color;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 32,
-          height: 32,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: selected ? colorScheme.onSurface : Colors.transparent,
-              width: 2,
             ),
           ),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-            child: const SizedBox(width: 18, height: 18),
-          ),
-        ),
-      ),
-    );
-  }
-}
+        // Highlights list
+        Expanded(
+          child: highlightsAsync.when(
+            data: (highlights) {
+              return surahsAsync.when(
+                data: (surahs) {
+                  // Filter by color only (no search filtering in tab view)
+                  var filtered = highlights.where((highlight) {
+                    if (_filterColor != null &&
+                        !highlightColorsMatch(highlight.color, _filterColor!)) {
+                      return false;
+                    }
+                    return true;
+                  }).toList();
+                  
+                  // Sort by surah, then ayah
+                  filtered.sort((a, b) {
+                    if (a.surahId != b.surahId) {
+                      return a.surahId.compareTo(b.surahId);
+                    }
+                    return a.ayahNo.compareTo(b.ayahNo);
+                  });
 
-class _HighlightCard extends ConsumerWidget {
-  const _HighlightCard({
-    required this.highlight,
-    required this.surah,
-    required this.language,
-    required this.appLanguage,
-    required this.query,
-    required this.onDelete,
-  });
+                  if (filtered.isEmpty) {
+                    return LibraryEmptyState(
+                      message: highlights.isEmpty
+                          ? AppLocalizations.getSubtitleText(
+                              'highlights_empty',
+                              settings.appLanguage,
+                            )
+                          : AppLocalizations.getSubtitleText(
+                              'highlights_no_results',
+                              settings.appLanguage,
+                            ),
+                      icon: Icons.format_color_fill_outlined,
+                    );
+                  }
 
-  final Highlight highlight;
-  final SurahInfo surah;
-  final String language;
-  final String appLanguage;
-  final String query;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final tint = highlightDisplayColor(highlight.color);
-    return FutureBuilder<Verse?>(
-      future: ref.read(databaseProvider).getVerse(highlight.surahId, highlight.ayahNo),
-      builder: (context, snapshot) {
-        final verse = snapshot.data;
-        final arabic = verse?.arabic ?? '';
-        final translation = verseTranslation(verse, language);
-        final when = formatLibraryRelativeTime(
-          highlight.createdAt,
-          DateTime.now(),
-          appLanguage,
-        );
-        final copyText = libraryCopyText(
-          surahName: surah.englishName,
-          surahId: highlight.surahId,
-          ayahNo: highlight.ayahNo,
-          arabic: arabic,
-          translation: translation,
-        );
-
-        return UndoableDismissible(
-          dismissKey: ValueKey('highlight-${highlight.surahId}-${highlight.ayahNo}'),
-          backgroundLabel: AppLocalizations.librarySwipeDelete(appLanguage),
-          onDismissed: onDelete,
-          child: Material(
-            color: colorScheme.surface.withValues(alpha: 0.94),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-              ),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: () => openLibraryReader(
-                context,
-                ref,
-                highlight.surahId,
-                highlight.ayahNo,
-              ),
-              onLongPress: () {
-                showLibraryActionSheet(
-                  context: context,
-                  language: appLanguage,
-                  title: '${surah.englishName} · QS ${highlight.surahId}:${highlight.ayahNo}',
-                  preview: translation,
-                  copyLabel: AppLocalizations.libraryCopy(appLanguage),
-                  deleteLabel: AppLocalizations.libraryDeleteAction(
-                    'highlight',
-                    appLanguage,
-                  ),
-                  onOpen: () => openLibraryReader(
-                    context,
-                    ref,
-                    highlight.surahId,
-                    highlight.ayahNo,
-                  ),
-                  onCopy: () => copyLibraryText(copyText),
-                  onDelete: onDelete,
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(color: tint, shape: BoxShape.circle),
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(
+                      kAppContentHorizontalInset,
+                      0,
+                      kAppContentHorizontalInset,
+                      24,
+                    ),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final highlight = filtered[index];
+                      final surahInfo = surahs.firstWhere(
+                        (s) => s.id == highlight.surahId,
+                        orElse: () => SurahInfo(
+                          id: highlight.surahId,
+                          arabicName: '',
+                          englishName: 'Surah ${highlight.surahId}',
+                          englishMeaning: '',
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: LibraryMarkedText(
-                            text: '${surah.englishName} · QS ${highlight.surahId}:${highlight.ayahNo}',
-                            query: query,
-                            maxLines: 1,
-                            style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                          ),
-                        ),
-                        Text(
-                          when,
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      );
+                      final highlightColor =
+                          highlightDisplayColor(highlight.color);
+
+                      return FutureBuilder<Verse?>(
+                        future: ref
+                            .read(databaseProvider)
+                            .getVerse(highlight.surahId, highlight.ayahNo),
+                        builder: (context, verseSnapshot) {
+                          final verse = verseSnapshot.data;
+                          final arabicText = verse?.arabic ?? '';
+                          final translation =
+                              _getTranslation(verse, settings.language);
+
+                          return LibraryItemCard(
+                            surahId: highlight.surahId,
+                            surahName: surahInfo.englishName,
+                            ayahNo: highlight.ayahNo,
+                            arabicText: arabicText,
+                            translation: translation,
+                            accentColor: highlightColor,
+                            marginBottom: index == filtered.length - 1 ? 0 : 8,
+                            showChevron: false,
+                            trailingAction: IconButton(
+                              icon: Icon(
+                                Icons.edit_outlined,
                                 color: colorScheme.onSurfaceVariant,
                               ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    LibraryArabicLine(
-                      arabic: arabic,
-                      query: query,
-                      verseHighlight: tint,
-                      fontSize: 22,
-                    ),
-                    if (translation.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      LibraryMarkedText(
-                        text: translation,
-                        query: query,
-                        maxLines: 2,
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              height: 1.35,
+                              tooltip: AppLocalizations.getActionTooltip(
+                                'change_color',
+                                settings.appLanguage,
+                              ),
+                              onPressed: () {
+                                showDialog<void>(
+                                  context: context,
+                                  builder: (context) => HighlightColorPicker(
+                                    surahId: highlight.surahId,
+                                    ayahNo: highlight.ayahNo,
+                                    currentColor: highlight.color,
+                                  ),
+                                );
+                              },
                             ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+                            onTap: () {
+                              ref.read(readerSourceProvider.notifier).state =
+                                  SurahSource(
+                                highlight.surahId,
+                                targetAyahNo: highlight.ayahNo,
+                              );
+                              ref.read(targetAyahProvider.notifier).state =
+                                  highlight.ayahNo;
+                              Navigator.push<void>(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder: (context) => const ReaderScreen(),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, _) => Center(child: Text('Error: $error')),
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(
+              child: Text('Error: $error'),
             ),
           ),
-        );
-      },
+        ),
+      ],
     );
   }
+
+  Widget _buildColorChip(
+    BuildContext context,
+    Color? color,
+    String? label,
+    ColorScheme colorScheme,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    IconData? icon;
+    if (color != null) {
+      icon = getHighlightIcon(color.value);
+    }
+    
+    // Adjust colors for dark mode
+    Color? chipBackgroundColor;
+    Color chipBorderColor;
+    Color iconContainerColor;
+    
+    if (color != null) {
+      if (isSelected) {
+        // Selected: use muted color in dark mode, full color in light mode
+        chipBackgroundColor = isDark 
+            ? color.withValues(alpha: 0.25) 
+            : color.withValues(alpha: 0.15);
+        chipBorderColor = isDark 
+            ? color.withValues(alpha: 0.6) 
+            : color;
+      } else {
+        // Unselected: very subtle in dark mode
+        chipBackgroundColor = isDark 
+            ? colorScheme.surfaceVariant 
+            : color.withValues(alpha: 0.1);
+        chipBorderColor = isDark 
+            ? colorScheme.outline.withValues(alpha: 0.2)
+            : colorScheme.outline.withValues(alpha: 0.3);
+      }
+      iconContainerColor = color;
+    } else {
+      // "All" chip
+      chipBackgroundColor = isSelected 
+          ? colorScheme.primaryContainer 
+          : colorScheme.surfaceVariant;
+      chipBorderColor = isSelected 
+          ? colorScheme.primary 
+          : colorScheme.outline.withValues(alpha: 0.3);
+      iconContainerColor = colorScheme.primary;
+    }
+    
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: chipBackgroundColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: chipBorderColor,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (color != null) ...[
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: iconContainerColor,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: isDark 
+                        ? colorScheme.outline.withValues(alpha: 0.2)
+                        : colorScheme.outline.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  icon,
+                  size: 12,
+                  color: _getContrastColor(iconContainerColor),
+                ),
+              ),
+              if (label != null) const SizedBox(width: 6),
+            ],
+            if (label != null)
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: isSelected
+                          ? (color != null && isDark
+                              ? color.withValues(alpha: 0.9)
+                              : color ?? colorScheme.onPrimaryContainer)
+                          : colorScheme.onSurfaceVariant,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getContrastColor(Color color) {
+    // Calculate relative luminance
+    final luminance = color.computeLuminance();
+    return luminance > 0.5 ? Colors.black : Colors.white;
+  }
+
+  void _showHighlightGuide(BuildContext context, AppSettings settings) {
+    final appLanguage = settings.appLanguage;
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.getSettingsText('highlight_guide_title', appLanguage)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.getSettingsText('highlight_guide_intro', appLanguage),
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 16),
+              ...highlightColors.map((colorValue) {
+                final color = Color(colorValue);
+                final icon = getHighlightIcon(colorValue);
+                return _buildHighlightRuleItem(
+                  context,
+                  _getHighlightColorName(colorValue, appLanguage),
+                  _getHighlightColorDescription(colorValue, appLanguage),
+                  color,
+                  icon,
+                );
+              }),
+              const SizedBox(height: 8),
+              Text(
+                AppLocalizations.getSettingsText('highlight_guide_closing', appLanguage),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.getSettingsText('highlight_guide_got_it', appLanguage)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHighlightRuleItem(
+    BuildContext context,
+    String name,
+    String description,
+    Color color,
+    IconData icon,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              icon,
+              size: 18,
+              color: _getContrastColor(color),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  description,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getHighlightColorName(int colorValue, String language) {
+    final color = Color(colorValue);
+    return switch (colorValue) {
+      _ when isHighlightYellow(color.value) => AppLocalizations.getSettingsText('highlight_color_yellow', language),
+      _ when color == Colors.orange || color.value == Colors.orange.toARGB32() => AppLocalizations.getSettingsText('highlight_color_orange', language),
+      _ when color == Colors.pink || color.value == Colors.pink.toARGB32() => AppLocalizations.getSettingsText('highlight_color_pink', language),
+      _ when color == Colors.red || color.value == Colors.red.toARGB32() => AppLocalizations.getSettingsText('highlight_color_red', language),
+      _ when color == Colors.purple || color.value == Colors.purple.toARGB32() => AppLocalizations.getSettingsText('highlight_color_purple', language),
+      _ when color == Colors.blue || color.value == Colors.blue.toARGB32() => AppLocalizations.getSettingsText('highlight_color_blue', language),
+      _ when color == Colors.cyan || color.value == Colors.cyan.toARGB32() => AppLocalizations.getSettingsText('highlight_color_cyan', language),
+      _ when color == Colors.green || color.value == Colors.green.toARGB32() => AppLocalizations.getSettingsText('highlight_color_green', language),
+      _ when color == Colors.teal || color.value == Colors.teal.toARGB32() => AppLocalizations.getSettingsText('highlight_color_teal', language),
+      _ => AppLocalizations.getSettingsText('highlight_color_other', language),
+    };
+  }
+
+  String _getHighlightColorDescription(int colorValue, String language) {
+    final color = Color(colorValue);
+    return switch (colorValue) {
+      _ when isHighlightYellow(color.value) => AppLocalizations.getSettingsText('highlight_color_yellow_desc', language),
+      _ when color == Colors.orange || color.value == Colors.orange.toARGB32() => AppLocalizations.getSettingsText('highlight_color_orange_desc', language),
+      _ when color == Colors.pink || color.value == Colors.pink.toARGB32() => AppLocalizations.getSettingsText('highlight_color_pink_desc', language),
+      _ when color == Colors.red || color.value == Colors.red.toARGB32() => AppLocalizations.getSettingsText('highlight_color_red_desc', language),
+      _ when color == Colors.purple || color.value == Colors.purple.toARGB32() => AppLocalizations.getSettingsText('highlight_color_purple_desc', language),
+      _ when color == Colors.blue || color.value == Colors.blue.toARGB32() => AppLocalizations.getSettingsText('highlight_color_blue_desc', language),
+      _ when color == Colors.cyan || color.value == Colors.cyan.toARGB32() => AppLocalizations.getSettingsText('highlight_color_cyan_desc', language),
+      _ when color == Colors.green || color.value == Colors.green.toARGB32() => AppLocalizations.getSettingsText('highlight_color_green_desc', language),
+      _ when color == Colors.teal || color.value == Colors.teal.toARGB32() => AppLocalizations.getSettingsText('highlight_color_teal_desc', language),
+      _ => AppLocalizations.getSettingsText('highlight_color_other_desc', language),
+    };
+  }
+
+  String _getTranslation(Verse? verse, String language) {
+    if (verse == null) return '';
+    final raw = switch (language) {
+      'en' => verse.trEn ?? '',
+      'id' => verse.trId ?? '',
+      'zh' => verse.trZh ?? '',
+      'ja' => verse.trJa ?? '',
+      _ => verse.trId ?? verse.trEn ?? '',
+    };
+    return TranslationCleaner.clean(raw);
+  }
 }
+

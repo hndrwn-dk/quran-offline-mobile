@@ -6,33 +6,82 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
-import 'package:quran_offline/core/widgets/undoable_dismissible.dart';
-import 'package:quran_offline/features/bookmarks/open_bookmark.dart';
-import 'package:quran_offline/features/library/bookmark_groups.dart';
-import 'package:quran_offline/features/library/library_index.dart';
-import 'package:quran_offline/features/library/library_relative_time.dart';
-import 'package:quran_offline/features/library/verse_translation.dart';
-import 'package:quran_offline/features/library/widgets/library_action_sheet.dart';
+import 'package:quran_offline/core/utils/translation_cleaner.dart';
+import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/features/library/widgets/library_empty_state.dart';
-import 'package:quran_offline/features/library/widgets/library_marked_text.dart';
-import 'package:quran_offline/features/library/widgets/verse_star_medal.dart';
+import 'package:quran_offline/features/library/widgets/library_item_card.dart';
+import 'package:quran_offline/features/bookmarks/open_bookmark.dart';
 
+// Extract from BookmarksScreen for use in TabBarView
 class BookmarksTabContent extends ConsumerStatefulWidget {
-  const BookmarksTabContent({super.key, this.query = ''});
-
-  final String query;
+  const BookmarksTabContent({super.key});
 
   @override
   ConsumerState<BookmarksTabContent> createState() => _BookmarksTabContentState();
 }
 
-class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
-  bool _newestFirst = true;
-  final Set<String> _hidden = {};
+enum BookmarkSortBy { date, surah }
 
-  String _keyFor(Bookmark bookmark) =>
-      'bookmark:${bookmark.surahId}:${bookmark.ayahNo}';
+class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
+  bool _selectionMode = false;
+  final Set<String> _selectedKeys = {};
+  BookmarkSortBy _sortBy = BookmarkSortBy.date;
+
+  String _keyFor(Bookmark b) => '${b.surahId}:${b.ayahNo}';
+
+  void _toggleSelection(Bookmark b) {
+    final key = _keyFor(b);
+    setState(() {
+      if (_selectedKeys.contains(key)) {
+        _selectedKeys.remove(key);
+        if (_selectedKeys.isEmpty) {
+          _selectionMode = false;
+        }
+      } else {
+        _selectedKeys.add(key);
+        _selectionMode = true;
+      }
+    });
+  }
+
+  void _clearSelection() {
+    setState(() {
+      _selectedKeys.clear();
+      _selectionMode = false;
+    });
+  }
+
+  Future<bool> _confirmDelete(BuildContext context, {required String message}) async {
+    final settings = ref.read(settingsProvider);
+    final appLanguage = settings.appLanguage;
+    return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(AppLocalizations.getSettingsText('delete', appLanguage)),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: Text(AppLocalizations.getSettingsText('cancel', appLanguage)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: Text(AppLocalizations.getSettingsText('delete', appLanguage)),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  void _selectAll(List<Bookmark> items) {
+    setState(() {
+      _selectedKeys
+        ..clear()
+        ..addAll(items.map(_keyFor));
+      _selectionMode = items.isNotEmpty;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,328 +89,269 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
     final bookmarksAsync = ref.watch(bookmarksProvider);
     final surahsAsync = ref.watch(surahNamesProvider);
     final settings = ref.watch(settingsProvider);
-    final lang = settings.appLanguage;
     final colorScheme = Theme.of(context).colorScheme;
+    final appLanguage = settings.appLanguage;
 
-    return bookmarksAsync.when(
-      data: (bookmarks) {
-        return surahsAsync.when(
-          data: (surahs) {
-            final visible = bookmarks
-                .where((bookmark) => !_hidden.contains(_keyFor(bookmark)))
-                .toList();
-            if (visible.isEmpty) {
-              return LibraryEmptyState(
-                message: AppLocalizations.getSubtitleText('bookmarks_empty', lang),
-                icon: Icons.bookmark_outline,
-              );
-            }
-            final groups = groupBookmarks(visible, newestFirst: _newestFirst);
-            final sortLabel = _newestFirst
-                ? AppLocalizations.librarySortNewest(lang)
-                : AppLocalizations.getSettingsText('sort_surah', lang);
-
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 4, 0, 8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          AppLocalizations.libraryPerSurah(lang).toUpperCase(),
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.6,
-                              ),
-                        ),
-                      ),
-                      PopupMenuButton<bool>(
-                        initialValue: _newestFirst,
-                        onSelected: (value) => setState(() => _newestFirst = value),
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: true,
-                            child: Text(AppLocalizations.librarySortNewest(lang)),
-                          ),
-                          PopupMenuItem(
-                            value: false,
-                            child: Text(
-                              AppLocalizations.getSettingsText('sort_surah', lang),
-                            ),
-                          ),
-                        ],
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              sortLabel,
-                              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                            ),
-                            Icon(
-                              Icons.arrow_drop_down,
-                              color: colorScheme.onSurface,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                for (final group in groups)
-                  _SurahGroup(
-                    group: group,
-                    surah: librarySurah(surahs, group.surahId),
-                    language: settings.language,
-                    appLanguage: lang,
-                    query: widget.query,
-                    onOpen: (bookmark) => openBookmarkLocation(context, ref, bookmark),
-                    onCopy: (text) => copyLibraryText(text),
-                    onDelete: (bookmark) => _delete(bookmark, lang),
-                  ),
-              ],
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text('Error: $error')),
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Error: $error')),
-    );
-  }
-
-  void _delete(Bookmark bookmark, String lang) {
-    beginLibraryUndoDelete(
-      isMounted: () => mounted,
-      setState: setState,
-      hidden: _hidden,
-      entryKey: _keyFor(bookmark),
-      context: context,
-      message: AppLocalizations.libraryDeleted('bookmark', lang),
-      undoLabel: AppLocalizations.libraryUndo(lang),
-      delete: () => deleteBookmarksBulk(ref, [bookmark]),
-      restore: () => restoreBookmarkEntry(ref, bookmark),
-    );
-  }
-}
-
-class _SurahGroup extends ConsumerWidget {
-  const _SurahGroup({
-    required this.group,
-    required this.surah,
-    required this.language,
-    required this.appLanguage,
-    required this.query,
-    required this.onOpen,
-    required this.onCopy,
-    required this.onDelete,
-  });
-
-  final SurahBookmarkGroup group;
-  final SurahInfo surah;
-  final String language;
-  final String appLanguage;
-  final String query;
-  final Future<void> Function(Bookmark bookmark) onOpen;
-  final Future<void> Function(String text) onCopy;
-  final void Function(Bookmark bookmark) onDelete;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.94),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Stack(
+      children: [
+        Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        LibraryMarkedText(
-                          text: surah.englishName,
-                          query: query,
-                          maxLines: 1,
-                          style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          AppLocalizations.librarySurahBookmarkMeta(
-                            surah.id,
-                            group.items.length,
-                            appLanguage,
-                          ),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                      ],
+            // Selection mode bar (shown when selection mode is active)
+            if (_selectionMode)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.1),
+                      width: 1,
                     ),
                   ),
-                  if (surah.arabicName.isNotEmpty)
-                    QuranArabicText(
-                      arabic: surah.arabicName,
-                      fontSize: 20,
-                      defaultColor: colorScheme.onSurface,
-                      height: 1.4,
-                      selectable: false,
-                    ),
-                ],
-              ),
-            ),
-            for (var i = 0; i < group.items.length; i++) ...[
-              if (i > 0)
-                Divider(
-                  height: 1,
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.45),
                 ),
-              _BookmarkRow(
-                bookmark: group.items[i],
-                surah: surah,
-                language: language,
-                appLanguage: appLanguage,
-                query: query,
-                onOpen: onOpen,
-                onCopy: onCopy,
-                onDelete: onDelete,
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BookmarkRow extends ConsumerWidget {
-  const _BookmarkRow({
-    required this.bookmark,
-    required this.surah,
-    required this.language,
-    required this.appLanguage,
-    required this.query,
-    required this.onOpen,
-    required this.onCopy,
-    required this.onDelete,
-  });
-
-  final Bookmark bookmark;
-  final SurahInfo surah;
-  final String language;
-  final String appLanguage;
-  final String query;
-  final Future<void> Function(Bookmark bookmark) onOpen;
-  final Future<void> Function(String text) onCopy;
-  final void Function(Bookmark bookmark) onDelete;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return FutureBuilder<Verse?>(
-      future: ref.read(databaseProvider).getVerse(bookmark.surahId, bookmark.ayahNo),
-      builder: (context, snapshot) {
-        final verse = snapshot.data;
-        final arabic = verse?.arabic ?? '';
-        final translation = verseTranslation(verse, language);
-        final when = formatLibraryRelativeTime(
-          bookmark.createdAt,
-          DateTime.now(),
-          appLanguage,
-        );
-        final copyText = libraryCopyText(
-          surahName: surah.englishName,
-          surahId: bookmark.surahId,
-          ayahNo: bookmark.ayahNo,
-          arabic: arabic,
-          translation: translation,
-        );
-
-        return UndoableDismissible(
-          dismissKey: ValueKey('bookmark-${bookmark.surahId}-${bookmark.ayahNo}'),
-          backgroundLabel: AppLocalizations.librarySwipeDelete(appLanguage),
-          borderRadius: BorderRadius.zero,
-          onDismissed: () => onDelete(bookmark),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => onOpen(bookmark),
-              onLongPress: () {
-                showLibraryActionSheet(
-                  context: context,
-                  language: appLanguage,
-                  title: '${surah.englishName} · QS ${bookmark.surahId}:${bookmark.ayahNo}',
-                  preview: translation,
-                  copyLabel: AppLocalizations.libraryCopy(appLanguage),
-                  deleteLabel: AppLocalizations.libraryDeleteAction(
-                    'bookmark',
-                    appLanguage,
-                  ),
-                  onOpen: () => onOpen(bookmark),
-                  onCopy: () => onCopy(copyText),
-                  onDelete: () => onDelete(bookmark),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    VerseStarMedal(ayahNo: bookmark.ayahNo),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          LibraryArabicLine(arabic: arabic, query: query),
-                          if (translation.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            LibraryMarkedText(
-                              text: translation,
-                              query: query,
-                              maxLines: 2,
-                              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                    height: 1.35,
-                                  ),
-                            ),
-                          ],
-                          const SizedBox(height: 6),
-                          Text(
-                            'QS ${bookmark.surahId}:${bookmark.ayahNo} · $when',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                          ),
-                        ],
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: _clearSelection,
+                      tooltip: AppLocalizations.getActionTooltip(
+                        'cancel_selection',
+                        appLanguage,
                       ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        '${_selectedKeys.length} ${AppLocalizations.getSettingsText('selected', appLanguage)}',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onPrimaryContainer,
+                            ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.select_all),
+                      tooltip: AppLocalizations.getActionTooltip(
+                        'select_all',
+                        appLanguage,
+                      ),
+                      onPressed: () {
+                        final bookmarks = bookmarksAsync.valueOrNull ?? [];
+                        _selectAll(bookmarks);
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      tooltip: AppLocalizations.getActionTooltip(
+                        'delete_selected',
+                        appLanguage,
+                      ),
+                      onPressed: () async {
+                        final bookmarks = bookmarksAsync.valueOrNull ?? [];
+                        final selected = bookmarks
+                            .where((b) => _selectedKeys.contains(_keyFor(b)))
+                            .toList();
+                        if (selected.isEmpty) return;
+                        final confirmed = await _confirmDelete(
+                          context,
+                          message: 'Delete ${selected.length} selected bookmark(s)?',
+                        );
+                        if (!confirmed) return;
+                        await deleteBookmarksBulk(ref, selected);
+                        _clearSelection();
+                      },
                     ),
                   ],
                 ),
               ),
+            // Bookmarks list (no search/filter buttons - use global search in AppBar)
+            Expanded(
+          child: bookmarksAsync.when(
+            data: (bookmarks) {
+              return surahsAsync.when(
+                data: (surahs) {
+                  // No filtering - show all bookmarks
+                  var filtered = bookmarks.toList();
+                  
+                  filtered = filtered.toList()..sort((a, b) {
+                    switch (_sortBy) {
+                      case BookmarkSortBy.date:
+                        return b.createdAt.compareTo(a.createdAt);
+                      case BookmarkSortBy.surah:
+                        if (a.surahId != b.surahId) {
+                          return a.surahId.compareTo(b.surahId);
+                        }
+                        return a.ayahNo.compareTo(b.ayahNo);
+                    }
+                  });
+
+                  if (filtered.isEmpty) {
+                    return LibraryEmptyState(
+                      message: AppLocalizations.getSubtitleText(
+                        'bookmarks_empty',
+                        settings.appLanguage,
+                      ),
+                      icon: Icons.bookmark_outline,
+                    );
+                  }
+
+                  final sortLabel = _sortBy == BookmarkSortBy.date
+                      ? AppLocalizations.getSettingsText('sort_date', appLanguage)
+                      : AppLocalizations.getSettingsText('sort_surah', appLanguage);
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (!_selectionMode)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            kAppContentHorizontalInset,
+                            8,
+                            kAppContentHorizontalInset,
+                            0,
+                          ),
+                          child: Text(
+                            '${AppLocalizations.getSettingsText('sort_by', appLanguage).toUpperCase()}: ${sortLabel.toUpperCase()}',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
+                                ),
+                          ),
+                        ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(
+                            kAppContentHorizontalInset,
+                            8,
+                            kAppContentHorizontalInset,
+                            24,
+                          ),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final bookmark = filtered[index];
+                            final surahInfo = surahs.firstWhere(
+                              (s) => s.id == bookmark.surahId,
+                              orElse: () => SurahInfo(
+                                id: bookmark.surahId,
+                                arabicName: '',
+                                englishName: 'Surah ${bookmark.surahId}',
+                                englishMeaning: '',
+                              ),
+                            );
+                            final selected =
+                                _selectedKeys.contains(_keyFor(bookmark));
+
+                            return FutureBuilder<Verse?>(
+                              future: ref
+                                  .read(databaseProvider)
+                                  .getVerse(bookmark.surahId, bookmark.ayahNo),
+                              builder: (context, verseSnapshot) {
+                                final verse = verseSnapshot.data;
+                                final arabicText = verse?.arabic ?? '';
+                                final translation =
+                                    _getTranslation(verse, settings.language);
+
+                                return LibraryItemCard(
+                                  surahId: bookmark.surahId,
+                                  surahName: surahInfo.englishName,
+                                  ayahNo: bookmark.ayahNo,
+                                  arabicText: arabicText,
+                                  translation: translation,
+                                  accentColor: bookmark.color != null
+                                      ? Color(bookmark.color!)
+                                      : null,
+                                  selected: selected,
+                                  selectionMode: _selectionMode,
+                                  onSelectionChanged: (_) =>
+                                      _toggleSelection(bookmark),
+                                  showChevron: !_selectionMode,
+                                  trailingAction: _selectionMode
+                                      ? null
+                                      : IconButton(
+                                          icon: Icon(
+                                            Icons.delete_outline,
+                                            color: colorScheme.onSurfaceVariant,
+                                          ),
+                                          tooltip:
+                                              AppLocalizations.getActionTooltip(
+                                            'delete_bookmark',
+                                            appLanguage,
+                                          ),
+                                          onPressed: () async {
+                                            final confirmed =
+                                                await _confirmDelete(
+                                              context,
+                                              message:
+                                                  'Delete this bookmark?',
+                                            );
+                                            if (!confirmed) return;
+                                            await toggleBookmark(
+                                              ref,
+                                              bookmark.surahId,
+                                              bookmark.ayahNo,
+                                            );
+                                            setState(() {});
+                                          },
+                                        ),
+                                  marginBottom:
+                                      index == filtered.length - 1 ? 0 : 8,
+                                  onTap: () async {
+                                    if (_selectionMode) {
+                                      _toggleSelection(bookmark);
+                                    } else {
+                                      await openBookmarkLocation(
+                                        context,
+                                        ref,
+                                        bookmark,
+                                      );
+                                    }
+                                  },
+                                  onLongPress: () {
+                                    if (!_selectionMode) {
+                                      setState(() {
+                                        _selectionMode = true;
+                                        _selectedKeys.add(_keyFor(bookmark));
+                                      });
+                                    } else {
+                                      _toggleSelection(bookmark);
+                                    }
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, _) => Center(child: Text('Error: $error')),
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(
+              child: Text('Error: $error'),
             ),
           ),
-        );
-      },
-    );
+        ),
+      ],
+    ),
+  ],
+);
   }
+
+  String _getTranslation(Verse? verse, String language) {
+    if (verse == null) return '';
+    final raw = switch (language) {
+      'en' => verse.trEn ?? '',
+      'id' => verse.trId ?? '',
+      'zh' => verse.trZh ?? '',
+      'ja' => verse.trJa ?? '',
+      _ => verse.trId ?? verse.trEn ?? '',
+    };
+    return TranslationCleaner.clean(raw);
+  }
+
 }
+

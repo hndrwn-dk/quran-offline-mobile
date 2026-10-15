@@ -28,15 +28,6 @@ Future<void> saveNote(WidgetRef ref, int surahId, int ayahNo, String noteText) a
   ref.invalidate(notesBySurahProvider(surahId));
 }
 
-Future<void> restoreNoteEntry(WidgetRef ref, Note entry) async {
-  final db = ref.read(databaseProvider);
-  await db.restoreNote(entry);
-  ref.read(noteRefreshProvider.notifier).state++;
-  ref.invalidate(noteProvider((surahId: entry.surahId, ayahNo: entry.ayahNo)));
-  ref.invalidate(notesProvider);
-  ref.invalidate(notesBySurahProvider(entry.surahId));
-}
-
 Future<void> deleteNote(WidgetRef ref, int surahId, int ayahNo) async {
   final db = ref.read(databaseProvider);
   await db.deleteNote(surahId, ayahNo);

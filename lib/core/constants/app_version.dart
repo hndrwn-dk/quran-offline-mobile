@@ -1,6 +1,6 @@
 /// Application version info. Keep in sync with pubspec.yaml version.
 class AppVersion {
-  static const String version = '1.0.20';
+  static const String version = '1.0.19';
   static const int buildNumber = 65;
 
   /// Full display string, e.g. "1.0.1 (18)"
