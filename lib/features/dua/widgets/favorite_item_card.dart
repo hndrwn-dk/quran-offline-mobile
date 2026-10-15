@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_offline/core/explore/favorite_display.dart';
+import 'package:quran_offline/core/widgets/app_surface_card.dart';
 import 'package:quran_offline/features/dua/explore_icons.dart';
 import 'package:quran_offline/features/dua/widgets/arabic_snippet.dart';
 
@@ -25,22 +26,10 @@ class FavoriteItemCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final colors = _accentColors(display.accent, colorScheme);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: colorScheme.surface.withValues(alpha: 0.94),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
-            child: Row(
+    return AppSurfaceCard(
+      onTap: onTap,
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+      child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _KindTile(
@@ -114,9 +103,6 @@ class FavoriteItemCard extends StatelessWidget {
                     ),
                   ),
               ],
-            ),
-          ),
-        ),
       ),
     );
   }
