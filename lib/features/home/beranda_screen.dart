@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
-import 'package:quran_offline/core/providers/tab_provider.dart';
+import 'package:quran_offline/core/providers/support_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
-import 'package:quran_offline/core/widgets/coachmark/support_coachmark.dart';
 import 'package:quran_offline/features/home/widgets/home_activity_section.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/home/widgets/home_explore_favorites_section.dart';
 import 'package:quran_offline/features/home/widgets/home_hero_card.dart';
 import 'package:quran_offline/features/home/widgets/home_notes_section.dart';
 import 'package:quran_offline/features/home/widgets/home_quick_actions.dart';
+import 'package:quran_offline/features/home/widgets/reading_milestone_card.dart';
 import 'package:quran_offline/features/home/widgets/ramadan_promo_banner.dart';
 import 'package:quran_offline/features/read/widgets/last_read_card.dart';
 import 'package:quran_offline/features/read/widgets/weekly_reflection_card.dart';
 import 'package:quran_offline/features/settings/about_screen.dart';
-import 'package:quran_offline/features/settings/settings_link_actions.dart';
 import 'package:quran_offline/features/settings/settings_screen.dart';
+import 'package:quran_offline/features/support/support_heart_mark.dart';
+import 'package:quran_offline/features/support/support_sheet.dart';
 
 class BerandaScreen extends ConsumerStatefulWidget {
   const BerandaScreen({super.key});
@@ -26,26 +27,15 @@ class BerandaScreen extends ConsumerStatefulWidget {
 }
 
 class _BerandaScreenState extends ConsumerState<BerandaScreen> {
-  final _supportIconKey = GlobalKey();
-  bool _coachmarkScheduled = false;
   bool _ramadanPromoDismissed = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowSupportCoachmark());
-  }
-
-  Future<void> _maybeShowSupportCoachmark() async {
-    if (_coachmarkScheduled || !mounted) return;
-    if (ref.read(currentTabProvider) != AppTab.home) return;
-
-    _coachmarkScheduled = true;
-    await SupportCoachmark.maybeShow(
-      context: context,
-      ref: ref,
-      supportIconKey: _supportIconKey,
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(readingCoverageProvider).onHomeVisible();
+    });
   }
 
   Widget _ramadanPromoBanner() {
@@ -69,6 +59,7 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
         _ramadanPromoBanner(),
         const WeeklyReflectionCard(forHome: true),
         const HomeQuickActions(),
+        const ReadingMilestoneSlot(),
         const LastReadCard(forHome: true),
         const HomeExploreFavoritesSection(),
         const HomeNotesSection(),
@@ -97,6 +88,7 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                ReadingMilestoneSlot(),
                 LastReadCard(forHome: true),
                 HomeExploreFavoritesSection(),
                 HomeNotesSection(),
@@ -123,7 +115,8 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
         leading: IconButton(
           icon: const Icon(Icons.menu),
           iconSize: 22,
-          tooltip: AppLocalizations.getSettingsText('about_header', appLanguage),
+          tooltip:
+              AppLocalizations.getSettingsText('about_header', appLanguage),
           onPressed: () {
             Navigator.push<void>(
               context,
@@ -134,22 +127,21 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
           },
         ),
         actions: [
-          IconButton(
-            key: _supportIconKey,
-            icon: const Icon(Icons.volunteer_activism_outlined),
-            iconSize: 22,
-            tooltip: AppLocalizations.getSettingsText('support_title', appLanguage),
-            onPressed: () => SettingsLinkActions.openDonate(context),
+          SupportAppBarButton(
+            tooltip: AppLocalizations.supportTooltip(appLanguage),
+            onPressed: () => showSupportSheet(context),
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             iconSize: 22,
-            tooltip: AppLocalizations.getSettingsText('settings_title', appLanguage),
+            tooltip:
+                AppLocalizations.getSettingsText('settings_title', appLanguage),
             onPressed: () {
               Navigator.push<void>(
                 context,
                 MaterialPageRoute<void>(
-                  builder: (context) => const SettingsScreen(showBackButton: true),
+                  builder: (context) =>
+                      const SettingsScreen(showBackButton: true),
                 ),
               );
             },
