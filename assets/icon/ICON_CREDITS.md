@@ -1,11 +1,5 @@
 # Icon credits
 
-## Read tab — Al-Qur'an on rehal
-
-- **Source:** [Al-Quran by Wendi Abi](https://thenounproject.com/icon/al-quran-4760232/) (The Noun Project)
-- **Files:** `nav_read_quran.svg`, `nav_read_quran.png`, `nav_read_quran_active.png`
-- **Note:** Attribution text removed from rendered artwork per Noun Project export guidelines; credit retained here.
-
 ## Jelajahi — Flaticon
 
 Bundled as PNG under `assets/icon/explore/` (Flaticon free license; attribution retained here, not shown in UI).
@@ -14,7 +8,6 @@ Bundled as PNG under `assets/icon/explore/` (Flaticon free license; attribution 
 
 | File | Flaticon |
 |------|----------|
-| `explore_hub_daily.png` | [Sunrise](https://www.flaticon.com/free-icon/sunrise_17802312) |
 | `explore_hub_prophet.png` | [Dua hands](https://www.flaticon.com/free-icon/dua-hands_84660) |
 | `explore_hub_science.png` | [Atom](https://www.flaticon.com/free-icon/atom_2933803) |
 | `explore_hub_asma.png` | [Belief](https://www.flaticon.com/free-icon/belief_7310911) |

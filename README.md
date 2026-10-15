@@ -105,7 +105,7 @@ lib/
 │   ├── tafsir/         # QUL tafsir SQLite
 │   ├── providers/
 │   ├── utils/
-│   └── widgets/        # QuranArabicText, SurahNameGlyph, NavReadIcon, …
+│   └── widgets/        # QuranArabicText, SurahNameGlyph, …
 └── features/
     ├── audio/          # Global recitation bar, offline downloads
     ├── read/           # Surah / Juz / Mushaf lists + page view
