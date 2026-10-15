@@ -38,19 +38,31 @@ class ReaderScreen extends ConsumerStatefulWidget {
 
 class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   final ItemScrollController _itemScrollController = ItemScrollController();
-  final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
+  final ItemPositionsListener _itemPositionsListener =
+      ItemPositionsListener.create();
   bool _hasScrolledToTarget = false;
   double _swipeStartX = 0.0;
   double _swipeStartY = 0.0;
   bool _isSwiping = false;
   bool _scrollListenerSetup = false;
+
   /// Last ayah we auto-scrolled to (avoids duplicate scrolls).
   int? _lastFollowedAyah;
+
   /// Topmost visible ayah while reading a surah (for AppBar progress chip).
   int _visibleAyahNo = 1;
   final AyahDwell _ayahDwell = AyahDwell();
   Timer? _dwellTimer;
   AyahRef? _dwellAyah;
+
+  @override
+  void initState() {
+    super.initState();
+    final target = ref.read(targetAyahProvider);
+    if (target != null && target > 0) {
+      _visibleAyahNo = target;
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -59,20 +71,20 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       _setupScrollListener();
     }
   }
-  
+
   void _setupScrollListener() {
     if (_scrollListenerSetup) return;
     _scrollListenerSetup = true;
-    
+
     // Listen to item positions changes using ValueNotifier
     _itemPositionsListener.itemPositions.addListener(_onItemPositionsChanged);
   }
-  
+
   Timer? _debounceTimer;
-  
+
   void _onItemPositionsChanged() {
     if (!mounted) return;
-    
+
     final source = ref.read(readerSourceProvider);
     if (source == null ||
         (source is! SurahSource &&
@@ -80,10 +92,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             source is! SurahInJuzSource)) {
       return;
     }
-    
+
     // Cancel previous debounce timer
     _debounceTimer?.cancel();
-    
+
     // Get current item positions
     final positions = _itemPositionsListener.itemPositions.value;
     if (positions.isEmpty) return;
@@ -97,7 +109,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       positions,
       lastItemIndex: lastItemIndex,
     );
-    
+
     if (targetIndex == null || targetIndex < 0) return;
     final index = targetIndex;
     if (verses != null) {
@@ -134,13 +146,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       }
     });
   }
-  
+
   void _updateLastRead(ReaderSource source, int itemIndex) {
     // Get verses to find ayah number
     final versesAsync = ref.read(readerVersesProvider(source));
     versesAsync.whenData((verses) {
       if (!mounted || verses.isEmpty) return;
-      
+
       // For SurahSource and SurahInJuzSource, check if we have a header (index 0)
       // For JuzSource, no header, so itemIndex directly maps to verseIndex
       final isSurahSource = source is SurahSource || source is SurahInJuzSource;
@@ -151,89 +163,119 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
       if (verseIndex >= 0 && verseIndex < verses.length) {
         final visibleAyah = verses[verseIndex].ayahNo;
-        if (isSurahSource && mounted) {
+        final pendingTarget = ref.read(targetAyahProvider);
+        final keepOpeningTarget = isSurahSource &&
+            pendingTarget != null &&
+            !_hasScrolledToTarget &&
+            visibleAyah != pendingTarget;
+        if (isSurahSource && mounted && !keepOpeningTarget) {
           setState(() => _visibleAyahNo = visibleAyah);
         }
         final currentSource = ref.read(readerSourceProvider);
-        
-        if (source is SurahSource && currentSource is SurahSource && currentSource.surahId == source.surahId) {
-          ref.read(lastReadProvider.notifier).saveLastRead(currentSource, ayahNo: visibleAyah);
+
+        if (source is SurahSource &&
+            currentSource is SurahSource &&
+            currentSource.surahId == source.surahId) {
+          ref
+              .read(lastReadProvider.notifier)
+              .saveLastRead(currentSource, ayahNo: visibleAyah);
           logReadingActivityDay();
-        } else if (source is JuzSource && currentSource is JuzSource && currentSource.juzNo == source.juzNo) {
+        } else if (source is JuzSource &&
+            currentSource is JuzSource &&
+            currentSource.juzNo == source.juzNo) {
           ref.read(lastReadProvider.notifier).saveLastRead(
-            currentSource,
-            ayahNo: visibleAyah,
-            surahId: verses[verseIndex].surahId,
-          );
+                currentSource,
+                ayahNo: visibleAyah,
+                surahId: verses[verseIndex].surahId,
+              );
           logReadingActivityDay();
-        } else if (source is SurahInJuzSource && currentSource is SurahInJuzSource && 
-                   currentSource.juzNo == source.juzNo && currentSource.surahId == source.surahId) {
-          ref.read(lastReadProvider.notifier).saveLastRead(currentSource, ayahNo: visibleAyah);
+        } else if (source is SurahInJuzSource &&
+            currentSource is SurahInJuzSource &&
+            currentSource.juzNo == source.juzNo &&
+            currentSource.surahId == source.surahId) {
+          ref
+              .read(lastReadProvider.notifier)
+              .saveLastRead(currentSource, ayahNo: visibleAyah);
           logReadingActivityDay();
         }
       }
     });
   }
-  
+
   @override
   void dispose() {
     _debounceTimer?.cancel();
     _dwellTimer?.cancel();
-    _itemPositionsListener.itemPositions.removeListener(_onItemPositionsChanged);
+    _itemPositionsListener.itemPositions
+        .removeListener(_onItemPositionsChanged);
     super.dispose();
   }
-  
+
   /// Navigate to next/previous surah, juz, or page based on swipe direction
   void _handleSwipeNavigation(ReaderSource currentSource, bool isNext) {
     if (currentSource is SurahInJuzSource) {
       _handleSurahInJuzNavigation(currentSource, isNext);
       return;
     }
-    
+
     final newSource = switch (currentSource) {
       SurahSource(:final surahId) => () {
-        final nextSurahId = isNext ? surahId + 1 : surahId - 1;
-        if (nextSurahId >= 1 && nextSurahId <= 114) {
-          return SurahSource(nextSurahId);
-        }
-        return null;
-      }(),
+          final nextSurahId = isNext ? surahId + 1 : surahId - 1;
+          if (nextSurahId >= 1 && nextSurahId <= 114) {
+            return SurahSource(nextSurahId);
+          }
+          return null;
+        }(),
       JuzSource(:final juzNo) => () {
-        final nextJuzNo = isNext ? juzNo + 1 : juzNo - 1;
-        if (nextJuzNo >= 1 && nextJuzNo <= 30) {
-          return JuzSource(nextJuzNo);
-        }
-        return null;
-      }(),
+          final nextJuzNo = isNext ? juzNo + 1 : juzNo - 1;
+          if (nextJuzNo >= 1 && nextJuzNo <= 30) {
+            return JuzSource(nextJuzNo);
+          }
+          return null;
+        }(),
       PageSource(:final pageNo) => () {
-        final nextPageNo = isNext ? pageNo + 1 : pageNo - 1;
-        if (nextPageNo >= 1 && nextPageNo <= 604) {
-          return PageSource(nextPageNo);
-        }
-        return null;
-      }(),
+          final nextPageNo = isNext ? pageNo + 1 : pageNo - 1;
+          if (nextPageNo >= 1 && nextPageNo <= 604) {
+            return PageSource(nextPageNo);
+          }
+          return null;
+        }(),
       _ => null,
     };
-    
+
     if (newSource != null) {
       ref.read(readerSourceProvider.notifier).state = newSource;
       ref.read(targetAyahProvider.notifier).state = null;
       ref.read(targetSurahIdProvider.notifier).state = null;
     }
   }
-  
+
+  ItemPosition? _positionForItem(int itemIndex) {
+    for (final position in _itemPositionsListener.itemPositions.value) {
+      if (position.index == itemIndex) return position;
+    }
+    return null;
+  }
+
+  void _finishTargetScroll() {
+    if (!mounted) return;
+    _hasScrolledToTarget = true;
+    ref.read(targetAyahProvider.notifier).state = null;
+    ref.read(targetSurahIdProvider.notifier).state = null;
+  }
+
   /// Handle navigation for SurahInJuzSource (async operation)
   void _handleSurahInJuzNavigation(SurahInJuzSource source, bool isNext) async {
     final db = ref.read(databaseProvider);
     final juzSurahs = await db.getSurahIdsInJuz(source.juzNo);
-    
+
     if (juzSurahs.isEmpty) return;
-    
+
     final currentIndex = juzSurahs.indexOf(source.surahId);
     if (currentIndex == -1) return;
-    
+
     ReaderSource? newSource;
-    
+
     if (isNext) {
       // Next Surah in same Juz
       if (currentIndex < juzSurahs.length - 1) {
@@ -257,16 +299,17 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         }
       }
     }
-    
+
     if (newSource != null && mounted) {
       ref.read(readerSourceProvider.notifier).state = newSource;
       ref.read(targetAyahProvider.notifier).state = null;
       ref.read(targetSurahIdProvider.notifier).state = null;
     }
   }
-  
+
   /// Scrolls the list so [ayahNo] of [audioSurahId] stays in view while reciting.
-  void _scrollToPlayingAyah(int ayahNo, int? audioSurahId, ReaderSource? source) {
+  void _scrollToPlayingAyah(
+      int ayahNo, int? audioSurahId, ReaderSource? source) {
     // Bismillah sits above ayah 1 in the list; scroll to ayah 1 to keep it visible.
     final scrollAyah = ayahNo == Bismillah.audioAyahNo ? 1 : ayahNo;
     if (!mounted || source == null || audioSurahId == null) return;
@@ -301,7 +344,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   /// Follows the current playback position when the list is ready or ayah changes.
   void _followPlayingAyah() {
     final audio = ref.read(audioPlayerProvider);
-    if (!audio.isActive || audio.ayahNo == null || audio.surahId == null) return;
+    if (!audio.isActive || audio.ayahNo == null || audio.surahId == null) {
+      return;
+    }
     if (_lastFollowedAyah == audio.ayahNo) return;
     _scrollToPlayingAyah(
       audio.ayahNo!,
@@ -317,50 +362,53 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     bool hasHeader, {
     int? targetSurahId,
     bool requireSurahId = false,
+    bool openedAtTarget = false,
   }) {
     if (_hasScrolledToTarget) return;
-    
+
     final targetIndex = indexOfTargetVerse(
       verses,
       ayahNo: targetAyahNo,
       surahId: targetSurahId,
       requireSurahId: requireSurahId,
     );
-    
+
     if (targetIndex == null) return;
-    
+
     // Adjust index if header is present (header is at index 0)
-    final itemIndex = isSurahSource && hasHeader ? targetIndex + 1 : targetIndex;
-    
-    // Wait for initial frame, then jump (not animate) so ScrollablePositionedList
-    // does not leave phantom gaps when SurahHeaderCard later grows with QUL text.
+    final itemIndex =
+        isSurahSource && hasHeader ? targetIndex + 1 : targetIndex;
+    final lastItemIndex =
+        verses.length + (isSurahSource && hasHeader ? 1 : 0) - 1;
+
+    void jumpIfNeeded() {
+      if (!mounted || _hasScrolledToTarget) return;
+      if (!_itemScrollController.isAttached) return;
+      final needsJump = readerTargetNeedsJump(
+        position: _positionForItem(itemIndex),
+        isLastItem: itemIndex == lastItemIndex,
+      );
+      if (!needsJump) {
+        _finishTargetScroll();
+        return;
+      }
+      try {
+        _itemScrollController.jumpTo(
+          index: itemIndex,
+          alignment: 0.05,
+        );
+      } catch (_) {}
+      _finishTargetScroll();
+    }
+
+    // The list already opened on this ayah. Wait until the surah header's
+    // about-text settles, then jump only if that growth moved the target.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _hasScrolledToTarget) return;
-
-      void jump() {
-        if (!mounted || !_itemScrollController.isAttached) return;
-        try {
-          _itemScrollController.jumpTo(
-            index: itemIndex,
-            alignment: 0.05,
-          );
-        } catch (_) {}
-      }
-
-      Future.delayed(const Duration(milliseconds: 50), () {
-        if (!mounted || _hasScrolledToTarget) return;
-        jump();
-        // Second jump after async SurahHeaderCard (QUL about-text) settles.
-        Future.delayed(const Duration(milliseconds: 450), () {
-          if (!mounted) return;
-          jump();
-          if (mounted) {
-            _hasScrolledToTarget = true;
-            ref.read(targetAyahProvider.notifier).state = null;
-            ref.read(targetSurahIdProvider.notifier).state = null;
-          }
-        });
-      });
+      Future.delayed(
+        Duration(milliseconds: openedAtTarget ? 450 : 50),
+        jumpIfNeeded,
+      );
     });
   }
 
@@ -581,15 +629,17 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final appLanguage = ref.watch(settingsProvider).appLanguage;
     final isLargeScreen = Responsive.isLargeScreen(context);
     final surahsAsync = ref.watch(surahNamesProvider);
-    
+
     // Listen to source changes reactively (ref.listen automatically handles lifecycle)
     ref.listen<ReaderSource?>(readerSourceProvider, (previous, next) {
       if (previous != next && next != null) {
         ref.read(lastReadProvider.notifier).saveLastRead(next);
+        final target = ref.read(targetAyahProvider);
         setState(() {
           _hasScrolledToTarget = false;
-          _visibleAyahNo = ref.read(targetAyahProvider) ?? 1;
+          _visibleAyahNo = target ?? 1;
         });
+        if (target != null) return;
         try {
           _itemScrollController.jumpTo(index: 0);
         } catch (e) {
@@ -597,7 +647,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         }
       }
     });
-    
+
     // Listen to target ayah changes
     ref.listen<int?>(targetAyahProvider, (previous, next) {
       if (next != null && next != previous) {
@@ -617,13 +667,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     });
 
     // Follow recitation: scroll to the ayah currently being played.
-    ref.listen<int?>(audioPlayerProvider.select((s) => s.ayahNo), (previous, next) {
+    ref.listen<int?>(audioPlayerProvider.select((s) => s.ayahNo),
+        (previous, next) {
       if (next == null || next == previous) return;
       _lastFollowedAyah = null;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         final audio = ref.read(audioPlayerProvider);
-        _scrollToPlayingAyah(next, audio.surahId, ref.read(readerSourceProvider));
+        _scrollToPlayingAyah(
+            next, audio.surahId, ref.read(readerSourceProvider));
       });
     });
 
@@ -639,7 +691,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         _lastFollowedAyah = null;
       }
     });
-    
+
     if (source == null && !isLargeScreen) {
       return Scaffold(
         appBar: AppBar(
@@ -730,20 +782,20 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         },
         onHorizontalDragEnd: (details) {
           if (!_isSwiping) return;
-          
+
           final deltaX = details.velocity.pixelsPerSecond.dx;
           final deltaY = details.velocity.pixelsPerSecond.dy;
           // Minimum swipe velocity threshold (pixels per second)
           // Also ensure horizontal movement is greater than vertical
           const swipeThreshold = 300.0;
-          
+
           if (deltaX.abs() > swipeThreshold && deltaX.abs() > deltaY.abs()) {
             // Swipe left (negative deltaX) = next
             // Swipe right (positive deltaX) = previous
             final isNext = deltaX < 0;
             _handleSwipeNavigation(source, isNext);
           }
-          
+
           _isSwiping = false;
         },
         child: versesAsync.when(
@@ -759,328 +811,436 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
               child: SizedBox(
                 width: isLargeScreen ? contentWidth : double.infinity,
                 child: surahsAsync.when(
-                data: (surahs) {
-                  ref.watch(settingsProvider);
-                  final isSurahSource = source is SurahSource || source is SurahInJuzSource;
-                  
-                  // Calculate verse count for current surah (when reading by surah)
-                  final currentSurahId = isSurahSource && verses.isNotEmpty ? verses[0].surahId : null;
-                  final verseCount = currentSurahId != null ? verses.length : 0;
-                  final currentSurahInfo = currentSurahId != null
-                      ? surahs.firstWhere(
-                          (s) => s.id == currentSurahId,
-                          orElse: () => SurahInfo(
-                            id: currentSurahId,
-                            arabicName: '',
-                            englishName: 'Surah $currentSurahId',
-                            englishMeaning: '',
-                          ),
-                        )
-                      : null;
+                  data: (surahs) {
+                    ref.watch(settingsProvider);
+                    final isSurahSource =
+                        source is SurahSource || source is SurahInJuzSource;
 
-                  // Scroll to target ayah if needed - trigger as soon as verses are loaded
-                  final targetAyah = ref.watch(targetAyahProvider);
-                  final targetSurahId = ref.watch(targetSurahIdProvider);
-                  final isJuzSource = source is JuzSource;
-                  
-                  // Trigger scroll immediately when conditions are met (for both Surah and Juz)
-                  if (targetAyah != null && (isSurahSource || isJuzSource) && !_hasScrolledToTarget) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted && !_hasScrolledToTarget) {
-                        _scrollToAyah(
-                          verses,
-                          targetAyah,
-                          isSurahSource,
-                          currentSurahInfo != null,
-                          targetSurahId: targetSurahId,
-                          requireSurahId: isJuzSource,
-                        );
-                      }
-                    });
-                  }
-
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) _followPlayingAyah();
-                  });
-
-                  return ScrollablePositionedList.builder(
-                    itemScrollController: _itemScrollController,
-                    itemPositionsListener: _itemPositionsListener,
-                    padding: EdgeInsets.only(
-                      top: 10,
-                      bottom: systemBottomInset(MediaQuery.of(context)),
-                    ),
-                    itemCount: verses.length + (isSurahSource && currentSurahInfo != null ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      // Show header card at the top for surah reading
-                      if (isSurahSource && currentSurahInfo != null && index == 0) {
-                        return SurahHeaderCard(
-                          surahInfo: currentSurahInfo,
-                          verseCount: verseCount,
-                        );
-                      }
-
-                      // Adjust index for verses (subtract 1 if header was shown)
-                      final verseIndex = isSurahSource && currentSurahInfo != null ? index - 1 : index;
-                      final verse = verses[verseIndex];
-                      final prevSurah = verseIndex > 0 ? verses[verseIndex - 1].surahId : null;
-                      final showSurahDivider = prevSurah != null && prevSurah != verse.surahId;
-                      final isFirstAyah = verse.ayahNo == 1;
-                      // For Surah mode and SurahInJuz mode we already inject a header at index 0; avoid double header.
-                      final showSurahHeader = !isSurahSource && (verseIndex == 0 || showSurahDivider);
-
-                      final surahInfo = surahs.firstWhere(
-                        (s) => s.id == verse.surahId,
-                        orElse: () => SurahInfo(
-                              id: verse.surahId,
+                    // Calculate verse count for current surah (when reading by surah)
+                    final currentSurahId = isSurahSource && verses.isNotEmpty
+                        ? verses[0].surahId
+                        : null;
+                    final verseCount =
+                        currentSurahId != null ? verses.length : 0;
+                    final currentSurahInfo = currentSurahId != null
+                        ? surahs.firstWhere(
+                            (s) => s.id == currentSurahId,
+                            orElse: () => SurahInfo(
+                              id: currentSurahId,
                               arabicName: '',
-                              englishName: 'Surah ${verse.surahId}',
+                              englishName: 'Surah $currentSurahId',
                               englishMeaning: '',
                             ),
-                      );
+                          )
+                        : null;
 
-                      return Column(
-                        children: [
-                          // Surah header for first surah in Juz/Page and on surah transitions
-                          if (showSurahHeader) ...[
-                            SurahHeaderCard(
-                              surahInfo: surahInfo,
-                              verseCount: verses.where((v) => v.surahId == verse.surahId).length,
-                            ),
-                          ],
-                          // Show Bismillah before first ayah of each surah (except Surah 1 and Surah 9)
-                          // Note: Surah 1's first ayah IS the Bismillah, so we don't show it separately
-                          if (isFirstAyah && Bismillah.shouldShowBismillah(verse.surahId)) ...[
-                            ReaderBismillahBlock(surahId: verse.surahId),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              child: Divider(
-                                height: 1,
-                                thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
-                              ),
-                            ),
-                          ],
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Column(
-                              children: [
-                                AyahCard(verse: verse),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  child: Divider(
-                                    height: 1,
-                                    thickness: 1,
-                                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                loading: () {
-                  ref.watch(settingsProvider);
-                  final isSurahSource = source is SurahSource || source is SurahInJuzSource;
-                  
-                  return ScrollablePositionedList.builder(
-                    itemScrollController: _itemScrollController,
-                    itemPositionsListener: _itemPositionsListener,
-                    padding: EdgeInsets.only(
-                      top: 10,
-                      bottom: systemBottomInset(MediaQuery.of(context)),
-                    ),
-                    itemCount: verses.length,
-                    itemBuilder: (context, index) {
-                      final verse = verses[index];
-                      final prevSurah = index > 0 ? verses[index - 1].surahId : null;
-                      final showSurahDivider = prevSurah != null && prevSurah != verse.surahId;
-                      final isFirstAyah = verse.ayahNo == 1;
-                      final isFirstVerse = index == 0;
+                    // Scroll to target ayah if needed - trigger as soon as verses are loaded
+                    final targetAyah = ref.watch(targetAyahProvider);
+                    final targetSurahId = ref.watch(targetSurahIdProvider);
+                    final isJuzSource = source is JuzSource;
+                    final hasHeader = isSurahSource && currentSurahInfo != null;
+                    final targetVerseIndex = targetAyah == null
+                        ? null
+                        : indexOfTargetVerse(
+                            verses,
+                            ayahNo: targetAyah,
+                            surahId: targetSurahId,
+                            requireSurahId: isJuzSource,
+                          );
+                    final initialItemIndex = !_hasScrolledToTarget &&
+                            targetVerseIndex != null
+                        ? (hasHeader ? targetVerseIndex + 1 : targetVerseIndex)
+                        : 0;
 
-                      return Column(
-                        children: [
-                          if (isSurahSource && isFirstVerse) ...[
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                              child: Text(
-                                'Surah ${verse.surahId}',
-                                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              child: Divider(
-                                height: 1,
-                                thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
-                              ),
-                            ),
-                          ],
-                          if (showSurahDivider) ...[
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                              child: Text(
-                                'Surah ${verse.surahId}',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              child: Divider(
-                                height: 1,
-                                thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
-                              ),
-                            ),
-                          ],
-                          if (isFirstAyah && Bismillah.shouldShowBismillah(verse.surahId)) ...[
-                            ReaderBismillahBlock(surahId: verse.surahId),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              child: Divider(
-                                height: 1,
-                                thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
-                              ),
-                            ),
-                          ],
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Column(
-                              children: [
-                                AyahCard(verse: verse),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  child: Divider(
-                                    height: 1,
-                                    thickness: 1,
-                                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                error: (_, __) {
-                  ref.watch(settingsProvider);
-                  final isSurahSource = source is SurahSource || source is SurahInJuzSource;
-                  
-                  return ScrollablePositionedList.builder(
-                    itemScrollController: _itemScrollController,
-                    itemPositionsListener: _itemPositionsListener,
-                    padding: EdgeInsets.only(
-                      top: 10,
-                      bottom: systemBottomInset(MediaQuery.of(context)),
-                    ),
-                    itemCount: verses.length,
-                    itemBuilder: (context, index) {
-                      final verse = verses[index];
-                      final prevSurah = index > 0 ? verses[index - 1].surahId : null;
-                      final showSurahDivider = prevSurah != null && prevSurah != verse.surahId;
-                      final isFirstAyah = verse.ayahNo == 1;
-                      final isFirstVerse = index == 0;
+                    // Trigger scroll immediately when conditions are met (for both Surah and Juz)
+                    if (targetAyah != null &&
+                        (isSurahSource || isJuzSource) &&
+                        !_hasScrolledToTarget) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted && !_hasScrolledToTarget) {
+                          _scrollToAyah(
+                            verses,
+                            targetAyah,
+                            isSurahSource,
+                            currentSurahInfo != null,
+                            targetSurahId: targetSurahId,
+                            requireSurahId: isJuzSource,
+                            openedAtTarget: initialItemIndex > 0,
+                          );
+                        }
+                      });
+                    }
 
-                      return Column(
-                        children: [
-                          if (isSurahSource && isFirstVerse) ...[
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                              child: Text(
-                                'Surah ${verse.surahId}',
-                                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              child: Divider(
-                                height: 1,
-                                thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
-                              ),
-                            ),
-                          ],
-                          if (showSurahDivider) ...[
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                              child: Text(
-                                'Surah ${verse.surahId}',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              child: Divider(
-                                height: 1,
-                                thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
-                              ),
-                            ),
-                          ],
-                          if (isFirstAyah && Bismillah.shouldShowBismillah(verse.surahId)) ...[
-                            ReaderBismillahBlock(surahId: verse.surahId),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              child: Divider(
-                                height: 1,
-                                thickness: 1,
-                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
-                              ),
-                            ),
-                          ],
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Column(
-                              children: [
-                                AyahCard(verse: verse),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  child: Divider(
-                                    height: 1,
-                                    thickness: 1,
-                                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                              ],
-                            ),
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) _followPlayingAyah();
+                    });
+
+                    return ScrollablePositionedList.builder(
+                      initialScrollIndex: initialItemIndex,
+                      initialAlignment: initialItemIndex == 0 ? 0 : 0.05,
+                      itemScrollController: _itemScrollController,
+                      itemPositionsListener: _itemPositionsListener,
+                      padding: EdgeInsets.only(
+                        top: 10,
+                        bottom: systemBottomInset(MediaQuery.of(context)),
+                      ),
+                      itemCount: verses.length +
+                          (isSurahSource && currentSurahInfo != null ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        // Show header card at the top for surah reading
+                        if (isSurahSource &&
+                            currentSurahInfo != null &&
+                            index == 0) {
+                          return SurahHeaderCard(
+                            surahInfo: currentSurahInfo,
+                            verseCount: verseCount,
+                          );
+                        }
+
+                        // Adjust index for verses (subtract 1 if header was shown)
+                        final verseIndex =
+                            isSurahSource && currentSurahInfo != null
+                                ? index - 1
+                                : index;
+                        final verse = verses[verseIndex];
+                        final prevSurah = verseIndex > 0
+                            ? verses[verseIndex - 1].surahId
+                            : null;
+                        final showSurahDivider =
+                            prevSurah != null && prevSurah != verse.surahId;
+                        final isFirstAyah = verse.ayahNo == 1;
+                        // For Surah mode and SurahInJuz mode we already inject a header at index 0; avoid double header.
+                        final showSurahHeader = !isSurahSource &&
+                            (verseIndex == 0 || showSurahDivider);
+
+                        final surahInfo = surahs.firstWhere(
+                          (s) => s.id == verse.surahId,
+                          orElse: () => SurahInfo(
+                            id: verse.surahId,
+                            arabicName: '',
+                            englishName: 'Surah ${verse.surahId}',
+                            englishMeaning: '',
                           ),
-                        ],
-                      );
-                    },
-                  );
-                },
+                        );
+
+                        return Column(
+                          children: [
+                            // Surah header for first surah in Juz/Page and on surah transitions
+                            if (showSurahHeader) ...[
+                              SurahHeaderCard(
+                                surahInfo: surahInfo,
+                                verseCount: verses
+                                    .where((v) => v.surahId == verse.surahId)
+                                    .length,
+                              ),
+                            ],
+                            // Show Bismillah before first ayah of each surah (except Surah 1 and Surah 9)
+                            // Note: Surah 1's first ayah IS the Bismillah, so we don't show it separately
+                            if (isFirstAyah &&
+                                Bismillah.shouldShowBismillah(
+                                    verse.surahId)) ...[
+                              ReaderBismillahBlock(surahId: verse.surahId),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                child: Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant
+                                      .withValues(alpha: 0.1),
+                                ),
+                              ),
+                            ],
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                children: [
+                                  AyahCard(verse: verse),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 10),
+                                    child: Divider(
+                                      height: 1,
+                                      thickness: 1,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .outlineVariant
+                                          .withValues(alpha: 0.1),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  loading: () {
+                    ref.watch(settingsProvider);
+                    final isSurahSource =
+                        source is SurahSource || source is SurahInJuzSource;
+
+                    return ScrollablePositionedList.builder(
+                      itemScrollController: _itemScrollController,
+                      itemPositionsListener: _itemPositionsListener,
+                      padding: EdgeInsets.only(
+                        top: 10,
+                        bottom: systemBottomInset(MediaQuery.of(context)),
+                      ),
+                      itemCount: verses.length,
+                      itemBuilder: (context, index) {
+                        final verse = verses[index];
+                        final prevSurah =
+                            index > 0 ? verses[index - 1].surahId : null;
+                        final showSurahDivider =
+                            prevSurah != null && prevSurah != verse.surahId;
+                        final isFirstAyah = verse.ayahNo == 1;
+                        final isFirstVerse = index == 0;
+
+                        return Column(
+                          children: [
+                            if (isSurahSource && isFirstVerse) ...[
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                                child: Text(
+                                  'Surah ${verse.surahId}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                child: Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant
+                                      .withValues(alpha: 0.1),
+                                ),
+                              ),
+                            ],
+                            if (showSurahDivider) ...[
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                                child: Text(
+                                  'Surah ${verse.surahId}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                child: Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant
+                                      .withValues(alpha: 0.1),
+                                ),
+                              ),
+                            ],
+                            if (isFirstAyah &&
+                                Bismillah.shouldShowBismillah(
+                                    verse.surahId)) ...[
+                              ReaderBismillahBlock(surahId: verse.surahId),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                child: Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant
+                                      .withValues(alpha: 0.1),
+                                ),
+                              ),
+                            ],
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                children: [
+                                  AyahCard(verse: verse),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 10),
+                                    child: Divider(
+                                      height: 1,
+                                      thickness: 1,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .outlineVariant
+                                          .withValues(alpha: 0.1),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  error: (_, __) {
+                    ref.watch(settingsProvider);
+                    final isSurahSource =
+                        source is SurahSource || source is SurahInJuzSource;
+
+                    return ScrollablePositionedList.builder(
+                      itemScrollController: _itemScrollController,
+                      itemPositionsListener: _itemPositionsListener,
+                      padding: EdgeInsets.only(
+                        top: 10,
+                        bottom: systemBottomInset(MediaQuery.of(context)),
+                      ),
+                      itemCount: verses.length,
+                      itemBuilder: (context, index) {
+                        final verse = verses[index];
+                        final prevSurah =
+                            index > 0 ? verses[index - 1].surahId : null;
+                        final showSurahDivider =
+                            prevSurah != null && prevSurah != verse.surahId;
+                        final isFirstAyah = verse.ayahNo == 1;
+                        final isFirstVerse = index == 0;
+
+                        return Column(
+                          children: [
+                            if (isSurahSource && isFirstVerse) ...[
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                                child: Text(
+                                  'Surah ${verse.surahId}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                child: Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant
+                                      .withValues(alpha: 0.1),
+                                ),
+                              ),
+                            ],
+                            if (showSurahDivider) ...[
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                                child: Text(
+                                  'Surah ${verse.surahId}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                child: Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant
+                                      .withValues(alpha: 0.1),
+                                ),
+                              ),
+                            ],
+                            if (isFirstAyah &&
+                                Bismillah.shouldShowBismillah(
+                                    verse.surahId)) ...[
+                              ReaderBismillahBlock(surahId: verse.surahId),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                child: Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant
+                                      .withValues(alpha: 0.1),
+                                ),
+                              ),
+                            ],
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                children: [
+                                  AyahCard(verse: verse),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 10),
+                                    child: Divider(
+                                      height: 1,
+                                      thickness: 1,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .outlineVariant
+                                          .withValues(alpha: 0.1),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
-          );
-        },
-        loading: () => const ReaderLoadingPlaceholder(),
-        error: (error, stack) => Center(
-          child: Text('Error: $error'),
+            );
+          },
+          loading: () => const ReaderLoadingPlaceholder(),
+          error: (error, stack) => Center(
+            child: Text('Error: $error'),
+          ),
         ),
-      ),
       ),
     );
   }
-
-
 }
-
-
-

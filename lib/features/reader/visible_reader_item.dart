@@ -81,3 +81,22 @@ bool _lastAyahCountsAsPosition(
   // End cluster: a few short ayahs fill the screen and the last one is in view.
   return gap <= 4 && last.itemLeadingEdge < 0.85;
 }
+
+/// Whether [position] still needs a programmatic jump.
+///
+/// The last card of a surah cannot sit at [alignment], so jumping again while
+/// that card is already on screen only bounces the list.
+bool readerTargetNeedsJump({
+  required ItemPosition? position,
+  required bool isLastItem,
+  double alignment = 0.05,
+}) {
+  if (position == null) return true;
+  if ((position.itemLeadingEdge - alignment).abs() <= 0.12) return false;
+  if (isLastItem &&
+      position.itemLeadingEdge >= 0 &&
+      position.itemTrailingEdge <= 1.05) {
+    return false;
+  }
+  return true;
+}
