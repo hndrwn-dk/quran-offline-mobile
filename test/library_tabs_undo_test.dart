@@ -87,6 +87,19 @@ void main() {
     expect(find.byKey(const Key('library-count-0')), findsOneWidget);
     expect(tester.widget<Text>(find.byKey(const Key('library-count-0'))).data, '1');
     expect(find.text('Al-Ikhlas'), findsOneWidget);
+    expect(find.textContaining('Ayat 3'), findsOneWidget);
+    expect(find.textContaining('QS 112:3'), findsNothing);
+
+    final count = find.byKey(const Key('library-count-0'));
+    final tile = tester.widget<Material>(
+      find.ancestor(of: count, matching: find.byType(Material)).first,
+    );
+    final scheme = Theme.of(tester.element(count)).colorScheme;
+    expect(tile.color, scheme.primaryContainer.withValues(alpha: 0.45));
+    final side = (tile.shape! as RoundedRectangleBorder).side;
+    expect(side.color, scheme.primary);
+    expect(side.width, 1.5);
+    expect(tester.widget<Text>(count).style?.color, scheme.primary);
 
     await _swipeUndo(tester, AppLocalizations.libraryDeleted('bookmark', 'id'), 'Al-Ikhlas');
     expect(tester.widget<Text>(find.byKey(const Key('library-count-0'))).data, '1');

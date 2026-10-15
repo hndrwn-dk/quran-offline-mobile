@@ -128,9 +128,7 @@ class _NoteCard extends ConsumerWidget {
           translation: translation,
           note: note.note,
         );
-        final titleStyle = Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            );
+        final titleStyle = libraryMetaStyle(context);
 
         return UndoableDismissible(
           dismissKey: ValueKey('note-${note.surahId}-${note.ayahNo}'),
@@ -182,15 +180,13 @@ class _NoteCard extends ConsumerWidget {
                             text: '${surah.englishName} · QS ${note.surahId}:${note.ayahNo}',
                             query: query,
                             maxLines: 1,
-                            style: titleStyle ?? const TextStyle(),
+                            style: titleStyle,
                           ),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           when,
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                          style: libraryMetaStyle(context),
                         ),
                       ],
                     ),
