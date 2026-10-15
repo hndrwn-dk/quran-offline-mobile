@@ -135,4 +135,38 @@ void main() {
     expect(views.single.title, 'Doa hujan');
     expect(views.single.favorite.kind, ExploreFavoriteKind.dua);
   });
+
+  test('restore puts a removed favorite back in its original place', () {
+    const newest = ExploreFavorite(
+      kind: ExploreFavoriteKind.dua,
+      id: 'a',
+      markedAtMillis: 30,
+    );
+    const middle = ExploreFavorite(
+      kind: ExploreFavoriteKind.science,
+      id: 'b',
+      markedAtMillis: 20,
+    );
+    const oldest = ExploreFavorite(
+      kind: ExploreFavoriteKind.asma,
+      id: 'c',
+      markedAtMillis: 10,
+    );
+    final removed = toggleExploreFavorite(
+      const [newest, middle, oldest],
+      ExploreFavoriteKind.science,
+      'b',
+      99,
+    );
+
+    expect(removed.map((item) => item.key).toList(), ['dua:a', 'asma:c']);
+
+    final restored = restoreExploreFavorite(removed, middle);
+    expect(restored.map((item) => item.key).toList(), [
+      'dua:a',
+      'science:b',
+      'asma:c',
+    ]);
+    expect(restored[1].markedAtMillis, 20);
+  });
 }

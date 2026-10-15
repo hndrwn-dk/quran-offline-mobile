@@ -27,6 +27,16 @@ class ExploreFavoritesNotifier extends StateNotifier<List<ExploreFavorite>> {
       DateTime.now().millisecondsSinceEpoch,
     );
     state = next;
+    await _persist(next);
+  }
+
+  Future<void> restore(FavoriteEntry entry) async {
+    final next = restoreExploreFavorite(state, entry);
+    state = next;
+    await _persist(next);
+  }
+
+  Future<void> _persist(List<ExploreFavorite> next) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefsKey, encodeExploreFavorites(next));
   }
