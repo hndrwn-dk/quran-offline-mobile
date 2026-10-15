@@ -61,7 +61,8 @@ void main() {
     expect(index, 4);
   });
 
-  test('short surah end still counts when the last card is slightly clipped', () {
+  test('short surah end still counts when the last card is slightly clipped',
+      () {
     final index = visibleReaderItemIndex(
       [
         _pos(4, -0.05, 0.35),
@@ -85,5 +86,39 @@ void main() {
     );
 
     expect(index, 90);
+  });
+
+  test('last ayah already on screen does not need another jump', () {
+    final needsJump = readerTargetNeedsJump(
+      position: _pos(85, 0.42, 0.96),
+      isLastItem: true,
+    );
+
+    expect(needsJump, isFalse);
+  });
+
+  test('ayah already aligned to the top does not need another jump', () {
+    final needsJump = readerTargetNeedsJump(
+      position: _pos(20, 0.06, 0.4),
+      isLastItem: false,
+    );
+
+    expect(needsJump, isFalse);
+  });
+
+  test('target still below the fold needs a jump', () {
+    final needsJump = readerTargetNeedsJump(
+      position: _pos(85, 0.92, 1.4),
+      isLastItem: true,
+    );
+
+    expect(needsJump, isTrue);
+  });
+
+  test('missing target position needs a jump', () {
+    expect(
+      readerTargetNeedsJump(position: null, isLastItem: false),
+      isTrue,
+    );
   });
 }
