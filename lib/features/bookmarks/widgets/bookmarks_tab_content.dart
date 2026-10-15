@@ -16,6 +16,7 @@ import 'package:quran_offline/features/library/verse_translation.dart';
 import 'package:quran_offline/features/library/widgets/library_action_sheet.dart';
 import 'package:quran_offline/features/library/widgets/library_empty_state.dart';
 import 'package:quran_offline/features/library/widgets/library_marked_text.dart';
+import 'package:quran_offline/features/library/widgets/verse_star_medal.dart';
 
 class BookmarksTabContent extends ConsumerStatefulWidget {
   const BookmarksTabContent({super.key, this.query = ''});
@@ -220,8 +221,8 @@ class _SurahGroup extends ConsumerWidget {
                   if (surah.arabicName.isNotEmpty)
                     QuranArabicText(
                       arabic: surah.arabicName,
-                      fontSize: 18,
-                      defaultColor: colorScheme.primary.withValues(alpha: 0.7),
+                      fontSize: 20,
+                      defaultColor: colorScheme.onSurface,
                       height: 1.4,
                       selectable: false,
                     ),
@@ -322,34 +323,37 @@ class _BookmarkRow extends ConsumerWidget {
               },
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    LibraryArabicLine(
-                      arabic: arabic,
-                      query: query,
-                      ayahNo: bookmark.ayahNo,
-                    ),
-                    if (translation.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      LibraryMarkedText(
-                        text: translation,
-                        query: query,
-                        maxLines: 2,
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              height: 1.35,
+                    VerseStarMedal(ayahNo: bookmark.ayahNo),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          LibraryArabicLine(arabic: arabic, query: query),
+                          if (translation.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            LibraryMarkedText(
+                              text: translation,
+                              query: query,
+                              maxLines: 2,
+                              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    height: 1.35,
+                                  ),
                             ),
+                          ],
+                          const SizedBox(height: 6),
+                          Text(
+                            'QS ${bookmark.surahId}:${bookmark.ayahNo} · $when',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                          ),
+                        ],
                       ),
-                    ],
-                    const SizedBox(height: 6),
-                    Text(
-                      AppLocalizations.libraryAyahMeta(
-                        bookmark.ayahNo,
-                        when,
-                        appLanguage,
-                      ),
-                      style: libraryMetaStyle(context),
                     ),
                   ],
                 ),

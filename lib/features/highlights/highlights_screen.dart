@@ -334,12 +334,16 @@ class _HighlightCard extends ConsumerWidget {
                             text: '${surah.englishName} · QS ${highlight.surahId}:${highlight.ayahNo}',
                             query: query,
                             maxLines: 1,
-                            style: libraryMetaStyle(context),
+                            style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
                           ),
                         ),
                         Text(
                           when,
-                          style: libraryMetaStyle(context),
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                         ),
                       ],
                     ),

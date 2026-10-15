@@ -6087,15 +6087,6 @@ class AppLocalizations {
     };
   }
 
-  static String libraryAyahMeta(int ayahNo, String when, String language) {
-    return switch (language) {
-      'id' => 'Ayat $ayahNo · $when',
-      'zh' => '第$ayahNo节 · $when',
-      'ja' => '第$ayahNo節 · $when',
-      _ => 'Verse $ayahNo · $when',
-    };
-  }
-
   static String libraryPerSurah(String language) {
     return switch (language) {
       'id' => 'Per surah',
