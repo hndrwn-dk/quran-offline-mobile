@@ -105,7 +105,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
       backgroundColor: topTint,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        toolbarHeight: _searchOpen ? 64 : 54,
+        toolbarHeight: _searchOpen ? 64 : 68,
         centerTitle: false,
         titleSpacing: _searchOpen ? 0 : 16,
         backgroundColor: topTint,
@@ -133,25 +133,59 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   setState(() => _debouncedQuery = '');
                 },
               )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            : Row(
                 children: [
-                  Text(
-                    AppLocalizations.getNavMenuText('library', appLanguage),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.3,
-                          color: colorScheme.onSurface,
-                        ),
-                  ),
-                  Text(
-                    AppLocalizations.getSubtitleText(
-                      'library_subtitle',
-                      appLanguage,
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorScheme.primaryContainer.withValues(
+                        alpha: 0.45,
+                      ),
                     ),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.collections_bookmark,
+                      size: 22,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.getNavMenuText(
+                            'library',
+                            appLanguage,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.3,
+                                    color: colorScheme.onSurface,
+                                  ),
                         ),
+                        const SizedBox(height: 2),
+                        Text(
+                          AppLocalizations.getSubtitleText(
+                            'library_subtitle',
+                            appLanguage,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -167,6 +201,14 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   icon: const Icon(Icons.search),
                 ),
               ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
+        ),
       ),
       body: HomeBackdrop(
         child: _searchOpen
