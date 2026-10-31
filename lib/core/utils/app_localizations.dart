@@ -3268,21 +3268,43 @@ class AppLocalizations {
     };
   }
 
-  static String formatHomeLastReadSubtitle({
+  /// Location line on the Continue card, e.g. "Ayah 153" or "Page 23 · Juz 2".
+  static String formatContinuePosition({
     required String language,
-    required int? ayahNo,
-    required String scopeKey,
+    int? ayahNo,
+    int? pageNo,
+    int? juzNo,
   }) {
-    final scopeLabel = switch (scopeKey) {
-      'surah' => getMenuText('surah', language),
-      'juz' => getMenuText('juz', language),
-      'page' => getMenuText('mushaf', language),
-      _ => '',
+    final parts = <String>[
+      if (pageNo != null)
+        getPageText(pageNo, language)
+      else if (ayahNo != null)
+        '${getAyahLabel(language)} $ayahNo',
+      if (juzNo != null) '${getMenuText('juz', language)} $juzNo',
+    ];
+    return parts.join(' · ');
+  }
+
+  /// Position line with progress detail, e.g.
+  /// "Ayah 153 dari 286 · Juz 2".
+  static String formatContinueProgressLine({
+    required String language,
+    required String scope,
+    required int current,
+    required int total,
+    int? juzNo,
+  }) {
+    final unit = scope == 'page'
+        ? getPageText(current, language)
+        : '${getAyahLabel(language)} $current';
+    final of = switch (language) {
+      'id' => 'dari',
+      'zh' || 'ja' => '/',
+      _ => 'of',
     };
-    if (ayahNo != null) {
-      return '${getAyahLabel(language)} $ayahNo · $scopeLabel';
-    }
-    return scopeLabel;
+    final position = '$unit $of $total';
+    if (juzNo == null) return position;
+    return '$position · ${getMenuText('juz', language)} $juzNo';
   }
 
   static String formatHomeReadProgressPercent(
