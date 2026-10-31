@@ -10,6 +10,7 @@ import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/providers/mushaf_navigation_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/review/review_ask_service.dart';
 import 'package:quran_offline/core/models/bookmark_open_context.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
@@ -81,6 +82,9 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
       MushafWarmup.beginSession(priorityPage: widget.initialPage);
       unawaited(
         MushafLayout.prewarmNeighbors(context, widget.initialPage),
+      );
+      unawaited(
+        ref.read(reviewAskServiceProvider).onMushafPage(widget.initialPage),
       );
     });
   }
@@ -249,6 +253,9 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
             _selectedSurahId = null;
             _selectedAyahNo = null;
           });
+          unawaited(
+            ref.read(reviewAskServiceProvider).onMushafPage(pageNo),
+          );
         }
       },
       itemCount: 604,

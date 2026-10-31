@@ -13,6 +13,7 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/support_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/review/review_ask_service.dart';
 import 'package:quran_offline/core/support/ayah_dwell.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
@@ -116,6 +117,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       final verseIndex = isSurahSource ? index - 1 : index;
       if (verseIndex >= 0 && verseIndex < verses.length) {
         _noteVisibleAyah(verses[verseIndex]);
+        unawaited(
+          ref.read(reviewAskServiceProvider).onReaderPosition(
+                source: source,
+                verses: verses,
+                verseIndex: verseIndex,
+              ),
+        );
       }
     }
 
