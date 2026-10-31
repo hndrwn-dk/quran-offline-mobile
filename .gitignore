@@ -155,3 +155,7 @@ lib/features/read/widgets/mushaf_page_view_flowing_improved.dart
 .tmp_api_*
 .vercel
 .env*
+
+# Local tool output and Gradle module build reports
+.firecrawl/
+android/build/
