@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
+import 'package:quran_offline/core/providers/completed_reading_provider.dart';
 import 'package:quran_offline/core/providers/last_read_location_provider.dart';
 import 'package:quran_offline/core/providers/last_read_progress_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/last_read_resolve.dart';
-import 'package:quran_offline/core/providers/reading_completion_provider.dart';
+import 'package:quran_offline/core/providers/resume_hint_provider.dart';
 import 'package:quran_offline/core/reading/continue_card_view.dart';
 import 'package:quran_offline/core/reading/open_next_read.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
@@ -86,7 +87,7 @@ class LastReadCard extends ConsumerWidget {
         forHome ? ref.watch(lastReadLocationProvider).valueOrNull : null;
     final progressAsync = forHome ? ref.watch(lastReadProgressProvider) : null;
     final completion =
-        forHome ? ref.watch(readingCompletionProvider).valueOrNull : null;
+        forHome ? ref.watch(continueCompletionProvider).valueOrNull : null;
 
     if (!lastReadCardHandlesType(lastRead.type)) {
       return const SizedBox.shrink();
@@ -119,6 +120,10 @@ class LastReadCard extends ConsumerWidget {
             onTap = () {
               final source =
                   SurahSource(lastRead.id, targetAyahNo: lastRead.ayahNo);
+              ref.read(resumeHintProvider.notifier).state = ResumeHint.surah(
+                surahId: lastRead.id,
+                ayahNo: lastRead.ayahNo ?? 1,
+              );
               ref.read(readerSourceProvider.notifier).state = source;
               ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
               ref.read(targetSurahIdProvider.notifier).state = null;
@@ -146,6 +151,11 @@ class LastReadCard extends ConsumerWidget {
             icon = Icons.library_books_outlined;
             onTap = () {
               final source = JuzSource(lastRead.id);
+              ref.read(resumeHintProvider.notifier).state = ResumeHint.juz(
+                juzNo: lastRead.id,
+                surahId: lastRead.surahId,
+                ayahNo: lastRead.ayahNo,
+              );
               ref.read(readerSourceProvider.notifier).state = source;
               if (lastRead.ayahNo != null) {
                 ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
@@ -172,6 +182,8 @@ class LastReadCard extends ConsumerWidget {
             }
             icon = Icons.auto_stories_outlined;
             onTap = () {
+              ref.read(resumeHintProvider.notifier).state =
+                  ResumeHint.page(pageNo: lastRead.id);
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -201,6 +213,7 @@ class LastReadCard extends ConsumerWidget {
             icon = Icons.menu_book_outlined;
             onTap = () {
               final source = lastRead.toReaderSource();
+              ref.read(resumeHintProvider.notifier).state = null;
               ref.read(readerSourceProvider.notifier).state = source;
               ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
               ref.read(targetSurahIdProvider.notifier).state = null;

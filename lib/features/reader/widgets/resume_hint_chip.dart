@@ -64,6 +64,20 @@ class _ResumeHintChipState extends ConsumerState<ResumeHintChip> {
           );
         }
       }
+    } else if (hint.mode == ResumeHintMode.juz) {
+      final juzNo = hint.juzNo;
+      if (juzNo != null) {
+        final verses = await db.getVersesByJuz(juzNo);
+        if (verses.isNotEmpty) {
+          final surahId = hint.surahId ?? verses.first.surahId;
+          final ayahNo = hint.ayahNo ?? verses.first.ayahNo;
+          boundary = computeJuzResumeBoundary(
+            juzVerses: verses,
+            surahId: surahId,
+            ayahNo: ayahNo,
+          );
+        }
+      }
     } else {
       final pageNo = hint.pageNo;
       if (pageNo != null) {

@@ -5,6 +5,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
+import 'package:quran_offline/core/providers/completed_reading_provider.dart';
 import 'package:quran_offline/core/providers/juz_surahs_provider.dart';
 import 'package:quran_offline/core/reading/reading_activity_service.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
@@ -14,6 +15,8 @@ import 'package:quran_offline/core/providers/resume_hint_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/support_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/reading/completed_reading.dart';
+import 'package:quran_offline/core/reading/reading_completion_gate.dart';
 import 'package:quran_offline/core/review/review_ask_service.dart';
 import 'package:quran_offline/core/support/ayah_dwell.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
@@ -51,6 +54,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
   /// Set only when this screen was opened by the cold-start resume.
   ResumeHint? _resumeHint;
+
+  ReadingCompletionGate? _completionGate;
+  Timer? _completionTimer;
+  String? _completionUnitKey;
+  List<Verse>? _completionVerses;
+  ReaderSource? _completionSource;
 
   /// Last ayah we auto-scrolled to (avoids duplicate scrolls).
   int? _lastFollowedAyah;
@@ -125,19 +134,16 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       lastItemIndex: lastItemIndex,
     );
 
+    final lastVisible = lastItemIndex != null &&
+        positions.any((position) => position.index == lastItemIndex);
+    _setEndVisible(lastVisible);
+
     if (targetIndex == null || targetIndex < 0) return;
     final index = targetIndex;
     if (verses != null) {
       final verseIndex = isSurahSource ? index - 1 : index;
       if (verseIndex >= 0 && verseIndex < verses.length) {
         _noteVisibleAyah(verses[verseIndex]);
-        unawaited(
-          ref.read(reviewAskServiceProvider).onReaderPosition(
-                source: source,
-                verses: verses,
-                verseIndex: verseIndex,
-              ),
-        );
       }
     }
 
@@ -149,8 +155,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     });
   }
 
-  void _noteVisibleAyah(Verse verse) {
-    final ayah = AyahRef(verse.surahId, verse.ayahNo);
+  void _noteVisibleAyah(Verse verse) {    final ayah = AyahRef(verse.surahId, verse.ayahNo);
     final ready = _ayahDwell.onVisible(ayah, DateTime.now());
     if (ready != null) {
       _dwellTimer?.cancel();
@@ -169,8 +174,100 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     });
   }
 
-  void _updateLastRead(ReaderSource source, int itemIndex) {
-    // Get verses to find ayah number
+  void _ensureCompletionSession(ReaderSource source, List<Verse> verses) {
+    final String? unitKey;
+    if (source is SurahSource) {
+      unitKey = 'surah:${source.surahId}';
+    } else if (source is JuzSource) {
+      unitKey = 'juz:${source.juzNo}';
+    } else {
+      unitKey = null;
+    }
+
+    if (unitKey == null) {
+      _cancelCompletionSession();
+      return;
+    }
+    if (unitKey == _completionUnitKey && _completionGate != null) return;
+
+    _cancelCompletionSession();
+    _completionUnitKey = unitKey;
+    _completionSource = source;
+    _completionVerses = verses;
+    final minimumSeconds = (verses.length * 2).clamp(1, 20).toInt();
+    _completionGate = ReadingCompletionGate(
+      minimumSession: Duration(seconds: minimumSeconds),
+    )..startSession();
+  }
+
+  void _setEndVisible(bool visible) {
+    final gate = _completionGate;
+    if (gate == null || gate.completed) return;
+
+    gate.setEndVisible(visible);
+    if (!visible) {
+      _completionTimer?.cancel();
+      _completionTimer = null;
+      return;
+    }
+
+    _completionTimer ??= Timer.periodic(const Duration(milliseconds: 250), (_) {
+      if (!mounted) return;
+      if (gate.tick()) {
+        _completionTimer?.cancel();
+        _completionTimer = null;
+        _handleUnitCompleted();
+      }
+    });
+  }
+
+  Future<void> _handleUnitCompleted() async {
+    if (!mounted) return;
+    final source = _completionSource;
+    final verses = _completionVerses;
+    if (source == null || verses == null || verses.isEmpty) return;
+
+    final last = verses.last;
+    CompletedReading? record;
+    if (source is SurahSource) {
+      await ref
+          .read(lastReadProvider.notifier)
+          .saveLastRead(source, ayahNo: last.ayahNo);
+      record = CompletedReading(
+        type: 'surah',
+        id: source.surahId,
+        ayahNo: last.ayahNo,
+      );
+    } else if (source is JuzSource) {
+      await ref.read(lastReadProvider.notifier).saveLastRead(
+            source,
+            ayahNo: last.ayahNo,
+            surahId: last.surahId,
+          );
+      record = CompletedReading(
+        type: 'juz',
+        id: source.juzNo,
+        ayahNo: last.ayahNo,
+        surahId: last.surahId,
+      );
+    }
+    if (record == null) return;
+
+    await ref.read(completedReadingProvider.notifier).markCompleted(record);
+    unawaited(ref.read(reviewAskServiceProvider).onUnitCompleted());
+  }
+
+  void _cancelCompletionSession() {
+    _completionTimer?.cancel();
+    _completionTimer = null;
+    _completionGate?.dispose();
+    _completionGate = null;
+    _completionUnitKey = null;
+    _completionVerses = null;
+    _completionSource = null;
+  }
+
+  void _updateLastRead(ReaderSource source, int itemIndex) {    // Get verses to find ayah number
     final versesAsync = ref.read(readerVersesProvider(source));
     versesAsync.whenData((verses) {
       if (!mounted || verses.isEmpty) return;
@@ -228,6 +325,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   void dispose() {
     _debounceTimer?.cancel();
     _dwellTimer?.cancel();
+    _cancelCompletionSession();
     _itemPositionsListener.itemPositions
         .removeListener(_onItemPositionsChanged);
     super.dispose();
@@ -829,6 +927,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
               return const Center(child: Text('No verses found'));
             }
 
+            _ensureCompletionSession(source, verses);
+
             final contentWidth = Responsive.getContentWidth(context);
             final isLargeScreen = Responsive.isLargeScreen(context);
 
@@ -1267,7 +1367,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         ),
             ),
           ),
-          if (_resumeHint?.mode == ResumeHintMode.surah)
+          if (_resumeHint?.mode == ResumeHintMode.surah ||
+              _resumeHint?.mode == ResumeHintMode.juz)
             Positioned(
               top: 8,
               left: 16,

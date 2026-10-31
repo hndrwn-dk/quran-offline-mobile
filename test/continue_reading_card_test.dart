@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_offline/core/providers/completed_reading_provider.dart';
 import 'package:quran_offline/core/providers/last_read_location_provider.dart';
 import 'package:quran_offline/core/providers/last_read_progress_provider.dart';
-import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
-import 'package:quran_offline/core/providers/reading_completion_provider.dart';
 import 'package:quran_offline/core/reading/reading_completion.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/read/widgets/last_read_card.dart';
@@ -33,7 +32,7 @@ Future<void> _pumpHomeCard(
       overrides: [
         lastReadLocationProvider.overrideWith((ref) async => location),
         lastReadProgressProvider.overrideWith((ref) async => progress),
-        readingCompletionProvider.overrideWith((ref) async => completion),
+        continueCompletionProvider.overrideWith((ref) async => completion),
         surahNamesProvider.overrideWith(
           (ref) async =>
               surahs ??

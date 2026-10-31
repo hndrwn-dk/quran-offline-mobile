@@ -61,6 +61,27 @@ ResumeBoundary? computeSurahResumeBoundary({
   return best;
 }
 
+/// For a juz reader: ayahs left until the end of the juz.
+ResumeBoundary? computeJuzResumeBoundary({
+  required List<Verse> juzVerses,
+  required int surahId,
+  required int ayahNo,
+}) {
+  final index = indexOfVerseInJuz(
+    juzVerses,
+    surahId: surahId,
+    ayahNo: ayahNo,
+  );
+  if (index == null) return null;
+  final remaining = juzVerses.length - 1 - index;
+  if (remaining <= 0) return null;
+  return ResumeBoundary(
+    remaining: remaining,
+    kind: ResumeBoundaryKind.juzEndAyahs,
+    juzNo: juzVerses.first.juz,
+  );
+}
+
 /// For the mushaf: pages left until the last page of the current juz.
 ResumeBoundary? computePageResumeBoundary({
   required int pageNo,

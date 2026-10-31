@@ -15,7 +15,6 @@ class AppSettings {
   final bool weeklyReminderEnabled;
   final int weeklyReminderHour;
   final int weeklyReminderMinute;
-  final bool openToLastRead;
 
   AppSettings({
     this.language = 'en',
@@ -30,7 +29,6 @@ class AppSettings {
     this.weeklyReminderEnabled = false,
     this.weeklyReminderHour = 15,
     this.weeklyReminderMinute = 30,
-    this.openToLastRead = true,
   });
 
   AppSettings copyWith({
@@ -46,7 +44,6 @@ class AppSettings {
     bool? weeklyReminderEnabled,
     int? weeklyReminderHour,
     int? weeklyReminderMinute,
-    bool? openToLastRead,
   }) {
     return AppSettings(
       language: language ?? this.language,
@@ -61,7 +58,6 @@ class AppSettings {
       weeklyReminderEnabled: weeklyReminderEnabled ?? this.weeklyReminderEnabled,
       weeklyReminderHour: weeklyReminderHour ?? this.weeklyReminderHour,
       weeklyReminderMinute: weeklyReminderMinute ?? this.weeklyReminderMinute,
-      openToLastRead: openToLastRead ?? this.openToLastRead,
     );
   }
 
@@ -79,7 +75,6 @@ class AppSettings {
       'weeklyReminderEnabled': weeklyReminderEnabled,
       'weeklyReminderHour': weeklyReminderHour,
       'weeklyReminderMinute': weeklyReminderMinute,
-      'openToLastRead': openToLastRead,
     };
   }
 
@@ -101,7 +96,6 @@ class AppSettings {
       weeklyReminderEnabled: json['weeklyReminderEnabled'] as bool? ?? false,
       weeklyReminderHour: json['weeklyReminderHour'] as int? ?? 15,
       weeklyReminderMinute: json['weeklyReminderMinute'] as int? ?? 30,
-      openToLastRead: json['openToLastRead'] as bool? ?? true,
     );
   }
 }
@@ -129,7 +123,6 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final weeklyReminderEnabled = prefs.getBool('weeklyReminderEnabled') ?? false;
     final weeklyReminderHour = prefs.getInt('weeklyReminderHour') ?? 15;
     final weeklyReminderMinute = prefs.getInt('weeklyReminderMinute') ?? 30;
-    final openToLastRead = prefs.getBool('openToLastRead') ?? true;
 
     final syncedLanguage = language;
     if (appLanguage != syncedLanguage) {
@@ -149,7 +142,6 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       weeklyReminderEnabled: weeklyReminderEnabled,
       weeklyReminderHour: weeklyReminderHour,
       weeklyReminderMinute: weeklyReminderMinute,
-      openToLastRead: openToLastRead,
     );
 
     await _applyWeeklyReminderSchedule();
@@ -197,12 +189,6 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('showTafsir', show);
     state = state.copyWith(showTafsir: show);
-  }
-
-  Future<void> updateOpenToLastRead(bool open) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('openToLastRead', open);
-    state = state.copyWith(openToLastRead: open);
   }
 
   Future<void> updateArabicFontSize(double size) async {

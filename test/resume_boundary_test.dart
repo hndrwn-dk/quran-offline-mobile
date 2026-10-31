@@ -86,6 +86,27 @@ void main() {
     });
   });
 
+  group('computeJuzResumeBoundary', () {
+    test('counts ayahs to the end of the juz', () {
+      final juz = [
+        _verse(78, 1, page: 582, juz: 30),
+        _verse(78, 2, page: 582, juz: 30),
+        _verse(78, 3, page: 582, juz: 30),
+      ];
+
+      final boundary = computeJuzResumeBoundary(
+        juzVerses: juz,
+        surahId: 78,
+        ayahNo: 1,
+      );
+
+      expect(boundary, isNotNull);
+      expect(boundary!.kind, ResumeBoundaryKind.juzEndAyahs);
+      expect(boundary.remaining, 2);
+      expect(boundary.juzNo, 30);
+    });
+  });
+
   group('computePageResumeBoundary', () {
     test('mid-juz page reports remaining pages', () {
       final juz = [

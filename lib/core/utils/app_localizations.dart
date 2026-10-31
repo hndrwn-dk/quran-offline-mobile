@@ -4371,8 +4371,6 @@ class AppLocalizations {
       'show_translation_subtitle' => _getShowTranslationSubtitle(language),
       'show_tafsir_title' => _getShowTafsirTitle(language),
       'show_tafsir_subtitle' => _getShowTafsirSubtitle(language),
-      'open_last_read_title' => _getOpenLastReadTitle(language),
-      'open_last_read_subtitle' => _getOpenLastReadSubtitle(language),
       'app_settings_header' => _getAppSettingsHeader(language),
       'reminders_header' => _getRemindersHeader(language),
       'weekly_reminder_title' => _getWeeklyReminderTitle(language),
@@ -4669,26 +4667,6 @@ class AppLocalizations {
       'ja' => '翻訳言語に合わせたタフスィール。ムスハフでは非表示。',
       _ =>
         'Verse commentary follows translation language. Hidden in Mushaf mode.',
-    };
-  }
-
-  static String _getOpenLastReadTitle(String language) {
-    return switch (language) {
-      'id' => 'Buka langsung ke bacaan terakhir',
-      'en' => 'Open to last read',
-      'zh' => '打开时继续上次阅读',
-      'ja' => '前回の続きから開く',
-      _ => 'Open to last read',
-    };
-  }
-
-  static String _getOpenLastReadSubtitle(String language) {
-    return switch (language) {
-      'id' => 'Saat app dibuka, lanjutkan dari posisi terakhir kamu.',
-      'en' => 'Jump straight back to where you stopped.',
-      'zh' => '打开应用后直接回到上次读到的位置。',
-      'ja' => 'アプリを開いたら、前回読んだ位置から再開します。',
-      _ => 'Jump straight back to where you stopped.',
     };
   }
 

@@ -192,28 +192,6 @@ class SettingsQuranSection extends ConsumerWidget {
             },
           ),
         ),
-        SwitchListTile(
-          secondary: Icon(Icons.restart_alt, color: colorScheme.primary),
-          title: Text(
-            AppLocalizations.getSettingsText(
-              'open_last_read_title',
-              appLanguage,
-            ),
-          ),
-          subtitle: Text(
-            AppLocalizations.getSettingsText(
-              'open_last_read_subtitle',
-              appLanguage,
-            ),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-          ),
-          value: settings.openToLastRead,
-          onChanged: (value) {
-            ref.read(settingsProvider.notifier).updateOpenToLastRead(value);
-          },
-        ),
       ],
     );
   }
