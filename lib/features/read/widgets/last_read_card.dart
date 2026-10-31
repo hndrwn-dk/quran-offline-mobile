@@ -67,7 +67,8 @@ class LastReadCard extends ConsumerWidget {
                     ref.read(currentTabProvider.notifier).state = AppTab.read;
                   },
                   tooltip: AppLocalizations.getHomeStartButton(appLanguage),
-                  semanticsLabel: AppLocalizations.getHomeStartReadingTitle(appLanguage),
+                  semanticsLabel:
+                      AppLocalizations.getHomeStartReadingTitle(appLanguage),
                   onTintedCard: true,
                 ),
               ),
@@ -110,7 +111,8 @@ class LastReadCard extends ConsumerWidget {
                 : surah.englishName;
             icon = Icons.menu_book_outlined;
             onTap = () {
-              final source = SurahSource(lastRead.id, targetAyahNo: lastRead.ayahNo);
+              final source =
+                  SurahSource(lastRead.id, targetAyahNo: lastRead.ayahNo);
               ref.read(readerSourceProvider.notifier).state = source;
               ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
               ref.read(targetSurahIdProvider.notifier).state = null;
@@ -272,29 +274,25 @@ class LastReadCard extends ConsumerWidget {
                       ),
                       if (view.percent != null && view.fraction != null) ...[
                         const SizedBox(width: 12),
-                        _HomeProgressRing(
-                          percent: view.percent!,
-                          fraction: view.fraction!,
+                        Semantics(
+                          key: const ValueKey('continue_progress_semantics'),
+                          container: true,
+                          label:
+                              AppLocalizations.formatContinueProgressSemantics(
+                            language: appLanguage,
+                            scope: view.scope,
+                            percent: view.percent!,
+                          ),
+                          excludeSemantics: true,
+                          child: _HomeProgressRing(
+                            percent: view.percent!,
+                            fraction: view.fraction!,
+                          ),
                         ),
                       ],
                     ],
                   ),
-                  if (view.fraction != null) ...[
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: view.fraction!.clamp(0.0, 1.0),
-                        minHeight: 4,
-                        backgroundColor:
-                            colorScheme.primary.withValues(alpha: 0.14),
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          colorScheme.primary.withValues(alpha: 0.62),
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 14),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: HomeCircleArrowButton(
@@ -357,26 +355,29 @@ class LastReadCard extends ConsumerWidget {
                       children: [
                         Text(
                           AppLocalizations.getLastRead(appLanguage),
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.w500,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: colorScheme.onSurface,
+                                  ),
                         ),
                         if (subtitle.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           Text(
                             subtitle,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
                           ),
                         ],
                       ],
@@ -386,7 +387,8 @@ class LastReadCard extends ConsumerWidget {
                     icon: const Icon(Icons.close, size: 20),
                     color: colorScheme.onSurfaceVariant,
                     onPressed: onClear,
-                    tooltip: AppLocalizations.getActionTooltip('clear', appLanguage),
+                    tooltip:
+                        AppLocalizations.getActionTooltip('clear', appLanguage),
                   ),
                   const SizedBox(width: 8),
                   Icon(
@@ -428,7 +430,8 @@ class _HomeLastReadShell extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: colorScheme.primary.withValues(alpha: isDark ? 0.22 : 0.14),
+              color:
+                  colorScheme.primary.withValues(alpha: isDark ? 0.22 : 0.14),
             ),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -451,7 +454,8 @@ class _HomeLastReadShell extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: colorScheme.primary.withValues(alpha: isDark ? 0.12 : 0.07),
+                color:
+                    colorScheme.primary.withValues(alpha: isDark ? 0.12 : 0.07),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -521,7 +525,8 @@ class _HomeProgressRing extends StatelessWidget {
     final ringTrack = colorScheme.primary.withValues(
       alpha: isDark ? 0.22 : 0.16,
     );
-    final ringProgress = colorScheme.primary.withValues(alpha: isDark ? 0.78 : 0.58);
+    final ringProgress =
+        colorScheme.primary.withValues(alpha: isDark ? 0.78 : 0.58);
     final fillTop = isDark
         ? colorScheme.surface.withValues(alpha: 0.82)
         : Colors.white.withValues(alpha: 0.9);

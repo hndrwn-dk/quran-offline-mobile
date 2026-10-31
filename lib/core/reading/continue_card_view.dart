@@ -10,12 +10,16 @@ class ContinueCardView {
   const ContinueCardView({
     required this.title,
     required this.detail,
+    required this.scope,
     this.percent,
     this.fraction,
   });
 
   final String title;
   final String detail;
+
+  /// 'surah', 'juz', or 'page' — the unit the progress refers to.
+  final String scope;
   final int? percent;
   final double? fraction;
 }
@@ -57,11 +61,19 @@ ContinueCardView buildContinueCardView({
               ayahNo: current,
               juzNo: juzNo,
             );
-      return _withProgress(title, detail, total > 0 ? current / total : null);
+      return _withProgress(
+        title,
+        detail,
+        total > 0 ? current / total : null,
+        scope: 'surah',
+      );
 
     case 'juz':
       final juzNo = lastRead.id;
-      final title = '${AppLocalizations.getMenuText('juz', language)} $juzNo';
+      final title = AppLocalizations.formatJuzTitle(
+        language: language,
+        juzNo: juzNo,
+      );
       final ayahNo = lastRead.ayahNo ?? location?.ayahNo;
       final index = progress?.current;
       final total = progress?.total;
@@ -86,37 +98,47 @@ ContinueCardView buildContinueCardView({
         title,
         detail,
         (index != null && total != null && total > 0) ? index / total : null,
+        scope: 'juz',
       );
 
     case 'page':
       final pageNo = lastRead.id;
       final title = AppLocalizations.getPageText(pageNo, language);
-      final detail = AppLocalizations.formatContinueMushafLine(
-        language: language,
-        surahName: surahName,
-        juzNo: location?.juzNo,
-      );
       final range = JuzPageRange.tryCreate(
         location?.juzStartPage,
         location?.juzEndPage,
       );
-      return _withProgress(title, detail, range?.progressForPage(pageNo));
+      final detail = AppLocalizations.formatContinueMushafLine(
+        language: language,
+        surahName: surahName,
+        juzNo: location?.juzNo,
+        pageInJuz: range == null ? null : pageNo - range.startPage + 1,
+        juzPages: range?.totalPages,
+      );
+      return _withProgress(
+        title,
+        detail,
+        range?.progressForPage(pageNo),
+        scope: 'page',
+      );
 
     default:
       final title =
           surahName ?? AppLocalizations.getMenuText('surah', language);
-      return ContinueCardView(title: title, detail: '');
+      return ContinueCardView(title: title, detail: '', scope: 'surah');
   }
 }
 
 ContinueCardView _withProgress(
   String title,
   String detail,
-  double? fraction,
-) {
+  double? fraction, {
+  required String scope,
+}) {
   return ContinueCardView(
     title: title,
     detail: detail,
+    scope: scope,
     fraction: fraction,
     percent: fraction == null ? null : continueProgressPercent(fraction),
   );

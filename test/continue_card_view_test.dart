@@ -78,7 +78,7 @@ void main() {
       surahName: 'An-Naba',
     );
 
-    expect(view.title, 'Juz 30');
+    expect(view.title, 'Juz 30 (Juz Amma)');
     expect(view.detail, 'An-Naba ayat 6 · 6 dari 564 ayat');
     expect(view.percent, 1);
   });
@@ -97,7 +97,7 @@ void main() {
       surahName: 'An-Nazi\'at',
     );
 
-    expect(view.title, 'Juz 30');
+    expect(view.title, 'Juz 30 (Juz Amma)');
     expect(view.detail, 'An-Nazi\'at ayat 3 · 43 dari 564 ayat');
     expect(view.percent, 7);
   });
@@ -138,7 +138,7 @@ void main() {
     );
 
     expect(view.title, 'Halaman 582');
-    expect(view.detail, 'An-Naba · Juz 30');
+    expect(view.detail, 'An-Naba · Juz 30 · hal. 1 dari 23');
     expect(view.percent, 4);
     expect(view.fraction, closeTo(1 / 23, 1e-9));
   });
@@ -173,5 +173,6 @@ void main() {
 
     expect(juz.detail, 'An-Naba ayah 6 · 6 of 564 ayahs');
     expect(page.title, 'Page 582');
+    expect(page.detail, 'An-Naba · Juz 30 · p. 1 of 23');
   });
 }

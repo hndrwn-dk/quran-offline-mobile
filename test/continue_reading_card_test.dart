@@ -14,10 +14,13 @@ Future<void> _pumpHomeCard(
   required LastReadLocation location,
   LastReadProgress? progress,
   List<SurahInfo>? surahs,
+  String language = 'id',
+  double textScale = 1.0,
+  bool scrollable = false,
 }) async {
   SharedPreferences.setMockInitialValues({
-    'language': 'id',
-    'appLanguage': 'id',
+    'language': language,
+    'appLanguage': language,
     ...lastReadPrefs,
   });
 
@@ -39,8 +42,18 @@ Future<void> _pumpHomeCard(
               ],
         ),
       ],
-      child: const MaterialApp(
-        home: Scaffold(body: LastReadCard(forHome: true)),
+      child: MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(textScale),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        ),
+        home: Scaffold(
+          body: scrollable
+              ? const SingleChildScrollView(child: LastReadCard(forHome: true))
+              : const LastReadCard(forHome: true),
+        ),
       ),
     ),
   );
@@ -106,7 +119,7 @@ void main() {
     expect(find.text('Al-Baqarah'), findsOneWidget);
     expect(find.text('Ayat 2 dari 7 · Juz 1'), findsOneWidget);
     expect(find.text('28%'), findsOneWidget);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
@@ -161,7 +174,7 @@ void main() {
       ],
     );
 
-    expect(find.text('Juz 30'), findsOneWidget);
+    expect(find.text('Juz 30 (Juz Amma)'), findsOneWidget);
     expect(find.text('An-Naba ayat 6 · 6 dari 564 ayat'), findsOneWidget);
     expect(find.text('1%'), findsOneWidget);
   });
@@ -194,7 +207,7 @@ void main() {
       ],
     );
 
-    expect(find.text('Juz 30'), findsOneWidget);
+    expect(find.text('Juz 30 (Juz Amma)'), findsOneWidget);
     expect(find.text('An-Nazi\'at ayat 3 · 43 dari 564 ayat'), findsOneWidget);
     expect(find.text('7%'), findsOneWidget);
   });
@@ -217,9 +230,9 @@ void main() {
     );
 
     expect(find.text('Halaman 20'), findsOneWidget);
-    expect(find.text('Al-Baqarah · Juz 1'), findsOneWidget);
+    expect(find.text('Al-Baqarah · Juz 1 · hal. 20 dari 21'), findsOneWidget);
     expect(find.text('95%'), findsOneWidget);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
   });
 
   testWidgets('continue card keeps the pill compact and a ring', (
@@ -253,5 +266,134 @@ void main() {
     );
     expect(pill.width, lessThan(cardWidth * 0.6));
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  });
+
+  testWidgets('the whole card is tappable, not only the arrow', (tester) async {
+    await _pumpHomeCard(
+      tester,
+      lastReadPrefs: _prefs(type: 'surah', id: 2, ayahNo: 2),
+      location: const LastReadLocation(
+        type: 'surah',
+        surahId: 2,
+        ayahNo: 2,
+        juzNo: 1,
+      ),
+      progress: const LastReadProgress(
+        fraction: 2 / 7,
+        scope: 'surah',
+        current: 2,
+        total: 7,
+      ),
+    );
+
+    final titleInk = tester.widget<InkWell>(
+      find
+          .ancestor(
+            of: find.text('Al-Baqarah'),
+            matching: find.byType(InkWell),
+          )
+          .first,
+    );
+    final detailInk = tester.widget<InkWell>(
+      find
+          .ancestor(
+            of: find.text('Ayat 2 dari 7 · Juz 1'),
+            matching: find.byType(InkWell),
+          )
+          .first,
+    );
+    expect(titleInk.onTap, isNotNull);
+    expect(identical(titleInk.onTap, detailInk.onTap), isTrue);
+  });
+
+  testWidgets('the ring exposes percent and scope to screen readers', (
+    tester,
+  ) async {
+    await _pumpHomeCard(
+      tester,
+      lastReadPrefs: _prefs(type: 'surah', id: 2, ayahNo: 2),
+      location: const LastReadLocation(
+        type: 'surah',
+        surahId: 2,
+        ayahNo: 2,
+        juzNo: 1,
+      ),
+      progress: const LastReadProgress(
+        fraction: 2 / 7,
+        scope: 'surah',
+        current: 2,
+        total: 7,
+      ),
+    );
+
+    final semanticsWidget = tester.widget<Semantics>(
+      find.byKey(const ValueKey('continue_progress_semantics')),
+    );
+    expect(semanticsWidget.properties.label, 'Progress surah, 28%');
+  });
+  testWidgets('Juz Amma title fits at max text scale in ZH', (tester) async {
+    await _pumpHomeCard(
+      tester,
+      language: 'zh',
+      textScale: 2.0,
+      scrollable: true,
+      lastReadPrefs: _prefs(type: 'juz', id: 30, ayahNo: 6, surahId: 78),
+      location: const LastReadLocation(
+        type: 'juz',
+        surahId: 78,
+        ayahNo: 6,
+        juzNo: 30,
+      ),
+      progress: const LastReadProgress(
+        fraction: 6 / 564,
+        scope: 'juz',
+        current: 6,
+        total: 564,
+      ),
+      surahs: [
+        SurahInfo(
+          id: 78,
+          arabicName: '',
+          englishName: 'An-Naba',
+          englishMeaning: 'The Tidings',
+        ),
+      ],
+    );
+
+    expect(find.text('第 30 卷（阿玛章）'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Juz Amma title fits at max text scale in JA', (tester) async {
+    await _pumpHomeCard(
+      tester,
+      language: 'ja',
+      textScale: 2.0,
+      scrollable: true,
+      lastReadPrefs: _prefs(type: 'juz', id: 30, ayahNo: 6, surahId: 78),
+      location: const LastReadLocation(
+        type: 'juz',
+        surahId: 78,
+        ayahNo: 6,
+        juzNo: 30,
+      ),
+      progress: const LastReadProgress(
+        fraction: 6 / 564,
+        scope: 'juz',
+        current: 6,
+        total: 564,
+      ),
+      surahs: [
+        SurahInfo(
+          id: 78,
+          arabicName: '',
+          englishName: 'An-Naba',
+          englishMeaning: 'The Tidings',
+        ),
+      ],
+    );
+
+    expect(find.text('第 30 ジュズ（ジュズ・アンマー）'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

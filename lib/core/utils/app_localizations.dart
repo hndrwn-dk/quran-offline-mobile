@@ -3324,17 +3324,58 @@ class AppLocalizations {
     };
   }
 
-  /// Mushaf card line: surah at the page plus the juz.
+  /// Continue-card title for a juz, with the Juz Amma alias for Juz 30.
+  static String formatJuzTitle({
+    required String language,
+    required int juzNo,
+  }) {
+    if (juzNo == 30) {
+      return switch (language) {
+        'id' || 'en' => 'Juz 30 (Juz Amma)',
+        'zh' => '第 30 卷（阿玛章）',
+        'ja' => '第 30 ジュズ（ジュズ・アンマー）',
+        _ => 'Juz 30 (Juz Amma)',
+      };
+    }
+    return switch (language) {
+      'id' || 'en' => 'Juz $juzNo',
+      'zh' => '第 $juzNo 卷',
+      'ja' => '第 $juzNo ジュズ',
+      _ => 'Juz $juzNo',
+    };
+  }
+
+  /// Mushaf card line: surah, juz, and the page position inside the juz.
   static String formatContinueMushafLine({
     required String language,
     required String? surahName,
     required int? juzNo,
+    int? pageInJuz,
+    int? juzPages,
   }) {
     final parts = <String>[
       if (surahName != null && surahName.isNotEmpty) surahName,
       if (juzNo != null) '${getMenuText('juz', language)} $juzNo',
     ];
+    if (pageInJuz != null && juzPages != null && juzPages > 0) {
+      parts.add(switch (language) {
+        'id' => 'hal. $pageInJuz dari $juzPages',
+        'en' => 'p. $pageInJuz of $juzPages',
+        'zh' => '第 $pageInJuz / $juzPages 页',
+        'ja' => '$pageInJuz / $juzPages ページ',
+        _ => 'p. $pageInJuz of $juzPages',
+      });
+    }
     return parts.join(' · ');
+  }
+
+  /// Screen-reader label for the percentage ring.
+  static String formatContinueProgressSemantics({
+    required String language,
+    required String scope,
+    required int percent,
+  }) {
+    return '${getHomeProgressScopeLabel(scope, language)}, $percent%';
   }
 
   static String formatHomeReadProgressPercent(
