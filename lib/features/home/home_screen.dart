@@ -5,6 +5,8 @@ import 'package:quran_offline/core/notifications/notification_navigation.dart';
 import 'package:quran_offline/core/notifications/notification_navigation_handler.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/providers/reading_completion_provider.dart';
+import 'package:quran_offline/core/reading/open_next_read.dart';
 import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/core/providers/resume_hint_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
@@ -71,6 +73,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       hasDeepLink: hasDeepLink,
     );
     if (destination != StartupDestination.resume || lastRead == null) return;
+
+    final completion = await ref.read(readingCompletionProvider.future);
+    if (!mounted) return;
+    if (completion != null) {
+      await openNextReadTarget(context, ref, completion);
+      return;
+    }
 
     if (lastRead.type == 'page') {
       ref.read(resumeHintProvider.notifier).state =

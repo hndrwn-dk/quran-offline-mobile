@@ -3,6 +3,7 @@ import 'package:quran_offline/core/providers/last_read_location_provider.dart';
 import 'package:quran_offline/core/providers/last_read_progress_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/reading/continue_card_view.dart';
+import 'package:quran_offline/core/reading/reading_completion.dart';
 
 LastReadPosition _lastRead({
   required String type,
@@ -174,5 +175,113 @@ void main() {
     expect(juz.detail, 'An-Naba ayah 6 · 6 of 564 ayahs');
     expect(page.title, 'Page 582');
     expect(page.detail, 'An-Naba · Juz 30 · p. 1 of 23');
+  });
+
+  test('completed surah points at the next surah', () {
+    final view = buildContinueCardView(
+      language: 'id',
+      lastRead: _lastRead(type: 'surah', id: 67, ayahNo: 30),
+      location: const LastReadLocation(
+        type: 'surah',
+        surahId: 67,
+        ayahNo: 30,
+        juzNo: 29,
+      ),
+      progress: null,
+      surahName: 'Al-Mulk',
+      completion: const ReadingCompletion(
+        kind: 'surah',
+        khatam: false,
+        finishedSurahId: 67,
+        nextSurahId: 68,
+        nextAyahNo: 1,
+      ),
+      nextSurahName: 'Al-Qalam',
+    );
+
+    expect(view.completed, isTrue);
+    expect(view.title, 'Alhamdulillah, Al-Mulk selesai');
+    expect(view.detail, 'Lanjut ke Al-Qalam');
+    expect(view.percent, isNull);
+  });
+
+  test('completed juz points at the next juz', () {
+    final view = buildContinueCardView(
+      language: 'id',
+      lastRead: _lastRead(type: 'juz', id: 29, ayahNo: 45, surahId: 77),
+      location: const LastReadLocation(
+        type: 'juz',
+        surahId: 77,
+        ayahNo: 45,
+        juzNo: 29,
+      ),
+      progress: null,
+      surahName: 'Al-Mursalat',
+      completion: const ReadingCompletion(
+        kind: 'juz',
+        khatam: false,
+        finishedJuzNo: 29,
+        nextJuzNo: 30,
+        nextSurahId: 78,
+        nextAyahNo: 1,
+      ),
+    );
+
+    expect(view.completed, isTrue);
+    expect(view.title, 'Alhamdulillah, Juz 29 selesai');
+    expect(view.detail, 'Lanjut ke Juz 30');
+  });
+
+  test('completed mushaf page points at the next page', () {
+    final view = buildContinueCardView(
+      language: 'id',
+      lastRead: _lastRead(type: 'page', id: 21),
+      location: const LastReadLocation(
+        type: 'page',
+        pageNo: 21,
+        juzNo: 1,
+        juzStartPage: 1,
+        juzEndPage: 21,
+      ),
+      progress: null,
+      surahName: 'Al-Baqarah',
+      completion: const ReadingCompletion(
+        kind: 'page',
+        khatam: false,
+        finishedJuzNo: 1,
+        nextPageNo: 22,
+      ),
+    );
+
+    expect(view.completed, isTrue);
+    expect(view.title, 'Alhamdulillah, Juz 1 selesai');
+    expect(view.detail, 'Lanjut ke Halaman 22');
+  });
+
+  test('khatam uses the khatam copy', () {
+    final view = buildContinueCardView(
+      language: 'id',
+      lastRead: _lastRead(type: 'surah', id: 114, ayahNo: 6),
+      location: const LastReadLocation(
+        type: 'surah',
+        surahId: 114,
+        ayahNo: 6,
+        juzNo: 30,
+      ),
+      progress: null,
+      surahName: 'An-Nas',
+      completion: const ReadingCompletion(
+        kind: 'surah',
+        khatam: true,
+        finishedSurahId: 114,
+        nextSurahId: 1,
+        nextAyahNo: 1,
+      ),
+    );
+
+    expect(view.completed, isTrue);
+    expect(view.khatam, isTrue);
+    expect(view.title, 'Alhamdulillah, khatam Al-Qur\'an');
+    expect(view.detail, 'Mulai lagi dari Al-Fatihah');
   });
 }

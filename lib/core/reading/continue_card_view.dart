@@ -1,6 +1,7 @@
 import 'package:quran_offline/core/providers/last_read_location_provider.dart';
 import 'package:quran_offline/core/providers/last_read_progress_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
+import 'package:quran_offline/core/reading/reading_completion.dart';
 import 'package:quran_offline/core/reading/reading_scope.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 
@@ -13,6 +14,8 @@ class ContinueCardView {
     required this.scope,
     this.percent,
     this.fraction,
+    this.completed = false,
+    this.khatam = false,
   });
 
   final String title;
@@ -22,6 +25,10 @@ class ContinueCardView {
   final String scope;
   final int? percent;
   final double? fraction;
+
+  /// True when the unit is finished; the ring shows a check instead of a %.
+  final bool completed;
+  final bool khatam;
 }
 
 /// Floor the percentage, but show at least 1% once anything was read and
@@ -39,7 +46,36 @@ ContinueCardView buildContinueCardView({
   required LastReadLocation? location,
   required LastReadProgress? progress,
   required String? surahName,
+  ReadingCompletion? completion,
+  String? nextSurahName,
 }) {
+  if (completion != null) {
+    final title = completion.khatam
+        ? AppLocalizations.getContinueKhatamTitle(language)
+        : AppLocalizations.formatContinueCompletedTitle(
+            language: language,
+            kind: completion.kind == 'page' ? 'juz' : completion.kind,
+            surahName: surahName,
+            juzNo: completion.finishedJuzNo,
+          );
+    final detail = completion.khatam
+        ? AppLocalizations.getContinueKhatamNext(language)
+        : AppLocalizations.formatContinueNextUnit(
+            language: language,
+            kind: completion.kind,
+            surahName: nextSurahName,
+            juzNo: completion.nextJuzNo,
+            pageNo: completion.nextPageNo,
+          );
+    return ContinueCardView(
+      title: title,
+      detail: detail,
+      scope: completion.kind,
+      completed: true,
+      khatam: completion.khatam,
+    );
+  }
+
   switch (lastRead.type) {
     case 'surah':
     case 'surah_in_juz':

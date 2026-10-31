@@ -3378,6 +3378,78 @@ class AppLocalizations {
     return '${getHomeProgressScopeLabel(scope, language)}, $percent%';
   }
 
+  /// Completed-state title for the Continue card.
+  static String formatContinueCompletedTitle({
+    required String language,
+    required String kind,
+    String? surahName,
+    int? juzNo,
+  }) {
+    final unit = kind == 'surah'
+        ? (surahName ?? getMenuText('surah', language))
+        : '${getMenuText('juz', language)} ${juzNo ?? ''}'.trim();
+    return switch (language) {
+      'id' => 'Alhamdulillah, $unit selesai',
+      'en' => 'Alhamdulillah, $unit complete',
+      'zh' => 'Alhamdulillah，$unit 已完成',
+      'ja' => 'Alhamdulillah、$unit を読了しました',
+      _ => 'Alhamdulillah, $unit complete',
+    };
+  }
+
+  /// Subtitle for the unit that comes after the completed one.
+  static String formatContinueNextUnit({
+    required String language,
+    required String kind,
+    String? surahName,
+    int? juzNo,
+    int? pageNo,
+  }) {
+    final target = switch (kind) {
+      'surah' => surahName ?? getMenuText('surah', language),
+      'juz' => '${getMenuText('juz', language)} ${juzNo ?? ''}'.trim(),
+      'page' => getPageText(pageNo ?? 1, language),
+      _ => '',
+    };
+    return switch (language) {
+      'id' => 'Lanjut ke $target',
+      'en' => 'Continue to $target',
+      'zh' => '继续到 $target',
+      'ja' => '$target に進む',
+      _ => 'Continue to $target',
+    };
+  }
+
+  static String getContinueKhatamTitle(String language) {
+    return switch (language) {
+      'id' => 'Alhamdulillah, khatam Al-Qur\'an',
+      'en' => 'Alhamdulillah, you have completed the Qur\'an',
+      'zh' => 'Alhamdulillah，你已完成古兰经',
+      'ja' => 'Alhamdulillah、クルアーンを読了しました',
+      _ => 'Alhamdulillah, you have completed the Qur\'an',
+    };
+  }
+
+  static String getContinueKhatamNext(String language) {
+    return switch (language) {
+      'id' => 'Mulai lagi dari Al-Fatihah',
+      'en' => 'Start again from Al-Fatihah',
+      'zh' => '从 Al-Fatihah 重新开始',
+      'ja' => 'Al-Fatihah からやり直す',
+      _ => 'Start again from Al-Fatihah',
+    };
+  }
+
+  static String getContinueCompletedLabel(String language) {
+    return switch (language) {
+      'id' => 'Selesai',
+      'en' => 'Completed',
+      'zh' => '已完成',
+      'ja' => '読了',
+      _ => 'Completed',
+    };
+  }
+
   static String formatHomeReadProgressPercent(
       int percent, String scope, String language) {
     return switch (scope) {

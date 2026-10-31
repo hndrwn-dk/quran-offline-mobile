@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/providers/last_read_location_provider.dart';
 import 'package:quran_offline/core/providers/last_read_progress_provider.dart';
+import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/providers/reading_completion_provider.dart';
+import 'package:quran_offline/core/reading/reading_completion.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/read/widgets/last_read_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +17,7 @@ Future<void> _pumpHomeCard(
   required LastReadLocation location,
   LastReadProgress? progress,
   List<SurahInfo>? surahs,
+  ReadingCompletion? completion,
   String language = 'id',
   double textScale = 1.0,
   bool scrollable = false,
@@ -29,6 +33,7 @@ Future<void> _pumpHomeCard(
       overrides: [
         lastReadLocationProvider.overrideWith((ref) async => location),
         lastReadProgressProvider.overrideWith((ref) async => progress),
+        readingCompletionProvider.overrideWith((ref) async => completion),
         surahNamesProvider.overrideWith(
           (ref) async =>
               surahs ??
@@ -395,5 +400,112 @@ void main() {
 
     expect(find.text('第 30 ジュズ（ジュズ・アンマー）'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('completed surah card shows a check and the next surah', (
+    tester,
+  ) async {
+    await _pumpHomeCard(
+      tester,
+      lastReadPrefs: _prefs(type: 'surah', id: 67, ayahNo: 30),
+      location: const LastReadLocation(
+        type: 'surah',
+        surahId: 67,
+        ayahNo: 30,
+        juzNo: 29,
+      ),
+      completion: const ReadingCompletion(
+        kind: 'surah',
+        khatam: false,
+        finishedSurahId: 67,
+        nextSurahId: 68,
+        nextAyahNo: 1,
+      ),
+      surahs: [
+        SurahInfo(
+          id: 67,
+          arabicName: '',
+          englishName: 'Al-Mulk',
+          englishMeaning: 'The Sovereignty',
+        ),
+        SurahInfo(
+          id: 68,
+          arabicName: '',
+          englishName: 'Al-Qalam',
+          englishMeaning: 'The Pen',
+        ),
+      ],
+    );
+
+    expect(
+      find.text(AppLocalizations.getHomeContinuePill('id')),
+      findsOneWidget,
+    );
+    expect(find.text('Alhamdulillah, Al-Mulk selesai'), findsOneWidget);
+    expect(find.text('Lanjut ke Al-Qalam'), findsOneWidget);
+    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+    expect(find.textContaining('%'), findsNothing);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+
+    final semantics = tester.widget<Semantics>(
+      find.byKey(const ValueKey('continue_progress_semantics')),
+    );
+    expect(semantics.properties.label, 'Selesai');
+  });
+
+  testWidgets('khatam card uses the khatam copy and a check', (tester) async {
+    await _pumpHomeCard(
+      tester,
+      lastReadPrefs: _prefs(type: 'surah', id: 114, ayahNo: 6),
+      location: const LastReadLocation(
+        type: 'surah',
+        surahId: 114,
+        ayahNo: 6,
+        juzNo: 30,
+      ),
+      completion: const ReadingCompletion(
+        kind: 'surah',
+        khatam: true,
+        finishedSurahId: 114,
+        nextSurahId: 1,
+        nextAyahNo: 1,
+      ),
+      surahs: [
+        SurahInfo(
+          id: 114,
+          arabicName: '',
+          englishName: 'An-Nas',
+          englishMeaning: 'Mankind',
+        ),
+      ],
+    );
+
+    expect(find.text('Alhamdulillah, khatam Al-Qur\'an'), findsOneWidget);
+    expect(find.text('Mulai lagi dari Al-Fatihah'), findsOneWidget);
+    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+  });
+
+  testWidgets('completed mushaf card points at the next page', (tester) async {
+    await _pumpHomeCard(
+      tester,
+      lastReadPrefs: _prefs(type: 'page', id: 21),
+      location: const LastReadLocation(
+        type: 'page',
+        pageNo: 21,
+        juzNo: 1,
+        juzStartPage: 1,
+        juzEndPage: 21,
+      ),
+      completion: const ReadingCompletion(
+        kind: 'page',
+        khatam: false,
+        finishedJuzNo: 1,
+        nextPageNo: 22,
+      ),
+    );
+
+    expect(find.text('Alhamdulillah, Juz 1 selesai'), findsOneWidget);
+    expect(find.text('Lanjut ke Halaman 22'), findsOneWidget);
+    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
   });
 }

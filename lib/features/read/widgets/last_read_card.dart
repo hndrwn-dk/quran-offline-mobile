@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
@@ -5,7 +7,9 @@ import 'package:quran_offline/core/providers/last_read_location_provider.dart';
 import 'package:quran_offline/core/providers/last_read_progress_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/last_read_resolve.dart';
+import 'package:quran_offline/core/providers/reading_completion_provider.dart';
 import 'package:quran_offline/core/reading/continue_card_view.dart';
+import 'package:quran_offline/core/reading/open_next_read.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
@@ -81,6 +85,8 @@ class LastReadCard extends ConsumerWidget {
     final location =
         forHome ? ref.watch(lastReadLocationProvider).valueOrNull : null;
     final progressAsync = forHome ? ref.watch(lastReadProgressProvider) : null;
+    final completion =
+        forHome ? ref.watch(readingCompletionProvider).valueOrNull : null;
 
     if (!lastReadCardHandlesType(lastRead.type)) {
       return const SizedBox.shrink();
@@ -209,6 +215,12 @@ class LastReadCard extends ConsumerWidget {
           ref.read(lastReadProvider.notifier).clearLastRead();
         };
 
+        if (completion != null) {
+          onTap = () {
+            unawaited(openNextReadTarget(context, ref, completion));
+          };
+        }
+
         if (forHome) {
           final progress = progressAsync?.valueOrNull;
           final surahId = switch (lastRead.type) {
@@ -217,12 +229,17 @@ class LastReadCard extends ConsumerWidget {
             _ => null,
           };
           final surah = surahId == null ? null : _surahById(surahs, surahId);
+          final nextSurah = completion?.nextSurahId == null
+              ? null
+              : _surahById(surahs, completion!.nextSurahId!);
           final view = buildContinueCardView(
             language: appLanguage,
             lastRead: lastRead,
             location: location,
             progress: progress,
             surahName: surah?.englishName,
+            completion: completion,
+            nextSurahName: nextSurah?.englishName,
           );
 
           return Padding(
@@ -272,7 +289,23 @@ class LastReadCard extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      if (view.percent != null && view.fraction != null) ...[
+                      if (view.completed) ...[
+                        const SizedBox(width: 12),
+                        Semantics(
+                          key: const ValueKey('continue_progress_semantics'),
+                          container: true,
+                          label: AppLocalizations.getContinueCompletedLabel(
+                            appLanguage,
+                          ),
+                          excludeSemantics: true,
+                          child: const _HomeProgressRing(
+                            percent: 100,
+                            fraction: 1,
+                            completed: true,
+                          ),
+                        ),
+                      ] else if (view.percent != null &&
+                          view.fraction != null) ...[
                         const SizedBox(width: 12),
                         Semantics(
                           key: const ValueKey('continue_progress_semantics'),
@@ -508,10 +541,12 @@ class _HomeProgressRing extends StatelessWidget {
   const _HomeProgressRing({
     required this.percent,
     required this.fraction,
+    this.completed = false,
   });
 
   final int percent;
   final double fraction;
+  final bool completed;
 
   @override
   Widget build(BuildContext context) {
@@ -563,15 +598,21 @@ class _HomeProgressRing extends StatelessWidget {
               ),
             ),
             alignment: Alignment.center,
-            child: Text(
-              '$percent%',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 10.5,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                    color: colorScheme.onSurface,
+            child: completed
+                ? Icon(
+                    Icons.check_rounded,
+                    size: 20,
+                    color: colorScheme.primary,
+                  )
+                : Text(
+                    '$percent%',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 10.5,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                          color: colorScheme.onSurface,
+                        ),
                   ),
-            ),
           ),
         ],
       ),
