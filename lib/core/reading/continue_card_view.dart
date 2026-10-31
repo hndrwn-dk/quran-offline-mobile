@@ -31,13 +31,12 @@ class ContinueCardView {
   final bool khatam;
 }
 
-/// Floor the percentage, but show at least 1% once anything was read and
-/// 100% only when the unit is actually complete.
+/// Floor the percentage, but show at least 1% once anything was read.
+/// The ring never shows 100%: completion is represented by a check icon.
 int continueProgressPercent(double? fraction) {
   if (fraction == null || fraction <= 0) return 0;
-  if (fraction >= 1) return 100;
   final percent = (fraction * 100).floor();
-  return percent < 1 ? 1 : percent;
+  return percent.clamp(1, 99);
 }
 
 ContinueCardView buildContinueCardView({
@@ -171,11 +170,13 @@ ContinueCardView _withProgress(
   double? fraction, {
   required String scope,
 }) {
+  final cappedFraction = fraction?.clamp(0.0, 0.99);
   return ContinueCardView(
     title: title,
     detail: detail,
     scope: scope,
-    fraction: fraction,
-    percent: fraction == null ? null : continueProgressPercent(fraction),
+    fraction: cappedFraction,
+    percent:
+        cappedFraction == null ? null : continueProgressPercent(cappedFraction),
   );
 }

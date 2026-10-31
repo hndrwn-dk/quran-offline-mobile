@@ -507,4 +507,78 @@ void main() {
     expect(find.text('Lanjut ke Halaman 22'), findsOneWidget);
     expect(find.byIcon(Icons.check_rounded), findsOneWidget);
   });
+
+  testWidgets('An-Nas 114:6 without dwell shows 99%, not a completed check', (
+    tester,
+  ) async {
+    await _pumpHomeCard(
+      tester,
+      lastReadPrefs: _prefs(type: 'surah', id: 114, ayahNo: 6),
+      location: const LastReadLocation(
+        type: 'surah',
+        surahId: 114,
+        ayahNo: 6,
+        juzNo: 30,
+      ),
+      progress: const LastReadProgress(
+        fraction: 1,
+        scope: 'surah',
+        current: 6,
+        total: 6,
+      ),
+      surahs: [
+        SurahInfo(
+          id: 114,
+          arabicName: '',
+          englishName: 'An-Nas',
+          englishMeaning: 'Mankind',
+        ),
+      ],
+    );
+
+    expect(find.text('99%'), findsOneWidget);
+    expect(find.text('100%'), findsNothing);
+    expect(find.byIcon(Icons.check_rounded), findsNothing);
+  });
+
+  testWidgets('An-Nas 114:6 with dwell shows the completed check', (
+    tester,
+  ) async {
+    await _pumpHomeCard(
+      tester,
+      lastReadPrefs: _prefs(type: 'surah', id: 114, ayahNo: 6),
+      location: const LastReadLocation(
+        type: 'surah',
+        surahId: 114,
+        ayahNo: 6,
+        juzNo: 30,
+      ),
+      progress: const LastReadProgress(
+        fraction: 1,
+        scope: 'surah',
+        current: 6,
+        total: 6,
+      ),
+      completion: const ReadingCompletion(
+        kind: 'surah',
+        khatam: true,
+        finishedSurahId: 114,
+        nextSurahId: 1,
+        nextAyahNo: 1,
+      ),
+      surahs: [
+        SurahInfo(
+          id: 114,
+          arabicName: '',
+          englishName: 'An-Nas',
+          englishMeaning: 'Mankind',
+        ),
+      ],
+    );
+
+    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+    expect(find.text('99%'), findsNothing);
+    expect(find.text('100%'), findsNothing);
+    expect(find.text('Alhamdulillah, khatam Al-Qur\'an'), findsOneWidget);
+  });
 }

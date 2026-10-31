@@ -35,14 +35,14 @@ LastReadProgress _progress({
 
 void main() {
   group('continueProgressPercent', () {
-    test('floors, keeps 1% once read, and only 100% when complete', () {
+    test('floors, keeps 1% once read, and never shows 100%', () {
       expect(continueProgressPercent(null), 0);
       expect(continueProgressPercent(0), 0);
       expect(continueProgressPercent(1 / 604), 1);
       expect(continueProgressPercent(43 / 564), 7);
       expect(continueProgressPercent(2 / 7), 28);
       expect(continueProgressPercent(0.999), 99);
-      expect(continueProgressPercent(1), 100);
+      expect(continueProgressPercent(1), 99);
     });
   });
 
