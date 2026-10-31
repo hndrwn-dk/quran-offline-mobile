@@ -53,7 +53,7 @@ Make everything already inside the app easier to find and learn from:
 
 | Concern | Existing location |
 |---------|-------------------|
-| Verse JSON schema `{s,a,ar,tr,m}` | `tool/generate_quran_json.py`, `DATA_SOURCES.md` §1 |
+| Verse JSON schema `{s,a,ar,tr,m}` | `tools/generate_quran_json.py`, `DATA_SOURCES.md` §1 |
 | Verses DB (drift) | `lib/core/database/database.dart`, `importer.dart` |
 | Arabic match normaliser | `lib/core/utils/arabic_search_normalizer.dart` |
 | Translation footnote cleaner | `lib/core/utils/translation_cleaner.dart` |
@@ -65,7 +65,7 @@ Make everything already inside the app easier to find and learn from:
 | Tafsir SQLite | `assets/tafsir/id_as_saadi.sqlite`, `en_ibn_kathir.sqlite` (table `tafsir`: `ayah_key`, `group_ayah_key`, `text`) |
 | Surah info SQLite | `assets/quran/surah_info/{id,en}_surah_info.sqlite` (table `surah_infos`) |
 | Catalog test pattern (skip if asset missing) | `test/dua_catalog_test.dart`, `test/quran_text_integrity_test.dart` |
-| Python tool test pattern | `tool/test_generate_quran_json.py` (unittest) |
+| Python tool test pattern | `tools/test_generate_quran_json.py` (unittest) |
 
 ---
 
@@ -76,9 +76,9 @@ BUILD TIME (maintainer machine, Python stdlib, offline)
   assets/quran/s###.json ─┐
   assets/tafsir/*.sqlite ─┤
   assets/quran/surah_info ┤
-  assets/*/…_catalog.json ┤──► tool/build_search_index.py ──► assets/ai/search_index.sqlite
+  assets/*/…_catalog.json ┤──► tools/build_search_index.py ──► assets/ai/search_index.sqlite
   assets/ai/quran_dua_ayat_catalog.json ┘                        (docs + FTS5 + links)
-  data/review/dua_ayat.review.json ──► tool/extract_dua_ayat.py build ──► assets/ai/quran_dua_ayat_catalog.json
+  data/review/dua_ayat.review.json ──► tools/extract_dua_ayat.py build ──► assets/ai/quran_dua_ayat_catalog.json
 
 RUNTIME (device, offline)
   query ─► IdQueryNormalizer ─► FTS5 (bm25) ─┐
@@ -90,7 +90,7 @@ RUNTIME (device, offline)
 
 ## 5. Data contracts
 
-### 5.1 `assets/ai/quran_dua_ayat_catalog.json` (built by `tool/extract_dua_ayat.py build`)
+### 5.1 `assets/ai/quran_dua_ayat_catalog.json` (built by `tools/extract_dua_ayat.py build`)
 
 ```json
 {
@@ -115,7 +115,7 @@ RUNTIME (device, offline)
 ```
 No Arabic, no translation text. `need` is used for matching, not displayed as doa text.
 
-### 5.2 `assets/ai/search_index.sqlite` (built by `tool/build_search_index.py`)
+### 5.2 `assets/ai/search_index.sqlite` (built by `tools/build_search_index.py`)
 
 ```sql
 CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -145,15 +145,15 @@ Display text is always loaded from the original source (verses table, tafsir SQL
 | File | Purpose |
 |------|---------|
 | `assets/ai/synonyms_id.json` | `{ "version": 1, "groups": [["rezeki","rizki"], …] }` spelling variants and same-meaning Indonesian words |
-| `tool/fixtures/id_normalizer_vectors.json` | `[{"in": "…", "out": "…"}]` shared by Python and Dart tests (parity) |
-| `tool/eval/queries.json` | `[{"q": "…", "lang": "id", "expect": ["qdua:qd_003_191_194", "ayah:39:53:id"]}]` |
+| `tools/fixtures/id_normalizer_vectors.json` | `[{"in": "…", "out": "…"}]` shared by Python and Dart tests (parity) |
+| `tools/eval/queries.json` | `[{"q": "…", "lang": "id", "expect": ["qdua:qd_003_191_194", "ayah:39:53:id"]}]` |
 
 ---
 
 ## 6. Search behaviour
 
 ### 6.1 Indonesian/English query normalisation (`normalizer_version = 2`)
-Applied identically in `tool/build_search_index.py` and `lib/core/ai_search/id_query_normalizer.dart`:
+Applied identically in `tools/build_search_index.py` and `lib/core/ai_search/id_query_normalizer.dart`:
 1. Lowercase; strip HTML tags; replace non-letter/digit with space; collapse spaces.
 2. Arabic script: apply `ArabicSearchNormalizer.normalizeForSearch` rules.
 3. Indonesian suffix strip, in order, once each, keep stem length ≥ 3: `-nya`, `-lah`, `-kah`, `-kan`, `-an`, `-i`.
@@ -188,11 +188,11 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
 ### Phase A — Doa-ayat extraction & review (script delivered)
 
 **A1. Add extractor to repo**
-- Files: `tool/extract_dua_ayat.py`, `tool/test_extract_dua_ayat.py`
-- Acceptance: `python -m unittest discover -s tool -p "test_extract_dua_ayat.py"` passes (12 tests).
+- Files: `tools/extract_dua_ayat.py`, `tools/test_extract_dua_ayat.py`
+- Acceptance: `python -m unittest discover -s tools -p "test_extract_dua_ayat.py"` passes (12 tests).
 
 **A2. Run extraction on real data** (maintainer runs, agent may assist)
-- Command: `python tool/extract_dua_ayat.py extract`
+- Command: `python tools/extract_dua_ayat.py extract`
 - Output: `data/review/dua_ayat.review.json`
 - Acceptance: stats printed; spot check that 2:201, 2:286, 3:8, 14:40–41, 25:74 appear; 1:2 does not.
 - Note: detection is pattern-based. Doa without `rabb`/`allahumma` (e.g. 21:87) will be missed. Maintainer adds them to `manual_additions`.
@@ -202,7 +202,7 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
 - Re-running `extract` keeps decisions (matched by `group_key`); changed groups land in `orphaned_reviews`.
 
 **A4. Build catalog**
-- Command: `python tool/extract_dua_ayat.py build` (use `--allow-pending` only for dev builds)
+- Command: `python tools/extract_dua_ayat.py build` (use `--allow-pending` only for dev builds)
 - Output: `assets/ai/quran_dua_ayat_catalog.json`
 - Acceptance: exits 0; file has no Arabic or translation text.
 
@@ -219,7 +219,7 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
 - Maintainer runs it on a real Android device/emulator build and records result in §9. If FTS5 is unavailable, stop; maintainer decides fallback.
 
 **B1. Shared normaliser vectors**
-- Files: `tool/fixtures/id_normalizer_vectors.json` (agent adds only mechanical cases: casing, punctuation, affixes on non-religious words like `pekerjaan→kerja`, `dimakan→makan`; maintainer extends), `tool/id_normalizer.py`, `tool/test_id_normalizer.py`
+- Files: `tools/fixtures/id_normalizer_vectors.json` (agent adds only mechanical cases: casing, punctuation, affixes on non-religious words like `pekerjaan→kerja`, `dimakan→makan`; maintainer extends), `tools/id_normalizer.py`, `tools/test_id_normalizer.py`
 - Acceptance: Python tests pass on all vectors.
 
 **B2. Dart normaliser**
@@ -227,7 +227,7 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
 - Acceptance: Dart test loads the same vectors file and passes all cases.
 
 **B3. Index builder**
-- Files: `tool/build_search_index.py`, `tool/test_build_search_index.py`
+- Files: `tools/build_search_index.py`, `tools/test_build_search_index.py`
 - Inputs: all sources in §3; missing optional source → warning, skipped. `id` language required; `en` included for ayah/asma/dua/science/theme; `en` tafsir (Ibn Kathir) behind `--include-en-tafsir` flag, default off.
 - Strip HTML from tafsir/surah info before normalising. Tafsir grouped rows (`group_ayah_key`) become one doc with range `ayah_from..ayah_to`.
 - Output: `assets/ai/search_index.sqlite` per §5.2, `meta` filled.
@@ -265,7 +265,7 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
 
 **D0. GATE: model & runtime** (maintainer decides, records in §9)
 - Embedding model (multilingual, Indonesian quality), quantisation, on-device runtime package, delivery (bundled vs Play on-demand asset pack), dims.
-- Benchmark on `tool/eval/queries.json` before choosing.
+- Benchmark on `tools/eval/queries.json` before choosing.
 
 **D1–D4** are written by the maintainer into this spec after D0. Agent must not start Phase D without them.
 
@@ -293,7 +293,7 @@ Entries with `recommendedToRecite = false` never appear in Doa mode. They may ap
 
 ### Phase G — Evaluation
 
-**G1.** Files: `tool/eval_search.py`, `tool/eval/queries.json` (empty example; maintainer fills ≥ 200 queries)
+**G1.** Files: `tools/eval_search.py`, `tools/eval/queries.json` (empty example; maintainer fills ≥ 200 queries)
 - Mirrors §6.1/§6.2 in Python against `search_index.sqlite`; reports recall@5, MRR, empty-state rate, per type.
 - Acceptance: runs on example file; maintainer uses results to tune thresholds and flip `kAiSearchEnabled`.
 

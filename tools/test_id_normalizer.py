@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""unittest for tool/id_normalizer.py against shared vectors."""
+"""unittest for tools/id_normalizer.py against shared vectors."""
 
 from __future__ import annotations
 

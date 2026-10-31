@@ -20,9 +20,9 @@ Rules (see docs/ai_search/ai-search-spec.md):
   - The script never approves anything. Only a human reviewer does.
 
 Usage:
-  python tool/extract_dua_ayat.py extract
-  python tool/extract_dua_ayat.py build
-  python tool/extract_dua_ayat.py build --allow-pending
+  python tools/extract_dua_ayat.py extract
+  python tools/extract_dua_ayat.py build
+  python tools/extract_dua_ayat.py build --allow-pending
 """
 
 from __future__ import annotations

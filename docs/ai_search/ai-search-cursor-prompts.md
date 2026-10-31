@@ -103,9 +103,9 @@ Commit: `chore(ai-search): A0 track spec files, ignore generated ai assets`
 ```
 Task A1 from docs/ai_search/ai-search-spec.md.
 
-tool/extract_dua_ayat.py and tool/test_extract_dua_ayat.py are already in the working tree.
+tools/extract_dua_ayat.py and tools/test_extract_dua_ayat.py are already in the working tree.
 Do not rewrite them. Verify only:
-1. `python -m unittest discover -s tool -p "test_extract_dua_ayat.py" -v` → all 12 tests pass. Paste the output.
+1. `python -m unittest discover -s tools -p "test_extract_dua_ayat.py" -v` → all 12 tests pass. Paste the output.
 2. Confirm the script makes no network calls and imports stdlib only.
 3. Confirm the normalisation rules in extract_dua_ayat.py match lib/core/utils/arabic_search_normalizer.dart and lib/core/utils/translation_cleaner.dart. Report any drift; do NOT change either side without asking me.
 
@@ -116,9 +116,9 @@ Commit: `feat(ai-search): A1 add Quranic doa-ayat extractor and tests`
 **A2–A4 are mine, not Cursor's** (they need real assets and scholar review):
 
 ```bash
-python tool/extract_dua_ayat.py extract     # → data/review/dua_ayat.review.json
+python tools/extract_dua_ayat.py extract     # → data/review/dua_ayat.review.json
 # review with an ustadz, then:
-python tool/extract_dua_ayat.py build       # → assets/ai/quran_dua_ayat_catalog.json
+python tools/extract_dua_ayat.py build       # → assets/ai/quran_dua_ayat_catalog.json
 Copy-Item data\review\dua_ayat.review.json C:\Users\hendr\Backup\   # data/ is gitignored
 ```
 
@@ -167,11 +167,11 @@ Commit: `test(ai-search): B0 probe fts5 availability on device`
 ```
 Task B1 from docs/ai_search/ai-search-spec.md, implementing §6.1 exactly (steps 1–4; synonyms are query-time only and NOT part of this task).
 
-- tool/id_normalizer.py — stdlib only, function `normalize(text: str) -> str`, plus `NORMALIZER_VERSION = 1`. Arabic input follows the same rules as lib/core/utils/arabic_search_normalizer.dart.
-- tool/fixtures/id_normalizer_vectors.json — list of {"in","out"} cases. Add MECHANICAL cases only: casing, punctuation, whitespace, digits, and affixes on ordinary words (pekerjaan→kerja, dimakan→makan, sabarlah→sabar, kesabaran→sabar, bukunya→buku). No religious phrasing, no synonyms — I add those.
-- tool/test_id_normalizer.py — unittest, drives every vector from the fixtures file, plus edge cases (empty string, min stem length 3, prefix+suffix together).
+- tools/id_normalizer.py — stdlib only, function `normalize(text: str) -> str`, plus `NORMALIZER_VERSION = 1`. Arabic input follows the same rules as lib/core/utils/arabic_search_normalizer.dart.
+- tools/fixtures/id_normalizer_vectors.json — list of {"in","out"} cases. Add MECHANICAL cases only: casing, punctuation, whitespace, digits, and affixes on ordinary words (pekerjaan→kerja, dimakan→makan, sabarlah→sabar, kesabaran→sabar, bukunya→buku). No religious phrasing, no synonyms — I add those.
+- tools/test_id_normalizer.py — unittest, drives every vector from the fixtures file, plus edge cases (empty string, min stem length 3, prefix+suffix together).
 
-Acceptance: `python -m unittest discover -s tool -p "test_id_normalizer.py" -v` passes. Paste output and the final vectors file.
+Acceptance: `python -m unittest discover -s tools -p "test_id_normalizer.py" -v` passes. Paste output and the final vectors file.
 
 Files you may touch: the three listed above.
 Commit: `feat(ai-search): B1 add indonesian query normaliser and shared vectors`
@@ -184,8 +184,8 @@ Commit: `feat(ai-search): B1 add indonesian query normaliser and shared vectors`
 ```
 Task B2 from docs/ai_search/ai-search-spec.md.
 
-- lib/core/ai_search/id_query_normalizer.dart — port tool/id_normalizer.py rule for rule, same order, same stem-length guard, same normalizerVersion constant. Reuse ArabicSearchNormalizer for Arabic input instead of reimplementing it.
-- test/id_query_normalizer_test.dart — load tool/fixtures/id_normalizer_vectors.json from disk (like test/dua_catalog_test.dart reads assets) and assert every case, so Python and Dart cannot drift.
+- lib/core/ai_search/id_query_normalizer.dart — port tools/id_normalizer.py rule for rule, same order, same stem-length guard, same normalizerVersion constant. Reuse ArabicSearchNormalizer for Arabic input instead of reimplementing it.
+- test/id_query_normalizer_test.dart — load tools/fixtures/id_normalizer_vectors.json from disk (like test/dua_catalog_test.dart reads assets) and assert every case, so Python and Dart cannot drift.
 
 Acceptance: `flutter test test/id_query_normalizer_test.dart` passes with the same vector count as the Python suite. Paste output.
 If any vector cannot pass in Dart, STOP and report which one — do not edit the vectors file to make the test pass.
@@ -201,7 +201,7 @@ Commit: `feat(ai-search): B2 add dart query normaliser with python parity test`
 ```
 Task B3 from docs/ai_search/ai-search-spec.md. Schema is §5.2 — follow it exactly, including table and column names.
 
-Create tool/build_search_index.py (stdlib + sqlite3 only, no network) and tool/test_build_search_index.py.
+Create tools/build_search_index.py (stdlib + sqlite3 only, no network) and tools/test_build_search_index.py.
 
 Inputs, all local and all optional except the first:
 - assets/quran/s###.json → type `ayah`, langs id and en (clean translations with the same logic as lib/core/utils/translation_cleaner.dart)
@@ -209,15 +209,15 @@ Inputs, all local and all optional except the first:
 - assets/tafsir/en_ibn_kathir.sqlite → same, only with --include-en-tafsir (default off)
 - assets/quran/surah_info/{id,en}_surah_info.sqlite → type `surah_info` (table `surah_infos`)
 - assets/duas/duas_catalog.json → `dua`; assets/asma/asmaul_husna_catalog.json → `asma`; assets/science/science_catalog.json → `science`; assets/themes/life_themes_catalog.json → `theme`; assets/ai/quran_dua_ayat_catalog.json → `quran_dua`
-Missing optional input → warn and skip. body_norm uses tool/id_normalizer.py. doc_refs gets one row per (doc, surah, ayah) covered.
+Missing optional input → warn and skip. body_norm uses tools/id_normalizer.py. doc_refs gets one row per (doc, surah, ayah) covered.
 
 Output assets/ai/search_index.sqlite with meta filled (schema_version, built_at_utc, quran_manifest_version from assets/quran/manifest_multi.json, normalizer_version).
 Print doc counts per type and final file size. Fail with a clear message if the file exceeds 20 MB (spec §7 B3).
 
 Tests run on small fixtures created in a temp dir — never on real assets.
-Acceptance: `python -m unittest discover -s tool -p "test_build_search_index.py" -v` passes. Paste output.
+Acceptance: `python -m unittest discover -s tools -p "test_build_search_index.py" -v` passes. Paste output.
 
-Files you may touch: tool/build_search_index.py, tool/test_build_search_index.py
+Files you may touch: tools/build_search_index.py, tools/test_build_search_index.py
 Commit: `feat(ai-search): B3 build unified offline search index`
 ```
 
@@ -333,11 +333,11 @@ Commit: `feat(ai-search): F1 add related content sheet`
 ```
 Task G1 from docs/ai_search/ai-search-spec.md.
 
-- tool/eval_search.py — stdlib + sqlite3. Mirrors §6.1 normalisation and §6.2 keyword ranking against assets/ai/search_index.sqlite, reads tool/eval/queries.json, reports recall@5, MRR, empty-state rate, and a per-type breakdown, plus a list of the worst misses so I can tune thresholds.
-- tool/eval/queries.json — create with the schema from spec §5.3 and 3 clearly-marked EXAMPLE entries using mechanical queries only (e.g. "surah 36", "ayat kursi"). I write the real 200 queries.
-- tool/test_eval_search.py — unittest over a fixture index verifying the metric maths (a known ranking gives a known recall/MRR).
+- tools/eval_search.py — stdlib + sqlite3. Mirrors §6.1 normalisation and §6.2 keyword ranking against assets/ai/search_index.sqlite, reads tools/eval/queries.json, reports recall@5, MRR, empty-state rate, and a per-type breakdown, plus a list of the worst misses so I can tune thresholds.
+- tools/eval/queries.json — create with the schema from spec §5.3 and 3 clearly-marked EXAMPLE entries using mechanical queries only (e.g. "surah 36", "ayat kursi"). I write the real 200 queries.
+- tools/test_eval_search.py — unittest over a fixture index verifying the metric maths (a known ranking gives a known recall/MRR).
 
-Acceptance: `python -m unittest discover -s tool -p "test_eval_search.py" -v` passes, and `python tool/eval_search.py` runs on the example file. Paste both.
+Acceptance: `python -m unittest discover -s tools -p "test_eval_search.py" -v` passes, and `python tools/eval_search.py` runs on the example file. Paste both.
 
 Files you may touch: the three listed above.
 Commit: `feat(ai-search): G1 add offline search evaluation harness`
