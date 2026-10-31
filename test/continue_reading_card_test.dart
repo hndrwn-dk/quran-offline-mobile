@@ -13,6 +13,7 @@ Future<void> _pumpHomeCard(
   required Map<String, Object> lastReadPrefs,
   required LastReadLocation location,
   LastReadProgress? progress,
+  List<SurahInfo>? surahs,
 }) async {
   SharedPreferences.setMockInitialValues({
     'language': 'id',
@@ -26,14 +27,16 @@ Future<void> _pumpHomeCard(
         lastReadLocationProvider.overrideWith((ref) async => location),
         lastReadProgressProvider.overrideWith((ref) async => progress),
         surahNamesProvider.overrideWith(
-          (ref) async => [
-            SurahInfo(
-              id: 2,
-              arabicName: '',
-              englishName: 'Al-Baqarah',
-              englishMeaning: 'The Cow',
-            ),
-          ],
+          (ref) async =>
+              surahs ??
+              [
+                SurahInfo(
+                  id: 2,
+                  arabicName: '',
+                  englishName: 'Al-Baqarah',
+                  englishMeaning: 'The Cow',
+                ),
+              ],
         ),
       ],
       child: const MaterialApp(
@@ -102,12 +105,12 @@ void main() {
 
     expect(find.text('Al-Baqarah'), findsOneWidget);
     expect(find.text('Ayat 2 dari 7 · Juz 1'), findsOneWidget);
-    expect(find.text('29%'), findsOneWidget);
+    expect(find.text('28%'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
-  testWidgets('juz card shows position in the juz', (tester) async {
+  testWidgets('juz card shows the juz unit, not a mixed scope', (tester) async {
     await _pumpHomeCard(
       tester,
       lastReadPrefs: _prefs(type: 'juz', id: 1, ayahNo: 12, surahId: 2),
@@ -125,12 +128,80 @@ void main() {
       ),
     );
 
-    expect(find.text('Al-Baqarah'), findsOneWidget);
-    expect(find.text('Ayat 12 dari 148 · Juz 1'), findsOneWidget);
+    expect(find.text('Juz 1'), findsOneWidget);
+    expect(find.text('Al-Baqarah ayat 12 · 12 dari 148 ayat'), findsOneWidget);
     expect(find.text('8%'), findsOneWidget);
   });
 
-  testWidgets('mushaf card shows page detail and juz progress', (tester) async {
+  testWidgets('An-Naba 78:6 in juz mode keeps surah ayah and juz index apart', (
+    tester,
+  ) async {
+    await _pumpHomeCard(
+      tester,
+      lastReadPrefs: _prefs(type: 'juz', id: 30, ayahNo: 6, surahId: 78),
+      location: const LastReadLocation(
+        type: 'juz',
+        surahId: 78,
+        ayahNo: 6,
+        juzNo: 30,
+      ),
+      progress: const LastReadProgress(
+        fraction: 6 / 564,
+        scope: 'juz',
+        current: 6,
+        total: 564,
+      ),
+      surahs: [
+        SurahInfo(
+          id: 78,
+          arabicName: '',
+          englishName: 'An-Naba',
+          englishMeaning: 'The Tidings',
+        ),
+      ],
+    );
+
+    expect(find.text('Juz 30'), findsOneWidget);
+    expect(find.text('An-Naba ayat 6 · 6 dari 564 ayat'), findsOneWidget);
+    expect(find.text('1%'), findsOneWidget);
+  });
+
+  testWidgets('An-Nazi\'at 79:3 in juz mode uses the juz index, not the ayah', (
+    tester,
+  ) async {
+    await _pumpHomeCard(
+      tester,
+      lastReadPrefs: _prefs(type: 'juz', id: 30, ayahNo: 3, surahId: 79),
+      location: const LastReadLocation(
+        type: 'juz',
+        surahId: 79,
+        ayahNo: 3,
+        juzNo: 30,
+      ),
+      progress: const LastReadProgress(
+        fraction: 43 / 564,
+        scope: 'juz',
+        current: 43,
+        total: 564,
+      ),
+      surahs: [
+        SurahInfo(
+          id: 79,
+          arabicName: '',
+          englishName: 'An-Nazi\'at',
+          englishMeaning: 'Those Who Drag Forth',
+        ),
+      ],
+    );
+
+    expect(find.text('Juz 30'), findsOneWidget);
+    expect(find.text('An-Nazi\'at ayat 3 · 43 dari 564 ayat'), findsOneWidget);
+    expect(find.text('7%'), findsOneWidget);
+  });
+
+  testWidgets('mushaf card uses the page unit and the surah name', (
+    tester,
+  ) async {
     await _pumpHomeCard(
       tester,
       lastReadPrefs: _prefs(type: 'page', id: 20, ayahNo: 153, surahId: 2),
@@ -145,8 +216,8 @@ void main() {
       ),
     );
 
-    expect(find.text('Al-Baqarah'), findsOneWidget);
-    expect(find.text('Halaman 20 · Juz 1'), findsOneWidget);
+    expect(find.text('Halaman 20'), findsOneWidget);
+    expect(find.text('Al-Baqarah · Juz 1'), findsOneWidget);
     expect(find.text('95%'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
   });

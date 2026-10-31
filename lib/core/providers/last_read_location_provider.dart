@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/last_read_resolve.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/reading/reading_scope.dart';
 
 /// Where the user stopped, resolved for the Continue card.
 class LastReadLocation {
@@ -31,11 +31,8 @@ double? pageProgressInJuz({
   int? startPage,
   int? endPage,
 }) {
-  if (startPage == null || endPage == null || endPage < startPage) return null;
-  final total = endPage - startPage + 1;
-  if (total <= 0) return null;
-  final current = (pageNo - startPage + 1).clamp(1, total);
-  return current / total;
+  final range = JuzPageRange.tryCreate(startPage, endPage);
+  return range?.progressForPage(pageNo);
 }
 
 /// Continue-card location, resolved locally from the last-read position.
@@ -73,19 +70,9 @@ final lastReadLocationProvider = FutureProvider<LastReadLocation?>((ref) async {
     case 'page':
       final pageVerses = await db.getVersesByPage(lastRead.id);
       final juzNo = pageVerses.isEmpty ? null : pageVerses.first.juz;
-      int? startPage;
-      int? endPage;
-      if (juzNo != null) {
-        final juzVerses = await db.getVersesByJuz(juzNo);
-        if (juzVerses.isNotEmpty) {
-          startPage = juzVerses.first.page;
-          endPage = juzVerses.first.page;
-          for (final verse in juzVerses) {
-            if (verse.page < startPage!) startPage = verse.page;
-            if (verse.page > endPage!) endPage = verse.page;
-          }
-        }
-      }
+      final range = juzNo == null
+          ? null
+          : JuzPageRange.fromVerses(await db.getVersesByJuz(juzNo));
       return LastReadLocation(
         type: lastRead.type,
         surahId: lastRead.surahId ??
@@ -93,8 +80,8 @@ final lastReadLocationProvider = FutureProvider<LastReadLocation?>((ref) async {
         ayahNo: lastRead.ayahNo,
         pageNo: lastRead.id,
         juzNo: juzNo,
-        juzStartPage: startPage,
-        juzEndPage: endPage,
+        juzStartPage: range?.startPage,
+        juzEndPage: range?.endPage,
       );
     default:
       return null;

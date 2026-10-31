@@ -3307,6 +3307,36 @@ class AppLocalizations {
     return '$position · ${getMenuText('juz', language)} $juzNo';
   }
 
+  /// Juz card line: the actual surah ayah plus the position inside the juz.
+  static String formatContinueJuzLine({
+    required String language,
+    required String surahName,
+    required int ayahNo,
+    required int indexInJuz,
+    required int juzTotal,
+  }) {
+    return switch (language) {
+      'id' => '$surahName ayat $ayahNo · $indexInJuz dari $juzTotal ayat',
+      'en' => '$surahName ayah $ayahNo · $indexInJuz of $juzTotal ayahs',
+      'zh' => '$surahName 第 $ayahNo 节 · 第 $indexInJuz / $juzTotal 节',
+      'ja' => '$surahName $ayahNo 節 · $indexInJuz / $juzTotal 節',
+      _ => '$surahName ayah $ayahNo · $indexInJuz of $juzTotal ayahs',
+    };
+  }
+
+  /// Mushaf card line: surah at the page plus the juz.
+  static String formatContinueMushafLine({
+    required String language,
+    required String? surahName,
+    required int? juzNo,
+  }) {
+    final parts = <String>[
+      if (surahName != null && surahName.isNotEmpty) surahName,
+      if (juzNo != null) '${getMenuText('juz', language)} $juzNo',
+    ];
+    return parts.join(' · ');
+  }
+
   static String formatHomeReadProgressPercent(
       int percent, String scope, String language) {
     return switch (scope) {

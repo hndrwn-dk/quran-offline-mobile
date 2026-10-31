@@ -5,6 +5,7 @@ import 'package:quran_offline/core/providers/last_read_location_provider.dart';
 import 'package:quran_offline/core/providers/last_read_progress_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/last_read_resolve.dart';
+import 'package:quran_offline/core/reading/continue_card_view.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
@@ -208,45 +209,19 @@ class LastReadCard extends ConsumerWidget {
 
         if (forHome) {
           final progress = progressAsync?.valueOrNull;
-          final pageFraction = lastRead.type == 'page'
-              ? pageProgressInJuz(
-                  pageNo: lastRead.id,
-                  startPage: location?.juzStartPage,
-                  endPage: location?.juzEndPage,
-                )
-              : null;
-          final fraction = pageFraction ?? progress?.fraction;
-          final percent = fraction == null
-              ? null
-              : (fraction * 100).round().clamp(0, 100);
-
           final surahId = switch (lastRead.type) {
             'surah' || 'surah_in_juz' => lastRead.id,
             'juz' || 'page' => lastRead.surahId ?? location?.surahId,
             _ => null,
           };
           final surah = surahId == null ? null : _surahById(surahs, surahId);
-          final homeTitle = surah?.englishName ?? title;
-
-          final homeDetail = lastRead.type == 'page'
-              ? AppLocalizations.formatContinuePosition(
-                  language: appLanguage,
-                  pageNo: lastRead.id,
-                  juzNo: location?.juzNo,
-                )
-              : progress != null
-                  ? AppLocalizations.formatContinueProgressLine(
-                      language: appLanguage,
-                      scope: progress.scope,
-                      current: progress.current,
-                      total: progress.total,
-                      juzNo: location?.juzNo,
-                    )
-                  : AppLocalizations.formatContinuePosition(
-                      language: appLanguage,
-                      ayahNo: lastRead.ayahNo,
-                      juzNo: location?.juzNo,
-                    );
+          final view = buildContinueCardView(
+            language: appLanguage,
+            lastRead: lastRead,
+            location: location,
+            progress: progress,
+            surahName: surah?.englishName,
+          );
 
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -269,7 +244,7 @@ class LastReadCard extends ConsumerWidget {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              homeTitle,
+                              view.title,
                               style: Theme.of(context)
                                   .textTheme
                                   .titleMedium
@@ -279,10 +254,10 @@ class LastReadCard extends ConsumerWidget {
                                     color: colorScheme.onSurface,
                                   ),
                             ),
-                            if (homeDetail.isNotEmpty) ...[
+                            if (view.detail.isNotEmpty) ...[
                               const SizedBox(height: 3),
                               Text(
-                                homeDetail,
+                                view.detail,
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodySmall
@@ -295,21 +270,21 @@ class LastReadCard extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      if (percent != null && fraction != null) ...[
+                      if (view.percent != null && view.fraction != null) ...[
                         const SizedBox(width: 12),
                         _HomeProgressRing(
-                          percent: percent,
-                          fraction: fraction,
+                          percent: view.percent!,
+                          fraction: view.fraction!,
                         ),
                       ],
                     ],
                   ),
-                  if (fraction != null) ...[
+                  if (view.fraction != null) ...[
                     const SizedBox(height: 12),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
-                        value: fraction.clamp(0.0, 1.0),
+                        value: view.fraction!.clamp(0.0, 1.0),
                         minHeight: 4,
                         backgroundColor:
                             colorScheme.primary.withValues(alpha: 0.14),

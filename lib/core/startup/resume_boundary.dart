@@ -1,4 +1,5 @@
 import 'package:quran_offline/core/database/database.dart';
+import 'package:quran_offline/core/reading/reading_scope.dart';
 
 enum ResumeBoundaryKind { surahEnd, juzEndAyahs, juzEndPages }
 
@@ -33,15 +34,13 @@ ResumeBoundary? computeSurahResumeBoundary({
   final surahRemaining = surahVerses.length - 1 - verseIndex;
   final current = surahVerses[verseIndex];
 
-  var juzIndex = -1;
-  for (var i = 0; i < juzVerses.length; i++) {
-    final verse = juzVerses[i];
-    if (verse.surahId == current.surahId && verse.ayahNo == current.ayahNo) {
-      juzIndex = i;
-      break;
-    }
-  }
-  final juzRemaining = juzIndex < 0 ? null : juzVerses.length - 1 - juzIndex;
+  final juzIndex = indexOfVerseInJuz(
+    juzVerses,
+    surahId: current.surahId,
+    ayahNo: current.ayahNo,
+  );
+  final juzRemaining =
+      juzIndex == null ? null : juzVerses.length - 1 - juzIndex;
 
   ResumeBoundary? best;
   if (surahRemaining > 0) {
@@ -69,11 +68,9 @@ ResumeBoundary? computePageResumeBoundary({
 }) {
   if (juzVerses.isEmpty) return null;
 
-  var lastPage = 0;
-  for (final verse in juzVerses) {
-    if (verse.page > lastPage) lastPage = verse.page;
-  }
-  final remaining = lastPage - pageNo;
+  final range = JuzPageRange.fromVerses(juzVerses);
+  if (range == null) return null;
+  final remaining = range.endPage - pageNo;
   if (remaining <= 0) return null;
 
   return ResumeBoundary(
