@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
@@ -92,29 +94,38 @@ class LastReadNotifier extends StateNotifier<LastReadPosition?> {
     _loadLastRead();
   }
 
+  final Completer<void> _loaded = Completer<void>();
+
+  /// Completes once the persisted position has been read (or failed to read).
+  Future<void> get loaded => _loaded.future;
+
   static const String _key = 'last_read_position';
 
   Future<void> _loadLastRead() async {
-    final prefs = await SharedPreferences.getInstance();
-    final type = prefs.getString('${_key}_type');
-    final id = prefs.getInt('${_key}_id');
-    final ayahNo = prefs.getInt('${_key}_ayahNo');
-    final surahId = prefs.getInt('${_key}_surahId');
-    final timestampStr = prefs.getString('${_key}_timestamp');
-    
-    if (type != null && id != null && timestampStr != null) {
-      try {
-        state = LastReadPosition(
-          type: type,
-          id: id,
-          ayahNo: ayahNo,
-          surahId: surahId,
-          timestamp: DateTime.parse(timestampStr),
-        );
-      } catch (e) {
-        // Invalid data, ignore
-        state = null;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final type = prefs.getString('${_key}_type');
+      final id = prefs.getInt('${_key}_id');
+      final ayahNo = prefs.getInt('${_key}_ayahNo');
+      final surahId = prefs.getInt('${_key}_surahId');
+      final timestampStr = prefs.getString('${_key}_timestamp');
+
+      if (type != null && id != null && timestampStr != null) {
+        try {
+          state = LastReadPosition(
+            type: type,
+            id: id,
+            ayahNo: ayahNo,
+            surahId: surahId,
+            timestamp: DateTime.parse(timestampStr),
+          );
+        } catch (e) {
+          // Invalid data, ignore
+          state = null;
+        }
       }
+    } finally {
+      if (!_loaded.isCompleted) _loaded.complete();
     }
   }
 

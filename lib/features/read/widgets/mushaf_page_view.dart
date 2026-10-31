@@ -10,6 +10,7 @@ import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/providers/mushaf_navigation_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/providers/resume_hint_provider.dart';
 import 'package:quran_offline/core/review/review_ask_service.dart';
 import 'package:quran_offline/core/models/bookmark_open_context.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
@@ -35,6 +36,7 @@ import 'package:quran_offline/features/read/widgets/mushaf_gesture_hint_banner.d
 import 'package:quran_offline/features/read/widgets/mushaf_page_number_badge.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
 import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
+import 'package:quran_offline/features/reader/widgets/resume_hint_chip.dart';
 import 'package:quran_offline/features/read/widgets/qpc_v2_mushaf_text.dart';
 
 class MushafPageView extends ConsumerStatefulWidget {
@@ -62,9 +64,13 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   int? _scrollToAyahNo;
   bool _programmaticPageChange = false;
 
+  /// Set only when this screen was opened by the cold-start resume.
+  ResumeHint? _resumeHint;
+
   @override
   void initState() {
     super.initState();
+    _resumeHint = ref.read(resumeHintProvider);
     // Normal mapping: index 0 = page 1, index 603 = page 604
     // With reverse: true, swipe right-to-left = next page (index increases)
     final initialIndex = widget.initialPage - 1;
@@ -77,6 +83,9 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     _controller.addListener(_onPageControllerTick);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      if (_resumeHint != null && ref.read(resumeHintProvider) == _resumeHint) {
+        ref.read(resumeHintProvider.notifier).state = null;
+      }
       ref.read(mushafSessionActiveProvider.notifier).state = true;
       ref.read(mushafVisiblePageProvider.notifier).state = _visiblePageNo;
       MushafWarmup.beginSession(priorityPage: widget.initialPage);
@@ -236,7 +245,10 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
           ref.read(mushafJumpRequestProvider.notifier).state = null;
         }
       },
-      child: PageView.builder(
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: PageView.builder(
       controller: _controller,
       reverse: true, // RTL direction: swipe right-to-left = next page (index increases)
       onPageChanged: (index) {
@@ -280,6 +292,19 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
           },
         );
       },
+            ),
+          ),
+          if (_resumeHint?.mode == ResumeHintMode.page)
+            Positioned(
+              top: MediaQuery.paddingOf(context).top + 62,
+              left: 16,
+              right: 16,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ResumeHintChip(hint: _resumeHint!),
+              ),
+            ),
+        ],
       ),
     );
   }

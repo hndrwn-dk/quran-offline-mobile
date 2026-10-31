@@ -19,7 +19,7 @@ class HomeWidgetNavigation {
 
   static StreamSubscription<Uri?>? _subscription;
 
-  static void register(BuildContext context, WidgetRef ref) {
+  static Future<bool> register(BuildContext context, WidgetRef ref) async {
     _subscription?.cancel();
     _subscription = HomeWidget.widgetClicked.listen((uri) {
       if (uri == null) return;
@@ -27,7 +27,7 @@ class HomeWidgetNavigation {
       unawaited(_handleUri(context, ref, uri));
     });
 
-  unawaited(_handleInitialLaunch(context, ref));
+    return _handleInitialLaunch(context, ref);
   }
 
   static void dispose() {
@@ -35,7 +35,7 @@ class HomeWidgetNavigation {
     _subscription = null;
   }
 
-  static Future<void> _handleInitialLaunch(
+  static Future<bool> _handleInitialLaunch(
     BuildContext context,
     WidgetRef ref,
   ) async {
@@ -43,10 +43,12 @@ class HomeWidgetNavigation {
       final uri = await HomeWidget.initiallyLaunchedFromHomeWidget();
       if (uri != null && context.mounted) {
         await _handleUri(context, ref, uri);
+        return true;
       }
     } catch (_) {
       // Widget launch probe not supported on this platform/build.
     }
+    return false;
   }
 
   static Future<void> _handleUri(

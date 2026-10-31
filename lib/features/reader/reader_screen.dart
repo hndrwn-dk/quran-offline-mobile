@@ -10,6 +10,7 @@ import 'package:quran_offline/core/reading/reading_activity_service.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/last_read_resolve.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/providers/resume_hint_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/support_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
@@ -28,6 +29,7 @@ import 'package:quran_offline/features/reader/widgets/reader_loading_placeholder
 import 'package:quran_offline/features/reader/widgets/go_to_ayah_sheet.dart';
 import 'package:quran_offline/features/reader/visible_reader_item.dart';
 import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
+import 'package:quran_offline/features/reader/widgets/resume_hint_chip.dart';
 import 'package:quran_offline/features/reader/text_settings_dialog.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
@@ -47,6 +49,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   bool _isSwiping = false;
   bool _scrollListenerSetup = false;
 
+  /// Set only when this screen was opened by the cold-start resume.
+  ResumeHint? _resumeHint;
+
   /// Last ayah we auto-scrolled to (avoids duplicate scrolls).
   int? _lastFollowedAyah;
 
@@ -59,6 +64,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   @override
   void initState() {
     super.initState();
+    _resumeHint = ref.read(resumeHintProvider);
+    if (_resumeHint != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (ref.read(resumeHintProvider) == _resumeHint) {
+          ref.read(resumeHintProvider.notifier).state = null;
+        }
+      });
+    }
     final target = ref.read(targetAyahProvider);
     if (target != null && target > 0) {
       _visibleAyahNo = target;
@@ -774,7 +788,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     return Scaffold(
       appBar: appBar,
       bottomNavigationBar: const GlobalRecitationBar(),
-      body: GestureDetector(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
         onHorizontalDragStart: (details) {
           _swipeStartX = details.globalPosition.dx;
           _swipeStartY = details.globalPosition.dy;
@@ -1248,6 +1265,19 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             child: Text('Error: $error'),
           ),
         ),
+            ),
+          ),
+          if (_resumeHint?.mode == ResumeHintMode.surah)
+            Positioned(
+              top: 8,
+              left: 16,
+              right: 16,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ResumeHintChip(hint: _resumeHint!),
+              ),
+            ),
+        ],
       ),
     );
   }
