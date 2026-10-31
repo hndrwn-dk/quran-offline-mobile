@@ -101,7 +101,7 @@ class LastReadNotifier extends StateNotifier<LastReadPosition?> {
     final ayahNo = prefs.getInt('${_key}_ayahNo');
     final surahId = prefs.getInt('${_key}_surahId');
     final timestampStr = prefs.getString('${_key}_timestamp');
-    
+
     if (type != null && id != null && timestampStr != null) {
       try {
         state = LastReadPosition(

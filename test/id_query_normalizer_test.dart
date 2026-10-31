@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/ai_search/id_query_normalizer.dart';
 
 void main() {
-  final vectorsFile = File('tool/fixtures/id_normalizer_vectors.json');
+  final vectorsFile = File('tools/fixtures/id_normalizer_vectors.json');
 
   test('normalizerVersion is 4', () {
     expect(IdQueryNormalizer.normalizerVersion, 4);

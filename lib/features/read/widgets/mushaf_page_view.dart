@@ -8,8 +8,13 @@ import 'package:quran_offline/core/audio/playback_actions.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
+import 'package:quran_offline/core/providers/completed_reading_provider.dart';
 import 'package:quran_offline/core/providers/mushaf_navigation_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/providers/resume_hint_provider.dart';
+import 'package:quran_offline/core/reading/completed_reading.dart';
+import 'package:quran_offline/core/reading/reading_completion_gate.dart';
+import 'package:quran_offline/core/reading/reading_scope.dart';
 import 'package:quran_offline/core/review/review_ask_service.dart';
 import 'package:quran_offline/core/models/bookmark_open_context.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
@@ -35,6 +40,7 @@ import 'package:quran_offline/features/read/widgets/mushaf_gesture_hint_banner.d
 import 'package:quran_offline/features/read/widgets/mushaf_page_number_badge.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
 import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
+import 'package:quran_offline/features/reader/widgets/resume_hint_chip.dart';
 import 'package:quran_offline/features/read/widgets/qpc_v2_mushaf_text.dart';
 
 class MushafPageView extends ConsumerStatefulWidget {
@@ -62,9 +68,19 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   int? _scrollToAyahNo;
   bool _programmaticPageChange = false;
 
+  /// Set only when this screen was opened by the cold-start resume.
+  ResumeHint? _resumeHint;
+
+  ReadingCompletionGate? _completionGate;
+  Timer? _completionTimer;
+
   @override
   void initState() {
     super.initState();
+    _resumeHint = ref.read(resumeHintProvider);
+    _completionGate = ReadingCompletionGate(
+      minimumSession: Duration.zero,
+    )..startSession();
     // Normal mapping: index 0 = page 1, index 603 = page 604
     // With reverse: true, swipe right-to-left = next page (index increases)
     final initialIndex = widget.initialPage - 1;
@@ -77,15 +93,19 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     _controller.addListener(_onPageControllerTick);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      if (_resumeHint != null && ref.read(resumeHintProvider) == _resumeHint) {
+        ref.read(resumeHintProvider.notifier).state = null;
+      }
       ref.read(mushafSessionActiveProvider.notifier).state = true;
       ref.read(mushafVisiblePageProvider.notifier).state = _visiblePageNo;
       MushafWarmup.beginSession(priorityPage: widget.initialPage);
       unawaited(
         MushafLayout.prewarmNeighbors(context, widget.initialPage),
       );
-      unawaited(
-        ref.read(reviewAskServiceProvider).onMushafPage(widget.initialPage),
-      );
+      ref
+          .read(lastReadProvider.notifier)
+          .saveLastRead(PageSource(widget.initialPage));
+      unawaited(_checkCompletionForPage(widget.initialPage));
     });
   }
 
@@ -98,9 +118,59 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
 
   @override
   void dispose() {
+    _completionTimer?.cancel();
+    _completionGate?.dispose();
     _controller.removeListener(_onPageControllerTick);
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkCompletionForPage(int pageNo) async {
+    try {
+      final db = ref.read(databaseProvider);
+      final pageVerses = await db.getVersesByPage(pageNo);
+      if (pageVerses.isEmpty) return;
+      final range = JuzPageRange.fromVerses(
+        await db.getVersesByJuz(pageVerses.first.juz),
+      );
+      if (!mounted || _visiblePageNo != pageNo) return;
+      _setEndVisible(range?.endPage == pageNo);
+    } catch (_) {
+      // Completion must never affect reading.
+    }
+  }
+
+  void _setEndVisible(bool visible) {
+    final gate = _completionGate;
+    if (gate == null || gate.completed) return;
+
+    gate.setEndVisible(visible);
+    if (!visible) {
+      _completionTimer?.cancel();
+      _completionTimer = null;
+      return;
+    }
+
+    _completionTimer ??= Timer.periodic(const Duration(milliseconds: 250), (_) {
+      if (!mounted) return;
+      if (gate.tick()) {
+        _completionTimer?.cancel();
+        _completionTimer = null;
+        _handleUnitCompleted();
+      }
+    });
+  }
+
+  Future<void> _handleUnitCompleted() async {
+    if (!mounted) return;
+    final pageNo = _visiblePageNo;
+    await ref
+        .read(lastReadProvider.notifier)
+        .saveLastRead(PageSource(pageNo));
+    await ref.read(completedReadingProvider.notifier).markCompleted(
+          CompletedReading(type: 'page', id: pageNo, pageNo: pageNo),
+        );
+    unawaited(ref.read(reviewAskServiceProvider).onUnitCompleted());
   }
 
   Future<void> _goToPage(
@@ -236,7 +306,10 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
           ref.read(mushafJumpRequestProvider.notifier).state = null;
         }
       },
-      child: PageView.builder(
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: PageView.builder(
       controller: _controller,
       reverse: true, // RTL direction: swipe right-to-left = next page (index increases)
       onPageChanged: (index) {
@@ -253,9 +326,10 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
             _selectedSurahId = null;
             _selectedAyahNo = null;
           });
-          unawaited(
-            ref.read(reviewAskServiceProvider).onMushafPage(pageNo),
-          );
+          ref
+              .read(lastReadProvider.notifier)
+              .saveLastRead(PageSource(pageNo));
+          unawaited(_checkCompletionForPage(pageNo));
         }
       },
       itemCount: 604,
@@ -280,6 +354,19 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
           },
         );
       },
+            ),
+          ),
+          if (_resumeHint?.mode == ResumeHintMode.page)
+            Positioned(
+              top: MediaQuery.paddingOf(context).top + 62,
+              left: 16,
+              right: 16,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ResumeHintChip(hint: _resumeHint!),
+              ),
+            ),
+        ],
       ),
     );
   }

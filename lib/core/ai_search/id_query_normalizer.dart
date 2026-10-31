@@ -2,7 +2,7 @@ import 'package:quran_offline/core/utils/arabic_search_normalizer.dart';
 
 /// Indonesian/English query normaliser (matching only). Version 4.
 ///
-/// Port of tool/id_normalizer.py, spec §6.1.
+/// Port of tools/id_normalizer.py, spec §6.1.
 class IdQueryNormalizer {
   IdQueryNormalizer._();
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""unittest for tool/eval_search.py metric maths on a fixture index."""
+"""unittest for tools/eval_search.py metric maths on a fixture index."""
 
 from __future__ import annotations
 

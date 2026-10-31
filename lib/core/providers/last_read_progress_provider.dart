@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
-import 'package:quran_offline/core/providers/last_read_resolve.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
+import 'package:quran_offline/core/reading/reading_scope.dart';
 
 const mushafPageCount = 604;
 
@@ -19,7 +19,8 @@ class LastReadProgress {
   final int current;
   final int total;
 
-  int get percent => total <= 0 ? 0 : ((current / total) * 100).round().clamp(0, 100);
+  int get percent =>
+      total <= 0 ? 0 : ((current / total) * 100).round().clamp(0, 100);
 }
 
 LastReadProgress? computeLastReadProgress({
@@ -44,12 +45,12 @@ LastReadProgress? computeLastReadProgress({
       if (verses.isEmpty) return null;
       final total = verses.length;
       var index = 0;
-      if (lastRead.ayahNo != null) {
-        final matched = indexOfTargetVerse(
+      final surahId = lastRead.surahId;
+      if (lastRead.ayahNo != null && surahId != null) {
+        final matched = indexOfVerseInJuz(
           verses,
+          surahId: surahId,
           ayahNo: lastRead.ayahNo!,
-          surahId: lastRead.surahId,
-          requireSurahId: true,
         );
         if (matched != null) index = matched;
       }
