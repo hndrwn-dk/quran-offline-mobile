@@ -27,7 +27,7 @@ class HomeWidgetNavigation {
       unawaited(_handleUri(context, ref, uri));
     });
 
-  unawaited(_handleInitialLaunch(context, ref));
+    unawaited(_handleInitialLaunch(context, ref));
   }
 
   static void dispose() {

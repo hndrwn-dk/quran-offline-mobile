@@ -1,9 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
+import 'package:quran_offline/core/providers/completed_reading_provider.dart';
+import 'package:quran_offline/core/providers/last_read_location_provider.dart';
 import 'package:quran_offline/core/providers/last_read_progress_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/last_read_resolve.dart';
+import 'package:quran_offline/core/providers/resume_hint_provider.dart';
+import 'package:quran_offline/core/reading/continue_card_view.dart';
+import 'package:quran_offline/core/reading/open_next_read.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
@@ -65,7 +72,8 @@ class LastReadCard extends ConsumerWidget {
                     ref.read(currentTabProvider.notifier).state = AppTab.read;
                   },
                   tooltip: AppLocalizations.getHomeStartButton(appLanguage),
-                  semanticsLabel: AppLocalizations.getHomeStartReadingTitle(appLanguage),
+                  semanticsLabel:
+                      AppLocalizations.getHomeStartReadingTitle(appLanguage),
                   onTintedCard: true,
                 ),
               ),
@@ -75,7 +83,11 @@ class LastReadCard extends ConsumerWidget {
       );
     }
 
+    final location =
+        forHome ? ref.watch(lastReadLocationProvider).valueOrNull : null;
     final progressAsync = forHome ? ref.watch(lastReadProgressProvider) : null;
+    final completion =
+        forHome ? ref.watch(continueCompletionProvider).valueOrNull : null;
 
     if (!lastReadCardHandlesType(lastRead.type)) {
       return const SizedBox.shrink();
@@ -85,7 +97,6 @@ class LastReadCard extends ConsumerWidget {
       data: (surahs) {
         String title;
         String subtitle;
-        String homeScopeKey;
         IconData icon;
         VoidCallback? onTap;
         VoidCallback? onClear;
@@ -105,10 +116,14 @@ class LastReadCard extends ConsumerWidget {
                     isBismillah: false,
                   )
                 : surah.englishName;
-            homeScopeKey = 'surah';
             icon = Icons.menu_book_outlined;
             onTap = () {
-              final source = SurahSource(lastRead.id, targetAyahNo: lastRead.ayahNo);
+              final source =
+                  SurahSource(lastRead.id, targetAyahNo: lastRead.ayahNo);
+              ref.read(resumeHintProvider.notifier).state = ResumeHint.surah(
+                surahId: lastRead.id,
+                ayahNo: lastRead.ayahNo ?? 1,
+              );
               ref.read(readerSourceProvider.notifier).state = source;
               ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
               ref.read(targetSurahIdProvider.notifier).state = null;
@@ -117,7 +132,6 @@ class LastReadCard extends ConsumerWidget {
             break;
           case 'juz':
             title = 'Juz ${lastRead.id}';
-            homeScopeKey = 'juz';
             if (lastRead.ayahNo != null && lastRead.surahId != null) {
               final surah = surahs.firstWhere(
                 (s) => s.id == lastRead.surahId,
@@ -137,6 +151,11 @@ class LastReadCard extends ConsumerWidget {
             icon = Icons.library_books_outlined;
             onTap = () {
               final source = JuzSource(lastRead.id);
+              ref.read(resumeHintProvider.notifier).state = ResumeHint.juz(
+                juzNo: lastRead.id,
+                surahId: lastRead.surahId,
+                ayahNo: lastRead.ayahNo,
+              );
               ref.read(readerSourceProvider.notifier).state = source;
               if (lastRead.ayahNo != null) {
                 ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
@@ -147,7 +166,6 @@ class LastReadCard extends ConsumerWidget {
             break;
           case 'page':
             title = AppLocalizations.getPageText(lastRead.id, appLanguage);
-            homeScopeKey = 'page';
             if (lastRead.ayahNo != null && lastRead.surahId != null) {
               final surah = surahs.firstWhere(
                 (s) => s.id == lastRead.surahId,
@@ -164,6 +182,8 @@ class LastReadCard extends ConsumerWidget {
             }
             icon = Icons.auto_stories_outlined;
             onTap = () {
+              ref.read(resumeHintProvider.notifier).state =
+                  ResumeHint.page(pageNo: lastRead.id);
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -190,10 +210,10 @@ class LastReadCard extends ConsumerWidget {
                     isBismillah: false,
                   )
                 : surah.englishName;
-            homeScopeKey = 'surah';
             icon = Icons.menu_book_outlined;
             onTap = () {
               final source = lastRead.toReaderSource();
+              ref.read(resumeHintProvider.notifier).state = null;
               ref.read(readerSourceProvider.notifier).state = source;
               ref.read(targetAyahProvider.notifier).state = lastRead.ayahNo;
               ref.read(targetSurahIdProvider.notifier).state = null;
@@ -208,12 +228,31 @@ class LastReadCard extends ConsumerWidget {
           ref.read(lastReadProvider.notifier).clearLastRead();
         };
 
+        if (completion != null) {
+          onTap = () {
+            unawaited(openNextReadTarget(context, ref, completion));
+          };
+        }
+
         if (forHome) {
           final progress = progressAsync?.valueOrNull;
-          final homeSubtitle = AppLocalizations.formatHomeLastReadSubtitle(
+          final surahId = switch (lastRead.type) {
+            'surah' || 'surah_in_juz' => lastRead.id,
+            'juz' || 'page' => lastRead.surahId ?? location?.surahId,
+            _ => null,
+          };
+          final surah = surahId == null ? null : _surahById(surahs, surahId);
+          final nextSurah = completion?.nextSurahId == null
+              ? null
+              : _surahById(surahs, completion!.nextSurahId!);
+          final view = buildContinueCardView(
             language: appLanguage,
-            ayahNo: lastRead.ayahNo,
-            scopeKey: homeScopeKey,
+            lastRead: lastRead,
+            location: location,
+            progress: progress,
+            surahName: surah?.englishName,
+            completion: completion,
+            nextSurahName: nextSurah?.englishName,
           );
 
           return Padding(
@@ -231,83 +270,83 @@ class LastReadCard extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _HomeContinuePill(
-                              label: AppLocalizations.getHomeContinuePill(appLanguage),
+                              label: AppLocalizations.getHomeContinuePill(
+                                appLanguage,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              title,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              view.title,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
                                     fontWeight: FontWeight.w600,
                                     letterSpacing: -0.2,
                                     color: colorScheme.onSurface,
                                   ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              homeSubtitle,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                    height: 1.35,
-                                  ),
-                            ),
+                            if (view.detail.isNotEmpty) ...[
+                              const SizedBox(height: 3),
+                              Text(
+                                view.detail,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                      height: 1.35,
+                                    ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
-                      if (progress != null) ...[
+                      if (view.completed) ...[
                         const SizedBox(width: 12),
-                        _HomeProgressRing(
-                          percent: progress.percent,
-                          fraction: progress.fraction,
+                        Semantics(
+                          key: const ValueKey('continue_progress_semantics'),
+                          container: true,
+                          label: AppLocalizations.getContinueCompletedLabel(
+                            appLanguage,
+                          ),
+                          excludeSemantics: true,
+                          child: const _HomeProgressRing(
+                            percent: 100,
+                            fraction: 1,
+                            completed: true,
+                          ),
+                        ),
+                      ] else if (view.percent != null &&
+                          view.fraction != null) ...[
+                        const SizedBox(width: 12),
+                        Semantics(
+                          key: const ValueKey('continue_progress_semantics'),
+                          container: true,
+                          label:
+                              AppLocalizations.formatContinueProgressSemantics(
+                            language: appLanguage,
+                            scope: view.scope,
+                            percent: view.percent!,
+                          ),
+                          excludeSemantics: true,
+                          child: _HomeProgressRing(
+                            percent: view.percent!,
+                            fraction: view.fraction!,
+                          ),
                         ),
                       ],
                     ],
                   ),
-                  if (progress != null) ...[
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            AppLocalizations.getHomeProgressScopeLabel(
-                              progress.scope,
-                              appLanguage,
-                            ),
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                          ),
-                        ),
-                        Text(
-                          '${progress.percent}%',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.w600,
-                                fontFeatures: const [FontFeature.tabularFigures()],
-                              ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: progress.fraction.clamp(0.0, 1.0),
-                        minHeight: 4,
-                        backgroundColor: colorScheme.primary.withValues(alpha: 0.14),
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          colorScheme.primary.withValues(alpha: 0.62),
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 14),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: HomeCircleArrowButton(
                       onPressed: onTap,
-                      tooltip: AppLocalizations.getHomeContinueButton(appLanguage),
-                      semanticsLabel: AppLocalizations.getHomeContinueCta(appLanguage),
+                      tooltip:
+                          AppLocalizations.getHomeContinueButton(appLanguage),
+                      semanticsLabel:
+                          AppLocalizations.getHomeContinueCta(appLanguage),
                       onTintedCard: true,
                     ),
                   ),
@@ -362,26 +401,29 @@ class LastReadCard extends ConsumerWidget {
                       children: [
                         Text(
                           AppLocalizations.getLastRead(appLanguage),
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.w500,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: colorScheme.onSurface,
+                                  ),
                         ),
                         if (subtitle.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           Text(
                             subtitle,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
                           ),
                         ],
                       ],
@@ -391,7 +433,8 @@ class LastReadCard extends ConsumerWidget {
                     icon: const Icon(Icons.close, size: 20),
                     color: colorScheme.onSurfaceVariant,
                     onPressed: onClear,
-                    tooltip: AppLocalizations.getActionTooltip('clear', appLanguage),
+                    tooltip:
+                        AppLocalizations.getActionTooltip('clear', appLanguage),
                   ),
                   const SizedBox(width: 8),
                   Icon(
@@ -433,7 +476,8 @@ class _HomeLastReadShell extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: colorScheme.primary.withValues(alpha: isDark ? 0.22 : 0.14),
+              color:
+                  colorScheme.primary.withValues(alpha: isDark ? 0.22 : 0.14),
             ),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -456,7 +500,8 @@ class _HomeLastReadShell extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: colorScheme.primary.withValues(alpha: isDark ? 0.12 : 0.07),
+                color:
+                    colorScheme.primary.withValues(alpha: isDark ? 0.12 : 0.07),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -509,23 +554,27 @@ class _HomeProgressRing extends StatelessWidget {
   const _HomeProgressRing({
     required this.percent,
     required this.fraction,
+    this.completed = false,
   });
 
   final int percent;
   final double fraction;
+  final bool completed;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = colorScheme.brightness == Brightness.dark;
 
-    const outerSize = 44.0;
-    const innerSize = 34.0;
+    const outerSize = 54.0;
+    const pillWidth = 40.0;
+    const pillHeight = 26.0;
 
     final ringTrack = colorScheme.primary.withValues(
       alpha: isDark ? 0.22 : 0.16,
     );
-    final ringProgress = colorScheme.primary.withValues(alpha: isDark ? 0.78 : 0.58);
+    final ringProgress =
+        colorScheme.primary.withValues(alpha: isDark ? 0.78 : 0.58);
     final fillTop = isDark
         ? colorScheme.surface.withValues(alpha: 0.82)
         : Colors.white.withValues(alpha: 0.9);
@@ -551,10 +600,10 @@ class _HomeProgressRing extends StatelessWidget {
             ),
           ),
           Container(
-            width: innerSize,
-            height: innerSize,
+            width: pillWidth,
+            height: pillHeight,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(9),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -562,18 +611,31 @@ class _HomeProgressRing extends StatelessWidget {
               ),
             ),
             alignment: Alignment.center,
-            child: Text(
-              '$percent%',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 11,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                    color: colorScheme.onSurface,
+            child: completed
+                ? Icon(
+                    Icons.check_rounded,
+                    size: 20,
+                    color: colorScheme.primary,
+                  )
+                : Text(
+                    '$percent%',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 10.5,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                          color: colorScheme.onSurface,
+                        ),
                   ),
-            ),
           ),
         ],
       ),
     );
   }
+}
+
+SurahInfo? _surahById(List<SurahInfo> surahs, int id) {
+  for (final surah in surahs) {
+    if (surah.id == id) return surah;
+  }
+  return null;
 }

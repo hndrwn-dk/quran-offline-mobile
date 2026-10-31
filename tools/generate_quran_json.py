@@ -8,8 +8,8 @@ Schema: JSON array of {s, a, ar, tr, m}. ar is text_uthmani only.
 Omits tj, tl, and tl_tj. Does not request text_uthmani_tajweed or words.
 
 Usage:
-  python tool/generate_quran_json.py
-  python tool/generate_quran_json.py --out-dir assets/quran
+  python tools/generate_quran_json.py
+  python tools/generate_quran_json.py --out-dir assets/quran
 """
 
 from __future__ import annotations

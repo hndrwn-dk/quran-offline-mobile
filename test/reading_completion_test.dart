@@ -1,9 +1,40 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
-import 'package:quran_offline/core/review/reading_completion.dart';
+import 'package:quran_offline/core/providers/last_read_location_provider.dart';
+import 'package:quran_offline/core/providers/last_read_progress_provider.dart';
+import 'package:quran_offline/core/providers/last_read_provider.dart';
+import 'package:quran_offline/core/reading/reading_completion.dart';
 
-Verse _verse(int surahId, int ayahNo, {int page = 1, int juz = 1}) {
+LastReadPosition _lastRead({
+  required String type,
+  required int id,
+  int? ayahNo,
+  int? surahId,
+}) {
+  return LastReadPosition(
+    type: type,
+    id: id,
+    ayahNo: ayahNo,
+    surahId: surahId,
+    timestamp: DateTime.utc(2026, 10, 31),
+  );
+}
+
+LastReadProgress _progress({
+  required String scope,
+  required int current,
+  required int total,
+}) {
+  return LastReadProgress(
+    fraction: current / total,
+    scope: scope,
+    current: current,
+    total: total,
+  );
+}
+
+Verse _verse(int surahId, int ayahNo, {int page = 582, int juz = 30}) {
   return Verse(
     surahId: surahId,
     ayahNo: ayahNo,
@@ -14,69 +45,161 @@ Verse _verse(int surahId, int ayahNo, {int page = 1, int juz = 1}) {
 }
 
 void main() {
-  group('isSurahCompletion', () {
-    final verses = [_verse(2, 1), _verse(2, 2), _verse(2, 3)];
+  group('surah completion', () {
+    test('Al-Mulk 67:30 continues at Al-Qalam 68:1', () {
+      final completion = resolveSurahCompletion(
+        lastRead: _lastRead(type: 'surah', id: 67, ayahNo: 30),
+        progress: _progress(scope: 'surah', current: 30, total: 30),
+      );
 
-    test('true when the visible verse is the last ayah of the surah', () {
-      expect(isSurahCompletion(const SurahSource(2), verses, 2), isTrue);
+      expect(completion, isNotNull);
+      expect(completion!.khatam, isFalse);
+      expect(completion.finishedSurahId, 67);
+      expect(completion.nextSurahId, 68);
+      expect(completion.nextAyahNo, 1);
+
+      final target = nextReadTarget(completion);
+      expect(target.source, isA<SurahSource>());
+      expect((target.source! as SurahSource).surahId, 68);
+      expect(target.targetAyahNo, 1);
+      expect(target.pageNo, isNull);
     });
 
-    test('false before the last ayah', () {
-      expect(isSurahCompletion(const SurahSource(2), verses, 1), isFalse);
-    });
-
-    test('false for non-surah readers', () {
-      expect(isSurahCompletion(const JuzSource(1), verses, 2), isFalse);
-      expect(isSurahCompletion(const PageSource(1), verses, 2), isFalse);
+    test('a mid-surah position is not completed', () {
       expect(
-        isSurahCompletion(const SurahInJuzSource(1, 2), verses, 2),
-        isFalse,
+        resolveSurahCompletion(
+          lastRead: _lastRead(type: 'surah', id: 67, ayahNo: 15),
+          progress: _progress(scope: 'surah', current: 15, total: 30),
+        ),
+        isNull,
       );
     });
 
-    test('false for an empty verse list or out-of-range index', () {
-      expect(isSurahCompletion(const SurahSource(2), const [], 0), isFalse);
-      expect(isSurahCompletion(const SurahSource(2), verses, 3), isFalse);
+    test('114:6 is khatam and restarts at Al-Fatihah 1:1', () {
+      final completion = resolveSurahCompletion(
+        lastRead: _lastRead(type: 'surah', id: 114, ayahNo: 6),
+        progress: _progress(scope: 'surah', current: 6, total: 6),
+      );
+
+      expect(completion, isNotNull);
+      expect(completion!.khatam, isTrue);
+      expect(completion.nextSurahId, 1);
+      expect(completion.nextAyahNo, 1);
+
+      final target = nextReadTarget(completion);
+      expect((target.source! as SurahSource).surahId, 1);
+      expect(target.targetAyahNo, 1);
     });
   });
 
-  group('isLastPageOfJuz', () {
-    test('true when the page is the last page of its juz', () {
-      final juzVerses = [
-        _verse(1, 1, page: 1, juz: 1),
-        _verse(1, 7, page: 1, juz: 1),
-        _verse(2, 1, page: 2, juz: 1),
-        _verse(2, 141, page: 21, juz: 1),
-      ];
+  group('juz completion', () {
+    test('Juz 29 end continues at the first verse of Juz 30', () {
+      final completion = resolveJuzCompletion(
+        lastRead: _lastRead(type: 'juz', id: 29, ayahNo: 45, surahId: 77),
+        progress: _progress(scope: 'juz', current: 431, total: 431),
+        nextJuzFirstVerse: _verse(78, 1, page: 582, juz: 30),
+      );
+
+      expect(completion, isNotNull);
+      expect(completion!.khatam, isFalse);
+      expect(completion.finishedJuzNo, 29);
+      expect(completion.nextJuzNo, 30);
+      expect(completion.nextSurahId, 78);
+      expect(completion.nextAyahNo, 1);
+
+      final target = nextReadTarget(completion);
+      expect(target.source, isA<JuzSource>());
+      expect((target.source! as JuzSource).juzNo, 30);
+      expect(target.targetSurahId, 78);
+      expect(target.targetAyahNo, 1);
+    });
+
+    test('Juz 30 end is khatam', () {
+      final completion = resolveJuzCompletion(
+        lastRead: _lastRead(type: 'juz', id: 30, ayahNo: 6, surahId: 114),
+        progress: _progress(scope: 'juz', current: 564, total: 564),
+        nextJuzFirstVerse: null,
+      );
+
+      expect(completion, isNotNull);
+      expect(completion!.khatam, isTrue);
+      expect(completion.nextSurahId, 1);
+      expect(completion.nextAyahNo, 1);
+
+      final target = nextReadTarget(completion);
+      expect(target.source, isA<SurahSource>());
+      expect((target.source! as SurahSource).surahId, 1);
+      expect(target.targetAyahNo, 1);
+    });
+
+    test('a mid-juz position is not completed', () {
       expect(
-        isLastPageOfJuz(
+        resolveJuzCompletion(
+          lastRead: _lastRead(type: 'juz', id: 29, ayahNo: 10, surahId: 77),
+          progress: _progress(scope: 'juz', current: 10, total: 431),
+          nextJuzFirstVerse: _verse(78, 1),
+        ),
+        isNull,
+      );
+    });
+  });
+
+  group('mushaf completion', () {
+    test('page 21 at the end of Juz 1 continues on page 22', () {
+      final completion = resolvePageCompletion(
+        lastRead: _lastRead(type: 'page', id: 21),
+        location: const LastReadLocation(
+          type: 'page',
           pageNo: 21,
-          pageVerses: [_verse(2, 141, page: 21, juz: 1)],
-          juzVerses: juzVerses,
+          juzNo: 1,
+          juzStartPage: 1,
+          juzEndPage: 21,
         ),
-        isTrue,
       );
+
+      expect(completion, isNotNull);
+      expect(completion!.khatam, isFalse);
+      expect(completion.finishedJuzNo, 1);
+      expect(completion.nextPageNo, 22);
+
+      final target = nextReadTarget(completion);
+      expect(target.pageNo, 22);
+      expect(target.source, isNull);
     });
 
-    test('false on an earlier page of the same juz', () {
-      final juzVerses = [
-        _verse(1, 1, page: 1, juz: 1),
-        _verse(2, 141, page: 21, juz: 1),
-      ];
-      expect(
-        isLastPageOfJuz(
-          pageNo: 2,
-          pageVerses: [_verse(2, 1, page: 2, juz: 1)],
-          juzVerses: juzVerses,
+    test('page 604 is khatam and restarts at page 1', () {
+      final completion = resolvePageCompletion(
+        lastRead: _lastRead(type: 'page', id: 604),
+        location: const LastReadLocation(
+          type: 'page',
+          pageNo: 604,
+          juzNo: 30,
+          juzStartPage: 582,
+          juzEndPage: 604,
         ),
-        isFalse,
       );
+
+      expect(completion, isNotNull);
+      expect(completion!.khatam, isTrue);
+      expect(completion.nextPageNo, 1);
+
+      final target = nextReadTarget(completion);
+      expect(target.pageNo, 1);
     });
 
-    test('false when page or juz verses are empty', () {
+    test('a mid-juz page is not completed', () {
       expect(
-        isLastPageOfJuz(pageNo: 1, pageVerses: const [], juzVerses: const []),
-        isFalse,
+        resolvePageCompletion(
+          lastRead: _lastRead(type: 'page', id: 20),
+          location: const LastReadLocation(
+            type: 'page',
+            pageNo: 20,
+            juzNo: 1,
+            juzStartPage: 1,
+            juzEndPage: 21,
+          ),
+        ),
+        isNull,
       );
     });
   });

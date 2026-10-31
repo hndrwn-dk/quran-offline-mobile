@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""unittest for tool/build_search_index.py — fixtures only, never real assets."""
+"""unittest for tools/build_search_index.py — fixtures only, never real assets."""
 
 from __future__ import annotations
 

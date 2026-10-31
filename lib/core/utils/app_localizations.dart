@@ -1,3 +1,4 @@
+import 'package:quran_offline/core/startup/resume_boundary.dart';
 import 'package:quran_offline/core/support/reading_milestone.dart';
 import 'package:quran_offline/core/utils/hijri_date.dart';
 
@@ -3267,21 +3268,186 @@ class AppLocalizations {
     };
   }
 
-  static String formatHomeLastReadSubtitle({
+  /// Location line on the Continue card, e.g. "Ayah 153" or "Page 23 · Juz 2".
+  static String formatContinuePosition({
     required String language,
-    required int? ayahNo,
-    required String scopeKey,
+    int? ayahNo,
+    int? pageNo,
+    int? juzNo,
   }) {
-    final scopeLabel = switch (scopeKey) {
-      'surah' => getMenuText('surah', language),
-      'juz' => getMenuText('juz', language),
-      'page' => getMenuText('mushaf', language),
+    final parts = <String>[
+      if (pageNo != null)
+        getPageText(pageNo, language)
+      else if (ayahNo != null)
+        '${getAyahLabel(language)} $ayahNo',
+      if (juzNo != null) '${getMenuText('juz', language)} $juzNo',
+    ];
+    return parts.join(' · ');
+  }
+
+  /// Position line with progress detail, e.g.
+  /// "Ayah 153 dari 286 · Juz 2".
+  static String formatContinueProgressLine({
+    required String language,
+    required String scope,
+    required int current,
+    required int total,
+    int? juzNo,
+  }) {
+    final unit = scope == 'page'
+        ? getPageText(current, language)
+        : '${getAyahLabel(language)} $current';
+    final of = switch (language) {
+      'id' => 'dari',
+      'zh' || 'ja' => '/',
+      _ => 'of',
+    };
+    final position = '$unit $of $total';
+    if (juzNo == null) return position;
+    return '$position · ${getMenuText('juz', language)} $juzNo';
+  }
+
+  /// Juz card line: the actual surah ayah plus the position inside the juz.
+  static String formatContinueJuzLine({
+    required String language,
+    required String surahName,
+    required int ayahNo,
+    required int indexInJuz,
+    required int juzTotal,
+  }) {
+    return switch (language) {
+      'id' => '$surahName ayat $ayahNo · $indexInJuz dari $juzTotal ayat',
+      'en' => '$surahName ayah $ayahNo · $indexInJuz of $juzTotal ayahs',
+      'zh' => '$surahName 第 $ayahNo 节 · 第 $indexInJuz / $juzTotal 节',
+      'ja' => '$surahName $ayahNo 節 · $indexInJuz / $juzTotal 節',
+      _ => '$surahName ayah $ayahNo · $indexInJuz of $juzTotal ayahs',
+    };
+  }
+
+  /// Continue-card title for a juz, with the Juz Amma alias for Juz 30.
+  static String formatJuzTitle({
+    required String language,
+    required int juzNo,
+  }) {
+    if (juzNo == 30) {
+      return switch (language) {
+        'id' || 'en' => 'Juz 30 (Juz Amma)',
+        'zh' => '第 30 卷（阿玛章）',
+        'ja' => '第 30 ジュズ（ジュズ・アンマー）',
+        _ => 'Juz 30 (Juz Amma)',
+      };
+    }
+    return switch (language) {
+      'id' || 'en' => 'Juz $juzNo',
+      'zh' => '第 $juzNo 卷',
+      'ja' => '第 $juzNo ジュズ',
+      _ => 'Juz $juzNo',
+    };
+  }
+
+  /// Mushaf card line: surah, juz, and the page position inside the juz.
+  static String formatContinueMushafLine({
+    required String language,
+    required String? surahName,
+    required int? juzNo,
+    int? pageInJuz,
+    int? juzPages,
+  }) {
+    final parts = <String>[
+      if (surahName != null && surahName.isNotEmpty) surahName,
+      if (juzNo != null) '${getMenuText('juz', language)} $juzNo',
+    ];
+    if (pageInJuz != null && juzPages != null && juzPages > 0) {
+      parts.add(switch (language) {
+        'id' => 'hal. $pageInJuz dari $juzPages',
+        'en' => 'p. $pageInJuz of $juzPages',
+        'zh' => '第 $pageInJuz / $juzPages 页',
+        'ja' => '$pageInJuz / $juzPages ページ',
+        _ => 'p. $pageInJuz of $juzPages',
+      });
+    }
+    return parts.join(' · ');
+  }
+
+  /// Screen-reader label for the percentage ring.
+  static String formatContinueProgressSemantics({
+    required String language,
+    required String scope,
+    required int percent,
+  }) {
+    return '${getHomeProgressScopeLabel(scope, language)}, $percent%';
+  }
+
+  /// Completed-state title for the Continue card.
+  static String formatContinueCompletedTitle({
+    required String language,
+    required String kind,
+    String? surahName,
+    int? juzNo,
+  }) {
+    final unit = kind == 'surah'
+        ? (surahName ?? getMenuText('surah', language))
+        : '${getMenuText('juz', language)} ${juzNo ?? ''}'.trim();
+    return switch (language) {
+      'id' => 'Alhamdulillah, $unit selesai',
+      'en' => 'Alhamdulillah, $unit complete',
+      'zh' => 'Alhamdulillah，$unit 已完成',
+      'ja' => 'Alhamdulillah、$unit を読了しました',
+      _ => 'Alhamdulillah, $unit complete',
+    };
+  }
+
+  /// Subtitle for the unit that comes after the completed one.
+  static String formatContinueNextUnit({
+    required String language,
+    required String kind,
+    String? surahName,
+    int? juzNo,
+    int? pageNo,
+  }) {
+    final target = switch (kind) {
+      'surah' => surahName ?? getMenuText('surah', language),
+      'juz' => '${getMenuText('juz', language)} ${juzNo ?? ''}'.trim(),
+      'page' => getPageText(pageNo ?? 1, language),
       _ => '',
     };
-    if (ayahNo != null) {
-      return '${getAyahLabel(language)} $ayahNo · $scopeLabel';
-    }
-    return scopeLabel;
+    return switch (language) {
+      'id' => 'Lanjut ke $target',
+      'en' => 'Continue to $target',
+      'zh' => '继续到 $target',
+      'ja' => '$target に進む',
+      _ => 'Continue to $target',
+    };
+  }
+
+  static String getContinueKhatamTitle(String language) {
+    return switch (language) {
+      'id' => 'Alhamdulillah, khatam Al-Qur\'an',
+      'en' => 'Alhamdulillah, you have completed the Qur\'an',
+      'zh' => 'Alhamdulillah，你已完成古兰经',
+      'ja' => 'Alhamdulillah、クルアーンを読了しました',
+      _ => 'Alhamdulillah, you have completed the Qur\'an',
+    };
+  }
+
+  static String getContinueKhatamNext(String language) {
+    return switch (language) {
+      'id' => 'Mulai lagi dari Al-Fatihah',
+      'en' => 'Start again from Al-Fatihah',
+      'zh' => '从 Al-Fatihah 重新开始',
+      'ja' => 'Al-Fatihah からやり直す',
+      _ => 'Start again from Al-Fatihah',
+    };
+  }
+
+  static String getContinueCompletedLabel(String language) {
+    return switch (language) {
+      'id' => 'Selesai',
+      'en' => 'Completed',
+      'zh' => '已完成',
+      'ja' => '読了',
+      _ => 'Completed',
+    };
   }
 
   static String formatHomeReadProgressPercent(
@@ -4501,6 +4667,42 @@ class AppLocalizations {
       'ja' => '翻訳言語に合わせたタフスィール。ムスハフでは非表示。',
       _ =>
         'Verse commentary follows translation language. Hidden in Mushaf mode.',
+    };
+  }
+
+  /// Hint chip copy for the closest reading boundary.
+  static String formatResumeHint({
+    required String language,
+    required ResumeBoundaryKind kind,
+    required int remaining,
+    int? juzNo,
+  }) {
+    final count = '$remaining';
+    final ayah = remaining == 1 ? 'ayah' : 'ayahs';
+    final page = remaining == 1 ? 'page' : 'pages';
+    final juz = juzNo ?? '';
+    return switch (kind) {
+      ResumeBoundaryKind.surahEnd => switch (language) {
+          'id' => '$count ayat lagi sampai akhir surah',
+          'en' => '$count $ayah until the end of the surah',
+          'zh' => '距离本章结束还有 $count 节',
+          'ja' => 'このスーラの終わりまであと $count 節',
+          _ => '$count $ayah until the end of the surah',
+        },
+      ResumeBoundaryKind.juzEndAyahs => switch (language) {
+          'id' => '$count ayat lagi sampai akhir Juz $juz',
+          'en' => '$count $ayah until the end of Juz $juz',
+          'zh' => '距离第 $juz 卷结束还有 $count 节',
+          'ja' => 'ジュズ $juz の終わりまであと $count 節',
+          _ => '$count $ayah until the end of Juz $juz',
+        },
+      ResumeBoundaryKind.juzEndPages => switch (language) {
+          'id' => '$count halaman lagi sampai akhir Juz $juz',
+          'en' => '$count $page until the end of Juz $juz',
+          'zh' => '距离第 $juz 卷结束还有 $count 页',
+          'ja' => 'ジュズ $juz の終わりまであと $count ページ',
+          _ => '$count $page until the end of Juz $juz',
+        },
     };
   }
 
