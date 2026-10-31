@@ -4877,21 +4877,21 @@ class AppLocalizations {
 
   static String _getRateAppTitle(String language) {
     return switch (language) {
-      'id' => 'Beri rating aplikasi',
-      'en' => 'Rate the app',
-      'zh' => '为应用评分',
-      'ja' => 'アプリを評価',
-      _ => 'Rate the app',
+      'id' => 'Beri ulasan',
+      'en' => 'Rate this app',
+      'zh' => '评价此应用',
+      'ja' => 'このアプリを評価',
+      _ => 'Rate this app',
     };
   }
 
   static String _getRateAppSubtitle(String language) {
     return switch (language) {
-      'id' => 'Buka Play Store',
-      'en' => 'Open Play Store',
-      'zh' => '打开 Play 商店',
-      'ja' => 'Play ストアを開く',
-      _ => 'Open Play Store',
+      'id' => 'Bantu kami dengan ulasan kamu di Google Play.',
+      'en' => 'Support us with a review on Google Play.',
+      'zh' => '在 Google Play 留下你的评价。',
+      'ja' => 'Google Play でレビューをお願いします。',
+      _ => 'Support us with a review on Google Play.',
     };
   }
 

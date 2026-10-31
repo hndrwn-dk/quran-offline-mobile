@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:quran_offline/core/constants/app_links.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,8 +16,17 @@ class SettingsLinkActions {
   static Future<void> openTerms(BuildContext context) =>
       _openUrl(context, Uri.parse(termsUrl));
 
-  static Future<void> openRateApp(BuildContext context, String appLanguage) =>
-      _openUrl(context, Uri.parse(AppLinks.playStoreForLocale(appLanguage)));
+  /// Opens the Play Store listing through the in-app review plugin.
+  ///
+  /// No appStoreId is needed on Android; failures are silent (no Play Store,
+  /// offline, etc.).
+  static Future<void> openRateAppInStore() async {
+    try {
+      await InAppReview.instance.openStoreListing();
+    } catch (_) {
+      // Silent by design.
+    }
+  }
 
   static Future<void> shareApp(String appLanguage) async {
     await SharePlus.instance.share(
@@ -33,7 +43,9 @@ class SettingsLinkActions {
       if (await canLaunchUrl(uri)) {
         await launchUrl(
           uri,
-          mode: external ? LaunchMode.externalApplication : LaunchMode.platformDefault,
+          mode: external
+              ? LaunchMode.externalApplication
+              : LaunchMode.platformDefault,
         );
       } else if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -481,7 +481,7 @@ class SettingsAboutAppSection extends ConsumerWidget {
           title: Text(AppLocalizations.getSettingsText('rate_app_title', appLanguage)),
           subtitle: Text(AppLocalizations.getSettingsText('rate_app_subtitle', appLanguage)),
           trailing: const Icon(Icons.open_in_new, size: 18),
-          onTap: () => SettingsLinkActions.openRateApp(context, appLanguage),
+          onTap: SettingsLinkActions.openRateAppInStore,
         ),
         ListTile(
           leading: Icon(Icons.share_outlined, color: colorScheme.primary),
