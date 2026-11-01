@@ -2425,6 +2425,31 @@ class AppLocalizations {
     return '$mushafLabel - $pageLabel $pageNo';
   }
 
+  /// Localized ascending page range, e.g. "Halaman 3–4" / "Pages 3–4".
+  static String formatMushafPageRange(
+    int first,
+    int last,
+    String language,
+  ) {
+    if (first == last) return getPageText(first, language);
+    return switch (language) {
+      'id' => 'Halaman $first–$last',
+      'zh' => '第 $first–$last 页',
+      'ja' => '$first–$last ページ',
+      _ => 'Pages $first–$last',
+    };
+  }
+
+  /// "Mushaf - Halaman 3–4" for a two page spread.
+  static String getMushafSpreadPageText(
+    int first,
+    int last,
+    String language,
+  ) {
+    final mushafLabel = _getMushaf(language);
+    return '$mushafLabel - ${formatMushafPageRange(first, last, language)}';
+  }
+
   /// Subtitle under "Mushaf - Page N" in mushaf reader AppBar.
   static String formatMushafReaderSubtitle(
     String language,
@@ -4668,6 +4693,8 @@ class AppLocalizations {
       'text_settings_translation_size' =>
         _getTextSettingsTranslationSize(language),
       'text_settings_size_label' => _getTextSettingsSizeLabel(language),
+      'mushaf_two_page_title' => _getMushafTwoPageTitle(language),
+      'mushaf_two_page_subtitle' => _getMushafTwoPageSubtitle(language),
       'apply' => _getApply(language),
       'transliteration_style_title' => _getTransliterationStyleTitle(language),
       'transliteration_style_original' =>
@@ -6057,6 +6084,30 @@ class AppLocalizations {
       'zh' => '应用',
       'ja' => '適用',
       _ => 'Apply',
+    };
+  }
+
+  static String _getMushafTwoPageTitle(String language) {
+    return switch (language) {
+      'id' => 'Tampilan dua halaman',
+      'en' => 'Two-page view',
+      'zh' => '双页显示',
+      'ja' => '2ページ表示',
+      _ => 'Two-page view',
+    };
+  }
+
+  static String _getMushafTwoPageSubtitle(String language) {
+    return switch (language) {
+      'id' =>
+        'Saat layar cukup lebar, kamu bisa membaca dua halaman berdampingan '
+            'seperti mushaf fisik.',
+      'en' => 'Read two pages side by side when the screen is wide enough, '
+          'like a printed mushaf.',
+      'zh' => '屏幕足够宽时，像纸质 mushaf 一样并排显示两页。',
+      'ja' => '画面が十分に広いとき、紙のムスハフのように2ページを並べて表示します。',
+      _ => 'Read two pages side by side when the screen is wide enough, '
+          'like a printed mushaf.',
     };
   }
 
