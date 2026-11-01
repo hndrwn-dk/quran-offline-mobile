@@ -182,15 +182,6 @@ void main() {
   });
 
   testWidgets('tablet split pane reader keeps a back button', (tester) async {
-    // The 320dp list column title uses the test font metrics and overflows in
-    // widget tests; that is unrelated to the reader pane being tested here.
-    final originalOnError = FlutterError.onError;
-    FlutterError.onError = (details) {
-      if (details.exceptionAsString().contains('overflowed')) return;
-      originalOnError?.call(details);
-    };
-    addTearDown(() => FlutterError.onError = originalOnError);
-
     _setViewSize(tester, const Size(933, 704));
     final container = _container(source: SurahSource(1));
     addTearDown(container.dispose);
