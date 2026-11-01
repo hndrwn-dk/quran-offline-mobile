@@ -28,6 +28,7 @@ import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
+import 'package:quran_offline/core/mushaf/qpc_v2_glyph_fit.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/mushaf/page_turn/page_curl_painter.dart';
 import 'package:quran_offline/core/mushaf/page_turn/page_turn_controller.dart';
@@ -1764,12 +1765,20 @@ class _TurnFarmPage {
 }
 
 class _MushafPageSnapshot {
-  const _MushafPageSnapshot.glyph(this.glyphContent) : legacyBlocks = null;
+  const _MushafPageSnapshot.glyph(
+    this.glyphContent, {
+    this.openingScale = 1.0,
+  }) : legacyBlocks = null;
 
-  const _MushafPageSnapshot.legacy(this.legacyBlocks) : glyphContent = null;
+  const _MushafPageSnapshot.legacy(this.legacyBlocks)
+      : glyphContent = null,
+        openingScale = 1.0;
 
   final QpcV2PageContent? glyphContent;
   final List<MushafAyahBlock>? legacyBlocks;
+
+  /// Opening pages 1-2 share one enlarged scale; 1 for all other pages.
+  final double openingScale;
 
   bool get isGlyph => glyphContent != null;
 }
@@ -1837,7 +1846,27 @@ class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
       await MushafWarmup.ensureInitialized();
       final layout = QpcV2MushafLayout(QpcV2MushafLayout.sharedRepository());
       final content = await layout.getPageContent(widget.pageNo);
-      return _MushafPageSnapshot.glyph(content);
+      var openingScale = 1.0;
+      if (widget.pageNo <= 2) {
+        // Pages 1-2 share one scale, computed from both pages.
+        final sibling = await layout.getPageContent(
+          widget.pageNo == 1 ? 2 : 1,
+        );
+        final glyphLines = [content, sibling].expand(
+          (page) => page.lines
+              .where((line) => line.isAyah && line.glyphText.isNotEmpty)
+              .map((line) => (
+                    glyphText: line.glyphText,
+                    fontFamily: page.fontFamily,
+                    justify: false,
+                  )),
+        );
+        openingScale = computeOpeningPageScale(lines: glyphLines);
+      }
+      return _MushafPageSnapshot.glyph(
+        content,
+        openingScale: openingScale,
+      );
     }
     if (!mounted) {
       return const _MushafPageSnapshot.legacy([]);
@@ -2057,6 +2086,7 @@ class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
                 Expanded(
                   child: MushafPageSheet(
                     content: pageData.glyphContent!,
+                    openingPageScale: pageData.openingScale,
                     colorScheme: colorScheme,
                     ayahKeys: _ayahKeys,
                     onAyahTap: widget.onAyahTap,
@@ -2925,3 +2955,5 @@ class _TapAndLongPressRecognizer extends GestureRecognizer {
     super.dispose();
   }
 }
+
+

@@ -14,6 +14,7 @@ class MushafPageSheet extends StatelessWidget {
     required this.content,
     required this.colorScheme,
     required this.ayahKeys,
+    this.openingPageScale = 1.0,
     this.onAyahTap,
     this.onAyahLongPress,
     this.onBismillahTap,
@@ -23,6 +24,9 @@ class MushafPageSheet extends StatelessWidget {
   final QpcV2PageContent content;
   final ColorScheme colorScheme;
   final Map<String, GlobalKey> ayahKeys;
+
+  /// Opening-page (1-2) scale; 1 for normal pages.
+  final double openingPageScale;
   final void Function(int surahId, int ayahNo)? onAyahTap;
   final void Function(int surahId, int ayahNo)? onAyahLongPress;
   final void Function(int surahId)? onBismillahTap;
@@ -36,6 +40,7 @@ class MushafPageSheet extends StatelessWidget {
         contentWidth: kMushafPageLayoutWidth,
         fontSize: kMushafPageFontSize,
         pageGrid: true,
+        openingPageScale: openingPageScale,
         colorScheme: colorScheme,
         ayahKeys: ayahKeys,
         onAyahTap: onAyahTap,
@@ -117,3 +122,4 @@ enum MushafSpineStyle {
   /// Very soft 12dp shade (<= 4% ink), like the fold of a printed book.
   softShade,
 }
+
