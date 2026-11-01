@@ -11,13 +11,11 @@ class MushafPageNumberBadge extends StatelessWidget {
     required this.pageNo,
     this.totalPages = 604,
     this.rangeEnd,
-    this.rangeLabel,
   });
 
   final int pageNo;
   final int totalPages;
   final int? rangeEnd;
-  final String? rangeLabel;
 
   bool get _isRange => rangeEnd != null;
 
@@ -125,16 +123,6 @@ class MushafPageNumberBadge extends StatelessWidget {
               ),
             ),
           ),
-          if (rangeLabel != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              rangeLabel!,
-              style: textTheme.labelSmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                letterSpacing: 0.1,
-              ),
-            ),
-          ],
         ],
       ),
     );

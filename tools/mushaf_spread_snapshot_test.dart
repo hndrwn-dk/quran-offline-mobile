@@ -22,7 +22,7 @@ import 'package:sqlite3/sqlite3.dart';
 
 const _layoutDb = 'assets/mushaf/layout/qpc_v2_15_lines.sqlite';
 const _wordsDb = 'assets/mushaf/script/qpc_v2_words.sqlite';
-const _spreads = [1, 49, 603];
+const _spreads = [1, 49, 601, 603];
 
 Future<void> _loadFonts() async {
   final surah = FontLoader('SurahNameV2')
@@ -164,7 +164,6 @@ Widget _spread(int oddPage, int evenPage, ColorScheme scheme) {
         child: MushafPageNumberBadge(
           pageNo: oddPage,
           rangeEnd: evenPage,
-          rangeLabel: 'Halaman $oddPage–$evenPage',
         ),
       ),
     ],

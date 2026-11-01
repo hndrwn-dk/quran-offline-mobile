@@ -26,7 +26,7 @@ import 'package:sqlite3/sqlite3.dart';
 
 const _layoutDb = 'assets/mushaf/layout/qpc_v2_15_lines.sqlite';
 const _wordsDb = 'assets/mushaf/script/qpc_v2_words.sqlite';
-const _pages = [1, 2, 3, 50, 187, 604];
+const _pages = [1, 2, 3, 50, 187, 418, 604];
 const _sizes = [Size(390, 844), Size(475, 751)];
 
 Future<void> _loadFonts() async {
@@ -205,8 +205,16 @@ void main() {
         .split(',')
         .map(int.parse)
         .toList();
+    final envSizes = (Platform.environment['SIZES'] ?? '')
+        .split(',')
+        .where((value) => value.isNotEmpty)
+        .map((value) {
+      final parts = value.split('x');
+      return Size(double.parse(parts[0]), double.parse(parts[1]));
+    }).toList();
+    final sizes = envSizes.isEmpty ? _sizes : envSizes;
 
-    for (final size in _sizes) {
+    for (final size in sizes) {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);

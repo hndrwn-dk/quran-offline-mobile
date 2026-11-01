@@ -51,22 +51,19 @@ void main() {
     });
   });
 
-  testWidgets('page badge shows the localized spread pair', (tester) async {
+  testWidgets('page badge shows the spread pair without a caption',
+      (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
           body: Center(
-            child: MushafPageNumberBadge(
-              pageNo: 3,
-              rangeEnd: 4,
-              rangeLabel: 'Halaman 3–4',
-            ),
+            child: MushafPageNumberBadge(pageNo: 3, rangeEnd: 4),
           ),
         ),
       ),
     );
     expect(find.text('3–4'), findsOneWidget);
-    expect(find.text('Halaman 3–4'), findsOneWidget);
+    expect(find.textContaining('Halaman'), findsNothing);
   });
 
   group('two page toggle', () {

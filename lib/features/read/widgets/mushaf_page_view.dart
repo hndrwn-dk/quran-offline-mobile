@@ -80,6 +80,16 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   /// True once a two page spread fits this window (set in didChangeDependencies).
   bool _spread = false;
 
+  /// AppBar + badge visibility in framed mode (immersive reading).
+  bool _chromeVisible = true;
+  bool _chromeInitialized = false;
+  bool _lastFramed = false;
+
+  /// True when the current window renders pages in a fixed-aspect frame.
+  bool get _framedMode =>
+      _spread ||
+      MediaQuery.sizeOf(context).width >= kMushafMinSpreadWindowWidth;
+
   /// True when the user swiped to another spread while recitation is playing.
   bool _userPagedDuringPlayback = false;
 
@@ -172,13 +182,54 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
         'page=${metrics.pageSize} (${metrics.reason})',
       );
     }
-    if (metrics.showSpread == _spread) return;
+    if (!_chromeInitialized) {
+      _chromeInitialized = true;
+      // Framed windows open in immersive mode: the frame grows by the AppBar,
+      // badge and system bar height, which is what makes the text bigger.
+      _chromeVisible = !(_spread ||
+          media.size.width >= kMushafMinSpreadWindowWidth);
+      _lastFramed = !_chromeVisible;
+      _applySystemUi(chromeVisible: _chromeVisible);
+    }
+    if (metrics.showSpread == _spread) {
+      _syncChromeToMode(media);
+      return;
+    }
     _setSpreadMode(metrics.showSpread);
+    _syncChromeToMode(media);
+  }
+
+  /// Phones always show the AppBar; framed windows start immersive and keep the
+  /// reader's toggle afterwards.
+  void _syncChromeToMode(MediaQueryData media) {
+    final framed = _spread || media.size.width >= kMushafMinSpreadWindowWidth;
+    if (framed == _lastFramed) return;
+    _lastFramed = framed;
+    _chromeVisible = !framed;
+    _applySystemUi(chromeVisible: _chromeVisible);
   }
 
   void _setSpreadMode(bool spread) {
     _spread = spread;
     _replaceController();
+  }
+
+  /// Applies the system UI mode for framed reading (immersive = more page).
+  void _applySystemUi({required bool chromeVisible}) {
+    if (!_framedMode) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      return;
+    }
+    SystemChrome.setEnabledSystemUIMode(
+      chromeVisible ? SystemUiMode.edgeToEdge : SystemUiMode.immersiveSticky,
+    );
+  }
+
+  /// Tap on an empty part of the page (margin/gutter) shows/hides the bars.
+  void _toggleChrome() {
+    if (!mounted) return;
+    setState(() => _chromeVisible = !_chromeVisible);
+    _applySystemUi(chromeVisible: _chromeVisible);
   }
 
   void _replaceController() {
@@ -207,6 +258,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     for (final controller in _retiredControllers) {
       controller.dispose();
     }
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
@@ -476,6 +528,8 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
                   return _MushafSpread(
                     leftPage: evenPage,
                     rightPage: oddPage,
+                    chromeVisible: _chromeVisible,
+                    onToggleChrome: _toggleChrome,
                     targetSurahId: _scrollToSurahId,
                     targetAyahNo: _scrollToAyahNo,
                     selectedSurahId: _selectedSurahId,
@@ -496,11 +550,16 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
                   );
                 }
                 final pageNo = index + 1;
+                final framedSingle = MediaQuery.sizeOf(context).width >=
+                    kMushafMinSpreadWindowWidth;
                 return MushafPage(
                   pageNo: pageNo,
-                  // Single-page mode keeps the 1.0.21+69 flow layout (phone,
-                  // cover screen, any window where the spread gate is false).
-                  framed: false,
+                  // < 600dp: exact 1.0.21+69 flow layout. >= 600dp single page
+                  // (Fold portrait, tablet portrait, spread turned off) uses the
+                  // same fixed frame as one page of a spread.
+                  framed: framedSingle,
+                  chromeVisible: _chromeVisible,
+                  onToggleChrome: _toggleChrome,
                   targetSurahId: _scrollToSurahId,
                   targetAyahNo: _scrollToAyahNo,
                   selectedSurahId: _selectedSurahId,
@@ -542,6 +601,8 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
 class MushafPage extends StatelessWidget {
   final int pageNo;
   final bool framed;
+  final bool chromeVisible;
+  final VoidCallback? onToggleChrome;
   final int? targetSurahId;
   final int? targetAyahNo;
   final int? selectedSurahId;
@@ -556,6 +617,8 @@ class MushafPage extends StatelessWidget {
     super.key,
     required this.pageNo,
     this.framed = false,
+    this.chromeVisible = true,
+    this.onToggleChrome,
     this.targetSurahId,
     this.targetAyahNo,
     this.selectedSurahId,
@@ -571,6 +634,8 @@ class MushafPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return _MushafChrome(
       pageNumbers: [pageNo],
+      chromeVisible: chromeVisible,
+      onToggleChrome: onToggleChrome,
       child: MushafPageBody(
         pageNo: pageNo,
         framed: framed,
@@ -578,8 +643,8 @@ class MushafPage extends StatelessWidget {
         targetAyahNo: targetAyahNo,
         selectedSurahId: selectedSurahId,
         selectedAyahNo: selectedAyahNo,
-        showBanners: true,
-        showBadge: true,
+        showBanners: !framed || chromeVisible,
+        showBadge: chromeVisible,
         onAyahTap: (surahId, ayahNo) =>
             onAyahTap?.call(surahId, ayahNo, pageNo),
         onAyahLongPress: (surahId, ayahNo) =>
@@ -598,6 +663,8 @@ class _MushafSpread extends ConsumerWidget {
   const _MushafSpread({
     required this.leftPage,
     required this.rightPage,
+    this.chromeVisible = true,
+    this.onToggleChrome,
     this.targetSurahId,
     this.targetAyahNo,
     this.selectedSurahId,
@@ -611,6 +678,8 @@ class _MushafSpread extends ConsumerWidget {
 
   final int leftPage;
   final int rightPage;
+  final bool chromeVisible;
+  final VoidCallback? onToggleChrome;
   final int? targetSurahId;
   final int? targetAyahNo;
   final int? selectedSurahId;
@@ -623,9 +692,6 @@ class _MushafSpread extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appLanguage = ref.watch(
-      settingsProvider.select((s) => s.appLanguage),
-    );
     final media = MediaQuery.of(context);
     final hinge = mushafHingeLayout(
       size: media.size,
@@ -655,17 +721,24 @@ class _MushafSpread extends ConsumerWidget {
 
     return _MushafChrome(
       pageNumbers: [rightPage, leftPage],
+      chromeVisible: chromeVisible,
+      onToggleChrome: onToggleChrome,
       child: Padding(
-        padding: EdgeInsets.only(
-          left: hinge.leftInset,
-          right: hinge.rightInset,
+        padding: EdgeInsets.fromLTRB(
+          hinge.leftInset + 8,
+          6,
+          hinge.rightInset + 8,
+          chromeVisible ? 4 : 0,
         ),
         child: Column(
           children: [
-            if (!ref.watch(audioPlayerProvider.select((s) => s.isActive))) ...[
+            if (chromeVisible &&
+                !ref.watch(
+                  audioPlayerProvider.select((s) => s.isActive),
+                )) ...[
               const MushafGestureHintBanner(),
               MushafOfflineAudioBanner(pageNo: rightPage),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
             ],
             Expanded(
               child: MushafSpreadRow(
@@ -674,20 +747,16 @@ class _MushafSpread extends ConsumerWidget {
                 hinge: hinge,
               ),
             ),
-            Padding(
-              padding: EdgeInsets.only(
-                bottom: systemBottomInset(media) + 4,
-              ),
-              child: MushafPageNumberBadge(
-                pageNo: rightPage,
-                rangeEnd: leftPage,
-                rangeLabel: AppLocalizations.formatMushafPageRange(
-                  rightPage,
-                  leftPage,
-                  appLanguage,
+            if (chromeVisible)
+              Padding(
+                padding: EdgeInsets.only(
+                  bottom: systemBottomInset(media) + 2,
+                ),
+                child: MushafPageNumberBadge(
+                  pageNo: rightPage,
+                  rangeEnd: leftPage,
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -697,10 +766,17 @@ class _MushafSpread extends ConsumerWidget {
 
 /// Swipe-down-to-dismiss chrome shared by the single page and spread items.
 class _MushafChrome extends StatefulWidget {
-  const _MushafChrome({required this.pageNumbers, required this.child});
+  const _MushafChrome({
+    required this.pageNumbers,
+    required this.child,
+    this.chromeVisible = true,
+    this.onToggleChrome,
+  });
 
   final List<int> pageNumbers;
   final Widget child;
+  final bool chromeVisible;
+  final VoidCallback? onToggleChrome;
 
   @override
   State<_MushafChrome> createState() => _MushafChromeState();
@@ -750,8 +826,44 @@ class _MushafChromeState extends State<_MushafChrome> {
         _isSwipingDown = false;
       },
       child: Scaffold(
-        appBar: _MushafAppBar(pageNumbers: widget.pageNumbers),
-        body: widget.child,
+        body: Column(
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              switchInCurve: Curves.easeOut,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (child, animation) {
+                return SizeTransition(
+                  sizeFactor: animation,
+                  axisAlignment: -1,
+                  child: FadeTransition(opacity: animation, child: child),
+                );
+              },
+              child: widget.chromeVisible
+                  ? SizedBox(
+                      key: const ValueKey<String>('mushaf-bar'),
+                      height:
+                          55 + MediaQuery.paddingOf(context).top,
+                      child: _MushafAppBar(pageNumbers: widget.pageNumbers),
+                    )
+                  : const SizedBox(
+                      key: ValueKey<String>('mushaf-no-bar'),
+                      width: double.infinity,
+                    ),
+            ),
+            Expanded(
+              child: widget.onToggleChrome == null
+                  ? widget.child
+                  : GestureDetector(
+                      // Taps on empty margins/gutter toggle the bars; taps on a
+                      // glyph are claimed by the ayah recognizer and still play.
+                      behavior: HitTestBehavior.translucent,
+                      onTap: widget.onToggleChrome,
+                      child: widget.child,
+                    ),
+            ),
+          ],
+        ),
         bottomNavigationBar: const GlobalRecitationBar(),
       ),
     );
@@ -759,7 +871,7 @@ class _MushafChromeState extends State<_MushafChrome> {
 }
 
 class _MushafAppBar extends ConsumerWidget implements PreferredSizeWidget {
-  const _MushafAppBar({required this.pageNumbers});
+  const _MushafAppBar({super.key, required this.pageNumbers});
 
   final List<int> pageNumbers;
 
@@ -1218,11 +1330,12 @@ class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
 
         if (widget.framed && pageData.isGlyph) {
           return Padding(
+            // Minimum book margins: the page frame is the page.
             padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: widget.showBanners ? 24 : 8,
-              bottom: widget.showBadge ? 12 + bottomInset : 8,
+              left: 2,
+              right: 2,
+              top: widget.showBanners ? 20 : 2,
+              bottom: widget.showBadge ? 10 + bottomInset : 2,
             ),
             child: Column(
               children: [

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 
@@ -29,6 +30,16 @@ class MushafPageFrame extends StatelessWidget {
         final frame = mushafPageFrameSize(available);
         if (frame.isEmpty) {
           return const SizedBox.shrink();
+        }
+        if (kDebugMode) {
+          debugPrint(
+            '[MushafFrame] avail=${available.width.toStringAsFixed(1)}x'
+            '${available.height.toStringAsFixed(1)} '
+            '${frame.width.toStringAsFixed(1)}x'
+            '${frame.height.toStringAsFixed(1)} '
+            'scale=${mushafPageScaleFor(frame).toStringAsFixed(3)} '
+            'font=${(kMushafPageFontSize * mushafPageScaleFor(frame)).toStringAsFixed(2)}dp',
+          );
         }
         return Center(
           child: SizedBox.fromSize(

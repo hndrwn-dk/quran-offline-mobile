@@ -112,6 +112,19 @@ void main() {
       expect(left.right, lessThanOrEqualTo(right.left));
     });
 
+    testWidgets('last spread keeps 604 left and 603 right', (tester) async {
+      await _pumpSpread(
+        tester,
+        const Size(933, 704),
+        leftPage: 604,
+        rightPage: 603,
+      );
+
+      final left = tester.getRect(find.byKey(const ValueKey<int>(604)));
+      final right = tester.getRect(find.byKey(const ValueKey<int>(603)));
+      expect(left.left, lessThan(right.left));
+    });
+
     testWidgets('both pages share one frame size and scale', (tester) async {
       await _pumpSpread(tester, const Size(933, 704));
 
@@ -238,8 +251,15 @@ void main() {
       expect(bodies.every((body) => body.framed), isTrue);
     });
 
+    Future<void> showChrome(WidgetTester tester) async {
+      await tester.tapAt(const Offset(466, 352));
+      await tester.pump(const Duration(milliseconds: 220));
+    }
+
     testWidgets('spread AppBar shows the localized page pair', (tester) async {
       await pumpView(tester, const Size(933, 704), initialPage: 1);
+      expect(find.text('Mushaf - Halaman 1–2'), findsNothing);
+      await showChrome(tester);
       expect(find.text('Mushaf - Halaman 1–2'), findsOneWidget);
     });
 
@@ -257,17 +277,23 @@ void main() {
 
     testWidgets('fold and unfold keeps the page in view', (tester) async {
       await pumpView(tester, const Size(933, 704), initialPage: 4);
-      expect(find.text('Mushaf - Halaman 3–4'), findsOneWidget);
 
       tester.view.physicalSize = const Size(475, 751);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
+      // < 600dp keeps the +69 flow path with its AppBar.
       expect(find.text('Mushaf - Halaman 4'), findsOneWidget);
 
       tester.view.physicalSize = const Size(933, 704);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
-      expect(find.text('Mushaf - Halaman 3–4'), findsOneWidget);
+      final bodies = tester
+          .widgetList<MushafPageBody>(
+            find.byType(MushafPageBody, skipOffstage: false),
+          )
+          .toList();
+      expect(bodies.length, 2);
+      expect(bodies.every((body) => body.framed), isTrue);
     });
 
     testWidgets('last read follows spread navigation', (tester) async {
@@ -281,11 +307,12 @@ void main() {
         await tester.pump(const Duration(milliseconds: 60));
       }
 
+      await showChrome(tester);
       expect(find.text('Mushaf - Halaman 3–4'), findsOneWidget);
       expect(prefs.getInt('last_read_position_id'), 3);
     });
 
-    testWidgets('spread setting off renders one page at a time',
+    testWidgets('spread setting off renders one framed page at 933dp',
         (tester) async {
       SharedPreferences.setMockInitialValues({
         'language': 'id',
@@ -294,7 +321,11 @@ void main() {
       });
       await pumpView(tester, const Size(933, 704), initialPage: 4);
 
-      expect(find.byType(MushafPageBody, skipOffstage: false), findsOneWidget);
+      final body = tester.widget<MushafPageBody>(
+        find.byType(MushafPageBody, skipOffstage: false),
+      );
+      expect(body.framed, isTrue);
+      await showChrome(tester);
       expect(find.text('Mushaf - Halaman 4'), findsOneWidget);
     });
   });
