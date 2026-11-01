@@ -633,6 +633,39 @@ class MushafPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (framed) {
+      return _MushafChrome(
+        pageNumbers: [pageNo],
+        framed: true,
+        chromeVisible: chromeVisible,
+        onToggleChrome: onToggleChrome,
+        child: _MushafFramedBody(
+          pages: [pageNo],
+          bannerPageNo: pageNo,
+          chromeVisible: chromeVisible,
+          // Read above the chrome Scaffold, which strips the bottom padding.
+          bottomInset: systemBottomInset(MediaQuery.of(context)),
+          pageBody: (pageNo) => MushafPageBody(
+            pageNo: pageNo,
+            framed: true,
+            targetSurahId: targetSurahId,
+            targetAyahNo: targetAyahNo,
+            selectedSurahId: selectedSurahId,
+            selectedAyahNo: selectedAyahNo,
+            showBanners: false,
+            showBadge: false,
+            onAyahTap: (surahId, ayahNo) =>
+                onAyahTap?.call(surahId, ayahNo, pageNo),
+            onAyahLongPress: (surahId, ayahNo) =>
+                onAyahLongPress?.call(surahId, ayahNo, pageNo),
+            onBismillahTap: (surahId) => onBismillahTap?.call(surahId, pageNo),
+            onBismillahLongPress: (surahId) =>
+                onBismillahLongPress?.call(surahId, pageNo),
+            onComputed: onComputed,
+          ),
+        ),
+      );
+    }
     return _MushafChrome(
       pageNumbers: [pageNo],
       chromeVisible: chromeVisible,
@@ -693,12 +726,6 @@ class _MushafSpread extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final media = MediaQuery.of(context);
-    final hinge = mushafHingeLayout(
-      size: media.size,
-      displayFeatures: media.displayFeatures,
-    );
-
     Widget pageBody(int pageNo) {
       return MushafPageBody(
         pageNo: pageNo,
@@ -722,45 +749,103 @@ class _MushafSpread extends ConsumerWidget {
 
     return _MushafChrome(
       pageNumbers: [rightPage, leftPage],
+      framed: true,
       chromeVisible: chromeVisible,
       onToggleChrome: onToggleChrome,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          hinge.leftInset + 8,
-          6,
-          hinge.rightInset + 8,
-          chromeVisible ? 4 : 0,
-        ),
-        child: Column(
-          children: [
-            if (chromeVisible &&
-                !ref.watch(
-                  audioPlayerProvider.select((s) => s.isActive),
-                )) ...[
-              const MushafGestureHintBanner(),
-              MushafOfflineAudioBanner(pageNo: rightPage),
-              const SizedBox(height: 8),
-            ],
-            Expanded(
-              child: MushafSpreadRow(
-                left: pageBody(leftPage),
-                right: pageBody(rightPage),
-                hinge: hinge,
-              ),
-            ),
-            if (chromeVisible)
-              Padding(
-                padding: EdgeInsets.only(
-                  bottom: systemBottomInset(media) + 2,
-                ),
-                child: MushafPageNumberBadge(
-                  pageNo: rightPage,
-                  rangeEnd: leftPage,
-                ),
-              ),
-          ],
-        ),
+      child: _MushafFramedBody(
+        pages: [leftPage, rightPage],
+        bannerPageNo: rightPage,
+        chromeVisible: chromeVisible,
+        // Read above the chrome Scaffold, which strips the bottom padding.
+        bottomInset: systemBottomInset(MediaQuery.of(context)),
+        pageBody: pageBody,
       ),
+    );
+  }
+}
+
+/// Toolbar height of the compact framed AppBar (+1dp divider).
+const double _kFramedToolbarHeight = 44;
+
+/// 1.0.23 AppBar: 54dp toolbar + 1dp divider.
+const double _kLegacyBarHeight = 55;
+
+/// 1.0.23 page badge block: 2 + 3 (ornament) + 8 + 44 (ring) + 4.
+const double _kLegacyBadgeHeight = 61;
+
+/// Banners + sheets for the framed (>= 600dp) reader, single page or spread.
+///
+/// In normal mode the area stops above the gesture/nav bar; in focus mode the
+/// sheets get the full window. The 1.0.23 chrome this replaces is passed on as
+/// the never-shrink floor for the text.
+class _MushafFramedBody extends ConsumerWidget {
+  const _MushafFramedBody({
+    required this.pages,
+    required this.bannerPageNo,
+    required this.chromeVisible,
+    required this.bottomInset,
+    required this.pageBody,
+  });
+
+  /// Left to right.
+  final List<int> pages;
+  final int bannerPageNo;
+  final bool chromeVisible;
+
+  /// Gesture/nav bar height, kept clear while the bars are shown.
+  final double bottomInset;
+  final Widget Function(int pageNo) pageBody;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final spread = pages.length == 2;
+    final audioActive = ref.watch(
+      audioPlayerProvider.select((s) => s.isActive),
+    );
+    final showBanners = chromeVisible && !audioActive;
+    // 1.0.23: spread = top 6, banners, 8; single = top 20, hint banner, 12.
+    final bannerTop = spread ? 6.0 : 20.0;
+    final bannerGap = spread ? 8.0 : 12.0;
+    final appLanguage = ref.watch(
+      settingsProvider.select((s) => s.appLanguage),
+    );
+
+    // Height the 1.0.23 tree spent inside this area besides the 2dp + 2dp page
+    // body padding that [mushafLegacyTextFrame] already removes.
+    final double legacyChrome;
+    if (!chromeVisible) {
+      // Spread: 6dp top padding. Single page: only the body padding.
+      legacyChrome = spread ? 6 : 0;
+    } else {
+      const taller = _kLegacyBarHeight - (_kFramedToolbarHeight + 1);
+      // The top padding stayed when the banners were hidden by recitation.
+      final top = showBanners ? 0.0 : bannerTop;
+      legacyChrome = spread
+          // Badge, its 2dp bottom padding, the spread's 4dp bottom padding.
+          ? taller + top + _kLegacyBadgeHeight + 2 + 4
+          // Badge and 10dp bottom padding replaced the 2dp + 2dp body pads.
+          : taller + top + _kLegacyBadgeHeight + 10 - 4;
+    }
+
+    return Column(
+      children: [
+        if (showBanners) ...[
+          SizedBox(height: bannerTop),
+          const MushafGestureHintBanner(),
+          if (spread) MushafOfflineAudioBanner(pageNo: bannerPageNo),
+          SizedBox(height: bannerGap),
+        ],
+        Expanded(
+          child: MushafFramedSheets(
+            pages: pages,
+            legacyVerticalChrome: legacyChrome,
+            pageBuilder: pageBody,
+            pageNumberLabel: (pageNo) =>
+                AppLocalizations.getPageText(pageNo, appLanguage),
+          ),
+        ),
+        SizedBox(height: chromeVisible ? bottomInset : 0),
+      ],
     );
   }
 }
@@ -770,12 +855,16 @@ class _MushafChrome extends StatefulWidget {
   const _MushafChrome({
     required this.pageNumbers,
     required this.child,
+    this.framed = false,
     this.chromeVisible = true,
     this.onToggleChrome,
   });
 
   final List<int> pageNumbers;
   final Widget child;
+
+  /// >= 600dp: compact one-line AppBar, the reclaimed height goes to the page.
+  final bool framed;
   final bool chromeVisible;
   final VoidCallback? onToggleChrome;
 
@@ -843,9 +932,15 @@ class _MushafChromeState extends State<_MushafChrome> {
               child: widget.chromeVisible
                   ? SizedBox(
                       key: const ValueKey<String>('mushaf-bar'),
-                      height:
-                          55 + MediaQuery.paddingOf(context).top,
-                      child: _MushafAppBar(pageNumbers: widget.pageNumbers),
+                      height: (widget.framed
+                              ? _kFramedToolbarHeight + 1
+                              : 55) +
+                          MediaQuery.paddingOf(context).top,
+                      child: widget.framed
+                          ? _MushafFramedAppBar(
+                              pageNumbers: widget.pageNumbers,
+                            )
+                          : _MushafAppBar(pageNumbers: widget.pageNumbers),
                     )
                   : const SizedBox(
                       key: ValueKey<String>('mushaf-no-bar'),
@@ -963,6 +1058,90 @@ class _MushafAppBar extends ConsumerWidget implements PreferredSizeWidget {
       ],
       bottom: readerAppBarBottomDivider(colorScheme),
     );
+  }
+}
+
+/// Compact framed AppBar: back, "Mushaf · Halaman 603–604", muted "Juz 30", Tt.
+class _MushafFramedAppBar extends ConsumerWidget {
+  const _MushafFramedAppBar({required this.pageNumbers});
+
+  /// Ascending ([rightPage, leftPage] for a spread).
+  final List<int> pageNumbers;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final appLanguage = ref.watch(
+      settingsProvider.select((s) => s.appLanguage),
+    );
+    final first = pageNumbers.first;
+    final last = pageNumbers.last;
+    final db = ref.watch(databaseProvider);
+
+    return AppBar(
+      leading: ReaderBackButton.appBarLeading(context),
+      automaticallyImplyLeading: false,
+      toolbarHeight: _kFramedToolbarHeight,
+      centerTitle: false,
+      titleSpacing: 0,
+      title: Row(
+        children: [
+          Flexible(
+            child: Text(
+              AppLocalizations.getMushafFramedTitle(first, last, appLanguage),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          FutureBuilder<(int, int)?>(
+            future: _juzRangeForPages(db, first, last),
+            builder: (context, snapshot) {
+              final juz = snapshot.data;
+              if (juz == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsetsDirectional.only(start: 10),
+                child: Text(
+                  AppLocalizations.formatMushafJuzLabel(
+                    juz.$1,
+                    juz.$2,
+                    appLanguage,
+                  ),
+                  maxLines: 1,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      actions: const [
+        _MushafTextSettingsAction(),
+      ],
+      bottom: readerAppBarBottomDivider(colorScheme),
+    );
+  }
+}
+
+Future<(int, int)?> _juzRangeForPages(
+  AppDatabase db,
+  int firstPage,
+  int lastPage,
+) async {
+  try {
+    final firstVerses = await db.getVersesByPage(firstPage);
+    final lastVerses = firstPage == lastPage
+        ? firstVerses
+        : await db.getVersesByPage(lastPage);
+    if (firstVerses.isEmpty || lastVerses.isEmpty) return null;
+    return (firstVerses.first.juz, lastVerses.last.juz);
+  } catch (_) {
+    return null;
   }
 }
 
@@ -1358,38 +1537,16 @@ class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
         );
 
         if (widget.framed && pageData.isGlyph) {
-          return Padding(
-            // Minimum book margins: the page frame is the page.
-            padding: EdgeInsets.only(
-              left: 2,
-              right: 2,
-              top: widget.showBanners ? 20 : 2,
-              bottom: widget.showBadge ? 10 + bottomInset : 2,
-            ),
-            child: Column(
-              children: [
-                if (widget.showBanners && !audio.isActive) ...[
-                  const MushafGestureHintBanner(),
-                  const SizedBox(height: 12),
-                ],
-                Expanded(
-                  child: MushafPageSheet(
-                    content: pageData.glyphContent!,
-                    openingPageScale: pageData.openingScale,
-                    colorScheme: colorScheme,
-                    ayahKeys: _ayahKeys,
-                    onAyahTap: widget.onAyahTap,
-                    onAyahLongPress: widget.onAyahLongPress,
-                    onBismillahTap: widget.onBismillahTap,
-                    onBismillahLongPress: widget.onBismillahLongPress,
-                  ),
-                ),
-                if (widget.showBadge)
-                  Center(
-                    child: MushafPageNumberBadge(pageNo: widget.pageNo),
-                  ),
-              ],
-            ),
+          // Placed by [MushafFramedSheets]: exactly the scaled text box.
+          return MushafPageSheet(
+            content: pageData.glyphContent!,
+            openingPageScale: pageData.openingScale,
+            colorScheme: colorScheme,
+            ayahKeys: _ayahKeys,
+            onAyahTap: widget.onAyahTap,
+            onAyahLongPress: widget.onAyahLongPress,
+            onBismillahTap: widget.onBismillahTap,
+            onBismillahLongPress: widget.onBismillahLongPress,
           );
         }
 
