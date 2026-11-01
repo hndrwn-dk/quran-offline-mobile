@@ -11,6 +11,7 @@
 //
 // This file is intentionally not part of the normal `test/` suite.
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -20,6 +21,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
+import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_number_badge.dart';
 import 'package:quran_offline/features/read/widgets/qpc_v2_mushaf_text.dart';
 import 'package:sqlite3/sqlite3.dart';
@@ -29,11 +31,11 @@ const _wordsDb = 'assets/mushaf/script/qpc_v2_words.sqlite';
 const _pages = [1, 2, 3, 50, 187, 418, 604];
 const _sizes = [Size(390, 844), Size(475, 751)];
 
-Future<void> _loadFonts() async {
+Future<void> _loadFonts(Iterable<int> pageNumbers) async {
   final surah = FontLoader('SurahNameV2')
     ..addFont(rootBundle.load('assets/fonts/surah_name_v2.ttf'));
   await surah.load();
-  for (final page in {..._pages, 1}) {
+  for (final page in {...pageNumbers, 1}) {
     final loader = FontLoader('QpcV2Page$page')
       ..addFont(rootBundle.load('assets/fonts/qpc_v2/p$page.ttf'));
     await loader.load();
@@ -192,19 +194,21 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('mushaf single-page snapshots', (tester) async {
-    await _loadFonts();
+    final pages = (Platform.environment['PAGES'] ?? _pages.join(','))
+        .split(',')
+        .map(int.parse)
+        .toList();
+    await _loadFonts(pages);
 
     final outDir = Directory(
       Platform.environment['GOLDEN_DIR'] ?? 'build/mushaf_snapshots',
     );
     outDir.createSync(recursive: true);
 
+    final headerRects = <String, List<List<double>>>{};
+
     final scheme = ColorScheme.fromSeed(seedColor: const Color(0xFF3F6B4A));
 
-    final pages = (Platform.environment['PAGES'] ?? _pages.join(','))
-        .split(',')
-        .map(int.parse)
-        .toList();
     final envSizes = (Platform.environment['SIZES'] ?? '')
         .split(',')
         .where((value) => value.isNotEmpty)
@@ -253,6 +257,17 @@ void main() {
         );
         file.writeAsBytesSync(data!.buffer.asUint8List());
         image!.dispose();
+
+        final headers = find.byType(SurahNameMushafFlowHeader);
+        final rectKey = 'p${page}_${size.width.toInt()}x${size.height.toInt()}';
+        headerRects[rectKey] = [
+          for (var i = 0; i < headers.evaluate().length; i++)
+            () {
+              final r = tester.getRect(headers.at(i));
+              return [r.left, r.top, r.right, r.bottom];
+            }(),
+        ];
+
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pump();
       }
@@ -261,5 +276,16 @@ void main() {
     // The page renderers watch the recitation provider; platform channels are
     // not available in this harness, so drain those non-fatal errors.
     while (tester.takeException() != null) {}
+
+    File('${outDir.path}/header_rects.json').writeAsStringSync(
+      jsonEncode(headerRects),
+    );
   });
 }
+
+
+
+
+
+
+

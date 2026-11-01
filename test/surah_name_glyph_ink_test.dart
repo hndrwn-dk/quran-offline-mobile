@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/mushaf/surah_name_glyph_metrics.dart';
@@ -114,21 +116,26 @@ void main() {
   });
 
   group('ink glyph widget', () {
+    Widget wrap(Widget child) {
+      return ProviderScope(
+        overrides: [
+          surahNamesProvider.overrideWith((ref) async => []),
+        ],
+        child: MaterialApp(home: Scaffold(body: Center(child: child))),
+      );
+    }
+
     testWidgets('paints inside a full QPC row without overflow', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Center(
-              child: SizedBox(
-                width: kMushafPageLayoutWidth,
-                height: kMushafPageRowHeight,
-                child: SurahNameMushafInkGlyph(
-                  surahId: 2,
-                  color: Colors.black,
-                  targetInkHeight: _targetInkHeight,
-                  maxInkWidth: _maxInkWidth,
-                ),
-              ),
+        wrap(
+          SizedBox(
+            width: kMushafPageLayoutWidth,
+            height: kMushafPageRowHeight,
+            child: SurahNameMushafInkGlyph(
+              surahId: 2,
+              color: Colors.black,
+              targetInkHeight: _targetInkHeight,
+              maxInkWidth: _maxInkWidth,
             ),
           ),
         ),
@@ -145,19 +152,15 @@ void main() {
         (tester) async {
       for (final surah in _sampleSurahs) {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Center(
-                child: SizedBox(
-                  width: kMushafPageLayoutWidth,
-                  height: kMushafPageRowHeight,
-                  child: SurahNameMushafInkGlyph(
-                    surahId: surah,
-                    color: Colors.black,
-                    targetInkHeight: _targetInkHeight,
-                    maxInkWidth: _maxInkWidth,
-                  ),
-                ),
+          wrap(
+            SizedBox(
+              width: kMushafPageLayoutWidth,
+              height: kMushafPageRowHeight,
+              child: SurahNameMushafInkGlyph(
+                surahId: surah,
+                color: Colors.black,
+                targetInkHeight: _targetInkHeight,
+                maxInkWidth: _maxInkWidth,
               ),
             ),
           ),
@@ -168,3 +171,5 @@ void main() {
     });
   });
 }
+
+

@@ -143,7 +143,7 @@ class _QpcV2MushafTextBody extends StatelessWidget {
                   : _surahNameOuterGap,
               bottom: _surahNameBottomGap,
             ),
-            child: SurahNameMushafGlyph(
+            child: SurahNameMushafFlowHeader(
               surahId: line.surahId!,
               mushafFontSize: fontSize,
             ),
@@ -240,22 +240,11 @@ class _QpcV2MushafTextBody extends StatelessWidget {
         rows.add(
           SizedBox(
             height: rowHeight,
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 1),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: colorScheme.primary.withValues(alpha: 0.22),
-                  width: 0.8,
-                ),
-                color: colorScheme.primary.withValues(alpha: 0.035),
-              ),
-              child: SurahNameMushafInkGlyph(
-                surahId: line.surahId!,
-                color: colorScheme.primary,
-                targetInkHeight: rowHeight * kSurahNameInkHeightFactor,
-                maxInkWidth: lineMaxWidth * kSurahNameMaxInkWidthFactor,
-              ),
+            child: SurahNameMushafInkGlyph(
+              surahId: line.surahId!,
+              color: colorScheme.onSurface,
+              targetInkHeight: rowHeight * kSurahNameInkHeightFactor,
+              maxInkWidth: lineMaxWidth * kSurahNameMaxInkWidthFactor,
             ),
           ),
         );

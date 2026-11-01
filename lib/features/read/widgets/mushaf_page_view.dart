@@ -871,7 +871,7 @@ class _MushafChromeState extends State<_MushafChrome> {
 }
 
 class _MushafAppBar extends ConsumerWidget implements PreferredSizeWidget {
-  const _MushafAppBar({super.key, required this.pageNumbers});
+  const _MushafAppBar({required this.pageNumbers});
 
   final List<int> pageNumbers;
 

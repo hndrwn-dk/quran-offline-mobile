@@ -1,8 +1,13 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/mushaf/surah_name_glyph_metrics.dart';
 import 'package:quran_offline/core/mushaf/surah_name_ink_layout.dart';
+import 'package:quran_offline/core/providers/settings_provider.dart';
+import 'package:quran_offline/core/providers/surah_names_provider.dart';
+import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/mushaf_surah_header_cartouche.dart';
 
 /// Decorative surah title using QUL Surah name font v2 ligatures.
 class SurahNameGlyph extends StatelessWidget {
@@ -73,7 +78,8 @@ class SurahNameMushafGlyph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final accent = colorScheme.primary;
+    // Same ink colour as the Mushaf ayah text (option-I blends with the page).
+    final accent = colorScheme.onSurface;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -138,8 +144,9 @@ class SurahNameListGlyph extends StatelessWidget {
 /// (or a fixed font size) makes the header look tiny. This paints the ligature
 /// at the size that gives [targetInkHeight] of visible ink, centred vertically
 /// in the current slot, and scales a name down only if its ink would exceed
-/// [maxInkWidth]. One visual height for every surah; no clipping.
-class SurahNameMushafInkGlyph extends StatelessWidget {
+/// [maxInkWidth]. One visual height for every surah; no clipping. The option-I
+/// cartouche is stroked around the ink in the same colour.
+class SurahNameMushafInkGlyph extends ConsumerWidget {
   const SurahNameMushafInkGlyph({
     super.key,
     required this.surahId,
@@ -154,17 +161,39 @@ class SurahNameMushafInkGlyph extends StatelessWidget {
   final double maxInkWidth;
 
   @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _SurahNameInkPainter(
-        surahId: surahId,
-        color: color,
-        targetInkHeight: targetInkHeight,
-        maxInkWidth: maxInkWidth,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final label = surahHeaderSemanticsLabel(ref, surahId);
+    return Semantics(
+      image: true,
+      label: label,
+      child: CustomPaint(
+        painter: _SurahNameInkPainter(
+          surahId: surahId,
+          color: color,
+          targetInkHeight: targetInkHeight,
+          maxInkWidth: maxInkWidth,
+        ),
+        child: const SizedBox.expand(),
       ),
-      child: const SizedBox.expand(),
     );
   }
+}
+
+/// Localized semantics label, e.g. "Surah Al-Fil".
+String surahHeaderSemanticsLabel(WidgetRef ref, int surahId) {
+  final language = ref.watch(settingsProvider).appLanguage;
+  final names = ref.watch(surahNamesProvider).valueOrNull;
+  var name = 'Surah $surahId';
+  if (names != null) {
+    for (final surah in names) {
+      if (surah.id == surahId) {
+        name = surah.englishName;
+        break;
+      }
+    }
+  }
+  final prefix = AppLocalizations.getMenuText('surah', language);
+  return '$prefix $name';
 }
 
 class _SurahNameInkPainter extends CustomPainter {
@@ -214,6 +243,18 @@ class _SurahNameInkPainter extends CustomPainter {
     final dy = layout.baselineForSlot(size.height) - metrics.first.baseline;
     painter.paint(canvas, Offset(dx, dy));
     painter.dispose();
+
+    // Option-I cartouche around the ink: stroke only, same colour source.
+    final inkRect = Rect.fromLTRB(
+      (size.width - layout.inkWidth) / 2,
+      layout.baselineForSlot(size.height) - layout.inkTopAboveBaseline,
+      (size.width + layout.inkWidth) / 2,
+      layout.baselineForSlot(size.height) - layout.inkBottomAboveBaseline,
+    );
+    MushafSurahCartouchePainter(
+      geometry: layoutMushafCartouche(box: size, inkRect: inkRect),
+      color: color,
+    ).paint(canvas, size);
   }
 
   @override
@@ -223,4 +264,134 @@ class _SurahNameInkPainter extends CustomPainter {
         oldDelegate.targetInkHeight != targetInkHeight ||
         oldDelegate.maxInkWidth != maxInkWidth;
   }
+}
+
+/// < 600dp Mushaf header: the 1.0.21+69 glyph size and position are untouched;
+/// only the option-I cartouche and its hairlines are stroked around the ink.
+class SurahNameMushafFlowHeader extends ConsumerWidget {
+  const SurahNameMushafFlowHeader({
+    super.key,
+    required this.surahId,
+    required this.mushafFontSize,
+  });
+
+  final int surahId;
+  final double mushafFontSize;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final inkColor = Theme.of(context).colorScheme.onSurface;
+    final label = surahHeaderSemanticsLabel(ref, surahId);
+    return Semantics(
+      image: true,
+      label: label,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final pageWidth = constraints.maxWidth;
+          final slotHeight =
+              (mushafFontSize * 1.55).clamp(44.0, 54.0);
+          final rowHeight = 28 + slotHeight;
+          final ink = _flowInkRect(
+            surahId: surahId,
+            pageWidth: pageWidth,
+            slotHeight: slotHeight,
+          );
+          return SizedBox(
+            height: rowHeight,
+            child: Stack(
+              children: [
+                SurahNameMushafGlyph(
+                  surahId: surahId,
+                  mushafFontSize: mushafFontSize,
+                ),
+                Positioned.fill(
+                  child: MushafSurahCartoucheOverlay(
+                    box: Size(pageWidth, rowHeight),
+                    inkRect: ink,
+                    color: inkColor,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Ink rect of the +69 glyph inside the header row (page coordinates).
+Rect _flowInkRect({
+  required int surahId,
+  required double pageWidth,
+  required double slotHeight,
+}) {
+  final ink = surahNameGlyphInkFor(surahId);
+  final slotWidth = pageWidth * 0.5;
+  if (ink == null || slotWidth <= 0) {
+    return Rect.fromCenter(
+      center: Offset(pageWidth / 2, 14 + slotHeight / 2),
+      width: slotWidth,
+      height: slotHeight,
+    );
+  }
+
+  final natural = TextPainter(
+    text: TextSpan(
+      text: surahNameGlyphText(surahId),
+      style: const TextStyle(
+        fontFamily: 'SurahNameV2',
+        fontSize: 120,
+        height: 1.1,
+      ),
+    ),
+    textDirection: TextDirection.ltr,
+    maxLines: 1,
+  )..layout();
+  final naturalWidth = natural.width;
+  natural.dispose();
+  if (naturalWidth <= 0) {
+    return Rect.fromCenter(
+      center: Offset(pageWidth / 2, 14 + slotHeight / 2),
+      width: slotWidth,
+      height: slotHeight,
+    );
+  }
+
+  // Matches FittedBox(fitWidth) of the +69 header.
+  final fontSize = 120 * slotWidth / naturalWidth;
+  final painter = TextPainter(
+    text: TextSpan(
+      text: surahNameGlyphText(surahId),
+      style: TextStyle(
+        fontFamily: 'SurahNameV2',
+        fontSize: fontSize,
+        height: 1.1,
+      ),
+    ),
+    textDirection: TextDirection.ltr,
+    maxLines: 1,
+  )..layout();
+  final metrics = painter.computeLineMetrics();
+  if (metrics.isEmpty) {
+    painter.dispose();
+    return Rect.fromCenter(
+      center: Offset(pageWidth / 2, 14 + slotHeight / 2),
+      width: slotWidth,
+      height: slotHeight,
+    );
+  }
+  final baseline = metrics.first.baseline;
+  painter.dispose();
+
+  final lineHeight = fontSize * 1.1;
+  final slotTop = 14.0;
+  final slotLeft = (pageWidth - slotWidth) / 2;
+  final scaledChildTop = slotTop + (slotHeight - lineHeight) / 2;
+  final unit = fontSize / kSurahNameGlyphUnitsPerEm;
+  final inkTop = scaledChildTop + baseline - ink.yMax * unit;
+  final inkLeft = slotLeft + ink.xMin * unit;
+  final inkWidth = ink.inkWidthUnits * unit;
+  final inkHeight = ink.inkHeightUnits * unit;
+  return Rect.fromLTWH(inkLeft, inkTop, inkWidth, inkHeight);
 }
