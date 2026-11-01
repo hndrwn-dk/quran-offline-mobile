@@ -5,10 +5,9 @@ import 'package:quran_offline/core/providers/support_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
-import 'package:quran_offline/features/home/widgets/home_activity_section.dart';
+import 'package:quran_offline/features/home/widgets/home_collection_section.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/home/widgets/home_hero_card.dart';
-import 'package:quran_offline/features/home/widgets/home_notes_section.dart';
 import 'package:quran_offline/features/home/widgets/home_search_section.dart';
 import 'package:quran_offline/features/read/widgets/last_read_card.dart';
 import 'package:quran_offline/features/read/widgets/weekly_reflection_card.dart';
@@ -48,8 +47,7 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
         LastReadCard(forHome: true),
         HomeSearchSection(),
         WeeklyReflectionCard(forHome: true),
-        HomeNotesSection(),
-        HomeActivitySection(),
+        HomeCollectionSection(),
         SizedBox(height: 8),
       ],
     );
@@ -74,8 +72,7 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                HomeNotesSection(),
-                HomeActivitySection(),
+                HomeCollectionSection(),
               ],
             ),
           ),
