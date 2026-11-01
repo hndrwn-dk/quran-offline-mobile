@@ -1,4 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:quran_offline/core/mushaf/surah_name_glyph_metrics.dart';
+import 'package:quran_offline/core/mushaf/surah_name_ink_layout.dart';
 
 /// Decorative surah title using QUL Surah name font v2 ligatures.
 class SurahNameGlyph extends StatelessWidget {
@@ -15,9 +19,8 @@ class SurahNameGlyph extends StatelessWidget {
   final Color? color;
   final TextAlign textAlign;
 
-  static String ligatureFor(int surahId) {
-    return 'surah${surahId.toString().padLeft(3, '0')}';
-  }
+  /// Ligature sequence for [surahId] (surah 33 uses the font's short form).
+  static String ligatureFor(int surahId) => surahNameGlyphText(surahId);
 
   @override
   Widget build(BuildContext context) {
@@ -55,30 +58,17 @@ class SurahNameSearchGlyph extends StatelessWidget {
 
 /// Centered decorative QUL glyph for Mushaf page surah headers.
 ///
-/// The glyph is fitted inside a slot constrained by BOTH its width and its
-/// height, and never clipped: a wide banner shrinks to the slot width, a tall
-/// one to the slot height. [maxHeight] caps the slot so a short ligature can
-/// never grow past the page row it belongs to.
+/// This is the 1.0.21+69 single-page sizing (slot 50% x 44-54dp, fit width).
+/// The two-page spread uses [SurahNameMushafInkGlyph] instead.
 class SurahNameMushafGlyph extends StatelessWidget {
   const SurahNameMushafGlyph({
     super.key,
     required this.surahId,
     required this.mushafFontSize,
-    this.slotWidthFactor = 0.5,
-    this.maxHeight,
-    this.verticalPadding = 14,
   });
 
   final int surahId;
   final double mushafFontSize;
-
-  /// Share of the page width the banner may use.
-  final double slotWidthFactor;
-
-  /// Hard height cap in logical pixels (defaults to the legacy 44–54 slot).
-  final double? maxHeight;
-
-  final double verticalPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -86,23 +76,22 @@ class SurahNameMushafGlyph extends StatelessWidget {
     final accent = colorScheme.primary;
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: verticalPadding),
+      padding: const EdgeInsets.symmetric(vertical: 14),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final contentWidth =
-              constraints.maxWidth.isFinite && constraints.maxWidth > 0
-                  ? constraints.maxWidth
-                  : MediaQuery.sizeOf(context).width - 32;
-          final slotWidth = contentWidth * slotWidthFactor;
-          final slotHeight =
-              maxHeight ?? (mushafFontSize * 1.55).clamp(44.0, 54.0);
+          final contentWidth = constraints.maxWidth.isFinite &&
+                  constraints.maxWidth > 0
+              ? constraints.maxWidth
+              : MediaQuery.sizeOf(context).width - 32;
+          final headerWidth = contentWidth * 0.50;
+          final headerHeight = (mushafFontSize * 1.55).clamp(44.0, 54.0);
 
           return Center(
             child: SizedBox(
-              width: slotWidth,
-              height: slotHeight,
+              width: headerWidth,
+              height: headerHeight,
               child: FittedBox(
-                fit: BoxFit.scaleDown,
+                fit: BoxFit.fitWidth,
                 alignment: Alignment.center,
                 child: SurahNameGlyph(
                   surahId: surahId,
@@ -140,5 +129,98 @@ class SurahNameListGlyph extends StatelessWidget {
       color: color ?? Theme.of(context).colorScheme.onSurface,
       textAlign: TextAlign.right,
     );
+  }
+}
+
+/// Mushaf surah header sized by its INK bounds.
+///
+/// The font's line box is much taller than the ornament, so fitting the box
+/// (or a fixed font size) makes the header look tiny. This paints the ligature
+/// at the size that gives [targetInkHeight] of visible ink, centred vertically
+/// in the current slot, and scales a name down only if its ink would exceed
+/// [maxInkWidth]. One visual height for every surah; no clipping.
+class SurahNameMushafInkGlyph extends StatelessWidget {
+  const SurahNameMushafInkGlyph({
+    super.key,
+    required this.surahId,
+    required this.color,
+    required this.targetInkHeight,
+    required this.maxInkWidth,
+  });
+
+  final int surahId;
+  final Color color;
+  final double targetInkHeight;
+  final double maxInkWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _SurahNameInkPainter(
+        surahId: surahId,
+        color: color,
+        targetInkHeight: targetInkHeight,
+        maxInkWidth: maxInkWidth,
+      ),
+      child: const SizedBox.expand(),
+    );
+  }
+}
+
+class _SurahNameInkPainter extends CustomPainter {
+  const _SurahNameInkPainter({
+    required this.surahId,
+    required this.color,
+    required this.targetInkHeight,
+    required this.maxInkWidth,
+  });
+
+  final int surahId;
+  final Color color;
+  final double targetInkHeight;
+  final double maxInkWidth;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final layout = layoutSurahNameInk(
+      surahId: surahId,
+      targetInkHeight: targetInkHeight,
+      maxInkWidth: math.min(maxInkWidth, size.width),
+    );
+    if (layout.isEmpty) return;
+
+    final painter = TextPainter(
+      text: TextSpan(
+        text: surahNameGlyphText(surahId),
+        style: TextStyle(
+          fontFamily: 'SurahNameV2',
+          fontSize: layout.fontSize,
+          height: 1,
+          color: color,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+
+    final metrics = painter.computeLineMetrics();
+    if (metrics.isEmpty) {
+      painter.dispose();
+      return;
+    }
+
+    final dx = (size.width - layout.inkWidth) / 2 - layout.inkLeft;
+    final dy = layout.baselineForSlot(size.height) - metrics.first.baseline;
+    painter.paint(canvas, Offset(dx, dy));
+    painter.dispose();
+  }
+
+  @override
+  bool shouldRepaint(_SurahNameInkPainter oldDelegate) {
+    return oldDelegate.surahId != surahId ||
+        oldDelegate.color != color ||
+        oldDelegate.targetInkHeight != targetInkHeight ||
+        oldDelegate.maxInkWidth != maxInkWidth;
   }
 }

@@ -1,23 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 
-Future<void> _loadSurahFont() async {
-  final loader = FontLoader('SurahNameV2')
-    ..addFont(rootBundle.load('assets/fonts/surah_name_v2.ttf'));
-  await loader.load();
-}
-
-/// Renders the glyph inside one QPC row slot and returns its painted height.
-Future<double> _glyphHeightInSlot(
+/// The single-page Mushaf header keeps the exact 1.0.21+69 sizing:
+/// a 50% x `clamp(fontSize*1.55, 44, 54)` slot with `BoxFit.fitWidth`.
+Future<Size> _pumpLegacyHeader(
   WidgetTester tester, {
   required double pageWidth,
-  required double slotHeight,
-  required double slotWidthFactor,
+  double mushafFontSize = 38,
   int surahId = 2,
-  double mushafFontSize = kMushafPageFontSize,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -25,13 +17,10 @@ Future<double> _glyphHeightInSlot(
         body: Center(
           child: SizedBox(
             width: pageWidth,
-            height: slotHeight,
+            height: 200,
             child: SurahNameMushafGlyph(
               surahId: surahId,
               mushafFontSize: mushafFontSize,
-              slotWidthFactor: slotWidthFactor,
-              maxHeight: slotHeight,
-              verticalPadding: 0,
             ),
           ),
         ),
@@ -40,59 +29,45 @@ Future<double> _glyphHeightInSlot(
   );
   await tester.pump();
   expect(tester.takeException(), isNull);
-
-  final box = tester.getRect(find.byType(FittedBox));
-  expect(box.height, lessThanOrEqualTo(slotHeight + 0.01));
-  expect(box.width, lessThanOrEqualTo(pageWidth + 0.01));
-  return box.height;
+  return tester.getSize(find.byType(FittedBox));
 }
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() async {
-    await _loadSurahFont();
+    final loader = FontLoader('SurahNameV2')
+      ..addFont(rootBundle.load('assets/fonts/surah_name_v2.ttf'));
+    await loader.load();
   });
 
-  testWidgets('surah glyph fits a full QPC row slot on page 2', (tester) async {
-    await _glyphHeightInSlot(
-      tester,
-      pageWidth: kMushafPageLayoutWidth,
-      slotHeight: kMushafPageRowHeight * 0.92,
-      slotWidthFactor: 0.68,
-    );
+  testWidgets('single-page header keeps the 69 slot (phone)', (tester) async {
+    final slot = await _pumpLegacyHeader(tester, pageWidth: 358);
+    expect(slot.width, closeTo(179, 0.01));
+    expect(slot.height, closeTo(54, 0.01));
   });
 
-  testWidgets('surah glyph fits on every screen size', (tester) async {
-    // Phone, Fold inner, tablet landscape, cover screen.
+  testWidgets('single-page header keeps the 69 slot on every width',
+      (tester) async {
     for (final pageWidth in [358.0, 370.0, 432.0, 400.0]) {
-      await _glyphHeightInSlot(
-        tester,
-        pageWidth: pageWidth,
-        slotHeight: kMushafPageRowHeight * 0.92,
-        slotWidthFactor: 0.68,
-      );
+      final slot = await _pumpLegacyHeader(tester, pageWidth: pageWidth);
+      expect(slot.width, closeTo(pageWidth * 0.5, 0.01));
+      expect(slot.height, closeTo(54, 0.01));
     }
   });
 
-  testWidgets('wide slot cannot grow past the max height cap', (tester) async {
-    // Legacy call site: 50% page width slot, 54dp cap from mushafFontSize 38.
-    final height = await _glyphHeightInSlot(
+  testWidgets('small header font uses the 44dp clamp', (tester) async {
+    final slot = await _pumpLegacyHeader(
       tester,
-      pageWidth: 900,
-      slotHeight: (38 * 1.55).clamp(44.0, 54.0),
-      slotWidthFactor: 0.5,
-      mushafFontSize: 38,
+      pageWidth: 358,
+      mushafFontSize: 28,
     );
-    expect(height, lessThanOrEqualTo(54.01));
+    expect(slot.height, closeTo(44, 0.01));
   });
 
-  testWidgets('narrow page keeps the glyph inside the width', (tester) async {
-    await _glyphHeightInSlot(
-      tester,
-      pageWidth: 240,
-      slotHeight: kMushafPageRowHeight * 0.92,
-      slotWidthFactor: 0.68,
-    );
+  testWidgets('surah 33 uses the font short ligature', (tester) async {
+    expect(SurahNameGlyph.ligatureFor(33), '033');
+    await _pumpLegacyHeader(tester, pageWidth: 358, surahId: 33);
+    expect(tester.takeException(), isNull);
   });
 }

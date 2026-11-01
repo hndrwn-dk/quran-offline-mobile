@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_glyph_fit.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
+import 'package:quran_offline/core/mushaf/surah_name_ink_layout.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
@@ -239,14 +240,11 @@ class _QpcV2MushafTextBody extends StatelessWidget {
         rows.add(
           SizedBox(
             height: rowHeight,
-            child: Center(
-              child: SurahNameMushafGlyph(
-                surahId: line.surahId!,
-                mushafFontSize: fontSize,
-                slotWidthFactor: 0.68,
-                maxHeight: rowHeight * 0.92,
-                verticalPadding: 0,
-              ),
+            child: SurahNameMushafInkGlyph(
+              surahId: line.surahId!,
+              color: colorScheme.primary,
+              targetInkHeight: rowHeight * kSurahNameInkHeightFactor,
+              maxInkWidth: lineMaxWidth * kSurahNameMaxInkWidthFactor,
             ),
           ),
         );

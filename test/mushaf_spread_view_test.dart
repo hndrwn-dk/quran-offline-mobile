@@ -217,6 +217,27 @@ void main() {
       }
     }
 
+    testWidgets('single page mode keeps the +69 flow path', (tester) async {
+      await pumpView(tester, const Size(475, 751), initialPage: 2);
+
+      final body = tester.widget<MushafPageBody>(
+        find.byType(MushafPageBody, skipOffstage: false),
+      );
+      expect(body.framed, isFalse);
+    });
+
+    testWidgets('spread mode renders both pages framed', (tester) async {
+      await pumpView(tester, const Size(933, 704), initialPage: 1);
+
+      final bodies = tester
+          .widgetList<MushafPageBody>(
+            find.byType(MushafPageBody, skipOffstage: false),
+          )
+          .toList();
+      expect(bodies.length, 2);
+      expect(bodies.every((body) => body.framed), isTrue);
+    });
+
     testWidgets('spread AppBar shows the localized page pair', (tester) async {
       await pumpView(tester, const Size(933, 704), initialPage: 1);
       expect(find.text('Mushaf - Halaman 1–2'), findsOneWidget);

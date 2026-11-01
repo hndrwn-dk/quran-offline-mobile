@@ -498,7 +498,9 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
                 final pageNo = index + 1;
                 return MushafPage(
                   pageNo: pageNo,
-                  framed: true,
+                  // Single-page mode keeps the 1.0.21+69 flow layout (phone,
+                  // cover screen, any window where the spread gate is false).
+                  framed: false,
                   targetSurahId: _scrollToSurahId,
                   targetAyahNo: _scrollToAyahNo,
                   selectedSurahId: _selectedSurahId,

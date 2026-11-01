@@ -91,21 +91,35 @@ class MushafPageNumberBadge extends StatelessWidget {
                       ),
                     ),
                     alignment: Alignment.center,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        _isRange ? '$pageNo–$lastPage' : '$pageNo',
-                        style: textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: -0.2,
-                          fontSize: _isRange ? 11 : 13,
-                          fontFeatures: const [
-                            FontFeature.tabularFigures(),
-                          ],
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
+                    child: _isRange
+                        ? FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '$pageNo–$lastPage',
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.2,
+                                fontSize: 11,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                          )
+                        // Single page: exact 1.0.21+69 rendering.
+                        : Text(
+                            '$pageNo',
+                            style: textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.2,
+                              fontSize: 13,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
                   ),
                 ],
               ),
