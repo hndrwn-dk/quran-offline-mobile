@@ -216,13 +216,18 @@ void main() {
               body: Center(
                 child: RepaintBoundary(
                   key: key,
-                  child: SizedBox.fromSize(
-                    size: pageSize,
-                    child: MushafPageSheet(
-                      content: content,
-                      openingPageScale: openingScale,
-                      colorScheme: scheme,
-                      ayahKeys: ayahKeys,
+                  // Same wrapping as the reader: the boundary owns an opaque
+                  // paper layer, so a transparent glyph layer is impossible.
+                  child: ColoredBox(
+                    color: scheme.surface,
+                    child: SizedBox.fromSize(
+                      size: pageSize,
+                      child: MushafPageSheet(
+                        content: content,
+                        openingPageScale: openingScale,
+                        colorScheme: scheme,
+                        ayahKeys: ayahKeys,
+                      ),
                     ),
                   ),
                 ),
