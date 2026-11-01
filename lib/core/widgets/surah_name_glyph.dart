@@ -54,15 +54,31 @@ class SurahNameSearchGlyph extends StatelessWidget {
 }
 
 /// Centered decorative QUL glyph for Mushaf page surah headers.
+///
+/// The glyph is fitted inside a slot constrained by BOTH its width and its
+/// height, and never clipped: a wide banner shrinks to the slot width, a tall
+/// one to the slot height. [maxHeight] caps the slot so a short ligature can
+/// never grow past the page row it belongs to.
 class SurahNameMushafGlyph extends StatelessWidget {
   const SurahNameMushafGlyph({
     super.key,
     required this.surahId,
     required this.mushafFontSize,
+    this.slotWidthFactor = 0.5,
+    this.maxHeight,
+    this.verticalPadding = 14,
   });
 
   final int surahId;
   final double mushafFontSize;
+
+  /// Share of the page width the banner may use.
+  final double slotWidthFactor;
+
+  /// Hard height cap in logical pixels (defaults to the legacy 44–54 slot).
+  final double? maxHeight;
+
+  final double verticalPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -70,22 +86,23 @@ class SurahNameMushafGlyph extends StatelessWidget {
     final accent = colorScheme.primary;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: EdgeInsets.symmetric(vertical: verticalPadding),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final contentWidth = constraints.maxWidth.isFinite &&
-                  constraints.maxWidth > 0
-              ? constraints.maxWidth
-              : MediaQuery.sizeOf(context).width - 32;
-          final headerWidth = contentWidth * 0.50;
-          final headerHeight = (mushafFontSize * 1.55).clamp(44.0, 54.0);
+          final contentWidth =
+              constraints.maxWidth.isFinite && constraints.maxWidth > 0
+                  ? constraints.maxWidth
+                  : MediaQuery.sizeOf(context).width - 32;
+          final slotWidth = contentWidth * slotWidthFactor;
+          final slotHeight =
+              maxHeight ?? (mushafFontSize * 1.55).clamp(44.0, 54.0);
 
           return Center(
             child: SizedBox(
-              width: headerWidth,
-              height: headerHeight,
+              width: slotWidth,
+              height: slotHeight,
               child: FittedBox(
-                fit: BoxFit.fitWidth,
+                fit: BoxFit.scaleDown,
                 alignment: Alignment.center,
                 child: SurahNameGlyph(
                   surahId: surahId,
