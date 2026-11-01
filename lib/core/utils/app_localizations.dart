@@ -4695,6 +4695,11 @@ class AppLocalizations {
       'text_settings_size_label' => _getTextSettingsSizeLabel(language),
       'mushaf_two_page_title' => _getMushafTwoPageTitle(language),
       'mushaf_two_page_subtitle' => _getMushafTwoPageSubtitle(language),
+      'page_turn_title' => _getPageTurnTitle(language),
+      'page_turn_subtitle' => _getPageTurnSubtitle(language),
+      'page_turn_curl' => _getPageTurnCurl(language),
+      'page_turn_slide' => _getPageTurnSlide(language),
+      'page_turn_none' => _getPageTurnNone(language),
       'apply' => _getApply(language),
       'transliteration_style_title' => _getTransliterationStyleTitle(language),
       'transliteration_style_original' =>
@@ -6097,6 +6102,55 @@ class AppLocalizations {
     };
   }
 
+  static String _getPageTurnTitle(String language) {
+    return switch (language) {
+      'id' => 'Animasi balik halaman',
+      'en' => 'Page turn animation',
+      'zh' => '????',
+      'ja' => '??????',
+      _ => 'Page turn animation',
+    };
+  }
+
+  static String _getPageTurnSubtitle(String language) {
+    return switch (language) {
+      'id' => 'Saat kamu membalik halaman: lembar seperti buku, geser, atau langsung.',
+      'en' => 'How pages turn while you read: leaf, slide, or instant.',
+      'zh' => '??????????:?????????',
+      'ja' => '???????????:????????????',
+      _ => 'How pages turn while you read: leaf, slide, or instant.',
+    };
+  }
+
+  static String _getPageTurnCurl(String language) {
+    return switch (language) {
+      'id' => 'Lembar',
+      'en' => 'Curl',
+      'zh' => '??',
+      'ja' => '???',
+      _ => 'Curl',
+    };
+  }
+
+  static String _getPageTurnSlide(String language) {
+    return switch (language) {
+      'id' => 'Geser',
+      'en' => 'Slide',
+      'zh' => '??',
+      'ja' => '????',
+      _ => 'Slide',
+    };
+  }
+
+  static String _getPageTurnNone(String language) {
+    return switch (language) {
+      'id' => 'Tanpa',
+      'en' => 'None',
+      'zh' => '?',
+      'ja' => '??',
+      _ => 'None',
+    };
+  }
   static String _getMushafTwoPageSubtitle(String language) {
     return switch (language) {
       'id' =>
@@ -7709,3 +7763,4 @@ class AppLocalizations {
     };
   }
 }
+
