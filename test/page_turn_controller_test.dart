@@ -87,19 +87,26 @@ void main() {
     expect(completed, [plan]);
   });
 
-  test('a blocked drag rubber-bands and never commits', () async {
-    final plan = pageTurnRubberBandPlan(
-      visiblePage: 1,
-      spread: true,
-      direction: PageTurnDirection.backward,
-    );
-    controller.beginDrag(plan, blocked: true);
+  test('drag progress clamps at both ends, never overscrolls', () async {
+    final plan = _plan(PageTurnDirection.forward);
+    controller.beginDrag(plan);
     controller.updateDrag(totalDeltaX: -400, pageWidth: 400);
-    expect(controller.isBlocked, isTrue);
-    expect(controller.progress, lessThanOrEqualTo(kPageTurnMaxOverscroll));
-    await controller.endDrag(velocityX: -2000);
-    expect(completed, isEmpty);
-    expect(cancelled, 1);
+    expect(controller.progress, 0);
+    controller.updateDrag(totalDeltaX: 400, pageWidth: 400);
+    expect(controller.progress, 1);
+    controller.updateDrag(totalDeltaX: 800, pageWidth: 400);
+    expect(controller.progress, 1);
+    await controller.endDrag(velocityX: 0);
+    expect(completed, [plan]);
+  });
+
+  test('tilt is stored for the shader and clamped', () async {
+    controller.beginDrag(_plan(PageTurnDirection.forward), tilt: 0.5);
+    expect(controller.tilt, 0.5);
+    controller.updateDrag(totalDeltaX: 100, pageWidth: 400, tilt: 2.3);
+    expect(controller.tilt, 1);
+    await controller.play(_plan(PageTurnDirection.forward), tilt: -3);
+    expect(controller.tilt, -1);
   });
 
   test('cancel aborts without landing on another page', () async {

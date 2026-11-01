@@ -26,9 +26,6 @@ const Duration kPageTurnPlayDuration = Duration(milliseconds: 420);
 /// Fraction of a page width at the outer edges that turns on tap.
 const double kPageTurnEdgeTapFraction = 0.12;
 
-/// Largest progress a drag at page 1 / page 604 may show (rubber band).
-const double kPageTurnMaxOverscroll = 0.06;
-
 /// Free-edge bow as a fraction of the page width (0 = flat paper).
 const double kPageTurnCurlDepthFactor = 0.06;
 
@@ -36,8 +33,41 @@ const double kPageTurnCurlDepthFactor = 0.06;
 const int kPageTurnMeshColumns = 12;
 const int kPageTurnMeshRows = 4;
 
+/// Cylinder radius of the fragment-shader curl as a fraction of the page width:
+/// 10% while the leaf is flat, easing to 8% as it lands.
+double pageCurlRadius(double pageWidth, double progress) {
+  if (pageWidth <= 0) return 0;
+  final p = progress.clamp(0.0, 1.0);
+  return pageWidth * (0.10 - 0.02 * p);
+}
+
+/// Width of the visible curled strip (zero at both ends of the turn).
+double pageCurlBandWidth(double radius, double progress) {
+  final p = progress.clamp(0.0, 1.0);
+  final s = math.sin(math.pi * p);
+  return radius * s * (0.55 + 0.45 * s);
+}
+
+/// Screen-space diagonal fold offset for a finger at [tilt] (-1 top, 1 bottom).
+double pageCurlDiagonalOffset({
+  required double tilt,
+  required double pageWidth,
+  required double progress,
+}) {
+  if (pageWidth <= 0) return 0;
+  final p = progress.clamp(0.0, 1.0);
+  return tilt.clamp(-1.0, 1.0) *
+      0.18 *
+      pageWidth *
+      math.sin(math.pi * p);
+}
+
 /// Neighbour page snapshots kept rasterized while idle.
 const int kPageTurnMaxCachedSnapshots = 4;
+
+/// Hard ceiling for cached snapshot pixels (~40 MB): at 3x on a wide spread
+/// four full pages would otherwise exceed it.
+const int kPageTurnMaxSnapshotBytes = 36 * 1024 * 1024;
 
 /// Which way the leaf turns.
 enum PageTurnDirection {
@@ -121,8 +151,8 @@ class PageTurnPlan {
 
 /// Resolves one turn from the page/spread currently in view.
 ///
-/// Returns `null` at the book bounds (before page 1, after page 604), which the
-/// reader turns into a small rubber-band overscroll while dragging.
+/// Returns `null` at the book bounds (before page 1, after page 604). The reader
+/// then ignores the gesture completely: no leaf, no motion, no overscroll.
 PageTurnPlan? pageTurnPlan({
   required int visiblePage,
   required bool spread,
@@ -181,44 +211,6 @@ PageTurnPlan? pageTurnPlan({
   );
 }
 
-/// Synthetic plan used at the book bounds: the leaf only rubber-bands.
-///
-/// There is no page to turn to, so the leaf, its back and the page underneath are
-/// all the page the reader is on; the drag is capped at
-/// [kPageTurnMaxOverscroll] and always springs back.
-PageTurnPlan pageTurnRubberBandPlan({
-  required int visiblePage,
-  required bool spread,
-  required PageTurnDirection direction,
-  int totalPages = kMushafTotalPages,
-}) {
-  final page = visiblePage.clamp(1, totalPages);
-  if (spread) {
-    final pair = mushafSpreadForPage(page);
-    final leaf =
-        direction == PageTurnDirection.forward ? pair.leftPage : pair.rightPage;
-    final stationary =
-        direction == PageTurnDirection.forward ? pair.rightPage : pair.leftPage;
-    return PageTurnPlan(
-      direction: direction,
-      spread: true,
-      leafPage: leaf,
-      backPage: leaf,
-      revealedPage: leaf,
-      stationaryPage: stationary,
-      targetIndex: mushafSpreadIndexForPage(pair.rightPage),
-    );
-  }
-  return PageTurnPlan(
-    direction: direction,
-    spread: false,
-    leafPage: page,
-    backPage: page,
-    revealedPage: page,
-    targetIndex: page - 1,
-  );
-}
-
 /// Maps a horizontal drag delta to a turn direction.
 ///
 /// The Mushaf pager is `reverse: true`, so dragging right advances. The app
@@ -228,27 +220,21 @@ PageTurnDirection? pageTurnDirectionForDrag(double deltaX) {
   return deltaX > 0 ? PageTurnDirection.forward : PageTurnDirection.backward;
 }
 
-/// Progress of an interactive drag, with a damped overscroll past the bounds.
+/// Progress of an interactive drag, clamped to the page.
 ///
-/// [pageWidth] is the leaf width; [blocked] is true when there is no page to
-/// turn to (page 1 / 604).
+/// [pageWidth] is the leaf width. A drag in the wrong direction or past the end
+/// of the page simply stops at 0 / 1; there is no rubber band at the book bounds
+/// because the reader never starts a turn there in the first place.
 double pageTurnDragProgress({
   required double deltaX,
   required double pageWidth,
   required PageTurnDirection direction,
-  bool blocked = false,
 }) {
   if (pageWidth <= 0) return 0;
   final forward = direction == PageTurnDirection.forward;
   // The leaf moves in the same direction as the finger for a forward turn.
   final travel = forward ? deltaX : -deltaX;
-  final raw = travel / pageWidth;
-  if (blocked) {
-    if (raw <= 0) return 0;
-    // Rubber band: never pass the small overscroll allowance.
-    return kPageTurnMaxOverscroll * (1 - math.exp(-raw * 4));
-  }
-  return raw.clamp(0.0, 1.0);
+  return (travel / pageWidth).clamp(0.0, 1.0);
 }
 
 /// Whether a released drag should complete the turn.

@@ -30,8 +30,10 @@ class PageTurnController extends ChangeNotifier {
   bool _spread = false;
 
   bool _dragging = false;
-  bool _blocked = false;
   bool _completing = false;
+
+  /// Finger height inside the page, -1 (top) .. 1 (bottom), used by the curl.
+  double _tilt = 0;
 
   /// Fired when the animation reached progress 1. The page view jumps here.
   ValueChanged<PageTurnPlan>? onCompleted;
@@ -41,9 +43,11 @@ class PageTurnController extends ChangeNotifier {
 
   bool get isActive => _plan != null;
   bool get isDragging => _dragging;
-  bool get isBlocked => _blocked;
   PageTurnPlan? get plan => _plan;
   double get progress => _animation.value;
+
+  /// Fold tilt set by the finger's y at the start of the drag.
+  double get tilt => _tilt;
 
   PageTurnGeometry? get geometry {
     final plan = _plan;
@@ -77,12 +81,12 @@ class PageTurnController extends ChangeNotifier {
     _spread = spread;
   }
 
-  /// Starts an interactive turn. [blocked] means there is no page to turn to
-  /// (page 1 / 604): the drag then only shows a small rubber band.
-  void beginDrag(PageTurnPlan plan, {bool blocked = false}) {
+  /// Starts an interactive turn. The caller never starts one at the book
+  /// bounds: there is no page to turn to there.
+  void beginDrag(PageTurnPlan plan, {double tilt = 0}) {
     _animation.stop();
     _plan = plan;
-    _blocked = blocked;
+    _tilt = tilt.clamp(-1.0, 1.0);
     _dragging = true;
     _completing = false;
     _animation.value = 0;
@@ -93,14 +97,15 @@ class PageTurnController extends ChangeNotifier {
   void updateDrag({
     required double totalDeltaX,
     required double pageWidth,
+    double? tilt,
   }) {
     final plan = _plan;
     if (plan == null || !_dragging) return;
+    if (tilt != null) _tilt = tilt.clamp(-1.0, 1.0);
     _animation.value = pageTurnDragProgress(
       deltaX: totalDeltaX,
       pageWidth: pageWidth,
       direction: plan.direction,
-      blocked: _blocked,
     );
   }
 
@@ -109,20 +114,19 @@ class PageTurnController extends ChangeNotifier {
     final plan = _plan;
     if (plan == null || !_dragging) return;
     _dragging = false;
-    final commit = !_blocked &&
-        pageTurnShouldCommit(
-          progress: progress,
-          velocityX: velocityX,
-          direction: plan.direction,
-        );
+    final commit = pageTurnShouldCommit(
+      progress: progress,
+      velocityX: velocityX,
+      direction: plan.direction,
+    );
     await _settle(commit: commit);
   }
 
   /// Audio-driven turn: same leaf animation, no finger.
-  Future<void> play(PageTurnPlan plan) async {
+  Future<void> play(PageTurnPlan plan, {double tilt = 0}) async {
     _animation.stop();
     _plan = plan;
-    _blocked = false;
+    _tilt = tilt.clamp(-1.0, 1.0);
     _dragging = false;
     _completing = false;
     _animation.value = 0;

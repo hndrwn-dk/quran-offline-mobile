@@ -126,15 +126,25 @@ void main() {
       );
     });
 
-    test('rubber band plan keeps the reader on the same page', () {
-      final plan = pageTurnRubberBandPlan(
-        visiblePage: 1,
-        spread: true,
-        direction: PageTurnDirection.backward,
-      );
-      expect(plan.leafPage, plan.backPage);
-      expect(plan.leafPage, plan.revealedPage);
-      expect(plan.targetIndex, 0);
+    test('bounds never produce a synthetic turn', () {
+      for (final spread in [true, false]) {
+        expect(
+          pageTurnPlan(
+            visiblePage: 1,
+            spread: spread,
+            direction: PageTurnDirection.backward,
+          ),
+          isNull,
+        );
+        expect(
+          pageTurnPlan(
+            visiblePage: kMushafTotalPages,
+            spread: spread,
+            direction: PageTurnDirection.forward,
+          ),
+          isNull,
+        );
+      }
     });
   });
 
@@ -188,15 +198,72 @@ void main() {
       );
     });
 
-    test('bounds only allow a small rubber band', () {
-      final progress = pageTurnDragProgress(
-        deltaX: 400,
-        pageWidth: 400,
-        direction: PageTurnDirection.forward,
-        blocked: true,
+    test('progress is clamped with no rubber band at any bound', () {
+      expect(
+        pageTurnDragProgress(
+          deltaX: -400,
+          pageWidth: 400,
+          direction: PageTurnDirection.forward,
+        ),
+        0,
       );
-      expect(progress, greaterThan(0));
-      expect(progress, lessThanOrEqualTo(kPageTurnMaxOverscroll));
+      expect(
+        pageTurnDragProgress(
+          deltaX: 400,
+          pageWidth: 400,
+          direction: PageTurnDirection.backward,
+        ),
+        0,
+      );
+      expect(
+        pageTurnDragProgress(
+          deltaX: -900,
+          pageWidth: 400,
+          direction: PageTurnDirection.backward,
+        ),
+        1,
+      );
+    });
+
+    test('curl radius is 8–12% of the page and shrinks as it lands', () {
+      final start = pageCurlRadius(400, 0);
+      final end = pageCurlRadius(400, 1);
+      expect(start, closeTo(40, 1e-9)); // 10%
+      expect(end, closeTo(32, 1e-9)); // 8%
+      expect(end, lessThan(start));
+      expect(pageCurlRadius(0, 0.5), 0);
+    });
+
+    test('the curled strip is closed at both ends of the turn', () {
+      expect(pageCurlBandWidth(40, 0), 0);
+      expect(pageCurlBandWidth(40, 1), closeTo(0, 1e-9));
+      expect(pageCurlBandWidth(40, 0.5), closeTo(40, 1e-9));
+      expect(pageCurlBandWidth(40, 0.25), greaterThan(0));
+    });
+
+    test('diagonal fold offset follows the finger and vanishes at the ends',
+        () {
+      final top = pageCurlDiagonalOffset(
+        tilt: -1,
+        pageWidth: 400,
+        progress: 0.25,
+      );
+      final bottom = pageCurlDiagonalOffset(
+        tilt: 1,
+        pageWidth: 400,
+        progress: 0.25,
+      );
+      expect(top, lessThan(0));
+      expect(bottom, greaterThan(0));
+      expect(bottom, closeTo(-top, 1e-9));
+      expect(
+        pageCurlDiagonalOffset(tilt: 1, pageWidth: 400, progress: 0),
+        0,
+      );
+      expect(
+        pageCurlDiagonalOffset(tilt: 1, pageWidth: 400, progress: 1),
+        closeTo(0, 1e-9),
+      );
     });
 
     test('commit needs 35% or 700 px/s', () {
