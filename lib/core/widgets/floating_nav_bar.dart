@@ -181,50 +181,47 @@ class _FloatingNavButton extends StatelessWidget {
               ),
               child: FittedBox(
                 fit: BoxFit.scaleDown,
-                child: AnimatedSize(
+                child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOutCubic,
+                  height: FloatingNavBar.itemExtent,
+                  constraints: const BoxConstraints(
+                    minWidth: FloatingNavBar.itemExtent,
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: selected ? 14 : 0,
+                  ),
                   alignment: Alignment.center,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOutCubic,
-                    height: FloatingNavBar.itemExtent,
-                    width: selected ? null : FloatingNavBar.itemExtent,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: selected ? 14 : 0,
-                    ),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? colorScheme.primaryContainer
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          selected
-                              ? destination.selectedIcon
-                              : destination.icon,
-                          size: selected ? 20 : 22,
-                          color: foreground,
-                        ),
-                        if (selected) ...[
-                          const SizedBox(width: 6),
-                          Text(
-                            destination.label,
-                            maxLines: 1,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: foreground,
-                              height: 1.1,
-                            ),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? colorScheme.primaryContainer
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        selected
+                            ? destination.selectedIcon
+                            : destination.icon,
+                        size: selected ? 20 : 22,
+                        color: foreground,
+                      ),
+                      if (selected) ...[
+                        const SizedBox(width: 6),
+                        Text(
+                          destination.label,
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: foreground,
+                            height: 1.1,
                           ),
-                        ],
+                        ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ),
