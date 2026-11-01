@@ -143,6 +143,25 @@ void main() {
       expect(find.text('Lihat semua ›'), findsOneWidget);
     });
 
+    testWidgets('chips follow the Koleksi tab order: penanda, catatan, sorotan',
+        (tester) async {
+      await _pump(
+        tester,
+        notes: [_note(1, 6, 'a', 1)],
+        bookmarks: [_bookmark(2, 1, 2)],
+        highlights: [_highlight(2, 2, 3)],
+      );
+      final x = [
+        for (final kind in ['bookmark', 'note', 'highlight'])
+          tester.getTopLeft(find.byKey(Key('home_collection_chip_$kind'))).dx,
+      ];
+      expect(x[0] < x[1] && x[1] < x[2], isTrue);
+      expect(
+        HomeCollectionKind.values.map((k) => k.libraryTab).toList(),
+        [0, 1, 2],
+      );
+    });
+
     testWidgets('rows: "Surah · QS s:a", note snippet or type', (tester) async {
       await _pump(
         tester,

@@ -16,10 +16,11 @@ import 'package:quran_offline/features/reader/open_reader_screen.dart';
 /// Most recent items shown on Home, across notes, bookmarks and highlights.
 const int kHomeCollectionLimit = 4;
 
-/// The parts of the Koleksi screen, with their tab index there.
+/// The parts of the Koleksi screen in its tab order (penanda, catatan,
+/// sorotan); Home lists the count chips in this order too.
 enum HomeCollectionKind {
-  note(1),
   bookmark(0),
+  note(1),
   highlight(2);
 
   const HomeCollectionKind(this.libraryTab);
