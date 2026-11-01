@@ -1,0 +1,28 @@
+<en-US>
+• Two-page spread like a printed mushaf on tablets and foldables
+• Full-screen reading mode on large screens, tap to show controls
+• New surah name ornament in Mushaf
+• Back button always available while reading
+• Fixes for surah names on large screens and Al-Ahzab
+</en-US>
+<id>
+• Tampilan dua halaman seperti mushaf cetak di tablet dan HP lipat
+• Mode baca layar penuh di layar besar, ketuk untuk menampilkan menu
+• Hiasan baru pada nama surah di Mushaf
+• Tombol kembali selalu tersedia saat membaca
+• Perbaikan nama surah di layar lebar dan Al-Ahzab
+</id>
+<zh-CN>
+• 平板和折叠屏上像纸质 mushaf 一样的双页显示
+• 大屏全屏阅读模式，点按显示控件
+• Mushaf 中新的苏拉名称装饰
+• 阅读时始终提供返回按钮
+• 修复大屏上的苏拉名称和 Al-Ahzab 的问题
+</zh-CN>
+<ja-JP>
+• タブレットと折りたたみ端末で印刷ムスハフのような見開き表示
+• 大画面の全画面読書モード、タップでコントロール表示
+• ムスハフのスーラ名に新しい装飾
+• 読書中いつでも戻るボタンを表示
+• 大画面のスーラ名と Al-Ahzab の修正
+</ja-JP>
