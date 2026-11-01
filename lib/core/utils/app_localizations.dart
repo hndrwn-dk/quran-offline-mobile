@@ -1950,7 +1950,7 @@ class AppLocalizations {
   static String getSetoranSummaryReviewHint(String language) {
     return switch (language) {
       'id' =>
-        'Beberapa ayat sudah benar tetapi masih ada catatan tajwid. Anda boleh lanjut menandai setoran atau ulang ayat lemah.',
+        'Beberapa ayat sudah benar tetapi masih ada catatan tajwid. Kamu boleh lanjut menandai setoran atau ulang ayat lemah.',
       'en' =>
         'Some ayahs are correct but tajweed notes remain. You may mark done or retry weaker ayahs.',
       'zh' => '部分经文已正确但仍有塔吉维德说明。可提交或重试薄弱经文。',
@@ -1986,7 +1986,7 @@ class AppLocalizations {
     int noteCount,
   ) {
     return switch (language) {
-      'id' => 'Anda menyelesaikan $done dari $total ayat. '
+      'id' => 'Kamu menyelesaikan $done dari $total ayat. '
           '${noteCount > 0 ? 'Ada $noteCount catatan tajwid untuk dipelajari.' : 'Tidak ada catatan tajwid khusus.'}',
       'en' => 'You completed $done of $total ayahs. '
           '${noteCount > 0 ? 'There are $noteCount tajweed notes to review.' : 'No specific tajweed notes.'}',
@@ -2899,7 +2899,7 @@ class AppLocalizations {
 
   static String _getReadSubtitle(String language) {
     return switch (language) {
-      'id' => 'Surah, juz, atau mushaf — pilih cara baca Anda',
+      'id' => 'Surah, juz, atau mushaf — pilih cara baca kamu',
       'en' => 'Surah, juz, or mushaf — choose how you read',
       'zh' => 'Surah、Juz 或 Mushaf — 选择您的阅读方式',
       'ja' => 'Surah、Juz、Mushaf — 読み方を選びましょう',
@@ -2919,7 +2919,7 @@ class AppLocalizations {
 
   static String getHomeActivityTitle(String language) {
     return switch (language) {
-      'id' => 'Aktivitas Anda',
+      'id' => 'Aktivitas kamu',
       'en' => 'Your activity',
       'zh' => '您的活动',
       'ja' => 'あなたの活動',
@@ -4058,7 +4058,7 @@ class AppLocalizations {
 
   static String _getSearchByLabel(String language) {
     return switch (language) {
-      'id' => 'Anda dapat mencari berdasarkan:',
+      'id' => 'Kamu dapat mencari berdasarkan:',
       'en' => 'You can search by:',
       'zh' => '您可以按以下方式搜索：',
       'ja' => '次の方法で検索できます：',
@@ -4441,7 +4441,7 @@ class AppLocalizations {
 
   static String getDoaNeedPrompt(String language) {
     return switch (language) {
-      'id' => 'Apa yang sedang Anda butuhkan?',
+      'id' => 'Apa yang sedang kamu butuhkan?',
       'en' => 'What do you need right now?',
       'zh' => '您现在需要什么？',
       'ja' => '今、何が必要ですか？',
@@ -4967,7 +4967,7 @@ class AppLocalizations {
 
   static String _getWeeklyReminderSubtitle(String language) {
     return switch (language) {
-      'id' => 'Setiap Jumat sore — cek apakah Anda sudah membaca minggu ini.',
+      'id' => 'Setiap Jumat sore — cek apakah kamu sudah membaca minggu ini.',
       'en' => 'Every Friday afternoon — check if you\'ve read this week.',
       'zh' => '每周五下午 — 检查本周是否已阅读。',
       'ja' => '毎週金曜午後 — 今週読んだか確認します。',
@@ -5641,7 +5641,7 @@ class AppLocalizations {
 
   static String _getFeedbackSuccess(String language) {
     return switch (language) {
-      'id' => 'Terima kasih! Laporan Anda telah dikirim.',
+      'id' => 'Terima kasih! Laporan kamu telah dikirim.',
       'en' => 'Thank you! Your report was submitted.',
       'zh' => '谢谢！您的反馈已提交。',
       'ja' => 'ありがとうございます。報告を送信しました。',
@@ -6251,7 +6251,7 @@ class AppLocalizations {
 
   static String _getNotesSubtitle(String language) {
     return switch (language) {
-      'id' => 'Catatan pribadi Anda',
+      'id' => 'Catatan pribadi kamu',
       'en' => 'Your personal notes',
       'zh' => '您的个人笔记',
       'ja' => 'あなたの個人的なメモ',
@@ -6341,7 +6341,7 @@ class AppLocalizations {
 
   static String _getLibrarySubtitle(String language) {
     return switch (language) {
-      'id' => 'Koleksi pribadi Anda',
+      'id' => 'Koleksi pribadi kamu',
       'en' => 'Your personal collection',
       'zh' => '您的个人收藏',
       'ja' => 'あなたの個人的なコレクション',
@@ -6433,7 +6433,7 @@ class AppLocalizations {
   static String _getHighlightGuideIntro(String language) {
     return switch (language) {
       'id' =>
-        'Warna berikut dapat digunakan untuk mengkategorikan ayat yang Anda highlight:',
+        'Warna berikut dapat digunakan untuk mengkategorikan ayat yang kamu highlight:',
       'en' =>
         'The following colors can be used to categorize verses you highlight:',
       'zh' => '以下颜色可用于对您高亮的经文进行分类：',
@@ -6446,7 +6446,7 @@ class AppLocalizations {
   static String _getHighlightGuideClosing(String language) {
     return switch (language) {
       'id' =>
-        'Gunakan warna yang berbeda untuk mengorganisir dan mengkategorikan ayat-ayat penting Anda.',
+        'Gunakan warna yang berbeda untuk mengorganisir dan mengkategorikan ayat-ayat penting kamu.',
       'en' =>
         'Use different colors to organize and categorize your important verses.',
       'zh' => '使用不同的颜色来组织和分类您的重要经文。',
@@ -6659,7 +6659,7 @@ class AppLocalizations {
 
   static String _getHighlightColorOtherDesc(String language) {
     return switch (language) {
-      'id' => 'Kategori khusus Anda',
+      'id' => 'Kategori khusus kamu',
       'en' => 'Your custom category',
       'zh' => '您的自定义类别',
       'ja' => 'カスタムカテゴリ',
@@ -6865,7 +6865,7 @@ class AppLocalizations {
   static String getOnboardingSettingsHint(String language) {
     return switch (language) {
       'id' => 'Menu, terjemahan, dan konten mengikuti bahasa ini.\n'
-          'Anda dapat mengubahnya nanti di Pengaturan.',
+          'Kamu dapat mengubahnya nanti di Pengaturan.',
       'en' => 'Menus, translation, and content follow this language.\n'
           'You can change this later in Settings.',
       'zh' => '菜单、译文和内容将使用所选语言。\n'
@@ -6889,7 +6889,7 @@ class AppLocalizations {
 
   static String getOnboardingLanguageHeadline(String language) {
     return switch (language) {
-      'id' => 'Pilih bahasa Anda',
+      'id' => 'Pilih bahasa kamu',
       'en' => 'Choose your language',
       'zh' => '选择您的语言',
       'ja' => '言語を選択',
@@ -7567,7 +7567,7 @@ class AppLocalizations {
   static String recDeleteReciterMessage(String name, String language) {
     return switch (language) {
       'id' =>
-        'Ini menghapus semua file tilawah $name yang tersimpan dari ponsel Anda. Anda dapat menyimpannya lagi nanti.',
+        'Ini menghapus semua file tilawah $name yang tersimpan dari ponsel kamu. Kamu dapat menyimpannya lagi nanti.',
       'en' =>
         'This removes all saved recitation files for $name from your phone. You can save them again later.',
       'zh' => '这将从您的手机中删除 $name 所有已保存的诵读文件。您可以稍后重新保存。',
@@ -7619,7 +7619,7 @@ class AppLocalizations {
   ) {
     return switch (language) {
       'id' =>
-        '$label tersimpan di perangkat Anda ($count/$total surah). Pemutaran kini seketika untuk surah ini.',
+        '$label tersimpan di perangkat kamu ($count/$total surah). Pemutaran kini seketika untuk surah ini.',
       'en' =>
         '$label saved on your device ($count/$total surahs). Playback is now instant for this surah.',
       'zh' => '$label 已保存到您的设备（$count/$total 章）。该章现在可即时播放。',
@@ -7632,7 +7632,7 @@ class AppLocalizations {
   static String recPreparingLargeWhole(String name, String language) {
     return switch (language) {
       'id' =>
-        '$name belum tersimpan di perangkat Anda. Putar surah mungkin menampilkan indikator memuat saat ayat diambil dari internet. Simpan seluruh surah untuk pemutaran offline seketika.',
+        '$name belum tersimpan di perangkat kamu. Putar surah mungkin menampilkan indikator memuat saat ayat diambil dari internet. Simpan seluruh surah untuk pemutaran offline seketika.',
       'en' =>
         '$name is not saved on your device yet. Play surah may show a loading spinner while verses stream from the internet. Save the full surah for instant offline playback.',
       'zh' => '$name 尚未保存到您的设备。播放整章时，经文从网络加载可能出现加载指示。保存整章可立即离线播放。',
@@ -7660,7 +7660,7 @@ class AppLocalizations {
   static String recPreparingSmall(String name, String language) {
     return switch (language) {
       'id' =>
-        '$name belum tersimpan di perangkat Anda. Simpan untuk pemutaran seketika tanpa menunggu.',
+        '$name belum tersimpan di perangkat kamu. Simpan untuk pemutaran seketika tanpa menunggu.',
       'en' =>
         '$name is not saved on your device yet. Save it for instant playback without waiting.',
       'zh' => '$name 尚未保存到您的设备。保存后可立即播放，无需等待。',
@@ -7673,7 +7673,7 @@ class AppLocalizations {
   static String recStreamingReminder(String label, String language) {
     return switch (language) {
       'id' =>
-        'Memutar $label menggunakan internet. Simpan di perangkat Anda untuk pemutaran offline.',
+        'Memutar $label menggunakan internet. Simpan di perangkat kamu untuk pemutaran offline.',
       'en' =>
         'Playing $label using the internet. Save it on your device for offline playback.',
       'zh' => '正在使用网络播放 $label。将其保存到设备以便离线播放。',
@@ -7686,7 +7686,7 @@ class AppLocalizations {
   static String recNotSavedOnDevice(String label, String language) {
     return switch (language) {
       'id' =>
-        '$label belum tersimpan di perangkat Anda. Ketuk Simpan untuk mengunduh surah ini untuk pemutaran offline.',
+        '$label belum tersimpan di perangkat kamu. Ketuk Simpan untuk mengunduh surah ini untuk pemutaran offline.',
       'en' =>
         '$label is not saved on your device. Tap Save to download this surah for offline playback.',
       'zh' => '$label 尚未保存到您的设备。点按"保存"下载该章以便离线播放。',
