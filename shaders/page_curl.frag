@@ -42,7 +42,7 @@ float bandLight(float t) {
 // leaf black. Kept inline: SkSL cannot translate a sampler parameter.
 
 void main() {
-  vec2 frag = FlutterFragCoord().xy;
+  vec2 frag = clamp(FlutterFragCoord().xy, vec2(0.0), uSize);
   float p = clamp(uProgress, 0.0, 1.0);
   float strength = sin(PI * p);
   bool forward = uForward > 0.5;
