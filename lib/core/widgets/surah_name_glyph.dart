@@ -144,8 +144,8 @@ class SurahNameListGlyph extends StatelessWidget {
 /// (or a fixed font size) makes the header look tiny. This paints the ligature
 /// at the size that gives [targetInkHeight] of visible ink, centred vertically
 /// in the current slot, and scales a name down only if its ink would exceed
-/// [maxInkWidth]. One visual height for every surah; no clipping. The option-I
-/// cartouche is stroked around the ink in the same colour.
+/// [maxInkWidth]. One visual height for every surah; no clipping. A rosette
+/// sits on each side of the ink in the same colour.
 class SurahNameMushafInkGlyph extends ConsumerWidget {
   const SurahNameMushafInkGlyph({
     super.key,
@@ -244,15 +244,19 @@ class _SurahNameInkPainter extends CustomPainter {
     painter.paint(canvas, Offset(dx, dy));
     painter.dispose();
 
-    // Option-I cartouche around the ink: stroke only, same colour source.
+    // One rosette on each side of the name, half a row pitch from the ink.
     final inkRect = Rect.fromLTRB(
       (size.width - layout.inkWidth) / 2,
       layout.baselineForSlot(size.height) - layout.inkTopAboveBaseline,
       (size.width + layout.inkWidth) / 2,
       layout.baselineForSlot(size.height) - layout.inkBottomAboveBaseline,
     );
-    MushafSurahEndCapsPainter(
-      geometry: layoutMushafEndCaps(box: size, inkRect: inkRect),
+    MushafSurahHeaderRosettesPainter(
+      geometry: layoutMushafHeaderRosettes(
+        box: size,
+        inkRect: inkRect,
+        size: kMushafHeaderRosetteSizeGrid,
+      ),
       color: color,
     ).paint(canvas, size);
   }
@@ -267,7 +271,7 @@ class _SurahNameInkPainter extends CustomPainter {
 }
 
 /// < 600dp Mushaf header: the 1.0.21+69 glyph size and position are untouched;
-/// only the option-I cartouche and its hairlines are stroked around the ink.
+/// only a rosette is drawn on each side of the ink.
 class SurahNameMushafFlowHeader extends ConsumerWidget {
   const SurahNameMushafFlowHeader({
     super.key,
@@ -305,10 +309,11 @@ class SurahNameMushafFlowHeader extends ConsumerWidget {
                   mushafFontSize: mushafFontSize,
                 ),
                 Positioned.fill(
-                  child: MushafSurahEndCapsOverlay(
+                  child: MushafSurahHeaderRosettesOverlay(
                     box: Size(pageWidth, rowHeight),
                     inkRect: ink,
                     color: inkColor,
+                    size: kMushafHeaderRosetteSizeFlow,
                     rowPitch: slotHeight,
                   ),
                 ),

@@ -2440,6 +2440,22 @@ class AppLocalizations {
     };
   }
 
+  /// Compact framed Mushaf AppBar title: "Mushaf · Halaman 603–604".
+  static String getMushafFramedTitle(int first, int last, String language) {
+    return '${_getMushaf(language)} · '
+        '${formatMushafPageRange(first, last, language)}';
+  }
+
+  /// Muted juz label next to the framed title: "Juz 30" / "Juz 29–30".
+  static String formatMushafJuzLabel(int first, int last, String language) {
+    final range = first == last ? '$first' : '$first–$last';
+    return switch (language) {
+      'zh' => '第$range卷',
+      'ja' => '第$rangeジュズ',
+      _ => '${_getJuz(language)} $range',
+    };
+  }
+
   /// "Mushaf - Halaman 3–4" for a two page spread.
   static String getMushafSpreadPageText(
     int first,

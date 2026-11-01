@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
-import 'package:quran_offline/core/mushaf/surah_name_glyph_metrics.dart';
 import 'package:quran_offline/core/mushaf/surah_name_ink_layout.dart';
 import 'package:quran_offline/core/widgets/mushaf_surah_header_cartouche.dart';
 
@@ -21,98 +20,74 @@ void main() {
     );
   }
 
-  test('all 114 surahs keep the caps clear of the ink', () {
+  MushafHeaderRosettesGeometry rosettesFor(Rect ink) =>
+      layoutMushafHeaderRosettes(
+        box: box,
+        inkRect: ink,
+        size: kMushafHeaderRosetteSizeGrid,
+      );
+
+  test('all 114 surahs: rosettes half a row pitch from the ink', () {
     for (var surah = 1; surah <= 114; surah++) {
       final ink = framedInk(surah);
-      final caps = layoutMushafEndCaps(box: box, inkRect: ink);
-      final minGap = box.height * 0.5;
-
-      expect(
-        caps.leftCap.right,
-        lessThanOrEqualTo(ink.left - minGap + 0.01),
-        reason: 'surah $surah left cap intersects ink',
-      );
-      expect(
-        caps.rightCap.left,
-        greaterThanOrEqualTo(ink.right + minGap - 0.01),
-        reason: 'surah $surah right cap intersects ink',
-      );
-      expect(
-        caps.leftCap.right,
-        lessThan(ink.left),
-        reason: 'surah $surah left cap overlaps ink',
-      );
-      expect(
-        caps.rightCap.left,
-        greaterThan(ink.right),
-        reason: 'surah $surah right cap overlaps ink',
-      );
+      final r = rosettesFor(ink);
+      const half = kMushafHeaderRosetteSizeGrid / 2;
+      final leftGap = ink.left - (r.left.dx + half);
+      final rightGap = (r.right.dx - half) - ink.right;
+      expect(leftGap, closeTo(box.height * kMushafHeaderRosetteGap, 1e-9),
+          reason: 'surah $surah left');
+      expect(rightGap, closeTo(leftGap, 1e-9), reason: 'surah $surah');
     }
   });
 
-  test('all 114 surahs keep the caps inside the row and page width', () {
+  test('rosettes are vertically centred on the name and inside the row', () {
     for (var surah = 1; surah <= 114; surah++) {
       final ink = framedInk(surah);
-      final caps = layoutMushafEndCaps(box: box, inkRect: ink);
-      for (final cap in [caps.leftCap, caps.rightCap]) {
-        expect(cap.top, greaterThanOrEqualTo(0), reason: 'surah $surah');
-        expect(cap.bottom, lessThanOrEqualTo(box.height), reason: 'surah $surah');
-        expect(cap.left, greaterThanOrEqualTo(0), reason: 'surah $surah');
-        expect(cap.right, lessThanOrEqualTo(box.width), reason: 'surah $surah');
-      }
+      final r = rosettesFor(ink);
+      expect(r.left.dy, closeTo(ink.center.dy, 1e-9));
+      expect(r.right.dy, closeTo(ink.center.dy, 1e-9));
+      expect(r.left.dx - r.size / 2, greaterThanOrEqualTo(0));
+      expect(r.right.dx + r.size / 2, lessThanOrEqualTo(box.width));
+      expect(r.size / 2, lessThanOrEqualTo(box.height / 2));
     }
   });
 
-  test('cap height follows the row pitch and is vertically centred', () {
+  test('flow header rosettes stay inside a narrow phone row', () {
+    const narrow = Size(358, 60);
+    final ink = Rect.fromCenter(
+      center: const Offset(179, 30),
+      width: 330,
+      height: 40,
+    );
+    final r = layoutMushafHeaderRosettes(
+      box: narrow,
+      inkRect: ink,
+      size: kMushafHeaderRosetteSizeFlow,
+      rowPitch: 50,
+    );
+    expect(r.left.dx - r.size / 2, greaterThanOrEqualTo(-1e-9));
+    expect(r.right.dx + r.size / 2, lessThanOrEqualTo(narrow.width + 1e-9));
+    expect(r.left.dx, lessThan(ink.left));
+    expect(r.right.dx, greaterThan(ink.right));
+  });
+
+  test('painter repaints only when geometry or colour changes', () {
     final ink = framedInk(2);
-    final caps = layoutMushafEndCaps(box: box, inkRect: ink);
-    expect(caps.leftCap.height, greaterThanOrEqualTo(box.height * kMushafEndCapHeight - 0.01));
-    expect(caps.leftCap.height, lessThanOrEqualTo(box.height));
-    expect(caps.leftCap.center.dy, closeTo(ink.center.dy, 0.01));
-    expect(caps.rightCap.center.dy, closeTo(ink.center.dy, 0.01));
-  });
-
-  test('caps use the ink colour with the two stroke weights', () {
-    final geo = layoutMushafEndCaps(box: box, inkRect: framedInk(1));
-    final outer = MushafSurahEndCapsPainter.outerPaint(Colors.black, geo);
-    expect(outer.style, PaintingStyle.stroke);
-    expect(outer.color.a, closeTo(0.6, 0.02));
-    expect(geo.strokeWidth, closeTo(kMushafEndCapStroke, 1e-9));
-    expect(geo.innerStrokeWidth, closeTo(kMushafEndCapInnerStroke, 1e-9));
-  });
-
-  test('the cap path opens toward the name', () {
-    final rect = Rect.fromLTWH(10, 5, 10, 30);
-    final left = mushafEndCapPath(rect, openingRight: true).getBounds();
-    final right = mushafEndCapPath(rect, openingRight: false).getBounds();
-    expect(left.width, closeTo(rect.width, 0.5));
-    expect(right.width, closeTo(rect.width, 0.5));
-    // Both are arcs: their bounds are the cap rect (tips end at the edges).
-    expect(left.top, closeTo(rect.top - 0.8, 0.8));
-    expect(right.bottom, closeTo(rect.bottom + 0.8, 0.8));
-  });
-
-  test('shouldRepaint only on geometry/colour change', () {
-    final ink = framedInk(1);
-    final a = MushafSurahEndCapsPainter(
-      geometry: layoutMushafEndCaps(box: box, inkRect: ink),
-      color: Colors.black,
+    final a = MushafSurahHeaderRosettesPainter(
+      geometry: rosettesFor(ink),
+      color: Colors.green,
     );
-    final b = MushafSurahEndCapsPainter(
-      geometry: layoutMushafEndCaps(box: box, inkRect: ink),
-      color: Colors.black,
+    final b = MushafSurahHeaderRosettesPainter(
+      geometry: rosettesFor(ink),
+      color: Colors.green,
     );
-    expect(b.shouldRepaint(a), isFalse);
-    final c = MushafSurahEndCapsPainter(
-      geometry: layoutMushafEndCaps(box: box, inkRect: ink),
-      color: Colors.white,
+    expect(a.shouldRepaint(b), isFalse);
+    expect(
+      a.shouldRepaint(MushafSurahHeaderRosettesPainter(
+        geometry: rosettesFor(ink),
+        color: Colors.red,
+      )),
+      isTrue,
     );
-    expect(c.shouldRepaint(a), isTrue);
-  });
-
-  test('metrics table is complete for the cap layout', () {
-    expect(kSurahNameGlyphInk.length, 114);
-    expect(kSurahNameGlyphUnitsPerEm, 1024);
   });
 }
-

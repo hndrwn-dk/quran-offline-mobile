@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -68,25 +70,21 @@ Future<void> _pumpSpread(
   Size size, {
   int leftPage = 4,
   int rightPage = 3,
-  MushafHingeLayout hinge = const MushafHingeLayout(),
+  List<DisplayFeature> displayFeatures = const [],
 }) async {
   _setViewSize(tester, size);
+  tester.view.displayFeatures = displayFeatures;
+  addTearDown(tester.view.resetDisplayFeatures);
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
         home: Scaffold(
           body: Builder(
-            builder: (context) => MushafSpreadRow(
-              hinge: hinge,
-              left: MushafPageSheet(
-                key: ValueKey<int>(leftPage),
-                content: _pageContent(pageNumber: leftPage),
-                colorScheme: Theme.of(context).colorScheme,
-                ayahKeys: <String, GlobalKey>{},
-              ),
-              right: MushafPageSheet(
-                key: ValueKey<int>(rightPage),
-                content: _pageContent(pageNumber: rightPage),
+            builder: (context) => MushafFramedSheets(
+              pages: [leftPage, rightPage],
+              legacyVerticalChrome: 6,
+              pageBuilder: (pageNo) => MushafPageSheet(
+                content: _pageContent(pageNumber: pageNo),
                 colorScheme: Theme.of(context).colorScheme,
                 ayahKeys: <String, GlobalKey>{},
               ),
@@ -155,12 +153,22 @@ void main() {
     });
 
     testWidgets('hinge gap keeps text off the crease', (tester) async {
-      const hinge = MushafHingeLayout(gap: 40);
-      await _pumpSpread(tester, const Size(933, 704), hinge: hinge);
+      await _pumpSpread(
+        tester,
+        const Size(933, 704),
+        displayFeatures: const [
+          DisplayFeature(
+            bounds: Rect.fromLTWH(446.5, 0, 40, 704),
+            type: DisplayFeatureType.hinge,
+            state: DisplayFeatureState.postureFlat,
+          ),
+        ],
+      );
 
       final left = tester.getRect(find.byKey(const ValueKey<int>(4)));
       final right = tester.getRect(find.byKey(const ValueKey<int>(3)));
-      expect(right.left - left.right, closeTo(40, 0.01));
+      expect(right.left - left.right, greaterThanOrEqualTo(40));
+      expect((left.right + right.left) / 2, closeTo(466.5, 0.01));
     });
 
     testWidgets('single page keeps the same 0.65 frame on a phone',
@@ -258,9 +266,9 @@ void main() {
 
     testWidgets('spread AppBar shows the localized page pair', (tester) async {
       await pumpView(tester, const Size(933, 704), initialPage: 1);
-      expect(find.text('Mushaf - Halaman 1–2'), findsNothing);
+      expect(find.text('Mushaf · Halaman 1–2'), findsNothing);
       await showChrome(tester);
-      expect(find.text('Mushaf - Halaman 1–2'), findsOneWidget);
+      expect(find.text('Mushaf · Halaman 1–2'), findsOneWidget);
     });
 
     testWidgets('two page bodies are laid out on a Fold inner screen',
@@ -308,7 +316,7 @@ void main() {
       }
 
       await showChrome(tester);
-      expect(find.text('Mushaf - Halaman 3–4'), findsOneWidget);
+      expect(find.text('Mushaf · Halaman 3–4'), findsOneWidget);
       expect(prefs.getInt('last_read_position_id'), 3);
     });
 
@@ -326,7 +334,7 @@ void main() {
       );
       expect(body.framed, isTrue);
       await showChrome(tester);
-      expect(find.text('Mushaf - Halaman 4'), findsOneWidget);
+      expect(find.text('Mushaf · Halaman 4'), findsOneWidget);
     });
   });
 }
