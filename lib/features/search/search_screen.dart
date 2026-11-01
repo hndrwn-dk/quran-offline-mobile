@@ -102,7 +102,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final tanyaCardBuilder = ref.watch(tanyaCardBuilderProvider);
 
     // When user changes the search query, reset type filter to "All" so new results (e.g. terjemahan for "sabar") are visible.
+    ref.listen<int>(searchFocusRequestProvider, (_, __) {
+      _searchFocusNode.requestFocus();
+    });
     ref.listen<String>(searchQueryProvider, (prev, next) {
+      if (_searchController.text != next) {
+        _searchController.text = next;
+        _searchController.selection = TextSelection.collapsed(
+          offset: next.length,
+        );
+      }
       if (prev != next && _selectedTypeFilter != 'all') {
         setState(() => _selectedTypeFilter = 'all');
       }

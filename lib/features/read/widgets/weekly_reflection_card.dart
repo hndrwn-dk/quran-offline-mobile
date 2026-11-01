@@ -5,7 +5,6 @@ import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/explore_detail_sheet.dart';
-import 'package:quran_offline/features/home/widgets/home_cta_buttons.dart';
 import 'package:quran_offline/features/reader/open_reader_screen.dart';
 
 class WeeklyReflectionCard extends ConsumerWidget {
@@ -187,14 +186,34 @@ class WeeklyReflectionCard extends ConsumerWidget {
                         const SizedBox(height: 8),
                         Align(
                           alignment: Alignment.centerLeft,
-                          child: HomeCircleArrowButton(
+                          child: TextButton(
                             onPressed: () =>
                                 _openDetail(context, ref, pick, lang),
-                            tooltip:
-                                AppLocalizations.getHomeReflectionCta(lang),
-                            semanticsLabel:
-                                AppLocalizations.getHomeReflectionCta(lang),
-                            onTintedCard: true,
+                            style: TextButton.styleFrom(
+                              foregroundColor: colorScheme.primary,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 8,
+                              ),
+                              minimumSize: const Size(0, 44),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  AppLocalizations.getHomeReflectionReadAyah(
+                                    lang,
+                                  ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelLarge
+                                      ?.copyWith(fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(Icons.arrow_forward, size: 16),
+                              ],
+                            ),
                           ),
                         ),
                       ],

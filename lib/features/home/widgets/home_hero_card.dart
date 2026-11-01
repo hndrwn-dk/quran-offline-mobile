@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quran_offline/core/providers/reflection_history_provider.dart';
 import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/core/utils/day_period.dart';
-import 'package:quran_offline/core/utils/home_tagline.dart';
-import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
-/// Unified home hero (layout C): time-of-day salam, tagline, Hijri chip.
+/// Compact home greeting: Hijri eyebrow + salam, typography only.
 class HomeHeroCard extends ConsumerWidget {
   const HomeHeroCard({super.key});
 
@@ -17,18 +13,10 @@ class HomeHeroCard extends ConsumerWidget {
     final lang = ref.watch(settingsProvider).appLanguage;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final period = homeDayPeriodFromTime(DateTime.now());
-    final periodColor = homeDayPeriodIconColor(period, colorScheme);
     final now = ref.watch(reflectionNowProvider);
     final pickAsync = ref.watch(reflectionPickProvider);
     final day = ref.watch(islamicDayProvider);
-    final salt = ref.watch(reflectionInstallSaltProvider).asData?.value ?? '';
-    final tagline = pickHomeTagline(
-      language: lang,
-      installSalt: salt,
-      hijriYmd: day.hijri.ymdKey,
-      period: day.period,
-    );
+    final isLatin = lang == 'id' || lang == 'en';
     final occasionBadgeKey = pickAsync.maybeWhen(
       data: (pick) {
         final type = pick.entry.trigger?.type;
@@ -39,7 +27,7 @@ class HomeHeroCard extends ConsumerWidget {
       },
       orElse: () => null,
     );
-    final headline = AppLocalizations.getHijriHeadline(
+    final eyebrow = AppLocalizations.getHomeGreetingEyebrow(
       language: lang,
       weekday: day.weekday,
       hijri: day.hijri,
@@ -48,118 +36,37 @@ class HomeHeroCard extends ConsumerWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.65),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            eyebrow,
+            style: textTheme.labelSmall?.copyWith(
+              color: colorScheme.secondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: isLatin ? 1.2 : 0,
+              height: 1.2,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          color: colorScheme.surface.withValues(alpha: 0.94),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _DayPeriodBadge(period: period, color: periodColor),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      AppLocalizations.getHomeWelcomeTransliteration(lang),
-                      style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.3,
-                        height: 1.2,
-                        color: colorScheme.onSurface,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Directionality(
-                    textDirection: TextDirection.rtl,
-                    child: Text(
-                      AppLocalizations.homeWelcomeArabic,
-                      style: QuranArabicText.arabicDisplayStyle(
-                        fontSize: textTheme.titleMedium?.fontSize ?? 16,
-                        color: colorScheme.primary,
-                        height: 1.25,
-                      ).copyWith(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                tagline,
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 10),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: colorScheme.primaryContainer.withValues(alpha: 0.35),
-                  border: Border.all(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                  ),
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  child: Text(
-                    headline,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.primary,
-                      height: 1.4,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          const SizedBox(height: 4),
+          Text(
+            AppLocalizations.getHomeWelcomeTransliteration(lang),
+            style: textTheme.headlineSmall?.copyWith(
+              color: colorScheme.onSurface,
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+              height: 1.1,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DayPeriodBadge extends StatelessWidget {
-  const _DayPeriodBadge({
-    required this.period,
-    required this.color,
-  });
-
-  final HomeDayPeriod period;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
-      alignment: Alignment.center,
-      child: Icon(
-        homeDayPeriodIcon(period),
-        size: 16,
-        color: color,
+        ],
       ),
     );
   }
