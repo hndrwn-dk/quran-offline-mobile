@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
+import 'package:quran_offline/core/mushaf/qpc_v2_glyph_fit.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:quran_offline/core/mushaf/surah_name_ink_layout.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_number_badge.dart';
@@ -139,6 +140,22 @@ QpcV2PageContent _loadPage(int pageNumber) {
 
 Widget _spread(int oddPage, int evenPage, ColorScheme scheme, {MushafSpineStyle spine = MushafSpineStyle.softShade}) {
   final hinge = const MushafHingeLayout();
+  final leftContent = _loadPage(evenPage);
+  final rightContent = _loadPage(oddPage);
+  double openingScale = 1;
+  if (oddPage <= 2) {
+    final lines = [leftContent, rightContent].expand(
+      (page) => page.lines
+          .where((line) => line.isAyah && line.glyphText.isNotEmpty)
+          .map((line) => (
+                glyphText: line.glyphText,
+                fontFamily: page.fontFamily,
+                justify: false,
+              )),
+    );
+    openingScale = computeOpeningPageScale(lines: lines);
+    debugPrint('[OpeningScale] pages $oddPage|$evenPage -> $openingScale');
+  }
   return Column(
     children: [
       Expanded(
@@ -148,12 +165,14 @@ Widget _spread(int oddPage, int evenPage, ColorScheme scheme, {MushafSpineStyle 
             hinge: hinge,
             spine: spine,
             left: MushafPageSheet(
-              content: _loadPage(evenPage),
+              content: leftContent,
+              openingPageScale: openingScale,
               colorScheme: scheme,
               ayahKeys: <String, GlobalKey>{},
             ),
             right: MushafPageSheet(
-              content: _loadPage(oddPage),
+              content: rightContent,
+              openingPageScale: openingScale,
               colorScheme: scheme,
               ayahKeys: <String, GlobalKey>{},
             ),
@@ -223,4 +242,5 @@ void main() {
     while (tester.takeException() != null) {}
   });
 }
+
 
