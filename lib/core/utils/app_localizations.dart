@@ -6106,8 +6106,8 @@ class AppLocalizations {
     return switch (language) {
       'id' => 'Animasi balik halaman',
       'en' => 'Page turn animation',
-      'zh' => '????',
-      'ja' => '??????',
+      'zh' => '翻页动画',
+      'ja' => 'ページめくりアニメーション',
       _ => 'Page turn animation',
     };
   }
@@ -6116,8 +6116,8 @@ class AppLocalizations {
     return switch (language) {
       'id' => 'Saat kamu membalik halaman: lembar seperti buku, geser, atau langsung.',
       'en' => 'How pages turn while you read: leaf, slide, or instant.',
-      'zh' => '??????????:?????????',
-      'ja' => '???????????:????????????',
+      'zh' => '阅读时翻页的方式：像书页一样翻动、滑动或立即切换。',
+      'ja' => '読書中のページのめくり方：紙のよう、スライド、すぐに切り替え。',
       _ => 'How pages turn while you read: leaf, slide, or instant.',
     };
   }
@@ -6126,8 +6126,8 @@ class AppLocalizations {
     return switch (language) {
       'id' => 'Lembar',
       'en' => 'Curl',
-      'zh' => '??',
-      'ja' => '???',
+      'zh' => '翻页',
+      'ja' => 'めくる',
       _ => 'Curl',
     };
   }
@@ -6136,8 +6136,8 @@ class AppLocalizations {
     return switch (language) {
       'id' => 'Geser',
       'en' => 'Slide',
-      'zh' => '??',
-      'ja' => '????',
+      'zh' => '滑动',
+      'ja' => 'スライド',
       _ => 'Slide',
     };
   }
@@ -6146,8 +6146,8 @@ class AppLocalizations {
     return switch (language) {
       'id' => 'Tanpa',
       'en' => 'None',
-      'zh' => '?',
-      'ja' => '??',
+      'zh' => '无',
+      'ja' => 'なし',
       _ => 'None',
     };
   }
