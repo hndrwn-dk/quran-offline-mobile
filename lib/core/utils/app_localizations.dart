@@ -2928,6 +2928,29 @@ class AppLocalizations {
     };
   }
 
+  /// Compact home eyebrow: Hijri weekday + date, e.g.
+  /// `MALAM MINGGU · 21 JUMADIL AWAL 1448` (Latin locales are uppercased).
+  static String getHomeGreetingEyebrow({
+    required String language,
+    required int weekday,
+    required HijriDate hijri,
+    int? clockHour,
+    String? occasionBadgeKey,
+  }) {
+    final headline = getHijriHeadline(
+      language: language,
+      weekday: weekday,
+      hijri: hijri,
+      clockHour: clockHour,
+      occasionBadgeKey: occasionBadgeKey,
+    );
+    final dotted = headline.replaceFirst(', ', ' · ');
+    return switch (language) {
+      'id' || 'en' => dotted.toUpperCase(),
+      _ => dotted,
+    };
+  }
+
   static String getHomeTagline(String language) {
     return homeTaglinePool(language).first.text;
   }
