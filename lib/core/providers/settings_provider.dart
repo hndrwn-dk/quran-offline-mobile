@@ -11,6 +11,7 @@ class AppSettings {
   final double arabicFontSize;
   final double translationFontSize;
   final double mushafFontSize;
+  final bool mushafTwoPageSpread;
   final ThemeMode themeMode;
   final bool weeklyReminderEnabled;
   final int weeklyReminderHour;
@@ -25,6 +26,7 @@ class AppSettings {
     this.arabicFontSize = 30.0,
     this.translationFontSize = 16.0,
     this.mushafFontSize = 38.0,
+    this.mushafTwoPageSpread = true,
     this.themeMode = ThemeMode.system,
     this.weeklyReminderEnabled = false,
     this.weeklyReminderHour = 15,
@@ -40,6 +42,7 @@ class AppSettings {
     double? arabicFontSize,
     double? translationFontSize,
     double? mushafFontSize,
+    bool? mushafTwoPageSpread,
     ThemeMode? themeMode,
     bool? weeklyReminderEnabled,
     int? weeklyReminderHour,
@@ -54,6 +57,7 @@ class AppSettings {
       arabicFontSize: arabicFontSize ?? this.arabicFontSize,
       translationFontSize: translationFontSize ?? this.translationFontSize,
       mushafFontSize: mushafFontSize ?? this.mushafFontSize,
+      mushafTwoPageSpread: mushafTwoPageSpread ?? this.mushafTwoPageSpread,
       themeMode: themeMode ?? this.themeMode,
       weeklyReminderEnabled: weeklyReminderEnabled ?? this.weeklyReminderEnabled,
       weeklyReminderHour: weeklyReminderHour ?? this.weeklyReminderHour,
@@ -71,6 +75,7 @@ class AppSettings {
       'arabicFontSize': arabicFontSize,
       'translationFontSize': translationFontSize,
       'mushafFontSize': mushafFontSize,
+      'mushafTwoPageSpread': mushafTwoPageSpread,
       'themeMode': themeMode.name,
       'weeklyReminderEnabled': weeklyReminderEnabled,
       'weeklyReminderHour': weeklyReminderHour,
@@ -89,6 +94,7 @@ class AppSettings {
       arabicFontSize: (json['arabicFontSize'] as num?)?.toDouble() ?? 30.0,
       translationFontSize: (json['translationFontSize'] as num?)?.toDouble() ?? 16.0,
       mushafFontSize: (json['mushafFontSize'] as num?)?.toDouble() ?? 38.0,
+      mushafTwoPageSpread: json['mushafTwoPageSpread'] as bool? ?? true,
       themeMode: ThemeMode.values.firstWhere(
         (e) => e.name == json['themeMode'],
         orElse: () => ThemeMode.system,
@@ -115,6 +121,8 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final arabicFontSize = prefs.getDouble('arabicFontSize') ?? 30.0;
     final translationFontSize = prefs.getDouble('translationFontSize') ?? 16.0;
     final mushafFontSize = prefs.getDouble('mushafFontSize') ?? 38.0;
+    final mushafTwoPageSpread =
+        prefs.getBool('mushafTwoPageSpread') ?? true;
     final themeModeStr = prefs.getString('themeMode') ?? 'system';
     final themeMode = ThemeMode.values.firstWhere(
       (e) => e.name == themeModeStr,
@@ -138,6 +146,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       arabicFontSize: arabicFontSize,
       translationFontSize: translationFontSize,
       mushafFontSize: mushafFontSize,
+      mushafTwoPageSpread: mushafTwoPageSpread,
       themeMode: themeMode,
       weeklyReminderEnabled: weeklyReminderEnabled,
       weeklyReminderHour: weeklyReminderHour,
@@ -189,6 +198,13 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('showTafsir', show);
     state = state.copyWith(showTafsir: show);
+  }
+
+  /// Two Mushaf pages side by side on wide windows (default on).
+  Future<void> updateMushafTwoPageSpread(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('mushafTwoPageSpread', enabled);
+    state = state.copyWith(mushafTwoPageSpread: enabled);
   }
 
   Future<void> updateArabicFontSize(double size) async {

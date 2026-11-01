@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_glyph_fit.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
+import 'package:quran_offline/core/mushaf/surah_name_ink_layout.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
@@ -18,6 +20,11 @@ const _basmallahVerticalPad = 14.0;
 enum _MushafLineKind { none, ayah, surahName, basmallah }
 
 /// Renders one Mushaf page using QPC V2 glyph fonts.
+///
+/// Set [pageGrid] to render the page in the fixed 15-row reference box used by
+/// [MushafPageFrame]: every page then shares one glyph size and one row grid, so
+/// two pages of a spread can never drift in text size. The default (flowing)
+/// mode keeps the legacy per-page width fitting.
 class QpcV2MushafText extends StatelessWidget {
   const QpcV2MushafText({
     super.key,
@@ -26,6 +33,7 @@ class QpcV2MushafText extends StatelessWidget {
     required this.fontSize,
     required this.colorScheme,
     required this.ayahKeys,
+    this.pageGrid = false,
     this.onAyahTap,
     this.onAyahLongPress,
     this.onBismillahTap,
@@ -38,6 +46,7 @@ class QpcV2MushafText extends StatelessWidget {
   final double fontSize;
   final ColorScheme colorScheme;
   final Map<String, GlobalKey> ayahKeys;
+  final bool pageGrid;
   final void Function(int surahId, int ayahNo)? onAyahTap;
   final void Function(int surahId, int ayahNo)? onAyahLongPress;
   final void Function(int surahId)? onBismillahTap;
@@ -46,24 +55,27 @@ class QpcV2MushafText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final glyphLines = content.lines
-        .where((line) => line.isAyah && line.glyphText.isNotEmpty)
-        .map(
-          (line) => (
-            glyphText: line.glyphText,
-            fontFamily: content.fontFamily,
-            justify: false,
-          ),
-        );
-    final cap = fontSize.clamp(
-      kMushafGlyphMinFontSize,
-      kMushafGlyphReferenceFontSize,
-    );
-    final effectiveSize = computeQpcV2PageFontSize(
-      lines: glyphLines,
-      maxFontSize: cap,
-      maxWidth: contentWidth,
-    );
+    var effectiveSize = fontSize;
+    if (!pageGrid) {
+      final glyphLines = content.lines
+          .where((line) => line.isAyah && line.glyphText.isNotEmpty)
+          .map(
+            (line) => (
+              glyphText: line.glyphText,
+              fontFamily: content.fontFamily,
+              justify: false,
+            ),
+          );
+      final cap = fontSize.clamp(
+        kMushafGlyphMinFontSize,
+        kMushafGlyphReferenceFontSize,
+      );
+      effectiveSize = computeQpcV2PageFontSize(
+        lines: glyphLines,
+        maxFontSize: cap,
+        maxWidth: contentWidth,
+      );
+    }
 
     return SizedBox(
       width: contentWidth,
@@ -71,6 +83,7 @@ class QpcV2MushafText extends StatelessWidget {
         content: content,
         fontSize: effectiveSize,
         lineMaxWidth: contentWidth,
+        pageGrid: pageGrid,
         colorScheme: colorScheme,
         ayahKeys: ayahKeys,
         onAyahTap: onAyahTap,
@@ -88,6 +101,7 @@ class _QpcV2MushafTextBody extends StatelessWidget {
     required this.content,
     required this.fontSize,
     required this.lineMaxWidth,
+    required this.pageGrid,
     required this.colorScheme,
     required this.ayahKeys,
     this.onAyahTap,
@@ -100,6 +114,7 @@ class _QpcV2MushafTextBody extends StatelessWidget {
   final QpcV2PageContent content;
   final double fontSize;
   final double lineMaxWidth;
+  final bool pageGrid;
   final ColorScheme colorScheme;
   final Map<String, GlobalKey> ayahKeys;
   final void Function(int surahId, int ayahNo)? onAyahTap;
@@ -110,6 +125,10 @@ class _QpcV2MushafTextBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (pageGrid) {
+      return _buildPageGrid();
+    }
+
     final children = <Widget>[];
     final placedAyahAnchors = <String>{};
     var previousKind = _MushafLineKind.none;
@@ -124,7 +143,7 @@ class _QpcV2MushafTextBody extends StatelessWidget {
                   : _surahNameOuterGap,
               bottom: _surahNameBottomGap,
             ),
-            child: SurahNameMushafGlyph(
+            child: SurahNameMushafFlowHeader(
               surahId: line.surahId!,
               mushafFontSize: fontSize,
             ),
@@ -142,7 +161,8 @@ class _QpcV2MushafTextBody extends StatelessWidget {
         }
         children.add(
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: _basmallahVerticalPad),
+            padding:
+                const EdgeInsets.symmetric(vertical: _basmallahVerticalPad),
             child: _QpcV2BasmallahRow(
               surahId: surahId,
               glyphText: content.bismillahGlyphText,
@@ -204,6 +224,103 @@ class _QpcV2MushafTextBody extends StatelessWidget {
       children: children,
     );
   }
+
+  /// Fixed 15-row reference page: one row per QPC layout line, no gaps, so
+  /// every page fills the same box and both pages of a spread keep an identical
+  /// glyph size. Short pages (1–2) distribute their rows over the page instead
+  /// of hugging the top.
+  Widget _buildPageGrid() {
+    const rowHeight = kMushafPageRowHeight;
+    final lineHeightFactor = rowHeight / fontSize;
+    final rows = <Widget>[];
+    final placedAyahAnchors = <String>{};
+
+    for (final line in content.lines) {
+      if (line.isSurahName && line.surahId != null) {
+        rows.add(
+          SizedBox(
+            height: rowHeight,
+            child: SurahNameMushafInkGlyph(
+              surahId: line.surahId!,
+              color: colorScheme.primary,
+              targetInkHeight: rowHeight * kSurahNameInkHeightFactor,
+              maxInkWidth: lineMaxWidth * kSurahNameMaxInkWidthFactor,
+            ),
+          ),
+        );
+        continue;
+      }
+
+      if (line.isBasmallah) {
+        final surahId = line.surahId;
+        if (surahId == null || !Bismillah.shouldShowBismillah(surahId)) {
+          continue;
+        }
+        rows.add(
+          SizedBox(
+            height: rowHeight,
+            child: Center(
+              child: _QpcV2BasmallahRow(
+                surahId: surahId,
+                glyphText: content.bismillahGlyphText,
+                fontFamily: content.basmallahFontFamily,
+                fontSize: fontSize,
+                lineMaxWidth: lineMaxWidth,
+                colorScheme: colorScheme,
+                heightFactor: lineHeightFactor,
+                verticalPadding: 0,
+                onBismillahTap: onBismillahTap,
+                onBismillahLongPress: onBismillahLongPress,
+              ),
+            ),
+          ),
+        );
+        continue;
+      }
+
+      if (!line.isAyah || line.words.isEmpty) continue;
+
+      GlobalKey? lineAnchorKey;
+      for (final word in line.words) {
+        final keyName = '${word.surah}_${word.ayah}';
+        if (placedAyahAnchors.contains(keyName)) continue;
+        placedAyahAnchors.add(keyName);
+        lineAnchorKey = ayahKeys.putIfAbsent(keyName, GlobalKey.new);
+        break;
+      }
+
+      rows.add(
+        SizedBox(
+          height: rowHeight,
+          child: _QpcV2GlyphLineRow(
+            line: line,
+            fontFamily: content.fontFamily,
+            fontSize: fontSize,
+            lineMaxWidth: lineMaxWidth,
+            colorScheme: colorScheme,
+            heightFactor: lineHeightFactor,
+            verticalPadding: 0,
+            ayahAnchorKey: lineAnchorKey,
+            onAyahTap: onAyahTap,
+            onAyahLongPress: onAyahLongPress,
+          ),
+        ),
+      );
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      onAyahKeyCreated?.call();
+    });
+
+    return SizedBox(
+      height: kMushafPageLayoutHeight,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: rows,
+      ),
+    );
+  }
 }
 
 class _AyahGlyphSegment {
@@ -249,6 +366,8 @@ class _QpcV2BasmallahRow extends ConsumerStatefulWidget {
     required this.fontSize,
     required this.lineMaxWidth,
     required this.colorScheme,
+    this.heightFactor = 1.55,
+    this.verticalPadding = 4,
     this.onBismillahTap,
     this.onBismillahLongPress,
   });
@@ -259,6 +378,8 @@ class _QpcV2BasmallahRow extends ConsumerStatefulWidget {
   final double fontSize;
   final double lineMaxWidth;
   final ColorScheme colorScheme;
+  final double heightFactor;
+  final double verticalPadding;
   final void Function(int surahId)? onBismillahTap;
   final void Function(int surahId)? onBismillahLongPress;
 
@@ -313,6 +434,8 @@ class _QpcV2BasmallahRowState extends ConsumerState<_QpcV2BasmallahRow> {
       fontSize: widget.fontSize,
       lineMaxWidth: widget.lineMaxWidth,
       color: widget.colorScheme.onSurface,
+      heightFactor: widget.heightFactor,
+      verticalPadding: widget.verticalPadding,
     );
   }
 }
@@ -324,6 +447,8 @@ class _QpcV2GlyphLineRow extends ConsumerStatefulWidget {
     required this.fontSize,
     required this.lineMaxWidth,
     required this.colorScheme,
+    this.heightFactor = 1.55,
+    this.verticalPadding = 4,
     this.ayahAnchorKey,
     this.onAyahTap,
     this.onAyahLongPress,
@@ -334,6 +459,8 @@ class _QpcV2GlyphLineRow extends ConsumerStatefulWidget {
   final double fontSize;
   final double lineMaxWidth;
   final ColorScheme colorScheme;
+  final double heightFactor;
+  final double verticalPadding;
   final GlobalKey? ayahAnchorKey;
   final void Function(int surahId, int ayahNo)? onAyahTap;
   final void Function(int surahId, int ayahNo)? onAyahLongPress;
@@ -396,9 +523,8 @@ class _QpcV2GlyphLineRowState extends ConsumerState<_QpcV2GlyphLineRow> {
   @override
   Widget build(BuildContext context) {
     final audio = ref.watch(audioPlayerProvider);
-    final recitingAyahNo = audio.isPlayingBismillah
-        ? Bismillah.audioAyahNo
-        : audio.ayahNo;
+    final recitingAyahNo =
+        audio.isPlayingBismillah ? Bismillah.audioAyahNo : audio.ayahNo;
 
     final spans = <TextSpan>[];
     for (var i = 0; i < _segments.length; i++) {
@@ -428,6 +554,8 @@ class _QpcV2GlyphLineRowState extends ConsumerState<_QpcV2GlyphLineRow> {
       lineMaxWidth: widget.lineMaxWidth,
       color: widget.colorScheme.onSurface,
       textAlign: qpcV2GlyphLineAlign(isCentered: widget.line.isCentered),
+      heightFactor: widget.heightFactor,
+      verticalPadding: widget.verticalPadding,
     );
 
     final anchorKey = widget.ayahAnchorKey;
@@ -447,6 +575,8 @@ class _QpcV2GlyphLine extends StatelessWidget {
     required this.lineMaxWidth,
     required this.color,
     this.textAlign = TextAlign.center,
+    this.heightFactor = 1.55,
+    this.verticalPadding = 4,
   });
 
   final List<InlineSpan> spans;
@@ -455,20 +585,22 @@ class _QpcV2GlyphLine extends StatelessWidget {
   final double lineMaxWidth;
   final Color color;
   final TextAlign textAlign;
+  final double heightFactor;
+  final double verticalPadding;
 
   @override
   Widget build(BuildContext context) {
     final baseStyle = TextStyle(
       fontFamily: fontFamily,
       fontSize: fontSize,
-      height: 1.55,
+      height: heightFactor,
       letterSpacing: 0,
       wordSpacing: 0,
       color: color,
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: verticalPadding),
       child: SizedBox(
         width: lineMaxWidth,
         child: Directionality(
@@ -485,3 +617,4 @@ class _QpcV2GlyphLine extends StatelessWidget {
     );
   }
 }
+

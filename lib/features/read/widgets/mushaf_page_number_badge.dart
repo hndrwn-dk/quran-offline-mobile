@@ -2,22 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:quran_offline/core/constants/app_colors.dart';
 
 /// Decorative page marker at the bottom of a Mushaf page view.
+///
+/// [rangeEnd] widens it to a two page spread ("3–4") and [rangeLabel] adds the
+/// localized caption ("Halaman 3–4").
 class MushafPageNumberBadge extends StatelessWidget {
   const MushafPageNumberBadge({
     super.key,
     required this.pageNo,
     this.totalPages = 604,
+    this.rangeEnd,
   });
 
   final int pageNo;
   final int totalPages;
+  final int? rangeEnd;
+
+  bool get _isRange => rangeEnd != null;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final isDark = colorScheme.brightness == Brightness.dark;
-    final progress = (pageNo / totalPages).clamp(0.0, 1.0);
+    final lastPage = rangeEnd ?? pageNo;
+    final progress = (lastPage / totalPages).clamp(0.0, 1.0);
 
     final ringTrack = colorScheme.surfaceContainerHighest.withValues(
       alpha: isDark ? 0.55 : 0.85,
@@ -81,16 +89,35 @@ class MushafPageNumberBadge extends StatelessWidget {
                       ),
                     ),
                     alignment: Alignment.center,
-                    child: Text(
-                      '$pageNo',
-                      style: textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.2,
-                        fontSize: 13,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
+                    child: _isRange
+                        ? FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '$pageNo–$lastPage',
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.2,
+                                fontSize: 11,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                          )
+                        // Single page: exact 1.0.21+69 rendering.
+                        : Text(
+                            '$pageNo',
+                            style: textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.2,
+                              fontSize: 13,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
                   ),
                 ],
               ),
