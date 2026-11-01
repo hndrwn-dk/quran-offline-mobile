@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
@@ -27,6 +29,11 @@ import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
+import 'package:quran_offline/core/mushaf/page_turn/page_curl_painter.dart';
+import 'package:quran_offline/core/mushaf/page_turn/page_turn_controller.dart';
+import 'package:quran_offline/core/mushaf/page_turn/page_turn_geometry.dart';
+import 'package:quran_offline/core/mushaf/page_turn/page_turn_overlay.dart';
+import 'package:quran_offline/core/mushaf/page_turn/page_turn_snapshots.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_mushaf_layout.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
@@ -64,7 +71,8 @@ class MushafPageView extends ConsumerStatefulWidget {
   ConsumerState<MushafPageView> createState() => _MushafPageViewState();
 }
 
-class _MushafPageViewState extends ConsumerState<MushafPageView> {
+class _MushafPageViewState extends ConsumerState<MushafPageView>
+    with TickerProviderStateMixin {
   late PageController _controller;
   final List<PageController> _retiredControllers = [];
   int? _selectedSurahId;
@@ -84,6 +92,33 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   bool _chromeVisible = true;
   bool _chromeInitialized = false;
   bool _lastFramed = false;
+
+  /// Leaf (curl) page turn: controller, warm snapshots and the offscreen farm
+  /// that rasterizes the neighbouring spread while the reader is idle.
+  late final PageTurnController _turn;
+  final PageTurnSnapshotCache _turnSnapshots = PageTurnSnapshotCache();
+  final Map<int, GlobalKey> _pageSnapshotKeys = {};
+  final Map<int, GlobalKey> _farmSnapshotKeys = {};
+  final List<ui.Image> _turnOwnedImages = [];
+  final GlobalKey _turnLayerKey = GlobalKey();
+  List<_TurnFarmPage> _farm = const [];
+  final Set<int> _farmComputed = {};
+  Size? _farmPageSize;
+  Timer? _snapshotWarmTimer;
+  Timer? _farmCaptureTimer;
+  List<PageTurnBelowPage> _turnBelow = const [];
+  ui.Image? _turnFrontImage;
+  ui.Image? _turnBackImage;
+  bool _turnByUser = false;
+  int? _turnAppliedIndex;
+  bool _turnsEnabled = false;
+  MushafPageTurn _pageTurnSetting = MushafPageTurn.curl;
+  Size? _lastMediaSize;
+  bool _dragPending = false;
+  double _dragStartX = 0;
+  double _dragPageWidth = 1;
+  double _instantProgress = 0;
+  PageTurnDirection? _dragDirection;
 
   /// True when the current window renders pages in a fixed-aspect frame.
   bool get _framedMode =>
@@ -109,7 +144,9 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   int get _currentPageNo {
     final active = _activePageNo;
     if (active != null && _visiblePages.contains(active)) return active;
-    return _spread ? mushafSpreadForPage(_visiblePageNo).rightPage : _visiblePageNo;
+    return _spread
+        ? mushafSpreadForPage(_visiblePageNo).rightPage
+        : _visiblePageNo;
   }
 
   int _pagerIndexForPage(int pageNo) {
@@ -120,6 +157,9 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   @override
   void initState() {
     super.initState();
+    _turn = PageTurnController(vsync: this)
+      ..onCompleted = _onTurnCompleted
+      ..onCancelled = _onTurnCancelled;
     _resumeHint = ref.read(resumeHintProvider);
     _completionGate = ReadingCompletionGate(
       minimumSession: Duration.zero,
@@ -149,6 +189,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
           .read(lastReadProvider.notifier)
           .saveLastRead(PageSource(widget.initialPage));
       unawaited(_checkCompletionForPage(widget.initialPage));
+      _scheduleSnapshotWarm();
     });
   }
 
@@ -165,6 +206,15 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     // The spread decision only depends on the window (MediaQuery) so folding,
     // unfolding or rotating rebuilds the pager around the page already in view.
     final media = MediaQuery.of(context);
+    final size = media.size;
+    final layoutChanged = _lastMediaSize != null && _lastMediaSize != size;
+    _lastMediaSize = size;
+    if (layoutChanged ||
+        (MediaQuery.disableAnimationsOf(context) && _turn.isActive)) {
+      // A turn never survives a fold/unfold/rotate: the page in view is kept and
+      // the leaf snaps away instead of landing on a page the reader never chose.
+      _cancelTurnForLayout();
+    }
     final setting = ref.read(settingsProvider).mushafTwoPageSpread;
     final metrics = resolveMushafSpread(
       available: media.size,
@@ -186,8 +236,8 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
       _chromeInitialized = true;
       // Framed windows open in immersive mode: the frame grows by the AppBar,
       // badge and system bar height, which is what makes the text bigger.
-      _chromeVisible = !(_spread ||
-          media.size.width >= kMushafMinSpreadWindowWidth);
+      _chromeVisible =
+          !(_spread || media.size.width >= kMushafMinSpreadWindowWidth);
       _lastFramed = !_chromeVisible;
       _applySystemUi(chromeVisible: _chromeVisible);
     }
@@ -210,6 +260,15 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   }
 
   void _setSpreadMode(bool spread) {
+    if (_spread != spread) {
+      _turn.cancel();
+      _disposeTurnImages();
+      _turnSnapshots.clear();
+      _snapshotWarmTimer?.cancel();
+      _farmCaptureTimer?.cancel();
+      _farm = const [];
+      _farmComputed.clear();
+    }
     _spread = spread;
     _replaceController();
   }
@@ -249,8 +308,464 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     });
   }
 
+  // ---------------------------------------------------------------------------
+  // Leaf (curl) page turn
+  // ---------------------------------------------------------------------------
+
+  bool get _curlEnabled =>
+      _turnsEnabled && _pageTurnSetting == MushafPageTurn.curl;
+
+  GlobalKey _pageSnapshotKey(int pageNo) =>
+      _pageSnapshotKeys.putIfAbsent(pageNo, GlobalKey.new);
+
+  GlobalKey _farmSnapshotKey(int pageNo) =>
+      _farmSnapshotKeys.putIfAbsent(pageNo, GlobalKey.new);
+
+  /// Drops the turn, its snapshots and the offscreen farm after a layout change.
+  void _cancelTurnForLayout() {
+    _turn.cancel();
+    _dragPending = false;
+    _dragDirection = null;
+    _snapshotWarmTimer?.cancel();
+    _farmCaptureTimer?.cancel();
+    _turnSnapshots.clear();
+    _disposeTurnImages();
+    if (_farm.isNotEmpty) {
+      // didChangeDependencies runs before build; mutate in place, no setState.
+      _farm = const [];
+      _farmComputed.clear();
+    }
+  }
+
+  Rect? _globalRectForPage(int pageNo) {
+    final object =
+        _pageSnapshotKeys[pageNo]?.currentContext?.findRenderObject();
+    if (object is! RenderBox || !object.hasSize) return null;
+    return object.localToGlobal(Offset.zero) & object.size;
+  }
+
+  /// Page areas currently on screen, in global coordinates, left to right.
+  List<PageTurnPageRect> _visiblePageRects() {
+    if (_spread) {
+      final pair = mushafSpreadForPage(_visiblePageNo);
+      final left = _globalRectForPage(pair.leftPage);
+      final right = _globalRectForPage(pair.rightPage);
+      if (left == null || right == null) return const [];
+      return [
+        PageTurnPageRect(pageNo: pair.leftPage, rect: left, isLeft: true),
+        PageTurnPageRect(pageNo: pair.rightPage, rect: right, isLeft: false),
+      ];
+    }
+    final rect = _globalRectForPage(_visiblePageNo);
+    if (rect == null) return const [];
+    return [PageTurnPageRect(pageNo: _visiblePageNo, rect: rect, isLeft: true)];
+  }
+
+  Rect _toTurnLayer(Rect globalRect) {
+    final object = _turnLayerKey.currentContext?.findRenderObject();
+    if (object is RenderBox) {
+      return globalRect.shift(-object.localToGlobal(Offset.zero));
+    }
+    return globalRect;
+  }
+
+  /// Gutter width used by the spread (matches [MushafSpreadRow]).
+  double _turnHingeGap() {
+    if (!_spread) return 0;
+    final media = MediaQuery.of(context);
+    return mushafHingeLayout(
+      size: media.size,
+      displayFeatures: media.displayFeatures,
+    ).gap;
+  }
+
+  /// Hands the current page areas to the controller. False when not laid out.
+  bool _setTurnAreas() {
+    final rects = _visiblePageRects();
+    if (rects.isEmpty) return false;
+    final left = _toTurnLayer(rects.first.rect);
+    final right = rects.length > 1 ? _toTurnLayer(rects.last.rect) : left;
+    _turn.setPageAreas(
+      leftRect: left,
+      rightRect: right,
+      hingeGap: _turnHingeGap(),
+      spread: _spread,
+    );
+    return true;
+  }
+
+  /// Rasterizes the live pages once for this turn (only while a turn runs).
+  ui.Image? _captureLivePage(int pageNo) {
+    final image = capturePageSnapshotFor(
+      _pageSnapshotKeys[pageNo],
+      pixelRatio: MediaQuery.devicePixelRatioOf(context),
+    );
+    if (image != null) _turnOwnedImages.add(image);
+    return image;
+  }
+
+  void _disposeTurnImages() {
+    for (final image in _turnOwnedImages) {
+      image.dispose();
+    }
+    _turnOwnedImages.clear();
+    _turnFrontImage = null;
+    _turnBackImage = null;
+    _turnBelow = const [];
+  }
+
+  /// Collects the pixels the turn needs: live current pages + warm neighbours.
+  void _prepareTurnImages(PageTurnPlan plan) {
+    _disposeTurnImages();
+    final rects = _visiblePageRects();
+    if (rects.isEmpty) return;
+    final rectByPage = <int, Rect>{
+      for (final page in rects) page.pageNo: _toTurnLayer(page.rect),
+    };
+    final front = _captureLivePage(plan.leafPage) ??
+        _turnSnapshots.imageFor(plan.leafPage);
+    final back = _turnSnapshots.imageFor(plan.backPage) ??
+        (plan.backPage == plan.leafPage ? front : null);
+    final revealed =
+        _turnSnapshots.imageFor(plan.revealedPage) ?? back ?? front;
+    final below = <PageTurnBelowPage>[];
+    ui.Image? stationaryImage;
+    final stationaryPage = plan.stationaryPage;
+    if (_spread) {
+      final leafRect = rectByPage[plan.leafPage];
+      final stationaryRect =
+          stationaryPage == null ? null : rectByPage[stationaryPage];
+      if (leafRect != null) {
+        // The page under the lifted leaf is the neighbour that gets revealed.
+        below.add(PageTurnBelowPage(rect: leafRect, image: revealed));
+      }
+      if (stationaryPage != null && stationaryRect != null) {
+        stationaryImage = _captureLivePage(stationaryPage);
+        below.add(PageTurnBelowPage(
+          rect: stationaryRect,
+          image: stationaryImage ?? revealed,
+        ));
+      }
+    } else {
+      final rect = rectByPage[plan.leafPage];
+      if (rect != null) {
+        below.add(PageTurnBelowPage(
+          rect: rect,
+          image: revealed,
+        ));
+      }
+    }
+    _turnFrontImage = front;
+    _turnBackImage = back;
+    _turnBelow = below;
+    if (front == null) _retryTurnImage(plan.leafPage, front: true);
+    if (stationaryPage != null && stationaryImage == null) {
+      _retryTurnImage(stationaryPage, front: false);
+    }
+  }
+
+  /// A live page can still be dirty for one frame; grab it right after paint.
+  void _retryTurnImage(int pageNo, {required bool front}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_turn.isActive) return;
+      final image = capturePageSnapshotFor(
+        _pageSnapshotKeys[pageNo],
+        pixelRatio: MediaQuery.devicePixelRatioOf(context),
+      );
+      if (image == null) return;
+      setState(() {
+        _turnOwnedImages.add(image);
+        if (front) {
+          _turnFrontImage = image;
+        } else if (_turnBelow.length > 1) {
+          _turnBelow = [
+            _turnBelow.first,
+            PageTurnBelowPage(rect: _turnBelow.last.rect, image: image),
+          ];
+        }
+      });
+    });
+  }
+
+  /// Interactive turn start (first horizontal drag past the slop).
+  void _onTurnDragStart(DragStartDetails details) {
+    if (!mounted || _turn.isActive) return;
+    _dragPending = true;
+    _dragDirection = null;
+    _instantProgress = 0;
+    _dragStartX = details.globalPosition.dx;
+    final rects = _visiblePageRects();
+    _dragPageWidth = rects.isEmpty ? 1 : rects.first.rect.width;
+  }
+
+  void _onTurnDragUpdate(DragUpdateDetails details) {
+    if (!_dragPending) return;
+    if (_pageTurnSetting == MushafPageTurn.none) {
+      // Instant mode: no visual leaf, just remember how far the finger went.
+      final total = details.globalPosition.dx - _dragStartX;
+      final direction = _dragDirection ?? pageTurnDirectionForDrag(total);
+      if (direction == null) return;
+      _dragDirection = direction;
+      _instantProgress = pageTurnDragProgress(
+        deltaX: total,
+        pageWidth: _dragPageWidth,
+        direction: direction,
+      );
+      return;
+    }
+    if (!_turn.isDragging) {
+      final total = details.globalPosition.dx - _dragStartX;
+      if (total == 0) return;
+      final direction = pageTurnDirectionForDrag(total);
+      if (direction == null) return;
+      final planned = pageTurnPlan(
+        visiblePage: _visiblePageNo,
+        spread: _spread,
+        direction: direction,
+      );
+      final plan = planned ??
+          pageTurnRubberBandPlan(
+            visiblePage: _visiblePageNo,
+            spread: _spread,
+            direction: direction,
+          );
+      if (!_setTurnAreas()) {
+        _dragPending = false;
+        return;
+      }
+      _prepareTurnImages(plan);
+      if (!_turn.isActive) {
+        _turnByUser = true;
+        _turn.beginDrag(plan, blocked: planned == null);
+      }
+      _dragDirection = direction;
+    }
+    if (_dragDirection == null) return;
+    _turn.updateDrag(
+      totalDeltaX: details.globalPosition.dx - _dragStartX,
+      pageWidth: _dragPageWidth,
+    );
+  }
+
+  void _onTurnDragEnd(DragEndDetails details) {
+    _dragPending = false;
+    final velocityX = details.velocity.pixelsPerSecond.dx;
+    if (_pageTurnSetting == MushafPageTurn.none) {
+      final direction = _dragDirection;
+      final progress = _instantProgress;
+      _dragDirection = null;
+      _instantProgress = 0;
+      if (direction != null &&
+          pageTurnShouldCommit(
+            progress: progress,
+            velocityX: velocityX,
+            direction: direction,
+          )) {
+        final plan = pageTurnPlan(
+          visiblePage: _visiblePageNo,
+          spread: _spread,
+          direction: direction,
+        );
+        if (plan != null) _completeTurn(plan, userTurn: true);
+      }
+      return;
+    }
+    if (!_turn.isDragging) return;
+    _turnByUser = true;
+    unawaited(_turn.endDrag(velocityX: velocityX));
+  }
+
+  void _onTurnDragCancel() {
+    _dragPending = false;
+    _dragDirection = null;
+    _instantProgress = 0;
+    if (_turn.isActive) _turn.cancel();
+  }
+
+  /// Plays the leaf turn without a finger (edge tap or recitation follow).
+  void _playTurn(PageTurnPlan plan, {required bool byUser}) {
+    if (!mounted || _turn.isActive || !_curlEnabled) return;
+    if (!_setTurnAreas()) return;
+    _prepareTurnImages(plan);
+    _turnByUser = byUser;
+    unawaited(_turn.play(plan));
+  }
+
+  /// Edge tap: outer 12% of a page turns; anything else toggles the bars.
+  void _onBodyTapUp(TapUpDetails details) {
+    if (!mounted || _turn.isActive) return;
+    if (_turnsEnabled) {
+      final edge = resolvePageTurnTap(
+        position: details.globalPosition,
+        pages: _visiblePageRects(),
+      );
+      if (edge == PageTurnTapEdge.next) {
+        _tapTurn(PageTurnDirection.forward);
+        return;
+      }
+      if (edge == PageTurnTapEdge.previous) {
+        _tapTurn(PageTurnDirection.backward);
+        return;
+      }
+    }
+    _toggleChrome();
+  }
+
+  void _tapTurn(PageTurnDirection direction) {
+    final plan = pageTurnPlan(
+      visiblePage: _visiblePageNo,
+      spread: _spread,
+      direction: direction,
+    );
+    if (plan == null) return; // page 1 / 604: nothing to turn to
+    if (_pageTurnSetting == MushafPageTurn.none) {
+      _completeTurn(plan, userTurn: true);
+      return;
+    }
+    _playTurn(plan, byUser: true);
+  }
+
+  void _onTurnCompleted(PageTurnPlan plan) {
+    if (!mounted) return;
+    _completeTurn(plan, userTurn: _turnByUser);
+    _turnByUser = false;
+  }
+
+  void _onTurnCancelled() {
+    _disposeTurnImages();
+    _turnByUser = false;
+  }
+
+  /// Lands the turn: page, provider, last-read and completion update once.
+  void _completeTurn(PageTurnPlan plan, {required bool userTurn}) {
+    final pageNo = _spread
+        ? mushafSpreadPageForIndex(plan.targetIndex)
+        : plan.targetIndex + 1;
+    _turnAppliedIndex = plan.targetIndex;
+    if (userTurn && ref.read(audioPlayerProvider).isActive) {
+      _userPagedDuringPlayback = true;
+    }
+    setState(() {
+      _visiblePageNo = pageNo;
+      _activePageNo = null;
+      if (userTurn) {
+        _scrollToSurahId = null;
+        _scrollToAyahNo = null;
+        _selectedSurahId = null;
+        _selectedAyahNo = null;
+      }
+    });
+    ref.read(mushafVisiblePageProvider.notifier).state = pageNo;
+    MushafLayout.prewarmNeighbors(context, pageNo);
+    ref.read(lastReadProvider.notifier).saveLastRead(PageSource(pageNo));
+    unawaited(_checkCompletionForPage(pageNo));
+    _disposeTurnImages();
+    _turnSnapshots.clear();
+    _controller.jumpToPage(plan.targetIndex);
+    _scheduleSnapshotWarm();
+  }
+
+  /// Warms neighbour page snapshots while idle (never during a turn).
+  void _scheduleSnapshotWarm() {
+    _snapshotWarmTimer?.cancel();
+    if (!mounted || !_curlEnabled) return;
+    _snapshotWarmTimer = Timer(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+      _warmSnapshots();
+    });
+  }
+
+  void _warmSnapshots() {
+    if (!mounted || !_curlEnabled || _turn.isActive || _farm.isNotEmpty) {
+      return;
+    }
+    final pages = _neighbourPages();
+    pages.removeWhere((page) => _turnSnapshots.imageFor(page) != null);
+    if (pages.isEmpty) return;
+    final rects = _visiblePageRects();
+    if (rects.isEmpty) {
+      // Not laid out yet (first frame); try once more shortly.
+      _scheduleSnapshotWarm();
+      return;
+    }
+    _farmPageSize = rects.first.rect.size;
+    final framed = _spread || _framedMode;
+    final showBanners = _spread ? false : (!framed || _chromeVisible);
+    final showBadge = _spread ? false : _chromeVisible;
+    _farmComputed.clear();
+    setState(() {
+      _farm = [
+        for (final page in pages)
+          _TurnFarmPage(
+            pageNo: page,
+            framed: framed,
+            showBanners: showBanners,
+            showBadge: showBadge,
+          ),
+      ];
+    });
+    _farmCaptureTimer?.cancel();
+    _farmCaptureTimer = Timer(const Duration(milliseconds: 900), () {
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _captureFarm());
+    });
+  }
+
+  /// Page numbers a turn can need next: the neighbouring spread, or the pages
+  /// before/after a single page. At most four (cache bound).
+  Set<int> _neighbourPages() {
+    final pages = <int>{};
+    if (_spread) {
+      final pair = mushafSpreadForPage(_visiblePageNo);
+      for (final delta in const [-2, 2]) {
+        final odd = pair.rightPage + delta;
+        final even = pair.leftPage + delta;
+        if (odd >= 1 && odd <= kMushafTotalPages) pages.add(odd);
+        if (even >= 1 && even <= kMushafTotalPages) pages.add(even);
+      }
+    } else {
+      for (final delta in const [-1, 1]) {
+        final page = _visiblePageNo + delta;
+        if (page >= 1 && page <= kMushafTotalPages) pages.add(page);
+      }
+    }
+    return pages;
+  }
+
+  void _onFarmPageComputed(int pageNo) {
+    if (!_farmComputed.add(pageNo)) return;
+    if (_farm.every((entry) => _farmComputed.contains(entry.pageNo))) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _captureFarm());
+    }
+  }
+
+  void _captureFarm() {
+    _farmCaptureTimer?.cancel();
+    if (!mounted || _farm.isEmpty) return;
+    if (_turn.isActive) {
+      // Never evict/dispose an image a running turn is painting.
+      setState(() => _farm = const []);
+      return;
+    }
+    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
+    for (final entry in _farm) {
+      if (!_farmComputed.contains(entry.pageNo)) continue;
+      final image = capturePageSnapshotFor(
+        _farmSnapshotKeys[entry.pageNo],
+        pixelRatio: pixelRatio,
+      );
+      if (image != null) _turnSnapshots.put(entry.pageNo, image);
+    }
+    setState(() => _farm = const []);
+  }
+
   @override
   void dispose() {
+    _snapshotWarmTimer?.cancel();
+    _farmCaptureTimer?.cancel();
+    _turn.dispose();
+    _turnSnapshots.dispose();
+    _disposeTurnImages();
     _completionTimer?.cancel();
     _completionGate?.dispose();
     _controller.removeListener(_onPageControllerTick);
@@ -301,9 +816,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   Future<void> _handleUnitCompleted() async {
     if (!mounted) return;
     final pageNo = _currentPageNo;
-    await ref
-        .read(lastReadProvider.notifier)
-        .saveLastRead(PageSource(pageNo));
+    await ref.read(lastReadProvider.notifier).saveLastRead(PageSource(pageNo));
     await ref.read(completedReadingProvider.notifier).markCompleted(
           CompletedReading(type: 'page', id: pageNo, pageNo: pageNo),
         );
@@ -323,14 +836,49 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     });
 
     if (_visiblePages.contains(pageNo)) return;
+    if (_turn.isActive) return; // do not stack a jump on a running leaf turn
+
+    final targetIndex = _pagerIndexForPage(pageNo);
+    final currentIndex = _pagerIndexForPage(_visiblePageNo);
+
+    if (_curlEnabled) {
+      final direction = targetIndex > currentIndex
+          ? PageTurnDirection.forward
+          : PageTurnDirection.backward;
+      final plan = pageTurnPlan(
+        visiblePage: _visiblePageNo,
+        spread: _spread,
+        direction: direction,
+      );
+      if (plan != null && plan.targetIndex == targetIndex) {
+        // Audio follow uses the same leaf as a finger; the page only changes
+        // when the leaf lands.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _playTurn(plan, byUser: false);
+        });
+        return;
+      }
+      // Not one leaf away (bookmark/search/recitation jump): change directly.
+      _programmaticPageChange = true;
+      _visiblePageNo = pageNo;
+      _activePageNo = null;
+      ref.read(mushafVisiblePageProvider.notifier).state = pageNo;
+      _controller.jumpToPage(targetIndex);
+      return;
+    }
 
     _programmaticPageChange = true;
     _visiblePageNo = pageNo;
     _activePageNo = null;
     ref.read(mushafVisiblePageProvider.notifier).state = pageNo;
 
+    if (_pageTurnSetting == MushafPageTurn.none && _turnsEnabled) {
+      _controller.jumpToPage(targetIndex);
+      return;
+    }
+
     await _controller.animateToPage(
-      _pagerIndexForPage(pageNo),
+      targetIndex,
       duration: const Duration(milliseconds: 320),
       curve: Curves.easeInOut,
     );
@@ -429,6 +977,27 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   @override
   Widget build(BuildContext context) {
     ref.watch(settingsProvider.select((s) => s.mushafFontSize));
+    final pageTurn =
+        ref.watch(settingsProvider.select((s) => s.mushafPageTurn));
+    _pageTurnSetting = pageTurn;
+    // Reduced motion falls back to the existing slide behaviour.
+    _turnsEnabled = pageTurn != MushafPageTurn.slide &&
+        !MediaQuery.disableAnimationsOf(context);
+
+    ref.listen<MushafPageTurn>(
+      settingsProvider.select((s) => s.mushafPageTurn),
+      (previous, next) {
+        if (previous == next || !mounted) return;
+        _turn.cancel();
+        _disposeTurnImages();
+        _turnSnapshots.clear();
+        _snapshotWarmTimer?.cancel();
+        _farmCaptureTimer?.cancel();
+        _farmComputed.clear();
+        setState(() => _farm = const []);
+        _scheduleSnapshotWarm();
+      },
+    );
 
     ref.listen<bool>(
       settingsProvider.select((s) => s.mushafTwoPageSpread),
@@ -457,8 +1026,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
       }
       setState(() {
         _selectedSurahId = next.surahId;
-        _selectedAyahNo =
-            next.isPlayingBismillah ? null : next.ayahNo;
+        _selectedAyahNo = next.isPlayingBismillah ? null : next.ayahNo;
       });
 
       final surahChanged = previous?.surahId != next.surahId;
@@ -486,6 +1054,8 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
         }
       },
       child: Stack(
+        key: _turnLayerKey,
+        clipBehavior: Clip.none,
         children: [
           Positioned.fill(
             child: PageView.builder(
@@ -493,9 +1063,20 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
               controller: _controller,
               // RTL direction: swipe right-to-left = next page/spread.
               reverse: true,
+              // Leaf and instant modes own the page change: the pager never
+              // slides, so nothing moves until the leaf lands / tap commits.
+              physics:
+                  _turnsEnabled ? const NeverScrollableScrollPhysics() : null,
               onPageChanged: (index) {
                 final pageNo =
                     _spread ? mushafSpreadPageForIndex(index) : index + 1;
+                if (_turnAppliedIndex == index) {
+                  // Already applied when the leaf landed; update exactly once.
+                  _turnAppliedIndex = null;
+                  return;
+                }
+                // A page change invalidates every neighbour snapshot.
+                _turnSnapshots.clear();
                 _visiblePageNo = pageNo;
                 _activePageNo = null;
                 ref.read(mushafVisiblePageProvider.notifier).state = pageNo;
@@ -517,6 +1098,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
                       .saveLastRead(PageSource(pageNo));
                   unawaited(_checkCompletionForPage(pageNo));
                 }
+                _scheduleSnapshotWarm();
               },
               itemCount: _spread ? kMushafSpreadCount : kMushafTotalPages,
               itemBuilder: (context, index) {
@@ -530,6 +1112,10 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
                     rightPage: oddPage,
                     chromeVisible: _chromeVisible,
                     onToggleChrome: _toggleChrome,
+                    onBodyTap: _onBodyTapUp,
+                    pageSnapshotKeys: _pageSnapshotKeys,
+                    snapshotBackground:
+                        Theme.of(context).scaffoldBackgroundColor,
                     targetSurahId: _scrollToSurahId,
                     targetAyahNo: _scrollToAyahNo,
                     selectedSurahId: _selectedSurahId,
@@ -560,6 +1146,9 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
                   framed: framedSingle,
                   chromeVisible: _chromeVisible,
                   onToggleChrome: _toggleChrome,
+                  onBodyTap: _onBodyTapUp,
+                  snapshotKey: _pageSnapshotKey(pageNo),
+                  snapshotBackground: Theme.of(context).scaffoldBackgroundColor,
                   targetSurahId: _scrollToSurahId,
                   targetAyahNo: _scrollToAyahNo,
                   selectedSurahId: _selectedSurahId,
@@ -581,6 +1170,63 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
               },
             ),
           ),
+          if (_farm.isNotEmpty && _farmPageSize != null)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    for (final entry in _farm)
+                      Positioned(
+                        left: -_farmPageSize!.width - 64,
+                        top: 0,
+                        width: _farmPageSize!.width,
+                        height: _farmPageSize!.height,
+                        child: ColoredBox(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          child: RepaintBoundary(
+                            key: _farmSnapshotKey(entry.pageNo),
+                            child: MushafPageBody(
+                              pageNo: entry.pageNo,
+                              framed: entry.framed,
+                              showBanners: entry.showBanners,
+                              showBadge: entry.showBadge,
+                              onComputed: () =>
+                                  _onFarmPageComputed(entry.pageNo),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          if (_curlEnabled)
+            Positioned.fill(
+              child: MushafPageTurnOverlay(
+                controller: _turn,
+                belowPages: _turnBelow,
+                frontImage: _turnFrontImage,
+                backImage: _turnBackImage,
+                background: Theme.of(context).scaffoldBackgroundColor,
+                ink: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          if (_turnsEnabled)
+            Positioned.fill(
+              child: GestureDetector(
+                // Translucent on purpose: ayah taps and the chrome tap still
+                // reach the page; only a horizontal drag past the slop is ours.
+                behavior: HitTestBehavior.translucent,
+                // The leaf follows the whole finger travel, including the slop
+                // that made the recognizer win.
+                dragStartBehavior: DragStartBehavior.down,
+                onHorizontalDragStart: _onTurnDragStart,
+                onHorizontalDragUpdate: _onTurnDragUpdate,
+                onHorizontalDragEnd: _onTurnDragEnd,
+                onHorizontalDragCancel: _onTurnDragCancel,
+              ),
+            ),
           if (_resumeHint?.mode == ResumeHintMode.page)
             Positioned(
               top: MediaQuery.paddingOf(context).top + 62,
@@ -603,6 +1249,14 @@ class MushafPage extends StatelessWidget {
   final bool framed;
   final bool chromeVisible;
   final VoidCallback? onToggleChrome;
+
+  /// Tap on the page body; receives the position so the edge zones can turn a
+  /// page. Falls back to [onToggleChrome] when null.
+  final void Function(TapUpDetails)? onBodyTap;
+
+  /// Boundary used to rasterize this page for a leaf turn (null disables it).
+  final GlobalKey? snapshotKey;
+  final Color? snapshotBackground;
   final int? targetSurahId;
   final int? targetAyahNo;
   final int? selectedSurahId;
@@ -619,6 +1273,9 @@ class MushafPage extends StatelessWidget {
     this.framed = false,
     this.chromeVisible = true,
     this.onToggleChrome,
+    this.onBodyTap,
+    this.snapshotKey,
+    this.snapshotBackground,
     this.targetSurahId,
     this.targetAyahNo,
     this.selectedSurahId,
@@ -632,28 +1289,39 @@ class MushafPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget body = MushafPageBody(
+      pageNo: pageNo,
+      framed: framed,
+      targetSurahId: targetSurahId,
+      targetAyahNo: targetAyahNo,
+      selectedSurahId: selectedSurahId,
+      selectedAyahNo: selectedAyahNo,
+      showBanners: !framed || chromeVisible,
+      showBadge: chromeVisible,
+      onAyahTap: (surahId, ayahNo) => onAyahTap?.call(surahId, ayahNo, pageNo),
+      onAyahLongPress: (surahId, ayahNo) =>
+          onAyahLongPress?.call(surahId, ayahNo, pageNo),
+      onBismillahTap: (surahId) => onBismillahTap?.call(surahId, pageNo),
+      onBismillahLongPress: (surahId) =>
+          onBismillahLongPress?.call(surahId, pageNo),
+      onComputed: onComputed,
+    );
+    if (snapshotKey != null) {
+      body = RepaintBoundary(
+        key: snapshotKey,
+        child: ColoredBox(
+          color:
+              snapshotBackground ?? Theme.of(context).scaffoldBackgroundColor,
+          child: body,
+        ),
+      );
+    }
     return _MushafChrome(
       pageNumbers: [pageNo],
       chromeVisible: chromeVisible,
       onToggleChrome: onToggleChrome,
-      child: MushafPageBody(
-        pageNo: pageNo,
-        framed: framed,
-        targetSurahId: targetSurahId,
-        targetAyahNo: targetAyahNo,
-        selectedSurahId: selectedSurahId,
-        selectedAyahNo: selectedAyahNo,
-        showBanners: !framed || chromeVisible,
-        showBadge: chromeVisible,
-        onAyahTap: (surahId, ayahNo) =>
-            onAyahTap?.call(surahId, ayahNo, pageNo),
-        onAyahLongPress: (surahId, ayahNo) =>
-            onAyahLongPress?.call(surahId, ayahNo, pageNo),
-        onBismillahTap: (surahId) => onBismillahTap?.call(surahId, pageNo),
-        onBismillahLongPress: (surahId) =>
-            onBismillahLongPress?.call(surahId, pageNo),
-        onComputed: onComputed,
-      ),
+      onBodyTap: onBodyTap,
+      child: body,
     );
   }
 }
@@ -665,6 +1333,9 @@ class _MushafSpread extends ConsumerWidget {
     required this.rightPage,
     this.chromeVisible = true,
     this.onToggleChrome,
+    this.onBodyTap,
+    this.pageSnapshotKeys,
+    this.snapshotBackground,
     this.targetSurahId,
     this.targetAyahNo,
     this.selectedSurahId,
@@ -680,6 +1351,11 @@ class _MushafSpread extends ConsumerWidget {
   final int rightPage;
   final bool chromeVisible;
   final VoidCallback? onToggleChrome;
+  final void Function(TapUpDetails)? onBodyTap;
+
+  /// Per-page RepaintBoundary keys used to rasterize a leaf turn.
+  final Map<int, GlobalKey>? pageSnapshotKeys;
+  final Color? snapshotBackground;
   final int? targetSurahId;
   final int? targetAyahNo;
   final int? selectedSurahId;
@@ -699,7 +1375,7 @@ class _MushafSpread extends ConsumerWidget {
     );
 
     Widget pageBody(int pageNo) {
-      return MushafPageBody(
+      Widget body = MushafPageBody(
         pageNo: pageNo,
         framed: true,
         targetSurahId: targetSurahId,
@@ -717,12 +1393,25 @@ class _MushafSpread extends ConsumerWidget {
             onBismillahLongPress?.call(surahId, pageNo),
         onComputed: pageNo == rightPage ? onComputed : null,
       );
+      final snapshotKey = pageSnapshotKeys?.putIfAbsent(pageNo, GlobalKey.new);
+      if (snapshotKey != null) {
+        body = RepaintBoundary(
+          key: snapshotKey,
+          child: ColoredBox(
+            color:
+                snapshotBackground ?? Theme.of(context).scaffoldBackgroundColor,
+            child: body,
+          ),
+        );
+      }
+      return body;
     }
 
     return _MushafChrome(
       pageNumbers: [rightPage, leftPage],
       chromeVisible: chromeVisible,
       onToggleChrome: onToggleChrome,
+      onBodyTap: onBodyTap,
       child: Padding(
         padding: EdgeInsets.fromLTRB(
           hinge.leftInset + 8,
@@ -771,12 +1460,16 @@ class _MushafChrome extends StatefulWidget {
     required this.child,
     this.chromeVisible = true,
     this.onToggleChrome,
+    this.onBodyTap,
   });
 
   final List<int> pageNumbers;
   final Widget child;
   final bool chromeVisible;
   final VoidCallback? onToggleChrome;
+
+  /// Position-aware tap on empty page space (edge turns, centre toggles bars).
+  final void Function(TapUpDetails)? onBodyTap;
 
   @override
   State<_MushafChrome> createState() => _MushafChromeState();
@@ -842,8 +1535,7 @@ class _MushafChromeState extends State<_MushafChrome> {
               child: widget.chromeVisible
                   ? SizedBox(
                       key: const ValueKey<String>('mushaf-bar'),
-                      height:
-                          55 + MediaQuery.paddingOf(context).top,
+                      height: 55 + MediaQuery.paddingOf(context).top,
                       child: _MushafAppBar(pageNumbers: widget.pageNumbers),
                     )
                   : const SizedBox(
@@ -852,13 +1544,17 @@ class _MushafChromeState extends State<_MushafChrome> {
                     ),
             ),
             Expanded(
-              child: widget.onToggleChrome == null
+              child: widget.onBodyTap == null && widget.onToggleChrome == null
                   ? widget.child
                   : GestureDetector(
-                      // Taps on empty margins/gutter toggle the bars; taps on a
-                      // glyph are claimed by the ayah recognizer and still play.
+                      // Taps on empty margins/gutter toggle the bars (or turn at
+                      // the outer edge); taps on a glyph are claimed by the ayah
+                      // recognizer and still play.
                       behavior: HitTestBehavior.translucent,
-                      onTap: widget.onToggleChrome,
+                      onTapUp: widget.onBodyTap,
+                      onTap: widget.onBodyTap == null
+                          ? widget.onToggleChrome
+                          : null,
                       child: widget.child,
                     ),
             ),
@@ -1052,6 +1748,21 @@ String _formatSurahName(String name) {
   return formattedNames[name] ?? name;
 }
 
+/// One offscreen page built while idle to warm a leaf-turn snapshot.
+class _TurnFarmPage {
+  const _TurnFarmPage({
+    required this.pageNo,
+    required this.framed,
+    required this.showBanners,
+    required this.showBadge,
+  });
+
+  final int pageNo;
+  final bool framed;
+  final bool showBanners;
+  final bool showBadge;
+}
+
 class _MushafPageSnapshot {
   const _MushafPageSnapshot.glyph(this.glyphContent) : legacyBlocks = null;
 
@@ -1141,7 +1852,7 @@ class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
 
   void _onScrollChanged() {
     if (!mounted) return;
-    
+
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       if (!mounted) return;
@@ -1151,7 +1862,7 @@ class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
 
   void _updateLastRead() {
     if (!mounted) return;
-    
+
     _pageFuture.then((snapshot) {
       if (!mounted) return;
       if (snapshot.isGlyph) {
@@ -1160,10 +1871,10 @@ class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
           final word = line.words.first;
           final source = PageSource(widget.pageNo);
           ref.read(lastReadProvider.notifier).saveLastRead(
-            source,
-            ayahNo: word.ayah,
-            surahId: word.surah,
-          );
+                source,
+                ayahNo: word.ayah,
+                surahId: word.surah,
+              );
           logReadingActivityDay();
           return;
         }
@@ -1172,7 +1883,7 @@ class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
 
       final blocks = snapshot.legacyBlocks ?? [];
       if (blocks.isEmpty) return;
-      
+
       // Find the first visible ayah by checking scroll position
       // This is approximate - for exact tracking, we'd need to measure widget positions
       // Simple heuristic: find ayah that should be visible based on scroll
@@ -1184,14 +1895,14 @@ class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
           break; // Use first ayah as approximation
         }
       }
-      
+
       if (visibleBlock?.surahId != null && visibleBlock?.ayahNo != null) {
         final source = PageSource(widget.pageNo);
         ref.read(lastReadProvider.notifier).saveLastRead(
-          source,
-          ayahNo: visibleBlock!.ayahNo,
-          surahId: visibleBlock.surahId,
-        );
+              source,
+              ayahNo: visibleBlock!.ayahNo,
+              surahId: visibleBlock.surahId,
+            );
         logReadingActivityDay();
       }
     });
@@ -1200,18 +1911,18 @@ class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
   void _scrollToTargetAyah() {
     if (_hasScrolledToTarget) return;
     if (widget.targetSurahId == null || widget.targetAyahNo == null) return;
-    
+
     final key = '${widget.targetSurahId}_${widget.targetAyahNo}';
     final targetKey = _ayahKeys[key];
-    
+
     if (targetKey?.currentContext == null) return;
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _hasScrolledToTarget) return;
-      
+
       Future.delayed(const Duration(milliseconds: 300), () {
         if (!mounted || _hasScrolledToTarget) return;
-        
+
         try {
           final context = targetKey!.currentContext;
           if (context != null) {
@@ -1221,7 +1932,7 @@ class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
               curve: Curves.easeInOut,
               alignment: 0.15,
             );
-            
+
             Future.delayed(const Duration(milliseconds: 600), () {
               if (mounted) {
                 _hasScrolledToTarget = true;
@@ -1510,7 +2221,8 @@ class _FlowingMushafText extends ConsumerWidget {
   });
 
   /// Open bottom sheet for ayah: translation (Meaning) + Share, Bookmark, Copy (Nusuk-style)
-  static void showAyahSheet(BuildContext context, WidgetRef ref, int surahId, int ayahNo) {
+  static void showAyahSheet(
+      BuildContext context, WidgetRef ref, int surahId, int ayahNo) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -1529,7 +2241,8 @@ class _FlowingMushafText extends ConsumerWidget {
 
     final List<Widget> children = [];
     final List<InlineSpan> currentSpans = [];
-    final List<GestureRecognizer> recognizers = []; // Track recognizers for disposal
+    final List<GestureRecognizer> recognizers =
+        []; // Track recognizers for disposal
 
     void flushCurrentSpans() {
       if (currentSpans.isNotEmpty) {
@@ -1540,7 +2253,8 @@ class _FlowingMushafText extends ConsumerWidget {
               TextSpan(children: List.from(currentSpans)),
               textAlign: TextAlign.justify,
               textDirection: TextDirection.rtl,
-              textWidthBasis: TextWidthBasis.longestLine, // Justifikasi yang lebih baik
+              textWidthBasis:
+                  TextWidthBasis.longestLine, // Justifikasi yang lebih baik
               style: TextStyle(
                 fontFamily: 'UthmanicHafsV22',
                 fontFamilyFallback: const ['UthmanicHafs'],
@@ -1661,9 +2375,8 @@ class _FlowingMushafText extends ConsumerWidget {
       }
 
       // Tap on ayah: light tint; recitation uses a rounded frame (not per-word boxes).
-      final recitingAyahNo = audio.isPlayingBismillah
-          ? Bismillah.audioAyahNo
-          : audio.ayahNo;
+      final recitingAyahNo =
+          audio.isPlayingBismillah ? Bismillah.audioAyahNo : audio.ayahNo;
       final isRecitingAyah = block.isBismillah
           ? recitingAyahNo == Bismillah.audioAyahNo &&
               block.surahId != null &&
@@ -1743,7 +2456,7 @@ class _FlowingMushafText extends ConsumerWidget {
     }
 
     flushCurrentSpans();
-    
+
     // Call callback after keys are created
     WidgetsBinding.instance.addPostFrameCallback((_) {
       onAyahKeyCreated?.call();
@@ -1758,7 +2471,6 @@ class _FlowingMushafText extends ConsumerWidget {
       children: children,
     );
   }
-
 }
 
 /// Widget untuk nomor ayat inline dengan bookmark support
@@ -1808,7 +2520,7 @@ class _InlineAyahNumberState extends ConsumerState<_InlineAyahNumber> {
       widget.surahId!,
       widget.ayahNo,
     );
-    
+
     if (mounted) {
       setState(() {
         _isBookmarked = bookmarked;
@@ -1819,35 +2531,38 @@ class _InlineAyahNumberState extends ConsumerState<_InlineAyahNumber> {
 
   Future<void> _toggleBookmark() async {
     if (widget.surahId == null) return;
-    
+
     await toggleBookmark(
       ref,
       widget.surahId!,
       widget.ayahNo,
       openContext: BookmarkOpenContext.mushaf,
     );
-    
+
     await _checkBookmark();
   }
 
   @override
   Widget build(BuildContext context) {
-    final displayNumber = MushafLayout.toArabicIndicDigits(widget.ayahNo.toString());
-    
+    final displayNumber =
+        MushafLayout.toArabicIndicDigits(widget.ayahNo.toString());
+
     // Listen to bookmark refresh
     ref.listen(bookmarkRefreshProvider, (previous, next) {
       if (previous != next && widget.surahId != null) {
         _checkBookmark();
       }
     });
-    
+
     final reciting = widget.isReciting;
     final borderColor = _isBookmarked
         ? widget.colorScheme.primary
         : widget.colorScheme.outline.withValues(alpha: 0.3);
 
     return GestureDetector(
-      onTap: widget.surahId != null && !_isCheckingBookmark ? _toggleBookmark : null,
+      onTap: widget.surahId != null && !_isCheckingBookmark
+          ? _toggleBookmark
+          : null,
       child: Container(
         padding: EdgeInsets.all(widget.fontSize * 0.2),
         decoration: BoxDecoration(
@@ -1872,7 +2587,8 @@ class _InlineAyahNumberState extends ConsumerState<_InlineAyahNumber> {
                 ? widget.colorScheme.primary
                 : widget.colorScheme.onSurface,
             height: 1.0,
-            fontWeight: reciting || _isBookmarked ? FontWeight.w700 : FontWeight.w600,
+            fontWeight:
+                reciting || _isBookmarked ? FontWeight.w700 : FontWeight.w600,
           ),
         ),
       ),
@@ -1940,10 +2656,12 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
     final translation = _getTranslation(verse, settings.language);
     final surahs = ref.read(surahNamesProvider).valueOrNull;
     final surahName = surahs != null
-        ? surahs.firstWhere(
-            (s) => s.id == verse.surahId,
-            orElse: () => surahs.first,
-          ).englishName
+        ? surahs
+            .firstWhere(
+              (s) => s.id == verse.surahId,
+              orElse: () => surahs.first,
+            )
+            .englishName
         : 'Surah ${verse.surahId}';
     final buffer = StringBuffer();
     buffer.writeln(verse.arabic);
@@ -1997,7 +2715,8 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
 
             return SingleChildScrollView(
               controller: scrollController,
-              padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 20),
+              padding: EdgeInsets.fromLTRB(
+                  20, 12, 20, MediaQuery.of(context).padding.bottom + 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
@@ -2033,7 +2752,8 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
                                   notifier.restart();
                                 }
                               } else {
-                                final surahs = ref.read(surahNamesProvider).valueOrNull;
+                                final surahs =
+                                    ref.read(surahNamesProvider).valueOrNull;
                                 final surahName = surahs
                                     ?.firstWhere(
                                       (s) => s.id == widget.surahId,
@@ -2091,7 +2811,9 @@ class _MushafAyahSheetState extends ConsumerState<_MushafAyahSheet> {
                           }
                         },
                         icon: Icon(
-                          _bookmarked == true ? Icons.bookmark : Icons.bookmark_outline,
+                          _bookmarked == true
+                              ? Icons.bookmark
+                              : Icons.bookmark_outline,
                           size: 22,
                         ),
                         style: IconButton.styleFrom(
@@ -2203,4 +2925,3 @@ class _TapAndLongPressRecognizer extends GestureRecognizer {
     super.dispose();
   }
 }
-
