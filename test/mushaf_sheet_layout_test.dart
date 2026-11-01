@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/mushaf/mushaf_sheet_layout.dart';
 
-/// 1.0.23 vertical chrome inside the framed area (see mushaf_page_view.dart).
+/// 1.0.23 vertical chrome with the bars hidden: exercises the never-shrink
+/// floor algorithm on the full window (normal mode uses the same algorithm).
 const _focusSpreadChrome = 6.0; // top padding 6, no badge
 const _focusSingleChrome = 0.0;
 
@@ -39,7 +40,7 @@ void main() {
       Size(1280, 800),
       Size(840, 600),
     ]) {
-      test('focus spread $window keeps the 1.0.23 text size', () {
+      test('floor: spread $window keeps the 1.0.23 text size', () {
         final floor = mushafLegacyTextFrame(
           area: window,
           pageCount: 2,
@@ -53,7 +54,7 @@ void main() {
     }
 
     for (final window in const [Size(704, 933), Size(800, 1280)]) {
-      test('focus single $window keeps the 1.0.23 text size', () {
+      test('floor: single $window keeps the 1.0.23 text size', () {
         final floor = mushafLegacyTextFrame(
           area: window,
           pageCount: 1,
@@ -67,6 +68,45 @@ void main() {
         expect(layout.textSize.width, greaterThanOrEqualTo(floor.width - 0.01));
       });
     }
+  });
+
+  group('focus mode', () {
+    test('Fold focus spread: outer frame + number at 26.67dp', () {
+      final layout = resolveMushafFocusSheetLayout(
+        area: const Size(933, 704),
+        pageCount: 2,
+      );
+      expect(layout.decor, MushafSheetDecor.outerFrame);
+      expect(layout.decor.hasInnerFrame, isFalse);
+      expect(layout.decor.hasRosettes, isFalse);
+      expect(layout.showNumber, isTrue);
+      expect(layout.fontSize, closeTo(26.67, 0.01));
+      for (var i = 0; i < 2; i++) {
+        final sheet = layout.sheets[i];
+        final text = layout.texts[i];
+        expect(text.left - sheet.left, closeTo(sheet.right - text.right, 1e-9));
+      }
+    });
+
+    test('same level on every window', () {
+      for (final (window, pages) in const [
+        (Size(933, 704), 2),
+        (Size(955, 860), 2),
+        (Size(1280, 800), 2),
+        (Size(704, 933), 1),
+      ]) {
+        final layout =
+            resolveMushafFocusSheetLayout(area: window, pageCount: pages);
+        expect(layout.decor, MushafSheetDecor.outerFrame, reason: '$window');
+        expect(layout.showNumber, isTrue, reason: '$window');
+      }
+    });
+
+    test('rosettes on the outer corners would hang off the paper', () {
+      // Centred on the outer line's corner, half a rosette sticks out past
+      // the sheet edge; pulling it in costs text size, so focus drops it.
+      expect(kMushafFrameEdgeInset, lessThan(kMushafRosetteSize / 2));
+    });
   });
 
   group('sheets', () {

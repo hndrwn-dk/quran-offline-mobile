@@ -62,7 +62,8 @@ class MushafPageSheet extends StatelessWidget {
 /// [pages] are left to right (a spread is `[even, odd]`). Each page's text box
 /// is placed by [resolveMushafSheetLayout], which never makes the text smaller
 /// than the 1.0.23 framed layout ([legacyVerticalChrome] describes how much of
-/// this area that layout spent on chrome). Layout direction is forced LTR so
+/// this area that layout spent on chrome), or in [focus] mode by
+/// [resolveMushafFocusSheetLayout]. Layout direction is forced LTR so
 /// the even page is always the left sheet regardless of the app language.
 class MushafFramedSheets extends StatelessWidget {
   const MushafFramedSheets({
@@ -70,6 +71,7 @@ class MushafFramedSheets extends StatelessWidget {
     required this.pages,
     required this.pageBuilder,
     required this.legacyVerticalChrome,
+    this.focus = false,
     this.wantNumber = true,
     this.pageNumberLabel,
   });
@@ -77,6 +79,9 @@ class MushafFramedSheets extends StatelessWidget {
   final List<int> pages;
   final Widget Function(int pageNo) pageBuilder;
   final double legacyVerticalChrome;
+
+  /// Bars hidden: fixed outer frame + page number on every spread.
+  final bool focus;
   final bool wantNumber;
   final String Function(int pageNo)? pageNumberLabel;
 
@@ -110,19 +115,26 @@ class MushafFramedSheets extends StatelessWidget {
             media.viewPadding.left,
             media.viewPadding.right,
           );
-          final layout = resolveMushafSheetLayout(
-            area: area,
-            pageCount: pages.length,
-            floor: mushafLegacyTextFrame(
-              area: area,
-              pageCount: pages.length,
-              verticalChrome: legacyVerticalChrome,
-              hinge: legacyHinge,
-            ),
-            hinge: hinge,
-            sideInset: sideInset,
-            wantNumber: wantNumber,
-          );
+          final layout = focus
+              ? resolveMushafFocusSheetLayout(
+                  area: area,
+                  pageCount: pages.length,
+                  hinge: hinge,
+                  sideInset: sideInset,
+                )
+              : resolveMushafSheetLayout(
+                  area: area,
+                  pageCount: pages.length,
+                  floor: mushafLegacyTextFrame(
+                    area: area,
+                    pageCount: pages.length,
+                    verticalChrome: legacyVerticalChrome,
+                    hinge: legacyHinge,
+                  ),
+                  hinge: hinge,
+                  sideInset: sideInset,
+                  wantNumber: wantNumber,
+                );
           if (kDebugMode) {
             debugPrint('[MushafSheets] area=$area $layout');
           }

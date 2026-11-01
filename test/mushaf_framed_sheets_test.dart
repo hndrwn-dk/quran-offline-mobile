@@ -18,15 +18,16 @@ const _foldNavBar = 15.0;
 /// Compact framed AppBar (44dp toolbar + 1dp divider).
 const _framedBar = 45.0;
 
-/// 1.0.23 chrome inside the area (see `_MushafFramedBody`), banners hidden.
-const _legacySpreadFocus = 6.0;
+/// 1.0.23 chrome inside the area in normal mode (see `_MushafFramedBody`),
+/// banners hidden. Focus mode does not use the 1.0.23 floor.
 const _legacySpreadNormal = (55.0 - _framedBar) + 6 + 61 + 2 + 4;
-const _legacySingleFocus = 0.0;
 const _legacySingleNormal = (55.0 - _framedBar) + 20 + 61 + 10 - 4;
 
-/// 1.0.23 measured ayah sizes on the Fold (focus spread / normal spread).
-const _baselineFocusFont = 27.6;
+/// 1.0.23 measured normal-mode ayah size on the Fold.
 const _baselineNormalFont = 21.3;
+
+/// Approved focus-mode size on the Fold with outer frame + page number.
+const _foldFocusFont = 26.67;
 
 ColorScheme _scheme(String theme) => switch (theme) {
       'dark' => AppColors.darkColorScheme(),
@@ -58,9 +59,7 @@ class _Case {
           window.height - _foldStatusBar - _framedBar - _foldNavBar,
         );
 
-  double get legacyChrome => spread
-      ? (focus ? _legacySpreadFocus : _legacySpreadNormal)
-      : (focus ? _legacySingleFocus : _legacySingleNormal);
+  double get legacyChrome => spread ? _legacySpreadNormal : _legacySingleNormal;
 }
 
 const _fold = Size(933, 704);
@@ -105,6 +104,7 @@ Future<void> _pumpCase(
           key: boundaryKey,
           child: MushafFramedSheets(
             pages: c.pages,
+            focus: c.focus,
             legacyVerticalChrome: c.legacyChrome,
             pageBuilder: (pageNo) => MushafPageSheet(
               content: _contents[pageNo]!,
@@ -120,15 +120,17 @@ Future<void> _pumpCase(
   await tester.pump();
 }
 
-MushafSheetLayout _layoutFor(_Case c) => resolveMushafSheetLayout(
-      area: c.area,
-      pageCount: c.pages.length,
-      floor: mushafLegacyTextFrame(
+MushafSheetLayout _layoutFor(_Case c) => c.focus
+    ? resolveMushafFocusSheetLayout(area: c.area, pageCount: c.pages.length)
+    : resolveMushafSheetLayout(
         area: c.area,
         pageCount: c.pages.length,
-        verticalChrome: c.legacyChrome,
-      ),
-    );
+        floor: mushafLegacyTextFrame(
+          area: c.area,
+          pageCount: c.pages.length,
+          verticalChrome: c.legacyChrome,
+        ),
+      );
 
 void main() {
   setUpAll(() async {
@@ -166,33 +168,40 @@ void main() {
     }
   });
 
-  group('font size never shrinks', () {
+  group('font size', () {
     test('opening spread keeps the shared opening scale', () {
       expect(_openingScale, closeTo(1.2935, 0.0005));
     }, skip: !mushafRealPagesAvailable);
 
     for (final c in _cases) {
-      testWidgets('${c.name}: rendered text >= 1.0.23', (tester) async {
+      final label =
+          c.focus ? 'outer frame + number in focus' : 'rendered text >= 1.0.23';
+      testWidgets('${c.name}: $label', (tester) async {
         await _pumpCase(tester, c, _scheme('light'));
-        final floor = mushafLegacyTextFrame(
-          area: c.area,
-          pageCount: c.pages.length,
-          verticalChrome: c.legacyChrome,
-        );
-        final floorFont = kMushafPageFontSize * mushafPageScaleFor(floor);
+        final layout = _layoutFor(c);
         for (final page in c.pages) {
           final box = tester.getSize(find.byKey(ValueKey<int>(page)));
           final font = kMushafPageFontSize * mushafPageScaleFor(box);
-          expect(font, greaterThanOrEqualTo(floorFont - 0.01),
-              reason: 'page $page');
-          if (c.window == _fold && c.spread) {
-            expect(
-              font,
-              greaterThanOrEqualTo(
-                c.focus ? _baselineFocusFont : _baselineNormalFont,
-              ),
-              reason: 'page $page',
+          if (c.focus) {
+            // Same level on every spread: outer line + number, no rosettes.
+            expect(layout.decor, MushafSheetDecor.outerFrame);
+            expect(layout.showNumber, isTrue);
+            if (c.window == _fold && c.spread) {
+              expect(font, closeTo(_foldFocusFont, 0.01), reason: 'page $page');
+            }
+          } else {
+            final floor = mushafLegacyTextFrame(
+              area: c.area,
+              pageCount: c.pages.length,
+              verticalChrome: c.legacyChrome,
             );
+            final floorFont = kMushafPageFontSize * mushafPageScaleFor(floor);
+            expect(font, greaterThanOrEqualTo(floorFont - 0.01),
+                reason: 'page $page');
+            if (c.window == _fold && c.spread) {
+              expect(font, greaterThanOrEqualTo(_baselineNormalFont),
+                  reason: 'page $page');
+            }
           }
         }
         // Both pages of a spread render at one size.

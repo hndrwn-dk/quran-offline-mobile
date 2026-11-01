@@ -810,22 +810,17 @@ class _MushafFramedBody extends ConsumerWidget {
       settingsProvider.select((s) => s.appLanguage),
     );
 
-    // Height the 1.0.23 tree spent inside this area besides the 2dp + 2dp page
-    // body padding that [mushafLegacyTextFrame] already removes.
-    final double legacyChrome;
-    if (!chromeVisible) {
-      // Spread: 6dp top padding. Single page: only the body padding.
-      legacyChrome = spread ? 6 : 0;
-    } else {
-      const taller = _kLegacyBarHeight - (_kFramedToolbarHeight + 1);
-      // The top padding stayed when the banners were hidden by recitation.
-      final top = showBanners ? 0.0 : bannerTop;
-      legacyChrome = spread
-          // Badge, its 2dp bottom padding, the spread's 4dp bottom padding.
-          ? taller + top + _kLegacyBadgeHeight + 2 + 4
-          // Badge and 10dp bottom padding replaced the 2dp + 2dp body pads.
-          : taller + top + _kLegacyBadgeHeight + 10 - 4;
-    }
+    // Normal mode only (focus pins its own decoration level): height the
+    // 1.0.23 tree spent inside this area besides the 2dp + 2dp page body
+    // padding that [mushafLegacyTextFrame] already removes.
+    const taller = _kLegacyBarHeight - (_kFramedToolbarHeight + 1);
+    // The top padding stayed when the banners were hidden by recitation.
+    final top = showBanners ? 0.0 : bannerTop;
+    final legacyChrome = spread
+        // Badge, its 2dp bottom padding, the spread's 4dp bottom padding.
+        ? taller + top + _kLegacyBadgeHeight + 2 + 4
+        // Badge and 10dp bottom padding replaced the 2dp + 2dp body pads.
+        : taller + top + _kLegacyBadgeHeight + 10 - 4;
 
     return Column(
       children: [
@@ -838,6 +833,7 @@ class _MushafFramedBody extends ConsumerWidget {
         Expanded(
           child: MushafFramedSheets(
             pages: pages,
+            focus: !chromeVisible,
             legacyVerticalChrome: legacyChrome,
             pageBuilder: pageBody,
             pageNumberLabel: (pageNo) =>

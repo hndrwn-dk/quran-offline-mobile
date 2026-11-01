@@ -6,10 +6,14 @@ import 'package:quran_offline/core/mushaf/qpc_v2_page_ink_metrics.dart';
 
 /// Framed Mushaf (window >= 600dp) laid out as paper sheets on a desk.
 ///
-/// The ayah text box (the fixed QPC reference page, uniformly scaled) never
-/// gets smaller than the 1.0.23 layout gave the same window: decorations only
-/// use space the text does not need. When they do not fit they are dropped in
-/// a fixed order: rosettes, then the inner frame line, then the outer line.
+/// Normal mode: the ayah text box (the fixed QPC reference page, uniformly
+/// scaled) never gets smaller than the 1.0.23 layout gave the same window;
+/// decorations only use space the text does not need, and are dropped in a
+/// fixed order when they do not fit: rosettes, inner frame line, outer line.
+///
+/// Focus mode (bars hidden) always shows the outer frame line and the page
+/// number on every spread, and the text takes the rest ([resolveMushafFocusSheetLayout]).
+/// On the Fold that is 26.67dp instead of 27.66dp: an approved trade-off.
 
 /// Minimum distance between any frame line or rosette and the line ink.
 const double kMushafInkClearance = 6.0;
@@ -186,6 +190,25 @@ class MushafSheetLayout {
       'text: ${textSize.width.toStringAsFixed(1)}x'
       '${textSize.height.toStringAsFixed(1)}, '
       'font: ${fontSize.toStringAsFixed(2)}dp, sheets: $sheets)';
+}
+
+/// Focus mode: outer frame line + page number on every spread, the largest
+/// text that fits around them. No inner line; the corner rosettes would hang
+/// off the paper at the outer line's 3dp inset, so focus mode has none.
+MushafSheetLayout resolveMushafFocusSheetLayout({
+  required Size area,
+  required int pageCount,
+  MushafHingeLayout hinge = const MushafHingeLayout(gap: 0),
+  double sideInset = 0,
+}) {
+  return _layoutFor(
+    area: area,
+    pageCount: pageCount,
+    hinge: hinge,
+    sideInset: sideInset,
+    decor: MushafSheetDecor.outerFrame,
+    showNumber: true,
+  );
 }
 
 /// Lays out [pageCount] sheets in [area] with the richest decoration whose
