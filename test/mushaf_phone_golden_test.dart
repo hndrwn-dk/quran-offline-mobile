@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,25 +10,29 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/mushaf_real_pages.dart';
 
-/// < 600dp (phone, Fold cover) Mushaf must stay pixel-identical: the flowing
-/// glyph text path and the floating page badge.
+/// < 600dp (phone, Fold cover) Mushaf: the flowing glyph text path and the
+/// floating page badge, at the Pixel and Fold cover window sizes.
 ///
 /// Regenerate only with explicit approval:
 ///   flutter test --update-goldens test/mushaf_phone_golden_test.dart
+/// `PHONE_GOLDEN_DIR` renders into another folder (before/after comparisons).
 void main() {
-  const pages = [1, 3, 603];
+  const pages = [1, 2, 3, 50, 585, 587, 588, 595, 603, 604];
+  final dir = Platform.environment['PHONE_GOLDEN_DIR'] ?? 'goldens/phone';
+
   setUpAll(() async {
     if (mushafRealPagesAvailable) await loadMushafTestFonts(pages);
   });
   setUp(() => SharedPreferences.setMockInitialValues({'appLanguage': 'id'}));
 
-  for (final width in const [390.0, 475.0]) {
+  for (final size in const [Size(390, 844), Size(475, 751)]) {
     for (final dark in const [false, true]) {
       final themeName = dark ? 'dark' : 'light';
       for (final pageNo in pages) {
-        testWidgets('phone ${width.round()}dp page $pageNo $themeName',
-            (tester) async {
-          tester.view.physicalSize = Size(width, 1100);
+        final name = 'phone_${size.width.round()}x${size.height.round()}'
+            '_p${pageNo}_$themeName';
+        testWidgets(name, (tester) async {
+          tester.view.physicalSize = size;
           tester.view.devicePixelRatio = 1;
           addTearDown(tester.view.reset);
           final scheme =
@@ -66,9 +72,7 @@ void main() {
           await tester.pump();
           await expectLater(
             find.byType(Scaffold),
-            matchesGoldenFile(
-              'goldens/phone/phone_${width.round()}_p${pageNo}_$themeName.png',
-            ),
+            matchesGoldenFile('$dir/$name.png'),
           );
         }, skip: !mushafRealPagesAvailable);
       }

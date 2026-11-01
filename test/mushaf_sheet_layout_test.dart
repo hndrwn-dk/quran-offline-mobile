@@ -71,7 +71,7 @@ void main() {
   });
 
   group('focus mode', () {
-    test('Fold focus spread: outer frame + number at 26.67dp', () {
+    test('Fold focus spread: outer frame + number at 26.61dp', () {
       final layout = resolveMushafFocusSheetLayout(
         area: const Size(933, 704),
         pageCount: 2,
@@ -80,7 +80,8 @@ void main() {
       expect(layout.decor.hasInnerFrame, isFalse);
       expect(layout.decor.hasRosettes, isFalse);
       expect(layout.showNumber, isTrue);
-      expect(layout.fontSize, closeTo(26.67, 0.01));
+      expect(layout.fontSize, closeTo(26.61, 0.01));
+      expect(layout.fontSize, greaterThanOrEqualTo(26.6));
       for (var i = 0; i < 2; i++) {
         final sheet = layout.sheets[i];
         final text = layout.texts[i];
@@ -106,6 +107,14 @@ void main() {
       // Centred on the outer line's corner, half a rosette sticks out past
       // the sheet edge; pulling it in costs text size, so focus drops it.
       expect(kMushafFrameEdgeInset, lessThan(kMushafRosetteSize / 2));
+    });
+  });
+
+  group('spine', () {
+    test('frame lines at the fold keep a clear gap, no rosettes there', () {
+      // Two sheets meet at the spine: outer lines 2 x spine inset apart.
+      expect(kMushafFrameSpineInset * 2, greaterThanOrEqualTo(12));
+      expect(kMushafFrameSpineInset, greaterThan(kMushafFrameEdgeInset));
     });
   });
 
@@ -146,10 +155,15 @@ void main() {
         if (!decor.hasOuterFrame) continue;
         expect(decor.margin - decor.decorationDepth,
             greaterThanOrEqualTo(kMushafInkClearance));
+        expect(decor.sideMargin - decor.spineDepth,
+            greaterThanOrEqualTo(kMushafInkClearance));
+        expect(decor.sideMargin - decor.decorationDepth,
+            greaterThanOrEqualTo(kMushafInkClearance));
         expect(
           decor.bottomMarginWithNumber -
               decor.bottomLineDepth -
-              kMushafSheetNumberGap * 2 -
+              kMushafSheetNumberGap -
+              kMushafSheetNumberFrameGap -
               kMushafSheetNumberHeight,
           greaterThanOrEqualTo(-1e-9),
         );

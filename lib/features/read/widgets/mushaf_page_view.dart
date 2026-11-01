@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/share/verse_share.dart';
@@ -764,8 +765,11 @@ class _MushafSpread extends ConsumerWidget {
   }
 }
 
-/// Toolbar height of the compact framed AppBar (+1dp divider).
+/// Height of the compact framed AppBar (no divider, no elevation).
 const double _kFramedToolbarHeight = 44;
+
+/// Normal mode: paper gap under the AppBar, matched above the nav bar.
+const double _kFramedSheetGap = 4;
 
 /// 1.0.23 AppBar: 54dp toolbar + 1dp divider.
 const double _kLegacyBarHeight = 55;
@@ -813,7 +817,7 @@ class _MushafFramedBody extends ConsumerWidget {
     // Normal mode only (focus pins its own decoration level): height the
     // 1.0.23 tree spent inside this area besides the 2dp + 2dp page body
     // padding that [mushafLegacyTextFrame] already removes.
-    const taller = _kLegacyBarHeight - (_kFramedToolbarHeight + 1);
+    const taller = _kLegacyBarHeight - _kFramedToolbarHeight;
     // The top padding stayed when the banners were hidden by recitation.
     final top = showBanners ? 0.0 : bannerTop;
     final legacyChrome = spread
@@ -821,28 +825,91 @@ class _MushafFramedBody extends ConsumerWidget {
         ? taller + top + _kLegacyBadgeHeight + 2 + 4
         // Badge and 10dp bottom padding replaced the 2dp + 2dp body pads.
         : taller + top + _kLegacyBadgeHeight + 10 - 4;
+    // The sheets' own top/bottom gap is part of the area 1.0.23 also had.
+    final sheetGap = chromeVisible ? _kFramedSheetGap : 0.0;
 
     return Column(
       children: [
-        if (showBanners) ...[
-          SizedBox(height: bannerTop),
-          const MushafGestureHintBanner(),
-          if (spread) MushafOfflineAudioBanner(pageNo: bannerPageNo),
-          SizedBox(height: bannerGap),
-        ],
+        if (showBanners)
+          // Dismissed banners render nothing; their spacing goes with them,
+          // so no empty strip sits between the AppBar and the sheets.
+          _CollapsingPadding(
+            padding: EdgeInsets.only(top: bannerTop, bottom: bannerGap),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const MushafGestureHintBanner(),
+                if (spread) MushafOfflineAudioBanner(pageNo: bannerPageNo),
+              ],
+            ),
+          ),
         Expanded(
-          child: MushafFramedSheets(
-            pages: pages,
-            focus: !chromeVisible,
-            legacyVerticalChrome: legacyChrome,
-            pageBuilder: pageBody,
-            pageNumberLabel: (pageNo) =>
-                AppLocalizations.getPageText(pageNo, appLanguage),
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: sheetGap),
+            child: MushafFramedSheets(
+              pages: pages,
+              focus: !chromeVisible,
+              legacyVerticalChrome: legacyChrome - sheetGap * 2,
+              pageBuilder: pageBody,
+              pageNumberLabel: (pageNo) =>
+                  AppLocalizations.getPageText(pageNo, appLanguage),
+            ),
           ),
         ),
         SizedBox(height: chromeVisible ? bottomInset : 0),
       ],
     );
+  }
+}
+
+/// Padding that disappears when its child lays out with zero height.
+class _CollapsingPadding extends SingleChildRenderObjectWidget {
+  const _CollapsingPadding({required this.padding, super.child});
+
+  final EdgeInsets padding;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderCollapsingPadding(padding);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderCollapsingPadding renderObject,
+  ) {
+    renderObject.padding = padding;
+  }
+}
+
+class _RenderCollapsingPadding extends RenderShiftedBox {
+  _RenderCollapsingPadding(this._padding) : super(null);
+
+  EdgeInsets _padding;
+  set padding(EdgeInsets value) {
+    if (value == _padding) return;
+    _padding = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void performLayout() {
+    final child = this.child;
+    if (child == null) {
+      size = constraints.smallest;
+      return;
+    }
+    child.layout(constraints.deflate(_padding), parentUsesSize: true);
+    final parentData = child.parentData! as BoxParentData;
+    if (child.size.height <= 0) {
+      parentData.offset = Offset.zero;
+      size = constraints.constrain(Size(child.size.width, 0));
+      return;
+    }
+    parentData.offset = Offset(_padding.left, _padding.top);
+    size = constraints.constrain(Size(
+      child.size.width + _padding.horizontal,
+      child.size.height + _padding.vertical,
+    ));
   }
 }
 
@@ -929,7 +996,7 @@ class _MushafChromeState extends State<_MushafChrome> {
                   ? SizedBox(
                       key: const ValueKey<String>('mushaf-bar'),
                       height: (widget.framed
-                              ? _kFramedToolbarHeight + 1
+                              ? _kFramedToolbarHeight
                               : 55) +
                           MediaQuery.paddingOf(context).top,
                       child: widget.framed
@@ -1119,7 +1186,9 @@ class _MushafFramedAppBar extends ConsumerWidget {
       actions: const [
         _MushafTextSettingsAction(),
       ],
-      bottom: readerAppBarBottomDivider(colorScheme),
+      // Framed mode: no divider or elevation; the paper starts right below.
+      elevation: 0,
+      scrolledUnderElevation: 0,
     );
   }
 }

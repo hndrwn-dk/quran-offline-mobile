@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,19 +17,22 @@ import 'support/mushaf_real_pages.dart';
 const _foldStatusBar = 40.0;
 const _foldNavBar = 15.0;
 
-/// Compact framed AppBar (44dp toolbar + 1dp divider).
-const _framedBar = 45.0;
+/// Compact framed AppBar (44dp, no divider).
+const _framedBar = 44.0;
+
+/// Normal mode: 4dp paper gap above and below the sheets.
+const _sheetGaps = 8.0;
 
 /// 1.0.23 chrome inside the area in normal mode (see `_MushafFramedBody`),
 /// banners hidden. Focus mode does not use the 1.0.23 floor.
-const _legacySpreadNormal = (55.0 - _framedBar) + 6 + 61 + 2 + 4;
-const _legacySingleNormal = (55.0 - _framedBar) + 20 + 61 + 10 - 4;
+const _legacySpreadNormal = (55.0 - _framedBar) + 6 + 61 + 2 + 4 - _sheetGaps;
+const _legacySingleNormal = (55.0 - _framedBar) + 20 + 61 + 10 - 4 - _sheetGaps;
 
 /// 1.0.23 measured normal-mode ayah size on the Fold.
 const _baselineNormalFont = 21.3;
 
 /// Approved focus-mode size on the Fold with outer frame + page number.
-const _foldFocusFont = 26.67;
+const _foldFocusFont = 26.61;
 
 ColorScheme _scheme(String theme) => switch (theme) {
       'dark' => AppColors.darkColorScheme(),
@@ -56,7 +61,11 @@ class _Case {
       ? window
       : Size(
           window.width,
-          window.height - _foldStatusBar - _framedBar - _foldNavBar,
+          window.height -
+              _foldStatusBar -
+              _framedBar -
+              _foldNavBar -
+              _sheetGaps,
         );
 
   double get legacyChrome => spread ? _legacySpreadNormal : _legacySingleNormal;
@@ -260,7 +269,10 @@ void main() {
           margins.add((toLeft, toRight));
 
           if (layout.decor.hasOuterFrame) {
-            final depth = layout.decor.decorationDepth;
+            final depth = math.max(
+              layout.decor.decorationDepth,
+              layout.decor.spineDepth,
+            );
             expect(toLeft - depth, greaterThanOrEqualTo(kMushafInkClearance),
                 reason: 'left clearance page ${c.pages[i]}');
             expect(toRight - depth, greaterThanOrEqualTo(kMushafInkClearance),

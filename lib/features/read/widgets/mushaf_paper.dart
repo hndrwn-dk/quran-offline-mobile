@@ -1,7 +1,6 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:quran_offline/core/mushaf/mushaf_sheet_layout.dart';
+import 'package:quran_offline/core/widgets/mushaf_rosette.dart';
 
 /// Colors of the framed Mushaf "desk", all derived from [ColorScheme] tokens so
 /// light, dark and sepia schemes each get their own paper.
@@ -33,7 +32,7 @@ class MushafPaperPalette {
       frameOuter: scheme.primary.withValues(alpha: 0.22),
       frameInner: scheme.primary.withValues(alpha: 0.14),
       rosette: scheme.primary.withValues(alpha: 0.45),
-      number: scheme.primary.withValues(alpha: 0.80),
+      number: scheme.primary,
     );
   }
 
@@ -199,9 +198,21 @@ class MushafFramePainter extends CustomPainter {
     required this.palette,
   });
 
-  final List<Rect> sheets;
+  final List<MushafSheetSide> sheets;
   final MushafSheetDecor decor;
   final MushafPaperPalette palette;
+
+  /// [rect] inset by [edge] on the outer side, top and bottom, and by [spine]
+  /// on the spine side.
+  static Rect _frameRect(MushafSheetSide sheet, double edge, double spine) {
+    final r = sheet.rect;
+    return Rect.fromLTRB(
+      r.left + (sheet.onRight ? spine : edge),
+      r.top + edge,
+      r.right - (sheet.onRight ? edge : spine),
+      r.bottom - edge,
+    );
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -216,63 +227,46 @@ class MushafFramePainter extends CustomPainter {
       ..strokeWidth = kMushafFrameInnerStroke;
 
     for (final sheet in sheets) {
-      canvas.drawRect(sheet.deflate(kMushafFrameEdgeInset), outer);
+      canvas.drawRect(
+        _frameRect(sheet, kMushafFrameEdgeInset, kMushafFrameSpineInset),
+        outer,
+      );
       if (decor.hasInnerFrame) {
         canvas.drawRect(
-          sheet.deflate(kMushafFrameEdgeInset + kMushafFrameLineGap),
+          _frameRect(
+            sheet,
+            kMushafFrameEdgeInset + kMushafFrameLineGap,
+            kMushafFrameSpineInset + kMushafFrameLineGap,
+          ),
           inner,
         );
       }
       if (decor.hasRosettes) {
+        // Outer corners only: the spine stays quiet.
         const half = kMushafRosetteSize / 2;
-        for (final corner in [
-          sheet.topLeft + const Offset(half, half),
-          sheet.topRight + const Offset(-half, half),
-          sheet.bottomLeft + const Offset(half, -half),
-          sheet.bottomRight + const Offset(-half, -half),
+        final r = sheet.rect;
+        final x = sheet.onRight ? r.right - half : r.left + half;
+        for (final center in [
+          Offset(x, r.top + half),
+          Offset(x, r.bottom - half),
         ]) {
-          _paintRosette(canvas, corner);
+          paintMushafRosette(
+            canvas,
+            center,
+            size: kMushafRosetteSize,
+            stroke: palette.rosette,
+            fill: palette.sheet,
+          );
         }
       }
     }
-  }
-
-  /// Two overlapping squares (0° and 45°) around a small circle.
-  void _paintRosette(Canvas canvas, Offset center) {
-    const outerExtent = kMushafRosetteSize / 2;
-    // The 45° square spans the full rosette; the 0° square has the same side.
-    const side = kMushafRosetteSize / math.sqrt2;
-    final square = Rect.fromCenter(center: center, width: side, height: side);
-    final diamond = Path()
-      ..moveTo(center.dx, center.dy - outerExtent)
-      ..lineTo(center.dx + outerExtent, center.dy)
-      ..lineTo(center.dx, center.dy + outerExtent)
-      ..lineTo(center.dx - outerExtent, center.dy)
-      ..close();
-
-    // Paper fill hides the frame lines that run under the rosette.
-    final fill = Paint()..color = palette.sheet;
-    canvas
-      ..drawRect(square, fill)
-      ..drawPath(diamond, fill);
-
-    final stroke = Paint()
-      ..color = palette.rosette
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
-    canvas
-      ..drawRect(square, stroke)
-      ..drawPath(diamond, stroke)
-      ..drawCircle(center, kMushafRosetteSize * 0.17, stroke);
   }
 
   @override
   bool shouldRepaint(MushafFramePainter oldDelegate) =>
       oldDelegate.decor != decor ||
       oldDelegate.palette != palette ||
-      oldDelegate.sheets.length != sheets.length ||
-      !Iterable<int>.generate(sheets.length)
-          .every((i) => oldDelegate.sheets[i] == sheets[i]);
+      !_sameSheets(oldDelegate.sheets, sheets);
 }
 
 const _arabicIndicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -303,7 +297,7 @@ class MushafSheetPageNumber extends StatelessWidget {
       label: semanticsLabel ?? '$pageNo',
       excludeSemantics: true,
       child: Text(
-        '·  ${toArabicIndicDigits(pageNo)}  ·',
+        '· ${toArabicIndicDigits(pageNo)} ·',
         textAlign: TextAlign.center,
         textDirection: TextDirection.rtl,
         maxLines: 1,

@@ -18,8 +18,12 @@ import 'package:quran_offline/core/mushaf/qpc_v2_page_ink_metrics.dart';
 /// Minimum distance between any frame line or rosette and the line ink.
 const double kMushafInkClearance = 6.0;
 
-/// Sheet edge to the centre of the outer frame line.
+/// Sheet edge to the centre of the outer frame line (outer side, top, bottom).
 const double kMushafFrameEdgeInset = 3.0;
+
+/// Same on the spine side: deeper, so the two sheets' frame lines keep a clear
+/// gap at the fold instead of reading as one thick centre bar.
+const double kMushafFrameSpineInset = 7.0;
 
 /// Outer line centre to inner line centre.
 const double kMushafFrameLineGap = 3.5;
@@ -27,7 +31,8 @@ const double kMushafFrameLineGap = 3.5;
 const double kMushafFrameOuterStroke = 1.0;
 const double kMushafFrameInnerStroke = 0.5;
 
-/// Corner rosette (two squares at 0°/45° + a circle), side length.
+/// Corner rosette (two squares at 0°/45° + a circle), full extent. Drawn on
+/// the outer corners only; the spine side has none.
 const double kMushafRosetteSize = 13.0;
 
 /// Paper around the ink when no frame fits (the 1.0.23 page body padding).
@@ -36,10 +41,12 @@ const double kMushafPlainMargin = 2.0;
 /// Last resort: the 1.0.23 page body padding (2dp), so text never shrinks.
 const double kMushafBareMargin = 2.0;
 
-/// Page number line box ("· ٦٠٣ ·") and its gaps to the ink and the frame.
-const double kMushafSheetNumberFontSize = 11.0;
-const double kMushafSheetNumberHeight = 11.0;
+/// Page number line box ("· ٦٠٣ ·"), its gap to the ink above and to the
+/// frame line (or sheet edge) below.
+const double kMushafSheetNumberFontSize = 14.0;
+const double kMushafSheetNumberHeight = 14.0;
 const double kMushafSheetNumberGap = 4.0;
+const double kMushafSheetNumberFrameGap = 2.5;
 
 /// One page-stack edge (offset paper edge) on a sheet's outer side.
 const double kMushafStackEdgeStep = 1.0;
@@ -77,10 +84,24 @@ enum MushafSheetDecor {
         plain => 0,
       };
 
-  /// Sides and top: sheet edge to the ink limit (text box + worst overhang).
+  /// Spine side: sheet edge to the inner side of the innermost frame line.
+  double get spineDepth => switch (this) {
+        full || doubleFrame => kMushafFrameSpineInset +
+            kMushafFrameLineGap +
+            kMushafFrameInnerStroke / 2,
+        outerFrame => kMushafFrameSpineInset + kMushafFrameOuterStroke / 2,
+        plain => 0,
+      };
+
+  /// Top: sheet edge to the ink limit (text box + worst overhang).
   double get margin => this == plain
       ? kMushafPlainMargin
       : decorationDepth + kMushafInkClearance;
+
+  /// Both sides (mirrored): the deeper of the outer and spine decorations.
+  double get sideMargin => this == plain
+      ? kMushafPlainMargin
+      : math.max(decorationDepth, spineDepth) + kMushafInkClearance;
 
   /// Sheet bottom edge to the innermost frame line (where the number sits).
   double get bottomLineDepth => switch (this) {
@@ -95,7 +116,7 @@ enum MushafSheetDecor {
   double get bottomMarginWithNumber => math.max(
         margin,
         bottomLineDepth +
-            kMushafSheetNumberGap +
+            kMushafSheetNumberFrameGap +
             kMushafSheetNumberHeight +
             kMushafSheetNumberGap,
       );
@@ -259,9 +280,9 @@ MushafSheetLayout _layoutFor({
   required bool showNumber,
   bool bare = false,
 }) {
-  final fixedSide = bare ? kMushafBareMargin : decor.margin;
-  final fixedTop = fixedSide;
-  final fixedBottom = showNumber ? decor.bottomMarginWithNumber : fixedSide;
+  final fixedSide = bare ? kMushafBareMargin : decor.sideMargin;
+  final fixedTop = bare ? kMushafBareMargin : decor.margin;
+  final fixedBottom = showNumber ? decor.bottomMarginWithNumber : fixedTop;
 
   final usableWidth = area.width -
       hinge.horizontalInsets -

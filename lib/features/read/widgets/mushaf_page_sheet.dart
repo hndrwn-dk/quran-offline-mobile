@@ -174,7 +174,7 @@ class MushafFramedSheets extends StatelessWidget {
                   child: IgnorePointer(
                     child: CustomPaint(
                       painter: MushafFramePainter(
-                        sheets: layout.sheets,
+                        sheets: sides,
                         decor: layout.decor,
                         palette: palette,
                       ),
