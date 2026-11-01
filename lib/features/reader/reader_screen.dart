@@ -32,6 +32,7 @@ import 'package:quran_offline/features/reader/widgets/reader_loading_placeholder
 import 'package:quran_offline/features/reader/widgets/go_to_ayah_sheet.dart';
 import 'package:quran_offline/features/reader/visible_reader_item.dart';
 import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
+import 'package:quran_offline/features/reader/widgets/reader_back_button.dart';
 import 'package:quran_offline/features/reader/widgets/resume_hint_chip.dart';
 import 'package:quran_offline/features/reader/text_settings_dialog.dart';
 
@@ -532,6 +533,21 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     });
   }
 
+  /// Back affordance shared by every reader app bar.
+  ///
+  /// A pushed reader route pops. The tablet split-pane reader is not a route, so
+  /// there the fallback clears the selected source and returns to the list.
+  Widget _backLeading(BuildContext context) {
+    return ReaderBackButton.appBarLeading(
+      context,
+      onFallback: () {
+        ref.read(readerSourceProvider.notifier).state = null;
+        ref.read(targetAyahProvider.notifier).state = null;
+        ref.read(targetSurahIdProvider.notifier).state = null;
+      },
+    );
+  }
+
   PreferredSizeWidget _buildSurahProgressAppBar(
     BuildContext context,
     WidgetRef ref, {
@@ -562,7 +578,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
 
     return AppBar(
-      leading: readerAppBarBackButton(context),
+      leading: _backLeading(context),
       automaticallyImplyLeading: false,
       toolbarHeight: 54,
       centerTitle: false,
@@ -640,7 +656,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final totalAyah = JuzInfo.getTotalAyah(juzNo) ?? 0;
 
     return AppBar(
-      leading: readerAppBarBackButton(context),
+      leading: _backLeading(context),
       automaticallyImplyLeading: false,
       toolbarHeight: 54,
       centerTitle: false,
@@ -816,7 +832,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          leading: readerAppBarBackButton(context),
+          leading: _backLeading(context),
           title: Text(AppLocalizations.getReaderTitle(appLanguage)),
         ),
         body: Center(
@@ -833,10 +849,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
     final versesAsync = ref.watch(readerVersesProvider(source));
 
-    // AppBar with 2-line editorial title for Juz, minimal for Page/Surah
-    final appBar = isLargeScreen
-        ? null
-        : switch (source) {
+    // AppBar with 2-line editorial title for Juz, minimal for Page/Surah.
+    // It stays on wide screens too: the tablet split pane renders this reader in
+    // the right pane and still needs a visible back affordance.
+    final appBar = switch (source) {
             JuzSource(:final juzNo) => _buildJuzAppBar(context, ref, juzNo),
             SurahInJuzSource(:final surahId) => _buildSurahProgressAppBar(
                 context,
@@ -851,7 +867,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 versesAsync: versesAsync,
               ),
             PageSource(:final pageNo) => AppBar(
-                leading: readerAppBarBackButton(context),
+                leading: _backLeading(context),
                 automaticallyImplyLeading: false,
                 toolbarHeight: 54,
                 centerTitle: false,
@@ -929,12 +945,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
             _ensureCompletionSession(source, verses);
 
-            final contentWidth = Responsive.getContentWidth(context);
-            final isLargeScreen = Responsive.isLargeScreen(context);
-
+            // Comfortable reading measure at every width: never wider than 720dp,
+            // centred, so translation lines stay scannable on tablets and Fold.
             return Center(
-              child: SizedBox(
-                width: isLargeScreen ? contentWidth : double.infinity,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
                 child: surahsAsync.when(
                   data: (surahs) {
                     ref.watch(settingsProvider);

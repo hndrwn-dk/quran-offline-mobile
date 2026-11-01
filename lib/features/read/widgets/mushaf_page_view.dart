@@ -40,6 +40,7 @@ import 'package:quran_offline/features/read/widgets/mushaf_gesture_hint_banner.d
 import 'package:quran_offline/features/read/widgets/mushaf_page_number_badge.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
 import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
+import 'package:quran_offline/features/reader/widgets/reader_back_button.dart';
 import 'package:quran_offline/features/reader/widgets/resume_hint_chip.dart';
 import 'package:quran_offline/features/read/widgets/qpc_v2_mushaf_text.dart';
 
@@ -628,7 +629,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: readerAppBarBackButton(context),
+          leading: ReaderBackButton.appBarLeading(context),
           automaticallyImplyLeading: false,
           toolbarHeight: 54,
           centerTitle: false,
