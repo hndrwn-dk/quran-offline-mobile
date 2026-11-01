@@ -25,12 +25,14 @@ import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
+import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_mushaf_layout.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:quran_offline/core/utils/mushaf_layout.dart';
 import 'package:quran_offline/core/utils/system_bottom_inset.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
+import 'package:quran_offline/core/widgets/mushaf_page_frame.dart';
 import 'package:quran_offline/core/feedback/feedback_context.dart';
 import 'package:quran_offline/core/feedback/feedback_type.dart';
 import 'package:quran_offline/features/settings/feedback_form_sheet.dart';
@@ -38,6 +40,7 @@ import 'package:quran_offline/features/audio/global_recitation_bar.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_offline_audio_banner.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_gesture_hint_banner.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_number_badge.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_page_sheet.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
 import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
 import 'package:quran_offline/features/reader/widgets/reader_back_button.dart';
@@ -62,18 +65,46 @@ class MushafPageView extends ConsumerStatefulWidget {
 
 class _MushafPageViewState extends ConsumerState<MushafPageView> {
   late PageController _controller;
+  final List<PageController> _retiredControllers = [];
   int? _selectedSurahId;
   int? _selectedAyahNo;
   late int _visiblePageNo;
+
+  /// Page the user last touched (tap/long-press) inside the current spread.
+  int? _activePageNo;
   int? _scrollToSurahId;
   int? _scrollToAyahNo;
   bool _programmaticPageChange = false;
+
+  /// True once a two page spread fits this window (set in didChangeDependencies).
+  bool _spread = false;
+
+  /// True when the user swiped to another spread while recitation is playing.
+  bool _userPagedDuringPlayback = false;
 
   /// Set only when this screen was opened by the cold-start resume.
   ResumeHint? _resumeHint;
 
   ReadingCompletionGate? _completionGate;
   Timer? _completionTimer;
+
+  /// Pages currently laid out (one page, or the pair of a spread).
+  List<int> get _visiblePages {
+    if (!_spread) return [_visiblePageNo];
+    return mushafSpreadForPage(_visiblePageNo).pages;
+  }
+
+  /// Page used for last-read, audio sync and the page indicator.
+  int get _currentPageNo {
+    final active = _activePageNo;
+    if (active != null && _visiblePages.contains(active)) return active;
+    return _spread ? mushafSpreadForPage(_visiblePageNo).rightPage : _visiblePageNo;
+  }
+
+  int _pagerIndexForPage(int pageNo) {
+    if (_spread) return mushafSpreadIndexForPage(pageNo);
+    return pageNo - 1;
+  }
 
   @override
   void initState() {
@@ -118,11 +149,52 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The spread decision only depends on the window (MediaQuery) so folding,
+    // unfolding or rotating rebuilds the pager around the page already in view.
+    final media = MediaQuery.of(context);
+    final setting = ref.read(settingsProvider).mushafTwoPageSpread;
+    final metrics = resolveMushafSpread(
+      available: media.size,
+      displayFeatures: media.displayFeatures,
+      spreadEnabled: setting,
+    );
+    if (metrics.showSpread == _spread) return;
+    _setSpreadMode(metrics.showSpread);
+  }
+
+  void _setSpreadMode(bool spread) {
+    _spread = spread;
+    _replaceController();
+  }
+
+  void _replaceController() {
+    final old = _controller;
+    old.removeListener(_onPageControllerTick);
+    _controller = PageController(
+      initialPage: _pagerIndexForPage(_visiblePageNo),
+    );
+    _controller.addListener(_onPageControllerTick);
+    _retiredControllers.add(old);
+    // The old PageView is still attached during this build; dispose after it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final controller in _retiredControllers) {
+        controller.dispose();
+      }
+      _retiredControllers.clear();
+    });
+  }
+
+  @override
   void dispose() {
     _completionTimer?.cancel();
     _completionGate?.dispose();
     _controller.removeListener(_onPageControllerTick);
     _controller.dispose();
+    for (final controller in _retiredControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -164,7 +236,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
 
   Future<void> _handleUnitCompleted() async {
     if (!mounted) return;
-    final pageNo = _visiblePageNo;
+    final pageNo = _currentPageNo;
     await ref
         .read(lastReadProvider.notifier)
         .saveLastRead(PageSource(pageNo));
@@ -186,14 +258,15 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
       _scrollToAyahNo = ayahNo;
     });
 
-    if (pageNo == _visiblePageNo) return;
+    if (_visiblePages.contains(pageNo)) return;
 
     _programmaticPageChange = true;
     _visiblePageNo = pageNo;
+    _activePageNo = null;
     ref.read(mushafVisiblePageProvider.notifier).state = pageNo;
 
     await _controller.animateToPage(
-      pageNo - 1,
+      _pagerIndexForPage(pageNo),
       duration: const Duration(milliseconds: 320),
       curve: Curves.easeInOut,
     );
@@ -203,15 +276,25 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     if (!audio.isActive || audio.surahId == null || audio.ayahNo == null) {
       return;
     }
+    // The reader swiped away on purpose: do not drag them back.
+    if (_userPagedDuringPlayback) return;
 
     final surahId = audio.surahId!;
     final ayahNo = audio.ayahNo!;
 
-    final onPage = await MushafLayout.pageContainsRecitation(
-      _visiblePageNo,
-      surahId,
-      ayahNo,
-    );
+    // Highlighting already covers both pages, so only flip spreads when the
+    // recitation moves past the last page currently in view.
+    var onPage = false;
+    for (final pageNo in _visiblePages) {
+      if (await MushafLayout.pageContainsRecitation(
+        pageNo,
+        surahId,
+        ayahNo,
+      )) {
+        onPage = true;
+        break;
+      }
+    }
     if (!mounted || onPage) return;
 
     final db = ref.read(databaseProvider);
@@ -224,7 +307,10 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     await _goToPage(pageNo, surahId: surahId, ayahNo: scrollAyah);
   }
 
-  void _onAyahTap(int surahId, int ayahNo) {
+  void _onAyahTap(int surahId, int ayahNo, {int? pageNo}) {
+    if (pageNo != null) {
+      _markUserPage(pageNo);
+    }
     setState(() {
       _selectedSurahId = surahId;
       _selectedAyahNo = ayahNo;
@@ -239,6 +325,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
           )
           .englishName;
     }
+    _userPagedDuringPlayback = false;
     PlaybackActions.playMushafAyah(
       context,
       ref,
@@ -248,15 +335,26 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     );
   }
 
-  void _onBismillahTap(int surahId) {
-    _onAyahTap(surahId, Bismillah.audioAyahNo);
+  /// Remembers which page of the spread the reader interacted with.
+  void _markUserPage(int pageNo) {
+    _activePageNo = pageNo;
+    if (!mounted) return;
+    ref.read(mushafVisiblePageProvider.notifier).state = pageNo;
+    ref.read(lastReadProvider.notifier).saveLastRead(PageSource(pageNo));
   }
 
-  void _onBismillahLongPress(int surahId) {
-    _onAyahLongPress(surahId, Bismillah.audioAyahNo);
+  void _onBismillahTap(int surahId, {int? pageNo}) {
+    _onAyahTap(surahId, Bismillah.audioAyahNo, pageNo: pageNo);
   }
 
-  void _onAyahLongPress(int surahId, int ayahNo) {
+  void _onBismillahLongPress(int surahId, {int? pageNo}) {
+    _onAyahLongPress(surahId, Bismillah.audioAyahNo, pageNo: pageNo);
+  }
+
+  void _onAyahLongPress(int surahId, int ayahNo, {int? pageNo}) {
+    if (pageNo != null) {
+      _markUserPage(pageNo);
+    }
     setState(() {
       _selectedSurahId = surahId;
       _selectedAyahNo = ayahNo;
@@ -268,9 +366,25 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   Widget build(BuildContext context) {
     ref.watch(settingsProvider.select((s) => s.mushafFontSize));
 
+    ref.listen<bool>(
+      settingsProvider.select((s) => s.mushafTwoPageSpread),
+      (previous, next) {
+        if (previous == next || !mounted) return;
+        final media = MediaQuery.of(context);
+        final metrics = resolveMushafSpread(
+          available: media.size,
+          displayFeatures: media.displayFeatures,
+          spreadEnabled: next,
+        );
+        if (metrics.showSpread == _spread) return;
+        setState(() => _setSpreadMode(metrics.showSpread));
+      },
+    );
+
     ref.listen<AudioPlayerState>(audioPlayerProvider, (previous, next) {
       if (!mounted) return;
       if (!next.isActive) {
+        _userPagedDuringPlayback = false;
         setState(() {
           _selectedSurahId = null;
           _selectedAyahNo = null;
@@ -311,50 +425,87 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
         children: [
           Positioned.fill(
             child: PageView.builder(
-      controller: _controller,
-      reverse: true, // RTL direction: swipe right-to-left = next page (index increases)
-      onPageChanged: (index) {
-        final pageNo = index + 1;
-        _visiblePageNo = pageNo;
-        ref.read(mushafVisiblePageProvider.notifier).state = pageNo;
-        MushafLayout.prewarmNeighbors(context, pageNo);
-        if (_programmaticPageChange) {
-          _programmaticPageChange = false;
-        } else {
-          setState(() {
-            _scrollToSurahId = null;
-            _scrollToAyahNo = null;
-            _selectedSurahId = null;
-            _selectedAyahNo = null;
-          });
-          ref
-              .read(lastReadProvider.notifier)
-              .saveLastRead(PageSource(pageNo));
-          unawaited(_checkCompletionForPage(pageNo));
-        }
-      },
-      itemCount: 604,
-      itemBuilder: (context, index) {
-        // Normal mapping: index 0 = page 1, index 603 = page 604
-        // With reverse: true, index 0 starts on the right, index 603 on the left
-        final pageNo = index + 1;
-        return MushafPage(
-          pageNo: pageNo,
-          targetSurahId: _scrollToSurahId,
-          targetAyahNo: _scrollToAyahNo,
-          selectedSurahId: _selectedSurahId,
-          selectedAyahNo: _selectedAyahNo,
-          onAyahTap: _onAyahTap,
-          onAyahLongPress: _onAyahLongPress,
-          onBismillahTap: _onBismillahTap,
-          onBismillahLongPress: _onBismillahLongPress,
-          onComputed: () {
-            if (pageNo < 604) {
-              MushafLayout.prewarm(context, pageNo + 1);
-            }
-          },
-        );
-      },
+              key: ValueKey<bool>(_spread),
+              controller: _controller,
+              // RTL direction: swipe right-to-left = next page/spread.
+              reverse: true,
+              onPageChanged: (index) {
+                final pageNo =
+                    _spread ? mushafSpreadPageForIndex(index) : index + 1;
+                _visiblePageNo = pageNo;
+                _activePageNo = null;
+                ref.read(mushafVisiblePageProvider.notifier).state = pageNo;
+                MushafLayout.prewarmNeighbors(context, pageNo);
+                if (_programmaticPageChange) {
+                  _programmaticPageChange = false;
+                } else {
+                  if (ref.read(audioPlayerProvider).isActive) {
+                    _userPagedDuringPlayback = true;
+                  }
+                  setState(() {
+                    _scrollToSurahId = null;
+                    _scrollToAyahNo = null;
+                    _selectedSurahId = null;
+                    _selectedAyahNo = null;
+                  });
+                  ref
+                      .read(lastReadProvider.notifier)
+                      .saveLastRead(PageSource(pageNo));
+                  unawaited(_checkCompletionForPage(pageNo));
+                }
+              },
+              itemCount: _spread ? kMushafSpreadCount : kMushafTotalPages,
+              itemBuilder: (context, index) {
+                // Single: index 0 = page 1, index 603 = page 604 (reverse keeps
+                // RTL order). Spread: index 0 = 1|2, index 301 = 603|604.
+                if (_spread) {
+                  final oddPage = mushafSpreadPageForIndex(index);
+                  final evenPage = oddPage + 1;
+                  return _MushafSpread(
+                    leftPage: evenPage,
+                    rightPage: oddPage,
+                    targetSurahId: _scrollToSurahId,
+                    targetAyahNo: _scrollToAyahNo,
+                    selectedSurahId: _selectedSurahId,
+                    selectedAyahNo: _selectedAyahNo,
+                    onAyahTap: (surahId, ayahNo, pageNo) =>
+                        _onAyahTap(surahId, ayahNo, pageNo: pageNo),
+                    onAyahLongPress: (surahId, ayahNo, pageNo) =>
+                        _onAyahLongPress(surahId, ayahNo, pageNo: pageNo),
+                    onBismillahTap: (surahId, pageNo) =>
+                        _onBismillahTap(surahId, pageNo: pageNo),
+                    onBismillahLongPress: (surahId, pageNo) =>
+                        _onBismillahLongPress(surahId, pageNo: pageNo),
+                    onComputed: () {
+                      if (evenPage < kMushafTotalPages) {
+                        MushafLayout.prewarm(context, evenPage + 1);
+                      }
+                    },
+                  );
+                }
+                final pageNo = index + 1;
+                return MushafPage(
+                  pageNo: pageNo,
+                  framed: true,
+                  targetSurahId: _scrollToSurahId,
+                  targetAyahNo: _scrollToAyahNo,
+                  selectedSurahId: _selectedSurahId,
+                  selectedAyahNo: _selectedAyahNo,
+                  onAyahTap: (surahId, ayahNo, pageNo) =>
+                      _onAyahTap(surahId, ayahNo, pageNo: pageNo),
+                  onAyahLongPress: (surahId, ayahNo, pageNo) =>
+                      _onAyahLongPress(surahId, ayahNo, pageNo: pageNo),
+                  onBismillahTap: (surahId, pageNo) =>
+                      _onBismillahTap(surahId, pageNo: pageNo),
+                  onBismillahLongPress: (surahId, pageNo) =>
+                      _onBismillahLongPress(surahId, pageNo: pageNo),
+                  onComputed: () {
+                    if (pageNo < kMushafTotalPages) {
+                      MushafLayout.prewarm(context, pageNo + 1);
+                    }
+                  },
+                );
+              },
             ),
           ),
           if (_resumeHint?.mode == ResumeHintMode.page)
@@ -373,21 +524,24 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   }
 }
 
-class MushafPage extends ConsumerStatefulWidget {
+/// Single page pager item: chrome + one framed page body.
+class MushafPage extends StatelessWidget {
   final int pageNo;
+  final bool framed;
   final int? targetSurahId;
   final int? targetAyahNo;
   final int? selectedSurahId;
   final int? selectedAyahNo;
-  final void Function(int surahId, int ayahNo)? onAyahTap;
-  final void Function(int surahId, int ayahNo)? onAyahLongPress;
-  final void Function(int surahId)? onBismillahTap;
-  final void Function(int surahId)? onBismillahLongPress;
+  final void Function(int surahId, int ayahNo, int pageNo)? onAyahTap;
+  final void Function(int surahId, int ayahNo, int pageNo)? onAyahLongPress;
+  final void Function(int surahId, int pageNo)? onBismillahTap;
+  final void Function(int surahId, int pageNo)? onBismillahLongPress;
   final VoidCallback? onComputed;
 
   const MushafPage({
     super.key,
     required this.pageNo,
+    this.framed = false,
     this.targetSurahId,
     this.targetAyahNo,
     this.selectedSurahId,
@@ -400,7 +554,371 @@ class MushafPage extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<MushafPage> createState() => _MushafPageState();
+  Widget build(BuildContext context) {
+    return _MushafChrome(
+      pageNumbers: [pageNo],
+      child: MushafPageBody(
+        pageNo: pageNo,
+        framed: framed,
+        targetSurahId: targetSurahId,
+        targetAyahNo: targetAyahNo,
+        selectedSurahId: selectedSurahId,
+        selectedAyahNo: selectedAyahNo,
+        showBanners: true,
+        showBadge: true,
+        onAyahTap: (surahId, ayahNo) =>
+            onAyahTap?.call(surahId, ayahNo, pageNo),
+        onAyahLongPress: (surahId, ayahNo) =>
+            onAyahLongPress?.call(surahId, ayahNo, pageNo),
+        onBismillahTap: (surahId) => onBismillahTap?.call(surahId, pageNo),
+        onBismillahLongPress: (surahId) =>
+            onBismillahLongPress?.call(surahId, pageNo),
+        onComputed: onComputed,
+      ),
+    );
+  }
+}
+
+/// Two physical pages side by side: even on the left, odd on the right.
+class _MushafSpread extends ConsumerWidget {
+  const _MushafSpread({
+    required this.leftPage,
+    required this.rightPage,
+    this.targetSurahId,
+    this.targetAyahNo,
+    this.selectedSurahId,
+    this.selectedAyahNo,
+    this.onAyahTap,
+    this.onAyahLongPress,
+    this.onBismillahTap,
+    this.onBismillahLongPress,
+    this.onComputed,
+  });
+
+  final int leftPage;
+  final int rightPage;
+  final int? targetSurahId;
+  final int? targetAyahNo;
+  final int? selectedSurahId;
+  final int? selectedAyahNo;
+  final void Function(int surahId, int ayahNo, int pageNo)? onAyahTap;
+  final void Function(int surahId, int ayahNo, int pageNo)? onAyahLongPress;
+  final void Function(int surahId, int pageNo)? onBismillahTap;
+  final void Function(int surahId, int pageNo)? onBismillahLongPress;
+  final VoidCallback? onComputed;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLanguage = ref.watch(
+      settingsProvider.select((s) => s.appLanguage),
+    );
+    final media = MediaQuery.of(context);
+    final hinge = mushafHingeLayout(
+      size: media.size,
+      displayFeatures: media.displayFeatures,
+    );
+
+    Widget pageBody(int pageNo) {
+      return MushafPageBody(
+        pageNo: pageNo,
+        framed: true,
+        targetSurahId: targetSurahId,
+        targetAyahNo: targetAyahNo,
+        selectedSurahId: selectedSurahId,
+        selectedAyahNo: selectedAyahNo,
+        showBanners: false,
+        showBadge: false,
+        onAyahTap: (surahId, ayahNo) =>
+            onAyahTap?.call(surahId, ayahNo, pageNo),
+        onAyahLongPress: (surahId, ayahNo) =>
+            onAyahLongPress?.call(surahId, ayahNo, pageNo),
+        onBismillahTap: (surahId) => onBismillahTap?.call(surahId, pageNo),
+        onBismillahLongPress: (surahId) =>
+            onBismillahLongPress?.call(surahId, pageNo),
+        onComputed: pageNo == rightPage ? onComputed : null,
+      );
+    }
+
+    return _MushafChrome(
+      pageNumbers: [rightPage, leftPage],
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: hinge.leftInset,
+          right: hinge.rightInset,
+        ),
+        child: Column(
+          children: [
+            if (!ref.watch(audioPlayerProvider.select((s) => s.isActive))) ...[
+              const MushafGestureHintBanner(),
+              MushafOfflineAudioBanner(pageNo: rightPage),
+              const SizedBox(height: 12),
+            ],
+            Expanded(
+              child: MushafSpreadRow(
+                left: pageBody(leftPage),
+                right: pageBody(rightPage),
+                hinge: hinge,
+              ),
+            ),
+            MushafPageNumberBadge(
+              pageNo: rightPage,
+              rangeEnd: leftPage,
+              rangeLabel: AppLocalizations.formatMushafPageRange(
+                rightPage,
+                leftPage,
+                appLanguage,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Swipe-down-to-dismiss chrome shared by the single page and spread items.
+class _MushafChrome extends StatefulWidget {
+  const _MushafChrome({required this.pageNumbers, required this.child});
+
+  final List<int> pageNumbers;
+  final Widget child;
+
+  @override
+  State<_MushafChrome> createState() => _MushafChromeState();
+}
+
+class _MushafChromeState extends State<_MushafChrome> {
+  double _swipeStartY = 0.0;
+  double _swipeStartX = 0.0;
+  bool _isSwipingDown = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.deferToChild,
+      onVerticalDragStart: (details) {
+        // Only detect swipe down from top area (AppBar region)
+        if (details.globalPosition.dy < 100) {
+          _swipeStartY = details.globalPosition.dy;
+          _swipeStartX = details.globalPosition.dx;
+          _isSwipingDown = false;
+        }
+      },
+      onVerticalDragUpdate: (details) {
+        if (_swipeStartY > 0) {
+          final deltaY = details.globalPosition.dy - _swipeStartY;
+          final deltaX = details.globalPosition.dx - _swipeStartX;
+          if (deltaY > 20 && deltaY.abs() > deltaX.abs() * 1.5) {
+            _isSwipingDown = true;
+          }
+        }
+      },
+      onVerticalDragEnd: (details) {
+        if (_isSwipingDown && _swipeStartY > 0) {
+          final deltaY = details.velocity.pixelsPerSecond.dy;
+          final deltaX = details.velocity.pixelsPerSecond.dx;
+          const swipeThreshold = 300.0;
+
+          if (deltaY > swipeThreshold && deltaY.abs() > deltaX.abs()) {
+            HapticFeedback.lightImpact();
+            if (Navigator.canPop(context)) {
+              Navigator.of(context).pop();
+            }
+          }
+        }
+        _swipeStartY = 0.0;
+        _swipeStartX = 0.0;
+        _isSwipingDown = false;
+      },
+      child: Scaffold(
+        appBar: _MushafAppBar(pageNumbers: widget.pageNumbers),
+        body: widget.child,
+        bottomNavigationBar: const GlobalRecitationBar(),
+      ),
+    );
+  }
+}
+
+class _MushafAppBar extends ConsumerWidget implements PreferredSizeWidget {
+  const _MushafAppBar({required this.pageNumbers});
+
+  final List<int> pageNumbers;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(55);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final settings = ref.watch(settingsProvider);
+    final appLanguage = settings.appLanguage;
+    final surahsAsync = ref.watch(surahNamesProvider);
+    final isSpread = pageNumbers.length > 1;
+    final firstPage = pageNumbers.first;
+    final lastPage = pageNumbers.last;
+    final pageTitle = isSpread
+        ? AppLocalizations.getMushafSpreadPageText(
+            firstPage,
+            lastPage,
+            appLanguage,
+          )
+        : AppLocalizations.getMushafPageText(firstPage, appLanguage);
+
+    return AppBar(
+      leading: ReaderBackButton.appBarLeading(context),
+      automaticallyImplyLeading: false,
+      toolbarHeight: 54,
+      centerTitle: false,
+      titleSpacing: 0,
+      title: FutureBuilder<List<int>>(
+        future: _surahIdsForPages(pageNumbers),
+        builder: (context, surahIdsSnapshot) {
+          return surahsAsync.when(
+            data: (surahs) {
+              final surahIds = surahIdsSnapshot.data ?? [];
+              if (surahIds.isEmpty) {
+                return ReaderAppBarTitleColumn(title: pageTitle);
+              }
+
+              final firstSurahId = surahIds.first;
+              final lastSurahId = surahIds.last;
+
+              final firstSurah = surahs.firstWhere(
+                (s) => s.id == firstSurahId,
+                orElse: () => SurahInfo(
+                  id: firstSurahId,
+                  arabicName: '',
+                  englishName: 'Surah $firstSurahId',
+                  englishMeaning: '',
+                ),
+              );
+
+              final lastSurah = surahs.firstWhere(
+                (s) => s.id == lastSurahId,
+                orElse: () => SurahInfo(
+                  id: lastSurahId,
+                  arabicName: '',
+                  englishName: 'Surah $lastSurahId',
+                  englishMeaning: '',
+                ),
+              );
+
+              final firstSurahName = _formatSurahName(firstSurah.englishName);
+              final lastSurahName = _formatSurahName(lastSurah.englishName);
+              final subtitle = surahIds.length == 1
+                  ? AppLocalizations.formatMushafReaderSubtitle(
+                      appLanguage,
+                      firstSurahName,
+                    )
+                  : AppLocalizations.formatMushafReaderSubtitle(
+                      appLanguage,
+                      firstSurahName,
+                      lastSurahName: lastSurahName,
+                    );
+
+              return ReaderAppBarTitleColumn(
+                title: pageTitle,
+                subtitle: subtitle,
+              );
+            },
+            loading: () => ReaderAppBarTitleColumn(title: pageTitle),
+            error: (_, __) => ReaderAppBarTitleColumn(title: pageTitle),
+          );
+        },
+      ),
+      actions: const [
+        _MushafTextSettingsAction(),
+      ],
+      bottom: readerAppBarBottomDivider(colorScheme),
+    );
+  }
+}
+
+/// AppBar "Tt" entry that opens the Mushaf text settings sheet.
+///
+/// Shown for legacy Mushaf, when the glyph slider flag is on, or when the window
+/// can show a spread (so the two-page toggle stays reachable).
+class _MushafTextSettingsAction extends StatefulWidget {
+  const _MushafTextSettingsAction();
+
+  @override
+  State<_MushafTextSettingsAction> createState() =>
+      _MushafTextSettingsActionState();
+}
+
+class _MushafTextSettingsActionState extends State<_MushafTextSettingsAction> {
+  Future<bool>? _visibleFuture;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _visibleFuture ??= isMushafTextSettingsAppBarVisible(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _visibleFuture,
+      builder: (context, snapshot) {
+        if (snapshot.data != true) return const SizedBox.shrink();
+        final appLanguage = ProviderScope.containerOf(context, listen: false)
+            .read(settingsProvider)
+            .appLanguage;
+        return IconButton(
+          icon: const Icon(Icons.text_fields),
+          tooltip: AppLocalizations.getSettingsText(
+            'text_settings_title',
+            appLanguage,
+          ),
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const MushafTextSettingsDialog(),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+Future<List<int>> _surahIdsForPages(List<int> pageNumbers) async {
+  final ids = <int>[];
+  for (final pageNo in pageNumbers) {
+    final pageIds = await MushafLayout.getSurahIdsForPage(pageNo);
+    for (final id in pageIds) {
+      if (!ids.contains(id)) ids.add(id);
+    }
+  }
+  return ids;
+}
+
+String _formatSurahName(String name) {
+  final formattedNames = {
+    'Al-Fatiha': 'Al-Fātiḥah',
+    'Al-Baqarah': 'Al-Baqarah',
+    'Ali Imran': 'Āl ʿImrān',
+    'An-Nisa': 'An-Nisāʾ',
+    'Al-Maidah': 'Al-Māʾidah',
+    "Al-An'am": 'Al-Anʿām',
+    "Al-A'raf": 'Al-Aʿrāf',
+    'Al-Anfal': 'Al-Anfāl',
+    'At-Tawbah': 'At-Tawbah',
+    "Ar-Ra'd": 'Ar-Raʿd',
+    'Al-Hijr': 'Al-Ḥijr',
+    "Al-Isra'": 'Al-Isrāʾ',
+    'Al-Kahf': 'Al-Kahf',
+    'Al-Anbiya': 'Al-Anbiyāʾ',
+    "Al-Mu'minun": 'Al-Muʾminūn',
+    "Ash-Shu'ara": 'Ash-Shuʿarāʾ',
+    "Al-'Ankabut": 'Al-ʿAnkabūt',
+    "Al-Jumu'ah": 'Al-Jumuʿah',
+    "Al-Ma'arij": 'Al-Maʿārij',
+    "Al-A'la": 'Al-Aʿlā',
+  };
+  return formattedNames[name] ?? name;
 }
 
 class _MushafPageSnapshot {
@@ -414,24 +932,52 @@ class _MushafPageSnapshot {
   bool get isGlyph => glyphContent != null;
 }
 
-class _MushafPageState extends ConsumerState<MushafPage> {
+/// Page content (glyph or legacy) without app chrome.
+///
+/// Lives inside a [MushafPageFrame] when [framed] is set by the caller, so
+/// a page renders identically in single mode and in a spread.
+class MushafPageBody extends ConsumerStatefulWidget {
+  const MushafPageBody({
+    super.key,
+    required this.pageNo,
+    this.framed = false,
+    this.targetSurahId,
+    this.targetAyahNo,
+    this.selectedSurahId,
+    this.selectedAyahNo,
+    this.showBanners = true,
+    this.showBadge = true,
+    this.onAyahTap,
+    this.onAyahLongPress,
+    this.onBismillahTap,
+    this.onBismillahLongPress,
+    this.onComputed,
+  });
+
+  final int pageNo;
+  final bool framed;
+  final int? targetSurahId;
+  final int? targetAyahNo;
+  final int? selectedSurahId;
+  final int? selectedAyahNo;
+  final bool showBanners;
+  final bool showBadge;
+  final void Function(int surahId, int ayahNo)? onAyahTap;
+  final void Function(int surahId, int ayahNo)? onAyahLongPress;
+  final void Function(int surahId)? onBismillahTap;
+  final void Function(int surahId)? onBismillahLongPress;
+  final VoidCallback? onComputed;
+
+  @override
+  ConsumerState<MushafPageBody> createState() => _MushafPageBodyState();
+}
+
+class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
   late Future<_MushafPageSnapshot> _pageFuture;
   Timer? _debounceTimer;
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _ayahKeys = {};
   bool _hasScrolledToTarget = false;
-  double _swipeStartY = 0.0;
-  double _swipeStartX = 0.0;
-  bool _isSwipingDown = false;
-  bool _textSettingsAppBarVisible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    isMushafTextSettingsAppBarVisible().then((visible) {
-      if (mounted) setState(() => _textSettingsAppBarVisible = visible);
-    });
-  }
 
   @override
   void didChangeDependencies() {
@@ -569,7 +1115,7 @@ class _MushafPageState extends ConsumerState<MushafPage> {
   }
 
   @override
-  void didUpdateWidget(MushafPage oldWidget) {
+  void didUpdateWidget(MushafPageBody oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pageNo != widget.pageNo) {
       _refreshLines();
@@ -586,266 +1132,212 @@ class _MushafPageState extends ConsumerState<MushafPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final settings = ref.watch(settingsProvider);
     final fontSize = settings.mushafFontSize;
-    final appLanguage = settings.appLanguage;
-    final surahsAsync = ref.watch(surahNamesProvider);
-    
-    return GestureDetector(
-      behavior: HitTestBehavior.deferToChild,
-      onVerticalDragStart: (details) {
-        // Only detect swipe down from top area (AppBar region)
-        if (details.globalPosition.dy < 100) {
-          _swipeStartY = details.globalPosition.dy;
-          _swipeStartX = details.globalPosition.dx;
-          _isSwipingDown = false;
+
+    return FutureBuilder<_MushafPageSnapshot>(
+      future: _pageFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
         }
-      },
-      onVerticalDragUpdate: (details) {
-        if (_swipeStartY > 0) {
-          final deltaY = details.globalPosition.dy - _swipeStartY;
-          final deltaX = details.globalPosition.dx - _swipeStartX;
-          // Detect downward swipe (positive deltaY) and ensure vertical movement is greater than horizontal
-          if (deltaY > 20 && deltaY.abs() > deltaX.abs() * 1.5) {
-            _isSwipingDown = true;
-          }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
         }
-      },
-      onVerticalDragEnd: (details) {
-        if (_isSwipingDown && _swipeStartY > 0) {
-          final deltaY = details.velocity.pixelsPerSecond.dy;
-          final deltaX = details.velocity.pixelsPerSecond.dx;
-          const swipeThreshold = 300.0;
-          
-          // Swipe down gesture detected - ensure vertical velocity is greater than horizontal
-          if (deltaY > swipeThreshold && deltaY.abs() > deltaX.abs()) {
-            HapticFeedback.lightImpact();
-            if (Navigator.canPop(context)) {
-              Navigator.of(context).pop();
+        final pageData = snapshot.data;
+        if (pageData == null) {
+          return const Center(child: Text('Error: empty page'));
+        }
+        widget.onComputed?.call();
+
+        // Scroll to target ayah if needed (framed pages are fully visible).
+        if (!widget.framed &&
+            widget.targetSurahId != null &&
+            widget.targetAyahNo != null &&
+            !_hasScrolledToTarget) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && !_hasScrolledToTarget) {
+              _scrollToTargetAyah();
             }
-          }
+          });
         }
-        _swipeStartY = 0.0;
-        _swipeStartX = 0.0;
-        _isSwipingDown = false;
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          leading: ReaderBackButton.appBarLeading(context),
-          automaticallyImplyLeading: false,
-          toolbarHeight: 54,
-          centerTitle: false,
-          titleSpacing: 0,
-          title: FutureBuilder<List<int>>(
-            future: MushafLayout.getSurahIdsForPage(widget.pageNo),
-            builder: (context, surahIdsSnapshot) {
-              final pageTitle = AppLocalizations.getMushafPageText(
-                widget.pageNo,
-                appLanguage,
-              );
-              return surahsAsync.when(
-                data: (surahs) {
-                  final surahIds = surahIdsSnapshot.data ?? [];
-                  if (surahIds.isEmpty) {
-                    return ReaderAppBarTitleColumn(title: pageTitle);
-                  }
 
-                  final firstSurahId = surahIds.first;
-                  final lastSurahId = surahIds.last;
+        final audio = ref.watch(audioPlayerProvider);
+        final bottomInset = systemBottomInset(MediaQuery.of(context));
 
-                  final firstSurah = surahs.firstWhere(
-                    (s) => s.id == firstSurahId,
-                    orElse: () => SurahInfo(
-                      id: firstSurahId,
-                      arabicName: '',
-                      englishName: 'Surah $firstSurahId',
-                      englishMeaning: '',
-                    ),
-                  );
-
-                  final lastSurah = surahs.firstWhere(
-                    (s) => s.id == lastSurahId,
-                    orElse: () => SurahInfo(
-                      id: lastSurahId,
-                      arabicName: '',
-                      englishName: 'Surah $lastSurahId',
-                      englishMeaning: '',
-                    ),
-                  );
-
-                  String formatSurahName(String name) {
-                    final formattedNames = {
-                      'Al-Fatiha': 'Al-Fātiḥah',
-                      'Al-Baqarah': 'Al-Baqarah',
-                      'Ali Imran': 'Āl ʿImrān',
-                      'An-Nisa': 'An-Nisāʾ',
-                      'Al-Maidah': 'Al-Māʾidah',
-                      "Al-An'am": 'Al-Anʿām',
-                      "Al-A'raf": 'Al-Aʿrāf',
-                      'Al-Anfal': 'Al-Anfāl',
-                      'At-Tawbah': 'At-Tawbah',
-                      "Ar-Ra'd": 'Ar-Raʿd',
-                      'Al-Hijr': 'Al-Ḥijr',
-                      "Al-Isra'": 'Al-Isrāʾ',
-                      'Al-Kahf': 'Al-Kahf',
-                      'Al-Anbiya': 'Al-Anbiyāʾ',
-                      "Al-Mu'minun": 'Al-Muʾminūn',
-                      "Ash-Shu'ara": 'Ash-Shuʿarāʾ',
-                      "Al-'Ankabut": 'Al-ʿAnkabūt',
-                      "Al-Jumu'ah": 'Al-Jumuʿah',
-                      "Al-Ma'arij": 'Al-Maʿārij',
-                      "Al-A'la": 'Al-Aʿlā',
-                    };
-                    return formattedNames[name] ?? name;
-                  }
-
-                  final firstSurahName = formatSurahName(firstSurah.englishName);
-                  final lastSurahName = formatSurahName(lastSurah.englishName);
-                  final subtitle = surahIds.length == 1
-                      ? AppLocalizations.formatMushafReaderSubtitle(
-                          appLanguage,
-                          firstSurahName,
-                        )
-                      : AppLocalizations.formatMushafReaderSubtitle(
-                          appLanguage,
-                          firstSurahName,
-                          lastSurahName: lastSurahName,
-                        );
-
-                  return ReaderAppBarTitleColumn(
-                    title: pageTitle,
-                    subtitle: subtitle,
-                  );
-                },
-                loading: () => ReaderAppBarTitleColumn(title: pageTitle),
-                error: (_, __) => ReaderAppBarTitleColumn(title: pageTitle),
-              );
-            },
-          ),
-          actions: [
-            if (_textSettingsAppBarVisible)
-              IconButton(
-                icon: const Icon(Icons.text_fields),
-                tooltip: AppLocalizations.getSettingsText(
-                  'text_settings_title',
-                  appLanguage,
-                ),
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => const MushafTextSettingsDialog(),
-                  ).then((_) {
-                    setState(() {
-                      _refreshLines();
-                    });
-                  });
-                },
+        final pageContent = Column(
+          children: [
+            if (widget.showBanners && !audio.isActive) ...[
+              const MushafGestureHintBanner(),
+              MushafOfflineAudioBanner(pageNo: widget.pageNo),
+              const SizedBox(height: 12),
+            ],
+            Expanded(
+              child: _MushafPageContent(
+                pageData: pageData,
+                pageNo: widget.pageNo,
+                framed: widget.framed,
+                fontSize: fontSize,
+                colorScheme: colorScheme,
+                ayahKeys: _ayahKeys,
+                scrollController: _scrollController,
+                selectedSurahId: widget.selectedSurahId,
+                selectedAyahNo: widget.selectedAyahNo,
+                targetSurahId: widget.targetSurahId,
+                targetAyahNo: widget.targetAyahNo,
+                onAyahTap: widget.onAyahTap,
+                onAyahLongPress: widget.onAyahLongPress,
+                onBismillahTap: widget.onBismillahTap,
+                onBismillahLongPress: widget.onBismillahLongPress,
+                onScrollToTarget: _scrollToTargetAyah,
+              ),
+            ),
+            if (widget.showBadge)
+              Center(
+                child: MushafPageNumberBadge(pageNo: widget.pageNo),
               ),
           ],
-          bottom: readerAppBarBottomDivider(colorScheme),
-        ),
-      body: FutureBuilder<_MushafPageSnapshot>(
-        future: _pageFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          final pageData = snapshot.data;
-          if (pageData == null) {
-            return const Center(child: Text('Error: empty page'));
-          }
-          widget.onComputed?.call();
-          
-          // Scroll to target ayah if needed
-          if (widget.targetSurahId != null && widget.targetAyahNo != null && !_hasScrolledToTarget) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && !_hasScrolledToTarget) {
-                _scrollToTargetAyah();
-              }
-            });
-          }
-          
-          final audio = ref.watch(audioPlayerProvider);
-          final bottomInset = systemBottomInset(MediaQuery.of(context));
+        );
 
+        if (widget.framed && pageData.isGlyph) {
           return Padding(
-            padding: EdgeInsets.fromLTRB(16, 24, 16, 32 + bottomInset),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: widget.showBanners ? 24 : 8,
+              bottom: widget.showBadge ? 12 + bottomInset : 8,
+            ),
             child: Column(
               children: [
-                if (!audio.isActive) ...[
+                if (widget.showBanners && !audio.isActive) ...[
                   const MushafGestureHintBanner(),
-                  MushafOfflineAudioBanner(pageNo: widget.pageNo),
                   const SizedBox(height: 12),
                 ],
                 Expanded(
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    child: Column(
-                      children: [
-                        if (pageData.isGlyph)
-                          LayoutBuilder(
-                            builder: (context, constraints) {
-                              return QpcV2MushafText(
-                                content: pageData.glyphContent!,
-                                contentWidth: constraints.maxWidth,
-                                fontSize: fontSize,
-                                colorScheme: colorScheme,
-                                ayahKeys: _ayahKeys,
-                                onAyahTap: widget.onAyahTap,
-                                onAyahLongPress: widget.onAyahLongPress,
-                                onBismillahTap: widget.onBismillahTap,
-                                onBismillahLongPress:
-                                    widget.onBismillahLongPress,
-                                onAyahKeyCreated: () {
-                                  if (widget.targetSurahId != null &&
-                                      widget.targetAyahNo != null) {
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                      _scrollToTargetAyah();
-                                    });
-                                  }
-                                },
-                              );
-                            },
-                          )
-                        else
-                          _FlowingMushafText(
-                            blocks: pageData.legacyBlocks ?? [],
-                            fontSize: fontSize,
-                            colorScheme: colorScheme,
-                            ayahKeys: _ayahKeys,
-                            selectedSurahId: widget.selectedSurahId,
-                            selectedAyahNo: widget.selectedAyahNo,
-                            onAyahTap: widget.onAyahTap,
-                            onAyahLongPress: widget.onAyahLongPress,
-                            onBismillahTap: widget.onBismillahTap,
-                            onBismillahLongPress: widget.onBismillahLongPress,
-                            onAyahKeyCreated: () {
-                              if (widget.targetSurahId != null &&
-                                  widget.targetAyahNo != null) {
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  _scrollToTargetAyah();
-                                });
-                              }
-                            },
-                          ),
-                        const SizedBox(height: 32),
-                      ],
-                    ),
+                  child: MushafPageSheet(
+                    content: pageData.glyphContent!,
+                    colorScheme: colorScheme,
+                    ayahKeys: _ayahKeys,
+                    onAyahTap: widget.onAyahTap,
+                    onAyahLongPress: widget.onAyahLongPress,
+                    onBismillahTap: widget.onBismillahTap,
+                    onBismillahLongPress: widget.onBismillahLongPress,
                   ),
                 ),
-                Center(
-                  child: MushafPageNumberBadge(pageNo: widget.pageNo),
-                ),
+                if (widget.showBadge)
+                  Center(
+                    child: MushafPageNumberBadge(pageNo: widget.pageNo),
+                  ),
               ],
             ),
           );
-        },
-      ),
-      bottomNavigationBar: const GlobalRecitationBar(),
+        }
+
+        return Padding(
+          padding: EdgeInsets.fromLTRB(16, 24, 16, 32 + bottomInset),
+          child: pageContent,
+        );
+      },
+    );
+  }
+}
+
+/// Glyph or legacy page content, shared by single page and spread modes.
+class _MushafPageContent extends StatelessWidget {
+  const _MushafPageContent({
+    required this.pageData,
+    required this.pageNo,
+    required this.framed,
+    required this.fontSize,
+    required this.colorScheme,
+    required this.ayahKeys,
+    required this.scrollController,
+    required this.selectedSurahId,
+    required this.selectedAyahNo,
+    required this.targetSurahId,
+    required this.targetAyahNo,
+    required this.onAyahTap,
+    required this.onAyahLongPress,
+    required this.onBismillahTap,
+    required this.onBismillahLongPress,
+    required this.onScrollToTarget,
+  });
+
+  final _MushafPageSnapshot pageData;
+  final int pageNo;
+  final bool framed;
+  final double fontSize;
+  final ColorScheme colorScheme;
+  final Map<String, GlobalKey> ayahKeys;
+  final ScrollController scrollController;
+  final int? selectedSurahId;
+  final int? selectedAyahNo;
+  final int? targetSurahId;
+  final int? targetAyahNo;
+  final void Function(int surahId, int ayahNo)? onAyahTap;
+  final void Function(int surahId, int ayahNo)? onAyahLongPress;
+  final void Function(int surahId)? onBismillahTap;
+  final void Function(int surahId)? onBismillahLongPress;
+  final VoidCallback onScrollToTarget;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!pageData.isGlyph) {
+      return SingleChildScrollView(
+        controller: scrollController,
+        child: Column(
+          children: [
+            _FlowingMushafText(
+              blocks: pageData.legacyBlocks ?? [],
+              fontSize: fontSize,
+              colorScheme: colorScheme,
+              ayahKeys: ayahKeys,
+              selectedSurahId: selectedSurahId,
+              selectedAyahNo: selectedAyahNo,
+              onAyahTap: onAyahTap,
+              onAyahLongPress: onAyahLongPress,
+              onBismillahTap: onBismillahTap,
+              onBismillahLongPress: onBismillahLongPress,
+              onAyahKeyCreated: () {
+                if (targetSurahId != null && targetAyahNo != null) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    onScrollToTarget();
+                  });
+                }
+              },
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      );
+    }
+    // Frame mode is handled by the caller (fixed reference box + uniform scale).
+    return SingleChildScrollView(
+      controller: scrollController,
+      child: Column(
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return QpcV2MushafText(
+                content: pageData.glyphContent!,
+                contentWidth: constraints.maxWidth,
+                fontSize: fontSize,
+                colorScheme: colorScheme,
+                ayahKeys: ayahKeys,
+                onAyahTap: onAyahTap,
+                onAyahLongPress: onAyahLongPress,
+                onBismillahTap: onBismillahTap,
+                onBismillahLongPress: onBismillahLongPress,
+                onAyahKeyCreated: () {
+                  if (targetSurahId != null && targetAyahNo != null) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      onScrollToTarget();
+                    });
+                  }
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }
