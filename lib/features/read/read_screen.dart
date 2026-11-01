@@ -79,9 +79,17 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                      child: _ReadScreenTitle(appLanguage: appLanguage),
+                      padding: const EdgeInsets.fromLTRB(24, 24, 8, 0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _ReadScreenTitle(appLanguage: appLanguage),
+                          ),
+                          _ReadSearchButton(searchBarKey: _searchBarKey),
+                        ],
+                      ),
                     ),
+                    QuickSearchBar(key: _searchBarKey),
                     ReadModeSegmentTabs(
                       selectedMode: readMode,
                       onModeChanged: _setReadMode,
@@ -123,15 +131,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
         flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
         title: _ReadScreenTitle(appLanguage: appLanguage),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            iconSize: 20,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            constraints: const BoxConstraints(),
-            onPressed: () {
-              _searchBarKey.currentState?.toggle();
-            },
-          ),
+          _ReadSearchButton(searchBarKey: _searchBarKey),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -161,6 +161,27 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Toggles the inline [QuickSearchBar] (phone AppBar and the >= 840dp column).
+class _ReadSearchButton extends StatelessWidget {
+  const _ReadSearchButton({required this.searchBarKey});
+
+  final GlobalKey<QuickSearchBarState> searchBarKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      key: const Key('read_search_button'),
+      icon: const Icon(Icons.search),
+      iconSize: 20,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      constraints: const BoxConstraints(),
+      onPressed: () {
+        searchBarKey.currentState?.toggle();
+      },
     );
   }
 }
