@@ -303,8 +303,9 @@ class MushafSheetPageNumber extends StatelessWidget {
         maxLines: 1,
         softWrap: false,
         overflow: TextOverflow.visible,
-        // The margin band is exactly one 11dp line; never let it grow.
-        textScaler: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1),
+        // Printed page furniture: always 14dp, in a band sized for exactly
+        // that, whatever the system font scale.
+        textScaler: TextScaler.noScaling,
         style: TextStyle(
           fontFamily: 'ScheherazadeNew',
           fontSize: kMushafSheetNumberFontSize,
