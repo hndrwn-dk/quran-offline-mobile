@@ -31,6 +31,7 @@ import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_glyph_fit.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/mushaf/page_turn/page_curl_painter.dart';
+import 'package:quran_offline/core/mushaf/page_turn/page_curl_shader.dart';
 import 'package:quran_offline/core/mushaf/page_turn/page_turn_controller.dart';
 import 'package:quran_offline/core/mushaf/page_turn/page_turn_geometry.dart';
 import 'package:quran_offline/core/mushaf/page_turn/page_turn_overlay.dart';
@@ -102,9 +103,18 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
   final Map<int, GlobalKey> _farmSnapshotKeys = {};
   final List<ui.Image> _turnOwnedImages = [];
   final GlobalKey _turnLayerKey = GlobalKey();
+
+  /// Pages whose content future resolved and that then painted a real frame.
+  /// A page may only be snapshotted for a curl once it is in here.
+  final Set<int> _paintedPages = {};
+
   List<_TurnFarmPage> _farm = const [];
   final Set<int> _farmComputed = {};
-  Size? _farmPageSize;
+
+  /// Farm pages that were built with content and also painted a full frame.
+  final Set<int> _farmPainted = {};
+  Rect? _farmSlot;
+  int _farmAttempts = 0;
   Timer? _snapshotWarmTimer;
   Timer? _farmCaptureTimer;
   List<PageTurnBelowPage> _turnBelow = const [];
@@ -115,11 +125,23 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
   bool _turnsEnabled = false;
   MushafPageTurn _pageTurnSetting = MushafPageTurn.curl;
   Size? _lastMediaSize;
+  Brightness? _lastSnapshotBrightness;
   bool _dragPending = false;
+  bool _dragBlocked = false;
   double _dragStartX = 0;
+  double _dragLastY = 0;
+  double _dragTotalDelta = 0;
   double _dragPageWidth = 1;
   double _instantProgress = 0;
   PageTurnDirection? _dragDirection;
+
+  /// A turn waiting for its snapshots before the leaf can start. If it never
+  /// becomes ready the page changes instantly on release instead of curling
+  /// blank paper.
+  PageTurnPlan? _pendingTurnPlan;
+  Timer? _pendingTurnTimer;
+  int _pendingTurnTries = 0;
+  ui.FragmentShader? _curlShader;
 
   /// True when the current window renders pages in a fixed-aspect frame.
   bool get _framedMode =>
@@ -192,6 +214,15 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
       unawaited(_checkCompletionForPage(widget.initialPage));
       _scheduleSnapshotWarm();
     });
+    unawaited(_loadCurlShader());
+  }
+
+  /// Loads the cylindrical-fold fragment shader once. The painter falls back to
+  /// its mesh renderer if compilation/loading fails.
+  Future<void> _loadCurlShader() async {
+    final shader = await loadPageCurlShader();
+    if (!mounted || shader == null) return;
+    setState(() => _curlShader = shader);
   }
 
   void _onPageControllerTick() {
@@ -208,6 +239,20 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
     // unfolding or rotating rebuilds the pager around the page already in view.
     final media = MediaQuery.of(context);
     final size = media.size;
+    final brightness = Theme.of(context).brightness;
+    if (_lastSnapshotBrightness != null &&
+        _lastSnapshotBrightness != brightness) {
+      // Paper colour changed: old rasterized pages would flash the old theme.
+      _cancelPendingTurn();
+      _turnSnapshots.clear();
+      _disposeTurnImages();
+      _paintedPages.clear();
+      _farmCaptureTimer?.cancel();
+      _farmComputed.clear();
+      _farmPainted.clear();
+      _farm = const [];
+    }
+    _lastSnapshotBrightness = brightness;
     final layoutChanged = _lastMediaSize != null && _lastMediaSize != size;
     _lastMediaSize = size;
     if (layoutChanged ||
@@ -264,11 +309,14 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
     if (_spread != spread) {
       _turn.cancel();
       _disposeTurnImages();
+      _cancelPendingTurn();
       _turnSnapshots.clear();
       _snapshotWarmTimer?.cancel();
       _farmCaptureTimer?.cancel();
+      _paintedPages.clear();
       _farm = const [];
       _farmComputed.clear();
+      _farmPainted.clear();
     }
     _spread = spread;
     _replaceController();
@@ -322,20 +370,44 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
   GlobalKey _farmSnapshotKey(int pageNo) =>
       _farmSnapshotKeys.putIfAbsent(pageNo, GlobalKey.new);
 
+  /// Called by a page body once its content future resolved. The page paints in
+  /// the same frame, so a post-frame callback marks it snapshot-ready.
+  void _onVisiblePageComputed(int pageNo) {
+    if (!_paintedPages.contains(pageNo)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _paintedPages.add(pageNo);
+      });
+    }
+    if (pageNo < kMushafTotalPages) {
+      MushafLayout.prewarm(context, pageNo + 1);
+    }
+  }
+
   /// Drops the turn, its snapshots and the offscreen farm after a layout change.
   void _cancelTurnForLayout() {
     _turn.cancel();
     _dragPending = false;
     _dragDirection = null;
+    _dragBlocked = false;
+    _cancelPendingTurn();
     _snapshotWarmTimer?.cancel();
     _farmCaptureTimer?.cancel();
     _turnSnapshots.clear();
     _disposeTurnImages();
+    _paintedPages.clear();
     if (_farm.isNotEmpty) {
       // didChangeDependencies runs before build; mutate in place, no setState.
       _farm = const [];
       _farmComputed.clear();
+      _farmPainted.clear();
     }
+  }
+
+  void _cancelPendingTurn() {
+    _pendingTurnTimer?.cancel();
+    _pendingTurnTimer = null;
+    _pendingTurnPlan = null;
+    _pendingTurnTries = 0;
   }
 
   Rect? _globalRectForPage(int pageNo) {
@@ -415,22 +487,33 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
     _turnBelow = const [];
   }
 
-  /// Collects the pixels the turn needs: live current pages + warm neighbours.
-  void _prepareTurnImages(PageTurnPlan plan) {
+  /// Collects the pixels the turn needs: live current pages + verified warm
+  /// neighbour snapshots.
+  ///
+  /// Returns false (and leaves the painter with nothing to draw) when any image
+  /// would be blank. A turn must never start in that state: the reader falls
+  /// back to an instant page change instead.
+  bool _prepareTurnImages(PageTurnPlan plan) {
     _disposeTurnImages();
     final rects = _visiblePageRects();
-    if (rects.isEmpty) return;
+    if (rects.isEmpty) return false;
     final rectByPage = <int, Rect>{
       for (final page in rects) page.pageNo: _toTurnLayer(page.rect),
     };
-    final front = _captureLivePage(plan.leafPage) ??
-        _turnSnapshots.imageFor(plan.leafPage);
-    final back = _turnSnapshots.imageFor(plan.backPage) ??
-        (plan.backPage == plan.leafPage ? front : null);
-    final revealed =
-        _turnSnapshots.imageFor(plan.revealedPage) ?? back ?? front;
+
+    // The leaf and the untouched page are on screen right now, so they are
+    // painted; only accept them once their content future also resolved.
+    final front = _paintedPages.contains(plan.leafPage)
+        ? _captureLivePage(plan.leafPage)
+        : null;
+    final back = _turnSnapshots.imageFor(plan.backPage);
+    final revealed = _turnSnapshots.imageFor(plan.revealedPage);
+    if (front == null || back == null || revealed == null) {
+      _disposeTurnImages();
+      return false;
+    }
+
     final below = <PageTurnBelowPage>[];
-    ui.Image? stationaryImage;
     final stationaryPage = plan.stationaryPage;
     if (_spread) {
       final leafRect = rectByPage[plan.leafPage];
@@ -441,51 +524,37 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
         below.add(PageTurnBelowPage(rect: leafRect, image: revealed));
       }
       if (stationaryPage != null && stationaryRect != null) {
-        stationaryImage = _captureLivePage(stationaryPage);
+        final stationaryImage = _paintedPages.contains(stationaryPage)
+            ? _captureLivePage(stationaryPage)
+            : null;
+        if (stationaryImage == null) {
+          _disposeTurnImages();
+          return false;
+        }
         below.add(PageTurnBelowPage(
           rect: stationaryRect,
-          image: stationaryImage ?? revealed,
+          image: stationaryImage,
         ));
       }
     } else {
       final rect = rectByPage[plan.leafPage];
       if (rect != null) {
-        below.add(PageTurnBelowPage(
-          rect: rect,
-          image: revealed,
-        ));
+        below.add(PageTurnBelowPage(rect: rect, image: revealed));
       }
     }
     _turnFrontImage = front;
     _turnBackImage = back;
     _turnBelow = below;
-    if (front == null) _retryTurnImage(plan.leafPage, front: true);
-    if (stationaryPage != null && stationaryImage == null) {
-      _retryTurnImage(stationaryPage, front: false);
-    }
+    return true;
   }
 
-  /// A live page can still be dirty for one frame; grab it right after paint.
-  void _retryTurnImage(int pageNo, {required bool front}) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_turn.isActive) return;
-      final image = capturePageSnapshotFor(
-        _pageSnapshotKeys[pageNo],
-        pixelRatio: MediaQuery.devicePixelRatioOf(context),
-      );
-      if (image == null) return;
-      setState(() {
-        _turnOwnedImages.add(image);
-        if (front) {
-          _turnFrontImage = image;
-        } else if (_turnBelow.length > 1) {
-          _turnBelow = [
-            _turnBelow.first,
-            PageTurnBelowPage(rect: _turnBelow.last.rect, image: image),
-          ];
-        }
-      });
-    });
+  /// -1 (top) .. 1 (bottom) finger position inside the current page stage.
+  double _turnTiltFor(double globalY) {
+    final rects = _visiblePageRects();
+    if (rects.isEmpty) return 0;
+    final rect = rects.first.rect.expandToInclude(rects.last.rect);
+    if (rect.height <= 0) return 0;
+    return ((globalY - rect.center.dy) / (rect.height / 2)).clamp(-1.0, 1.0);
   }
 
   /// Interactive turn start (first horizontal drag past the slop).
@@ -493,17 +562,22 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
     if (!mounted || _turn.isActive) return;
     _dragPending = true;
     _dragDirection = null;
+    _dragBlocked = false;
     _instantProgress = 0;
     _dragStartX = details.globalPosition.dx;
+    _dragLastY = details.globalPosition.dy;
+    _dragTotalDelta = 0;
     final rects = _visiblePageRects();
     _dragPageWidth = rects.isEmpty ? 1 : rects.first.rect.width;
   }
 
   void _onTurnDragUpdate(DragUpdateDetails details) {
     if (!_dragPending) return;
+    final total = details.globalPosition.dx - _dragStartX;
+    _dragTotalDelta = total;
+    _dragLastY = details.globalPosition.dy;
     if (_pageTurnSetting == MushafPageTurn.none) {
       // Instant mode: no visual leaf, just remember how far the finger went.
-      final total = details.globalPosition.dx - _dragStartX;
       final direction = _dragDirection ?? pageTurnDirectionForDrag(total);
       if (direction == null) return;
       _dragDirection = direction;
@@ -515,37 +589,99 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
       return;
     }
     if (!_turn.isDragging) {
-      final total = details.globalPosition.dx - _dragStartX;
       if (total == 0) return;
       final direction = pageTurnDirectionForDrag(total);
       if (direction == null) return;
-      final planned = pageTurnPlan(
+      // The finger changed direction: retry the bounds check.
+      if (_dragBlocked && direction != _dragDirection) {
+        _dragBlocked = false;
+        _dragDirection = null;
+        _cancelPendingTurn();
+      }
+      if (_dragBlocked) return;
+      if (_pendingTurnPlan != null) {
+        if (direction == _dragDirection) return;
+        _cancelPendingTurn();
+      }
+      final plan = pageTurnPlan(
         visiblePage: _visiblePageNo,
         spread: _spread,
         direction: direction,
       );
-      final plan = planned ??
-          pageTurnRubberBandPlan(
-            visiblePage: _visiblePageNo,
-            spread: _spread,
-            direction: direction,
-          );
+      if (plan == null) {
+        // Book bounds: no leaf, no motion, no overscroll. A short tick is the
+        // only feedback the reader gets (and all they need).
+        _dragDirection = direction;
+        _dragBlocked = true;
+        HapticFeedback.selectionClick();
+        return;
+      }
       if (!_setTurnAreas()) {
         _dragPending = false;
         return;
       }
-      _prepareTurnImages(plan);
-      if (!_turn.isActive) {
-        _turnByUser = true;
-        _turn.beginDrag(plan, blocked: planned == null);
-      }
       _dragDirection = direction;
+      final tilt = _turnTiltFor(details.globalPosition.dy);
+      if (_prepareTurnImages(plan)) {
+        _startDragTurn(plan, tilt: tilt);
+      } else {
+        _schedulePendingTurnStart(plan, tilt: tilt);
+      }
     }
-    if (_dragDirection == null) return;
+    if (!_turn.isDragging) return;
     _turn.updateDrag(
-      totalDeltaX: details.globalPosition.dx - _dragStartX,
+      totalDeltaX: total,
       pageWidth: _dragPageWidth,
+      tilt: _turnTiltFor(details.globalPosition.dy),
     );
+  }
+
+  void _startDragTurn(PageTurnPlan plan, {required double tilt}) {
+    _cancelPendingTurn();
+    _turnByUser = true;
+    _turn.beginDrag(plan, tilt: tilt);
+  }
+
+  /// A page can settle one frame after the drag starts. Wait a very short time
+  /// for that frame; if it still is not ready the turn becomes an instant page
+  /// change instead of curling blank paper.
+  void _schedulePendingTurnStart(PageTurnPlan plan, {required double tilt}) {
+    _pendingTurnPlan = plan;
+    _pendingTurnTries = 0;
+    _pendingTurnTimer?.cancel();
+    void attempt() {
+      _pendingTurnTimer = null;
+      if (!mounted || !_dragPending || _turn.isActive) return;
+      final pending = _pendingTurnPlan;
+      if (pending == null) return;
+      if (_prepareTurnImages(pending)) {
+        _startDragTurn(pending, tilt: _turnTiltFor(_dragLastY));
+        if (_turn.isDragging) {
+          _turn.updateDrag(
+            totalDeltaX: _dragTotalDelta,
+            pageWidth: _dragPageWidth,
+            tilt: _turnTiltFor(_dragLastY),
+          );
+        }
+        return;
+      }
+      _pendingTurnTries++;
+      if (_pendingTurnTries < 5) {
+        _pendingTurnTimer = Timer(const Duration(milliseconds: 32), attempt);
+      } else {
+        debugPrint(
+          '[MushafCurl] path=instant reason=snapshot-not-ready '
+          'plan=$pending',
+        );
+        // Keep the plan: releasing past the threshold still changes the page.
+        _pendingTurnPlan = pending;
+      }
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      attempt();
+    });
   }
 
   void _onTurnDragEnd(DragEndDetails details) {
@@ -571,25 +707,58 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
       }
       return;
     }
-    if (!_turn.isDragging) return;
-    _turnByUser = true;
-    unawaited(_turn.endDrag(velocityX: velocityX));
+    _dragBlocked = false;
+    if (_turn.isDragging) {
+      _turnByUser = true;
+      unawaited(_turn.endDrag(velocityX: velocityX));
+      return;
+    }
+    // Snapshots never became ready: fall back to a live/instant page change
+    // for this turn (no blank leaf).
+    final pending = _pendingTurnPlan;
+    _cancelPendingTurn();
+    if (pending == null) return;
+    if (pageTurnShouldCommit(
+      progress: pageTurnDragProgress(
+        deltaX: _dragTotalDelta,
+        pageWidth: _dragPageWidth,
+        direction: pending.direction,
+      ),
+      velocityX: velocityX,
+      direction: pending.direction,
+    )) {
+      _completeTurn(pending, userTurn: true);
+    }
   }
 
   void _onTurnDragCancel() {
     _dragPending = false;
     _dragDirection = null;
+    _dragBlocked = false;
     _instantProgress = 0;
+    _cancelPendingTurn();
     if (_turn.isActive) _turn.cancel();
   }
 
   /// Plays the leaf turn without a finger (edge tap or recitation follow).
-  void _playTurn(PageTurnPlan plan, {required bool byUser}) {
+  Future<void> _playTurn(PageTurnPlan plan, {required bool byUser}) async {
     if (!mounted || _turn.isActive || !_curlEnabled) return;
     if (!_setTurnAreas()) return;
-    _prepareTurnImages(plan);
+    if (!_prepareTurnImages(plan)) {
+      // One more frame, then give up: a live page change is always better than
+      // a leaf made of blank paper.
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted || _turn.isActive) return;
+      if (!_prepareTurnImages(plan)) {
+        debugPrint(
+          '[MushafCurl] path=instant reason=snapshot-not-ready plan=$plan',
+        );
+        _completeTurn(plan, userTurn: byUser);
+        return;
+      }
+    }
     _turnByUser = byUser;
-    unawaited(_turn.play(plan));
+    unawaited(_turn.play(plan, tilt: 0));
   }
 
   /// Edge tap: outer 12% of a page turns; anything else toggles the bars.
@@ -661,6 +830,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
     ref.read(lastReadProvider.notifier).saveLastRead(PageSource(pageNo));
     unawaited(_checkCompletionForPage(pageNo));
     _disposeTurnImages();
+    _cancelPendingTurn();
     _turnSnapshots.clear();
     _controller.jumpToPage(plan.targetIndex);
     _scheduleSnapshotWarm();
@@ -670,7 +840,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
   void _scheduleSnapshotWarm() {
     _snapshotWarmTimer?.cancel();
     if (!mounted || !_curlEnabled) return;
-    _snapshotWarmTimer = Timer(const Duration(milliseconds: 350), () {
+    _snapshotWarmTimer = Timer(const Duration(milliseconds: 180), () {
       if (!mounted) return;
       _warmSnapshots();
     });
@@ -681,7 +851,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
       return;
     }
     final pages = _neighbourPages();
-    pages.removeWhere((page) => _turnSnapshots.imageFor(page) != null);
+    pages.removeWhere((page) => _turnSnapshots.contains(page));
     if (pages.isEmpty) return;
     final rects = _visiblePageRects();
     if (rects.isEmpty) {
@@ -689,11 +859,14 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
       _scheduleSnapshotWarm();
       return;
     }
-    _farmPageSize = rects.first.rect.size;
+    final slot = _toTurnLayer(rects.first.rect);
+    _farmSlot = slot;
     final framed = _spread || _framedMode;
     final showBanners = _spread ? false : (!framed || _chromeVisible);
     final showBadge = _spread ? false : _chromeVisible;
     _farmComputed.clear();
+    _farmPainted.clear();
+    _farmAttempts = 0;
     setState(() {
       _farm = [
         for (final page in pages)
@@ -705,11 +878,11 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
           ),
       ];
     });
+    // The page content futures resolve asynchronously; the latest this fallback
+    // timer fires is after they should have painted. captureFarm retries if the
+    // farm is still not painted.
     _farmCaptureTimer?.cancel();
-    _farmCaptureTimer = Timer(const Duration(milliseconds: 900), () {
-      if (!mounted) return;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _captureFarm());
-    });
+    _farmCaptureTimer = Timer(const Duration(milliseconds: 900), _captureFarm);
   }
 
   /// Page numbers a turn can need next: the neighbouring spread, or the pages
@@ -735,9 +908,15 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
 
   void _onFarmPageComputed(int pageNo) {
     if (!_farmComputed.add(pageNo)) return;
-    if (_farm.every((entry) => _farmComputed.contains(entry.pageNo))) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _captureFarm());
-    }
+    // onComputed runs during build; this callback runs after that frame's
+    // paint, so the boundary now really has pixels.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _farm.isEmpty) return;
+      _farmPainted.add(pageNo);
+      if (_farm.every((entry) => _farmPainted.contains(entry.pageNo))) {
+        _captureFarm();
+      }
+    });
   }
 
   void _captureFarm() {
@@ -748,22 +927,68 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
       setState(() => _farm = const []);
       return;
     }
+    if (!_farm.every((entry) => _farmPainted.contains(entry.pageNo))) {
+      _farmAttempts++;
+      if (_farmAttempts <= 30) {
+        _farmCaptureTimer =
+            Timer(const Duration(milliseconds: 16), _captureFarm);
+      } else {
+        debugPrint('[MushafCurl] snapshot farm never painted; skipping');
+        setState(() => _farm = const []);
+      }
+      return;
+    }
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
+    final captured = <int, ui.Image>{};
     for (final entry in _farm) {
-      if (!_farmComputed.contains(entry.pageNo)) continue;
       final image = capturePageSnapshotFor(
         _farmSnapshotKeys[entry.pageNo],
         pixelRatio: pixelRatio,
       );
-      if (image != null) _turnSnapshots.put(entry.pageNo, image);
+      if (image != null) captured[entry.pageNo] = image;
     }
     setState(() => _farm = const []);
+    if (captured.isEmpty) {
+      debugPrint('[MushafCurl] snapshot farm capture returned nothing');
+      return;
+    }
+    unawaited(_verifyFarmSnapshots(captured));
+  }
+
+  /// Only non-blank images enter the neighbour cache. A flat-paper image means
+  /// the boundary never painted (or painted before its font was ready); a turn
+  /// built from it would show a white leaf and a white page underneath.
+  Future<void> _verifyFarmSnapshots(Map<int, ui.Image> captured) async {
+    var retry = false;
+    for (final entry in captured.entries) {
+      final image = entry.value;
+      final hasInk = mounted ? await imageHasInk(image) : false;
+      // A turn that started while we were verifying owns the cache: never evict
+      // an image it is painting. The next idle warm recaptures this one.
+      if (!mounted || _turn.isActive) {
+        image.dispose();
+        continue;
+      }
+      if (!hasInk) {
+        debugPrint('[MushafCurl] snapshot blank page=${entry.key}');
+        image.dispose();
+        retry = true;
+        continue;
+      }
+      _turnSnapshots.put(entry.key, image);
+    }
+    if (retry) {
+      _farmAttempts++;
+      if (_farmAttempts <= 2) _scheduleSnapshotWarm();
+    }
   }
 
   @override
   void dispose() {
     _snapshotWarmTimer?.cancel();
     _farmCaptureTimer?.cancel();
+    _pendingTurnTimer?.cancel();
+    _curlShader?.dispose();
     _turn.dispose();
     _turnSnapshots.dispose();
     _disposeTurnImages();
@@ -985,16 +1210,35 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
     _turnsEnabled = pageTurn != MushafPageTurn.slide &&
         !MediaQuery.disableAnimationsOf(context);
 
+    ref.listen<double>(
+      settingsProvider.select((s) => s.mushafFontSize),
+      (previous, next) {
+        if (previous == next || !mounted) return;
+        // Rasterized pages use the old glyph size: drop them.
+        _cancelPendingTurn();
+        _turnSnapshots.clear();
+        _disposeTurnImages();
+        _paintedPages.clear();
+        _snapshotWarmTimer?.cancel();
+        _farmCaptureTimer?.cancel();
+        setState(() => _farm = const []);
+        _scheduleSnapshotWarm();
+      },
+    );
+
     ref.listen<MushafPageTurn>(
       settingsProvider.select((s) => s.mushafPageTurn),
       (previous, next) {
         if (previous == next || !mounted) return;
         _turn.cancel();
         _disposeTurnImages();
+        _cancelPendingTurn();
         _turnSnapshots.clear();
+        _paintedPages.clear();
         _snapshotWarmTimer?.cancel();
         _farmCaptureTimer?.cancel();
         _farmComputed.clear();
+        _farmPainted.clear();
         setState(() => _farm = const []);
         _scheduleSnapshotWarm();
       },
@@ -1058,6 +1302,40 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
         key: _turnLayerKey,
         clipBehavior: Clip.none,
         children: [
+          // Idle snapshot farm. It paints a full real page *under* the pager
+          // (which covers it), so every neighbour boundary is genuinely painted
+          // before it is rasterized. Offscreen/covered slots used to rasterize
+          // blank paper.
+          if (_farm.isNotEmpty && _farmSlot != null)
+            Positioned.fromRect(
+              rect: _farmSlot!,
+              child: IgnorePointer(
+                child: ExcludeSemantics(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      for (final entry in _farm)
+                        Positioned.fill(
+                          child: ColoredBox(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            child: RepaintBoundary(
+                              key: _farmSnapshotKey(entry.pageNo),
+                              child: MushafPageBody(
+                                pageNo: entry.pageNo,
+                                framed: entry.framed,
+                                showBanners: entry.showBanners,
+                                showBadge: entry.showBadge,
+                                onComputed: () =>
+                                    _onFarmPageComputed(entry.pageNo),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           Positioned.fill(
             child: PageView.builder(
               key: ValueKey<bool>(_spread),
@@ -1129,11 +1407,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
                         _onBismillahTap(surahId, pageNo: pageNo),
                     onBismillahLongPress: (surahId, pageNo) =>
                         _onBismillahLongPress(surahId, pageNo: pageNo),
-                    onComputed: () {
-                      if (evenPage < kMushafTotalPages) {
-                        MushafLayout.prewarm(context, evenPage + 1);
-                      }
-                    },
+                    onComputed: _onVisiblePageComputed,
                   );
                 }
                 final pageNo = index + 1;
@@ -1162,46 +1436,11 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
                       _onBismillahTap(surahId, pageNo: pageNo),
                   onBismillahLongPress: (surahId, pageNo) =>
                       _onBismillahLongPress(surahId, pageNo: pageNo),
-                  onComputed: () {
-                    if (pageNo < kMushafTotalPages) {
-                      MushafLayout.prewarm(context, pageNo + 1);
-                    }
-                  },
+                  onComputed: () => _onVisiblePageComputed(pageNo),
                 );
               },
             ),
           ),
-          if (_farm.isNotEmpty && _farmPageSize != null)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    for (final entry in _farm)
-                      Positioned(
-                        left: -_farmPageSize!.width - 64,
-                        top: 0,
-                        width: _farmPageSize!.width,
-                        height: _farmPageSize!.height,
-                        child: ColoredBox(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          child: RepaintBoundary(
-                            key: _farmSnapshotKey(entry.pageNo),
-                            child: MushafPageBody(
-                              pageNo: entry.pageNo,
-                              framed: entry.framed,
-                              showBanners: entry.showBanners,
-                              showBadge: entry.showBadge,
-                              onComputed: () =>
-                                  _onFarmPageComputed(entry.pageNo),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
           if (_curlEnabled)
             Positioned.fill(
               child: MushafPageTurnOverlay(
@@ -1211,6 +1450,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView>
                 backImage: _turnBackImage,
                 background: Theme.of(context).scaffoldBackgroundColor,
                 ink: Theme.of(context).colorScheme.onSurface,
+                shader: _curlShader,
               ),
             ),
           if (_turnsEnabled)
@@ -1365,7 +1605,7 @@ class _MushafSpread extends ConsumerWidget {
   final void Function(int surahId, int ayahNo, int pageNo)? onAyahLongPress;
   final void Function(int surahId, int pageNo)? onBismillahTap;
   final void Function(int surahId, int pageNo)? onBismillahLongPress;
-  final VoidCallback? onComputed;
+  final void Function(int pageNo)? onComputed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1392,7 +1632,7 @@ class _MushafSpread extends ConsumerWidget {
         onBismillahTap: (surahId) => onBismillahTap?.call(surahId, pageNo),
         onBismillahLongPress: (surahId) =>
             onBismillahLongPress?.call(surahId, pageNo),
-        onComputed: pageNo == rightPage ? onComputed : null,
+        onComputed: () => onComputed?.call(pageNo),
       );
       final snapshotKey = pageSnapshotKeys?.putIfAbsent(pageNo, GlobalKey.new);
       if (snapshotKey != null) {

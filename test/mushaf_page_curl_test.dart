@@ -99,6 +99,28 @@ void main() {
       expect(find.text('Mushaf - Halaman 1–2'), findsOneWidget);
     });
 
+    testWidgets('never curls with unready snapshots; changes page on release',
+        (tester) async {
+      await _pumpView(tester, const Size(933, 704), initialPage: 1);
+      final overlay = find.byType(MushafPageTurnOverlay);
+      final painters = find.descendant(
+        of: overlay,
+        matching: find.byType(CustomPaint),
+      );
+
+      final gesture = await tester.startGesture(const Offset(300, 352));
+      await gesture.moveBy(const Offset(20, 0));
+      await tester.pump();
+      await gesture.moveBy(const Offset(300, 0));
+      await tester.pump();
+      // Neighbour pages have no verified snapshot in this test: the reader
+      // must not lift a blank leaf.
+      expect(painters, findsNothing);
+      await gesture.up();
+      await _settleTurn(tester);
+      expect(_pagesInPager(tester), [3, 4]);
+    });
+
     testWidgets('a drag past the threshold completes and updates last read',
         (tester) async {
       await _pumpView(tester, const Size(933, 704), initialPage: 1);
@@ -153,6 +175,56 @@ void main() {
       await tester.tapAt(const Offset(910, 352)); // forward at the last spread
       await _settleTurn(tester);
       expect(_pagesInPager(tester), [603, 604]);
+    });
+
+    testWidgets('backward drag at the first spread does not move anything',
+        (tester) async {
+      await _pumpView(tester, const Size(933, 704), initialPage: 1);
+      final overlay = find.byType(MushafPageTurnOverlay);
+      expect(overlay, findsOneWidget);
+      final painters = find.descendant(
+        of: overlay,
+        matching: find.byType(CustomPaint),
+      );
+      expect(painters, findsNothing); // idle: no leaf at all
+
+      final gesture = await tester.startGesture(const Offset(300, 352));
+      await gesture.moveBy(const Offset(-20, 0));
+      await tester.pump();
+      await gesture.moveBy(const Offset(-300, 0));
+      await tester.pump();
+      // Bounds reject the turn: still no leaf, no curl, no overscroll.
+      expect(painters, findsNothing);
+      await gesture.up();
+      await _settleTurn(tester);
+
+      expect(_pagesInPager(tester), [1, 2]);
+      await _showChrome(tester, const Offset(466, 352));
+      expect(find.text('Mushaf - Halaman 1–2'), findsOneWidget);
+    });
+
+    testWidgets('forward drag at the last spread does not move anything',
+        (tester) async {
+      await _pumpView(tester, const Size(933, 704), initialPage: 603);
+      final overlay = find.byType(MushafPageTurnOverlay);
+      final painters = find.descendant(
+        of: overlay,
+        matching: find.byType(CustomPaint),
+      );
+      expect(painters, findsNothing);
+
+      final gesture = await tester.startGesture(const Offset(300, 352));
+      await gesture.moveBy(const Offset(20, 0));
+      await tester.pump();
+      await gesture.moveBy(const Offset(300, 0));
+      await tester.pump();
+      expect(painters, findsNothing);
+      await gesture.up();
+      await _settleTurn(tester);
+
+      expect(_pagesInPager(tester), [603, 604]);
+      await _showChrome(tester, const Offset(466, 352));
+      expect(find.text('Mushaf - Halaman 603–604'), findsOneWidget);
     });
 
     testWidgets('single page taps turn one page', (tester) async {
