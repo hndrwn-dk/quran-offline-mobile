@@ -78,8 +78,8 @@ class SurahNameMushafGlyph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    // Same ink colour as the Mushaf ayah text (option-I blends with the page).
-    final accent = colorScheme.onSurface;
+    // App surah-name token: the same green used by the +69 Mushaf header.
+    final accent = colorScheme.primary;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -280,7 +280,7 @@ class SurahNameMushafFlowHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final inkColor = Theme.of(context).colorScheme.onSurface;
+    final inkColor = Theme.of(context).colorScheme.primary;
     final label = surahHeaderSemanticsLabel(ref, surahId);
     return Semantics(
       image: true,
@@ -309,6 +309,7 @@ class SurahNameMushafFlowHeader extends ConsumerWidget {
                     box: Size(pageWidth, rowHeight),
                     inkRect: ink,
                     color: inkColor,
+                    rowPitch: slotHeight,
                   ),
                 ),
               ],
@@ -395,4 +396,6 @@ Rect _flowInkRect({
   final inkHeight = ink.inkHeightUnits * unit;
   return Rect.fromLTWH(inkLeft, inkTop, inkWidth, inkHeight);
 }
+
+
 

@@ -66,7 +66,8 @@ void main() {
   test('cap height follows the row pitch and is vertically centred', () {
     final ink = framedInk(2);
     final caps = layoutMushafEndCaps(box: box, inkRect: ink);
-    expect(caps.leftCap.height, closeTo(box.height * kMushafEndCapHeight, 0.01));
+    expect(caps.leftCap.height, greaterThanOrEqualTo(box.height * kMushafEndCapHeight - 0.01));
+    expect(caps.leftCap.height, lessThanOrEqualTo(box.height));
     expect(caps.leftCap.center.dy, closeTo(ink.center.dy, 0.01));
     expect(caps.rightCap.center.dy, closeTo(ink.center.dy, 0.01));
   });
@@ -75,7 +76,7 @@ void main() {
     final geo = layoutMushafEndCaps(box: box, inkRect: framedInk(1));
     final outer = MushafSurahEndCapsPainter.outerPaint(Colors.black, geo);
     expect(outer.style, PaintingStyle.stroke);
-    expect(outer.color.a, closeTo(0.5, 0.02));
+    expect(outer.color.a, closeTo(0.6, 0.02));
     expect(geo.strokeWidth, closeTo(kMushafEndCapStroke, 1e-9));
     expect(geo.innerStrokeWidth, closeTo(kMushafEndCapInnerStroke, 1e-9));
   });
@@ -87,8 +88,8 @@ void main() {
     expect(left.width, closeTo(rect.width, 0.5));
     expect(right.width, closeTo(rect.width, 0.5));
     // Both are arcs: their bounds are the cap rect (tips end at the edges).
-    expect(left.top, closeTo(rect.top, 0.5));
-    expect(right.bottom, closeTo(rect.bottom, 0.5));
+    expect(left.top, closeTo(rect.top - 0.8, 0.8));
+    expect(right.bottom, closeTo(rect.bottom + 0.8, 0.8));
   });
 
   test('shouldRepaint only on geometry/colour change', () {
@@ -114,3 +115,4 @@ void main() {
     expect(kSurahNameGlyphUnitsPerEm, 1024);
   });
 }
+

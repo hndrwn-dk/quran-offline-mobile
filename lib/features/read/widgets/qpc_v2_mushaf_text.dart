@@ -242,7 +242,7 @@ class _QpcV2MushafTextBody extends StatelessWidget {
             height: rowHeight,
             child: SurahNameMushafInkGlyph(
               surahId: line.surahId!,
-              color: colorScheme.onSurface,
+              color: colorScheme.primary,
               targetInkHeight: rowHeight * kSurahNameInkHeightFactor,
               maxInkWidth: lineMaxWidth * kSurahNameMaxInkWidthFactor,
             ),
@@ -617,3 +617,4 @@ class _QpcV2GlyphLine extends StatelessWidget {
     );
   }
 }
+

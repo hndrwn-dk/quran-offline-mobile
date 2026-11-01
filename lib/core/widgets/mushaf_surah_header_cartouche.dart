@@ -47,26 +47,36 @@ class MushafEndCapsGeometry {
 /// Gap between the name ink and the inner arc, as a share of the row height.
 const double kMushafEndCapGap = 0.6;
 
+/// Minimum gap relative to the glyph ink height.
+const double kMushafEndCapGapInk = 0.55;
+
 /// Cap height, as a share of the row height.
 const double kMushafEndCapHeight = 0.9;
+
+/// Cap height relative to the glyph ink height (1.0-1.1x).
+const double kMushafEndCapHeightInk = 1.05;
 
 /// Reference strokes in page-layout units (scaled with the frame).
 /// At the 933x704 spread (~1.235x) these render ~1.0dp and ~0.5dp.
 const double kMushafEndCapStroke = 0.81;
 const double kMushafEndCapInnerStroke = 0.405;
 
-const double _capWidthFactor = 0.28;
-const double _innerInset = 2.2;
-const double _dotRadius = 0.8;
+const double _capWidthFactor = 0.34;
+const double _innerInset = 3.2;
+const double _dotRadius = 1.4;
 
 MushafEndCapsGeometry layoutMushafEndCaps({
   required Size box,
   required Rect inkRect,
+  double? rowPitch,
 }) {
-  final rowHeight = box.height;
-  final capHeight = (rowHeight * kMushafEndCapHeight).clamp(0.0, rowHeight);
+  final pitch = rowPitch ?? box.height;
+  final capHeight = math.max(pitch * kMushafEndCapHeight,
+          inkRect.height * kMushafEndCapHeightInk)
+      .clamp(0.0, box.height);
   final capWidth = math.max(2.0, capHeight * _capWidthFactor);
-  final gap = rowHeight * kMushafEndCapGap;
+  final gap = math.max(pitch * kMushafEndCapGap,
+      inkRect.height * kMushafEndCapGapInk);
   final centerY = inkRect.center.dy;
 
   var top = centerY - capHeight / 2;
@@ -107,7 +117,9 @@ Path mushafEndCapPath(
   final dx = xTip - xBulge;
 
   final path = Path()
-    ..moveTo(xTip, r.top)
+    // Slightly pointed tips: a short hook past each end, butt-capped.
+    ..moveTo(xTip + (openingRight ? -1.4 : 1.4), r.top - 0.8)
+    ..lineTo(xTip, r.top)
     ..cubicTo(
       xTip - dx * 0.55,
       r.top + r.height * 0.12,
@@ -123,7 +135,8 @@ Path mushafEndCapPath(
       r.bottom - r.height * 0.12,
       xTip,
       r.bottom,
-    );
+    )
+    ..lineTo(xTip + (openingRight ? -1.4 : 1.4), r.bottom + 0.8);
   return path;
 }
 
@@ -138,7 +151,7 @@ class MushafSurahEndCapsPainter extends CustomPainter {
 
   static Paint outerPaint(Color color, MushafEndCapsGeometry geometry) {
     return Paint()
-      ..color = color.withValues(alpha: 0.5)
+      ..color = color.withValues(alpha: 0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = geometry.strokeWidth
       ..strokeCap = StrokeCap.round
@@ -149,7 +162,7 @@ class MushafSurahEndCapsPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final outer = outerPaint(color, geometry);
     final inner = Paint()
-      ..color = color.withValues(alpha: 0.35)
+      ..color = color.withValues(alpha: 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = geometry.innerStrokeWidth
       ..strokeCap = StrokeCap.round
@@ -178,7 +191,7 @@ class MushafSurahEndCapsPainter extends CustomPainter {
         tip,
         geometry.dotRadius,
         Paint()
-          ..color = color.withValues(alpha: 0.5)
+          ..color = color.withValues(alpha: 0.6)
           ..style = PaintingStyle.fill
           ..isAntiAlias = true,
       );
@@ -198,18 +211,20 @@ class MushafSurahEndCapsOverlay extends StatelessWidget {
     required this.box,
     required this.inkRect,
     required this.color,
+    this.rowPitch,
   });
 
   final Size box;
   final Rect inkRect;
   final Color color;
+  final double? rowPitch;
 
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
       child: CustomPaint(
         painter: MushafSurahEndCapsPainter(
-          geometry: layoutMushafEndCaps(box: box, inkRect: inkRect),
+          geometry: layoutMushafEndCaps(box: box, inkRect: inkRect, rowPitch: rowPitch),
           color: color,
         ),
         child: const SizedBox.expand(),
@@ -217,3 +232,6 @@ class MushafSurahEndCapsOverlay extends StatelessWidget {
     );
   }
 }
+
+
+
