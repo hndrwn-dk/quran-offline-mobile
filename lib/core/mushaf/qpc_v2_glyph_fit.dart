@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 
@@ -307,4 +310,27 @@ bool _glyphLineFits(TextPainter painter, String glyphText, double maxWidth) {
 
   const margin = 1.0;
   return minLeft >= -margin && maxRight <= maxWidth + margin;
+}
+
+/// Scale for the opening pages (1 and 2), which only have 8 layout rows.
+///
+/// Both pages share one scale: the widest ayah line of either page must fit the
+/// reference text width, and 8 rows at the standard pitch plus one row of
+/// breathing room must fit the reference page height. The 8-row block keeps the
+/// standard pitch; only the whole row stack is scaled and centred.
+double computeOpeningPageScale({
+  required Iterable<({String glyphText, String fontFamily, bool justify})>
+      lines,
+  int rowCount = 8,
+}) {
+  final fitted = computeQpcV2PageFontSize(
+    lines: lines,
+    maxFontSize: kMushafPageFontSize * 3,
+    maxWidth: kMushafPageLayoutWidth,
+  );
+  final widthScale = fitted / kMushafPageFontSize;
+  final heightScale = (kMushafPageLayoutHeight - kMushafPageRowHeight) /
+      (rowCount * kMushafPageRowHeight);
+  final scale = math.min(widthScale, heightScale);
+  return scale.clamp(1.0, 2.0);
 }

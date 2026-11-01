@@ -58,7 +58,16 @@ final Finder _pageFrameBoxes = find.byWidgetPredicate(
   (widget) => widget is FittedBox && widget.fit == BoxFit.contain,
 );
 
-void _setViewSize(WidgetTester tester, Size size) {  tester.view.physicalSize = size;
+/// Page bodies actually laid out by the pager. The curl snapshot farm renders
+/// neighbour pages as siblings of the pager, so it must not be counted as a
+/// visible page here.
+final Finder _pagerBodies = find.descendant(
+  of: find.byType(PageView),
+  matching: find.byType(MushafPageBody, skipOffstage: false),
+);
+
+void _setViewSize(WidgetTester tester, Size size) {
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
 }
@@ -234,7 +243,7 @@ void main() {
       await pumpView(tester, const Size(475, 751), initialPage: 2);
 
       final body = tester.widget<MushafPageBody>(
-        find.byType(MushafPageBody, skipOffstage: false),
+        _pagerBodies,
       );
       expect(body.framed, isFalse);
     });
@@ -244,7 +253,7 @@ void main() {
 
       final bodies = tester
           .widgetList<MushafPageBody>(
-            find.byType(MushafPageBody, skipOffstage: false),
+            _pagerBodies,
           )
           .toList();
       expect(bodies.length, 2);
@@ -266,12 +275,12 @@ void main() {
     testWidgets('two page bodies are laid out on a Fold inner screen',
         (tester) async {
       await pumpView(tester, const Size(933, 704), initialPage: 1);
-      expect(find.byType(MushafPageBody, skipOffstage: false), findsNWidgets(2));
+      expect(_pagerBodies, findsNWidgets(2));
     });
 
     testWidgets('single page on the cover screen', (tester) async {
       await pumpView(tester, const Size(475, 751), initialPage: 4);
-      expect(find.byType(MushafPageBody, skipOffstage: false), findsOneWidget);
+      expect(_pagerBodies, findsOneWidget);
       expect(find.text('Mushaf - Halaman 4'), findsOneWidget);
     });
 
@@ -289,7 +298,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
       final bodies = tester
           .widgetList<MushafPageBody>(
-            find.byType(MushafPageBody, skipOffstage: false),
+            _pagerBodies,
           )
           .toList();
       expect(bodies.length, 2);
@@ -322,7 +331,7 @@ void main() {
       await pumpView(tester, const Size(933, 704), initialPage: 4);
 
       final body = tester.widget<MushafPageBody>(
-        find.byType(MushafPageBody, skipOffstage: false),
+        _pagerBodies,
       );
       expect(body.framed, isTrue);
       await showChrome(tester);

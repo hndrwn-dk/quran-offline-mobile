@@ -52,6 +52,7 @@ class _MushafTextSettingsDialogState
     extends ConsumerState<MushafTextSettingsDialog> {
   double _currentSize = 28.0;
   bool _twoPageSpread = true;
+  MushafPageTurn _pageTurn = MushafPageTurn.curl;
   late final Future<bool> _glyphMushafActive;
 
   @override
@@ -60,6 +61,7 @@ class _MushafTextSettingsDialogState
     final settings = ref.read(settingsProvider);
     _currentSize = settings.mushafFontSize;
     _twoPageSpread = settings.mushafTwoPageSpread;
+    _pageTurn = settings.mushafPageTurn;
     _glyphMushafActive = QpcV2MushafLayout.isAvailable();
     _glyphMushafActive.then((isGlyph) {
       if (!mounted) return;
@@ -231,6 +233,70 @@ class _MushafTextSettingsDialogState
                   ),
                 ),
               ],
+              const SizedBox(height: 20),
+              Text(
+                AppLocalizations.getSettingsText('page_turn_title', appLanguage),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                AppLocalizations.getSettingsText(
+                  'page_turn_subtitle',
+                  appLanguage,
+                ),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<MushafPageTurn>(
+                  key: const Key('mushaf-page-turn'),
+                  showSelectedIcon: false,
+                  style: const ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  segments: [
+                    ButtonSegment<MushafPageTurn>(
+                      value: MushafPageTurn.curl,
+                      label: Text(
+                        AppLocalizations.getSettingsText(
+                          'page_turn_curl',
+                          appLanguage,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    ButtonSegment<MushafPageTurn>(
+                      value: MushafPageTurn.slide,
+                      label: Text(
+                        AppLocalizations.getSettingsText(
+                          'page_turn_slide',
+                          appLanguage,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    ButtonSegment<MushafPageTurn>(
+                      value: MushafPageTurn.none,
+                      label: Text(
+                        AppLocalizations.getSettingsText(
+                          'page_turn_none',
+                          appLanguage,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                  selected: {_pageTurn},
+                  onSelectionChanged: (selection) {
+                    setState(() => _pageTurn = selection.first);
+                  },
+                ),
+              ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -268,6 +334,11 @@ class _MushafTextSettingsDialogState
                       await ref
                           .read(settingsProvider.notifier)
                           .updateMushafTwoPageSpread(_twoPageSpread);
+                    }
+                    if (_pageTurn != settings.mushafPageTurn) {
+                      await ref
+                          .read(settingsProvider.notifier)
+                          .updateMushafPageTurn(_pageTurn);
                     }
                     if (!context.mounted) return;
                     Navigator.of(context).pop();
