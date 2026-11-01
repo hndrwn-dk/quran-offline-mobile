@@ -7,6 +7,7 @@ import 'package:quran_offline/core/providers/last_read_progress_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/reading/reading_completion.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/features/home/widgets/home_cta_buttons.dart';
 import 'package:quran_offline/features/read/widgets/last_read_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -310,6 +311,32 @@ void main() {
     expect(identical(titleInk.onTap, detailInk.onTap), isTrue);
   });
 
+  testWidgets('in-progress card ends with the last-page action row', (
+    tester,
+  ) async {
+    await _pumpHomeCard(
+      tester,
+      lastReadPrefs: _prefs(type: 'surah', id: 2, ayahNo: 2),
+      location: const LastReadLocation(
+        type: 'surah',
+        surahId: 2,
+        ayahNo: 2,
+        juzNo: 1,
+      ),
+      progress: const LastReadProgress(
+        fraction: 2 / 7,
+        scope: 'surah',
+        current: 2,
+        total: 7,
+      ),
+    );
+
+    expect(find.text('Buka halaman terakhir'), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_forward), findsOneWidget);
+    expect(find.byType(HomeCircleArrowButton), findsNothing);
+    expect(find.byType(Divider), findsOneWidget);
+  });
+
   testWidgets('the ring exposes percent and scope to screen readers', (
     tester,
   ) async {
@@ -442,6 +469,7 @@ void main() {
     );
     expect(find.text('Alhamdulillah, Al-Mulk selesai'), findsOneWidget);
     expect(find.text('Lanjut ke Al-Qalam'), findsOneWidget);
+    expect(find.text('Mulai Al-Qalam'), findsOneWidget);
     expect(find.byIcon(Icons.check_rounded), findsOneWidget);
     expect(find.textContaining('%'), findsNothing);
     expect(find.byType(LinearProgressIndicator), findsNothing);
@@ -471,6 +499,12 @@ void main() {
       ),
       surahs: [
         SurahInfo(
+          id: 1,
+          arabicName: '',
+          englishName: 'Al-Fatihah',
+          englishMeaning: 'The Opening',
+        ),
+        SurahInfo(
           id: 114,
           arabicName: '',
           englishName: 'An-Nas',
@@ -481,6 +515,7 @@ void main() {
 
     expect(find.text('Alhamdulillah, khatam Al-Qur\'an'), findsOneWidget);
     expect(find.text('Mulai lagi dari Al-Fatihah'), findsOneWidget);
+    expect(find.text('Mulai Al-Fatihah'), findsOneWidget);
     expect(find.byIcon(Icons.check_rounded), findsOneWidget);
   });
 
@@ -505,6 +540,32 @@ void main() {
 
     expect(find.text('Alhamdulillah, Juz 1 selesai'), findsOneWidget);
     expect(find.text('Lanjut ke Halaman 22'), findsOneWidget);
+    expect(find.text('Mulai Halaman 22'), findsOneWidget);
+    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+  });
+
+  testWidgets('completed juz card shows the next juz action', (tester) async {
+    await _pumpHomeCard(
+      tester,
+      lastReadPrefs: _prefs(type: 'juz', id: 1, ayahNo: 148, surahId: 2),
+      location: const LastReadLocation(
+        type: 'juz',
+        surahId: 2,
+        ayahNo: 148,
+        juzNo: 1,
+      ),
+      completion: const ReadingCompletion(
+        kind: 'juz',
+        khatam: false,
+        finishedJuzNo: 1,
+        nextJuzNo: 2,
+        nextSurahId: 2,
+        nextAyahNo: 1,
+      ),
+    );
+
+    expect(find.text('Alhamdulillah, Juz 1 selesai'), findsOneWidget);
+    expect(find.text('Mulai Juz 2'), findsOneWidget);
     expect(find.byIcon(Icons.check_rounded), findsOneWidget);
   });
 

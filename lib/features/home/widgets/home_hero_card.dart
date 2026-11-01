@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quran_offline/core/providers/reflection_history_provider.dart';
 import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/day_period.dart';
-import 'package:quran_offline/core/utils/home_tagline.dart';
 import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
-/// Unified home hero (layout C): time-of-day salam, tagline, Hijri chip.
+/// Compact home greeting: salam + Hijri date, with the Arabic salam at right.
 class HomeHeroCard extends ConsumerWidget {
   const HomeHeroCard({super.key});
 
@@ -22,13 +20,6 @@ class HomeHeroCard extends ConsumerWidget {
     final now = ref.watch(reflectionNowProvider);
     final pickAsync = ref.watch(reflectionPickProvider);
     final day = ref.watch(islamicDayProvider);
-    final salt = ref.watch(reflectionInstallSaltProvider).asData?.value ?? '';
-    final tagline = pickHomeTagline(
-      language: lang,
-      installSalt: salt,
-      hijriYmd: day.hijri.ymdKey,
-      period: day.period,
-    );
     final occasionBadgeKey = pickAsync.maybeWhen(
       data: (pick) {
         final type = pick.entry.trigger?.type;
@@ -48,80 +39,65 @@ class HomeHeroCard extends ConsumerWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: colorScheme.outlineVariant.withValues(alpha: 0.65),
           ),
           color: colorScheme.surface.withValues(alpha: 0.94),
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _DayPeriodBadge(period: period, color: periodColor),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
+              _DayPeriodBadge(period: period, color: periodColor),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
                       AppLocalizations.getHomeWelcomeTransliteration(lang),
                       style: textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                         letterSpacing: -0.3,
-                        height: 1.2,
+                        height: 1.15,
                         color: colorScheme.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Directionality(
-                    textDirection: TextDirection.rtl,
-                    child: Text(
-                      AppLocalizations.homeWelcomeArabic,
-                      style: QuranArabicText.arabicDisplayStyle(
-                        fontSize: textTheme.titleMedium?.fontSize ?? 16,
-                        color: colorScheme.primary,
-                        height: 1.25,
-                      ).copyWith(fontWeight: FontWeight.w700),
+                    const SizedBox(height: 2),
+                    Text(
+                      headline,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.9,
+                        ),
+                        height: 1.2,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                tagline,
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
-                  height: 1.4,
+                  ],
                 ),
               ),
-              const SizedBox(height: 10),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: colorScheme.primaryContainer.withValues(alpha: 0.35),
-                  border: Border.all(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                  ),
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  child: Text(
-                    headline,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.primary,
-                      height: 1.4,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+              const SizedBox(width: 8),
+              Directionality(
+                textDirection: TextDirection.rtl,
+                child: Text(
+                  AppLocalizations.homeWelcomeArabic,
+                  style: QuranArabicText.arabicDisplayStyle(
+                    fontSize: textTheme.titleMedium?.fontSize ?? 16,
+                    color: colorScheme.primary,
+                    height: 1.25,
+                  ).copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
             ],

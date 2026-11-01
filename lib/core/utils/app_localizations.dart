@@ -3490,11 +3490,149 @@ class AppLocalizations {
 
   static String getHomeStartReadingBody(String language) {
     return switch (language) {
-      'id' => 'Pilih surah dan mulai perjalanan Anda.',
+      'id' => 'Pilih surah dan mulai perjalanan kamu.',
       'en' => 'Pick a surah and begin your journey.',
       'zh' => '选择章节，开始您的旅程。',
       'ja' => 'スーラを選んで旅を始めましょう。',
       _ => 'Pick a surah and begin your journey.',
+    };
+  }
+
+  static String getHomeSearchSectionTitle(String language) {
+    return switch (language) {
+      'id' => 'TEMUKAN DI AL-QUR\'AN',
+      'en' => 'FIND IN THE QUR\'AN',
+      'zh' => '在古兰经中寻找',
+      'ja' => 'クルアーンで探す',
+      _ => 'FIND IN THE QUR\'AN',
+    };
+  }
+
+  static String getHomeSearchPlaceholder(String language) {
+    return switch (language) {
+      'id' => 'Apa yang sedang kamu rasakan?',
+      'en' => 'What are you going through?',
+      'zh' => '你正在经历什么？',
+      'ja' => '今、どんな気持ちですか？',
+      _ => 'What are you going through?',
+    };
+  }
+
+  static String getHomeSearchChipLabel(String key, String language) {
+    return switch (key) {
+      'sabar' => switch (language) {
+          'id' => 'Sabar',
+          'en' => 'Patience',
+          'zh' => '忍耐',
+          'ja' => '忍耐',
+          _ => 'Patience',
+        },
+      'syukur' => switch (language) {
+          'id' => 'Bersyukur',
+          'en' => 'Gratitude',
+          'zh' => '感恩',
+          'ja' => '感謝',
+          _ => 'Gratitude',
+        },
+      'rezeki' => switch (language) {
+          'id' => 'Rezeki',
+          'en' => 'Provision',
+          'zh' => '给养',
+          'ja' => '糧',
+          _ => 'Provision',
+        },
+      'orangtua' => switch (language) {
+          'id' => 'Orang tua',
+          'en' => 'Parents',
+          'zh' => '父母',
+          'ja' => '両親',
+          _ => 'Parents',
+        },
+      _ => key,
+    };
+  }
+
+  static String getHomeSearchChipQuery(String key, String language) {
+    return switch (key) {
+      'sabar' => switch (language) {
+          'id' => 'sabar',
+          'en' => 'patience',
+          'zh' => '忍耐',
+          'ja' => '忍耐',
+          _ => 'patience',
+        },
+      'syukur' => switch (language) {
+          'id' => 'syukur',
+          'en' => 'grateful',
+          'zh' => '感恩',
+          'ja' => '感謝',
+          _ => 'grateful',
+        },
+      'rezeki' => switch (language) {
+          'id' => 'rezeki',
+          'en' => 'provision',
+          'zh' => '给养',
+          'ja' => '糧',
+          _ => 'provision',
+        },
+      'orangtua' => switch (language) {
+          'id' => 'orang tua',
+          'en' => 'parents',
+          'zh' => '父母',
+          'ja' => '両親',
+          _ => 'parents',
+        },
+      _ => key,
+    };
+  }
+
+  static String getHomeReflectionReadAyah(String language) {
+    return switch (language) {
+      'id' => 'Baca ayatnya',
+      'en' => 'Read the verse',
+      'zh' => '阅读经文',
+      'ja' => '節を読む',
+      _ => 'Read the verse',
+    };
+  }
+
+  static String getContinueOpenLastPage(String language) {
+    return switch (language) {
+      'id' => 'Buka halaman terakhir',
+      'en' => 'Open last page',
+      'zh' => '打开上次阅读的页面',
+      'ja' => '前回のページを開く',
+      _ => 'Open last page',
+    };
+  }
+
+  static String formatContinueStartSurah(String surahName, String language) {
+    return switch (language) {
+      'id' => 'Mulai $surahName',
+      'en' => 'Start $surahName',
+      'zh' => '开始阅读 $surahName',
+      'ja' => '$surahName を開始',
+      _ => 'Start $surahName',
+    };
+  }
+
+  static String formatContinueStartJuz(int juzNo, String language) {
+    return switch (language) {
+      'id' => 'Mulai Juz $juzNo',
+      'en' => 'Start Juz $juzNo',
+      'zh' => '开始第 $juzNo 卷',
+      'ja' => 'ジュズ $juzNo を開始',
+      _ => 'Start Juz $juzNo',
+    };
+  }
+
+  static String formatContinueStartPage(int pageNo, String language) {
+    return switch (language) {
+      'id' => 'Mulai Halaman $pageNo',
+      'en' => 'Start page $pageNo',
+      'zh' => '开始第 $pageNo 页',
+      'ja' => '$pageNo ページを開始',
+      _ => 'Start page $pageNo',
     };
   }
 
@@ -3515,16 +3653,6 @@ class AppLocalizations {
       'zh' => '打开默想',
       'ja' => '黙想を開く',
       _ => 'Open reflection',
-    };
-  }
-
-  static String getHomeQuickAccessTitle(String language) {
-    return switch (language) {
-      'id' => 'AKSES CEPAT',
-      'en' => 'QUICK ACCESS',
-      'zh' => '快捷入口',
-      'ja' => 'クイックアクセス',
-      _ => 'QUICK ACCESS',
     };
   }
 
