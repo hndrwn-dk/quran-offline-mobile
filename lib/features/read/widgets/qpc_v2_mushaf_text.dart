@@ -34,6 +34,7 @@ class QpcV2MushafText extends StatelessWidget {
     required this.colorScheme,
     required this.ayahKeys,
     this.pageGrid = false,
+    this.openingPageScale = 1.0,
     this.onAyahTap,
     this.onAyahLongPress,
     this.onBismillahTap,
@@ -47,6 +48,9 @@ class QpcV2MushafText extends StatelessWidget {
   final ColorScheme colorScheme;
   final Map<String, GlobalKey> ayahKeys;
   final bool pageGrid;
+
+  /// Extra scale for opening pages 1-2 (8 rows) so they fill the frame.
+  final double openingPageScale;
   final void Function(int surahId, int ayahNo)? onAyahTap;
   final void Function(int surahId, int ayahNo)? onAyahLongPress;
   final void Function(int surahId)? onBismillahTap;
@@ -84,6 +88,7 @@ class QpcV2MushafText extends StatelessWidget {
         fontSize: effectiveSize,
         lineMaxWidth: contentWidth,
         pageGrid: pageGrid,
+        openingPageScale: openingPageScale,
         colorScheme: colorScheme,
         ayahKeys: ayahKeys,
         onAyahTap: onAyahTap,
@@ -102,6 +107,7 @@ class _QpcV2MushafTextBody extends StatelessWidget {
     required this.fontSize,
     required this.lineMaxWidth,
     required this.pageGrid,
+    required this.openingPageScale,
     required this.colorScheme,
     required this.ayahKeys,
     this.onAyahTap,
@@ -115,6 +121,9 @@ class _QpcV2MushafTextBody extends StatelessWidget {
   final double fontSize;
   final double lineMaxWidth;
   final bool pageGrid;
+
+  /// Extra scale for opening pages 1-2 (8 rows) so they fill the frame.
+  final double openingPageScale;
   final ColorScheme colorScheme;
   final Map<String, GlobalKey> ayahKeys;
   final void Function(int surahId, int ayahNo)? onAyahTap;
@@ -230,8 +239,9 @@ class _QpcV2MushafTextBody extends StatelessWidget {
   /// glyph size. Short pages (1–2) distribute their rows over the page instead
   /// of hugging the top.
   Widget _buildPageGrid() {
-    const rowHeight = kMushafPageRowHeight;
-    final lineHeightFactor = rowHeight / fontSize;
+    final rowHeight = kMushafPageRowHeight * openingPageScale;
+    final scaledFontSize = fontSize * openingPageScale;
+    final lineHeightFactor = rowHeight / scaledFontSize;
     final rows = <Widget>[];
     final placedAyahAnchors = <String>{};
 
@@ -264,7 +274,7 @@ class _QpcV2MushafTextBody extends StatelessWidget {
                 surahId: surahId,
                 glyphText: content.bismillahGlyphText,
                 fontFamily: content.basmallahFontFamily,
-                fontSize: fontSize,
+                fontSize: scaledFontSize,
                 lineMaxWidth: lineMaxWidth,
                 colorScheme: colorScheme,
                 heightFactor: lineHeightFactor,
@@ -295,7 +305,7 @@ class _QpcV2MushafTextBody extends StatelessWidget {
           child: _QpcV2GlyphLineRow(
             line: line,
             fontFamily: content.fontFamily,
-            fontSize: fontSize,
+            fontSize: scaledFontSize,
             lineMaxWidth: lineMaxWidth,
             colorScheme: colorScheme,
             heightFactor: lineHeightFactor,
@@ -315,7 +325,9 @@ class _QpcV2MushafTextBody extends StatelessWidget {
     return SizedBox(
       height: kMushafPageLayoutHeight,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: openingPageScale > 1
+            ? MainAxisAlignment.center
+            : MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: rows,
       ),
@@ -617,4 +629,5 @@ class _QpcV2GlyphLine extends StatelessWidget {
     );
   }
 }
+
 
