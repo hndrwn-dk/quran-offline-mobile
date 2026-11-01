@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
@@ -152,6 +153,15 @@ class _QpcV2MushafTextBody extends StatelessWidget {
     final children = <Widget>[];
     final placedAyahAnchors = <String>{};
     var previousKind = _MushafLineKind.none;
+    // Same rule as the page grid: the ayah block is centred on the page from
+    // the real ink, so surah names, bismillah and ayat share one centre axis.
+    final centering = qpcV2InkCentering(
+      content: content,
+      fontSize: fontSize,
+      maxWidth: lineMaxWidth,
+      shiftScale: fontSize / kMushafPageFontSize,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
 
     for (final line in content.lines) {
       if (line.isSurahName && line.surahId != null) {
@@ -222,15 +232,20 @@ class _QpcV2MushafTextBody extends StatelessWidget {
       }
 
       children.add(
-        _QpcV2GlyphLineRow(
-          line: line,
-          fontFamily: content.fontFamily,
-          fontSize: fontSize,
-          lineMaxWidth: lineMaxWidth,
-          colorScheme: colorScheme,
-          ayahAnchorKey: lineAnchorKey,
-          onAyahTap: onAyahTap,
-          onAyahLongPress: onAyahLongPress,
+        _CenteredOverflow(
+          child: Transform.translate(
+            offset: Offset(centering.shift, 0),
+            child: _QpcV2GlyphLineRow(
+              line: line,
+              fontFamily: content.fontFamily,
+              fontSize: fontSize,
+              lineMaxWidth: centering.blockWidth,
+              colorScheme: colorScheme,
+              ayahAnchorKey: lineAnchorKey,
+              onAyahTap: onAyahTap,
+              onAyahLongPress: onAyahLongPress,
+            ),
+          ),
         ),
       );
     }
@@ -253,22 +268,17 @@ class _QpcV2MushafTextBody extends StatelessWidget {
     final rowHeight = kMushafPageRowHeight * openingPageScale;
     final scaledFontSize = fontSize * openingPageScale;
     final lineHeightFactor = rowHeight / scaledFontSize;
-    // Ayah lines start at the right (RTL). Narrow them to the widest line and
-    // centre that block, so the ink sits mid-page instead of hugging the
-    // right edge (mirrored margins on both pages of a spread).
-    final inkBlockWidth = qpcV2PageInkBlockWidth(
+    final centering = qpcV2InkCentering(
       content: content,
       fontSize: scaledFontSize,
       maxWidth: lineMaxWidth,
+      // The table is measured in this grid (pages 1-2 at their opening scale).
+      shiftScale: 1,
       textScaler: textScaler,
+      enabled: inkCentering,
     );
-    // Glyph ink does not sit exactly on the advance box (swash side
-    // bearings); this measured per-page offset centres the real ink.
-    // The table is measured at text scale 1; the glyph Text follows the
-    // system font scale, so the offset scales with it.
-    final inkShift = inkCentering
-        ? textScaler.scale(qpcV2PageInkShift(content.pageNumber))
-        : 0.0;
+    final inkBlockWidth = centering.blockWidth;
+    final inkShift = centering.shift;
     final rows = <Widget>[];
     final placedAyahAnchors = <String>{};
 
@@ -371,6 +381,67 @@ class _QpcV2MushafTextBody extends StatelessWidget {
 }
 
 final _inkBlockWidthCache = <String, double>{};
+
+/// Centres its child horizontally, letting a child wider than the available
+/// width overflow both sides equally. Height is the child's own, so the flow
+/// layout's vertical rhythm is unchanged.
+class _CenteredOverflow extends SingleChildRenderObjectWidget {
+  const _CenteredOverflow({super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderCenteredOverflow();
+}
+
+class _RenderCenteredOverflow extends RenderShiftedBox {
+  _RenderCenteredOverflow() : super(null);
+
+  @override
+  void performLayout() {
+    final child = this.child;
+    if (child == null) {
+      size = constraints.smallest;
+      return;
+    }
+    child.layout(
+      BoxConstraints(maxHeight: constraints.maxHeight),
+      parentUsesSize: true,
+    );
+    size = constraints.constrain(
+      Size(constraints.maxWidth, child.size.height),
+    );
+    (child.parentData! as BoxParentData).offset =
+        Offset((size.width - child.size.width) / 2, 0);
+  }
+}
+
+/// The one horizontal rule for Mushaf ayah lines (framed grid and phone flow):
+/// lines are as wide as the page's widest line, that block is centred on the
+/// page, then shifted by the measured ink offset so the real ink is centred.
+/// Lines the QPC layout marks as centred stay centred inside the block.
+///
+/// [qpcV2PageInkShift] is measured in the page grid at text scale 1;
+/// [shiftScale] converts it to this layout's glyph size (1 in the grid) and the
+/// shift also follows the system text scale.
+({double blockWidth, double shift}) qpcV2InkCentering({
+  required QpcV2PageContent content,
+  required double fontSize,
+  required double maxWidth,
+  required double shiftScale,
+  TextScaler textScaler = TextScaler.noScaling,
+  bool enabled = true,
+}) {
+  final blockWidth = qpcV2PageInkBlockWidth(
+    content: content,
+    fontSize: fontSize,
+    maxWidth: maxWidth,
+    textScaler: textScaler,
+  );
+  if (!enabled) return (blockWidth: blockWidth, shift: 0.0);
+  final shift =
+      textScaler.scale(qpcV2PageInkShift(content.pageNumber)) * shiftScale;
+  return (blockWidth: blockWidth, shift: shift);
+}
 
 /// Natural width of the widest ayah line of [content] at [fontSize]: the width
 /// of the page's ink block in the page grid ([maxWidth] when there is none).
