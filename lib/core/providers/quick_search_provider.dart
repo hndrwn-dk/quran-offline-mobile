@@ -20,6 +20,14 @@ class QuickSearchResult {
 
 final quickSearchQueryProvider = StateProvider<String>((ref) => '');
 
+final _surahNameNoise = RegExp(r"[\s\-'’ʿʼ`]");
+
+/// Surah-name search key: lowercase without spaces, hyphens or apostrophes
+/// (' ’ ʿ ʼ), so "yasin", "ya sin" and "Ya-Sin" all match, as do "abasa" and
+/// "'Abasa".
+String normalizeSurahNameForSearch(String value) =>
+    value.toLowerCase().replaceAll(_surahNameNoise, '');
+
 final quickSearchResultsProvider = FutureProvider<List<QuickSearchResult>>((ref) async {
   final query = ref.watch(quickSearchQueryProvider);
   final settings = ref.watch(settingsProvider);
@@ -38,6 +46,7 @@ final quickSearchResultsProvider = FutureProvider<List<QuickSearchResult>>((ref)
 
   final results = <QuickSearchResult>[];
   final queryLower = query.toLowerCase().trim();
+  final queryName = normalizeSurahNameForSearch(query);
 
   // Search surahs
   final surahsAsync = ref.read(surahNamesProvider);
@@ -52,7 +61,9 @@ final quickSearchResultsProvider = FutureProvider<List<QuickSearchResult>>((ref)
         ));
       }
       // Partial match by name
-      else if (surah.englishName.toLowerCase().contains(queryLower) ||
+      else if ((queryName.isNotEmpty &&
+              normalizeSurahNameForSearch(surah.englishName)
+                  .contains(queryName)) ||
           surah.arabicName.contains(query)) {
         results.add(QuickSearchResult(
           type: 'surah',
