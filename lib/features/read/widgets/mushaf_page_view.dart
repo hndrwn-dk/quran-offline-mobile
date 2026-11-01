@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
@@ -160,6 +161,17 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
       displayFeatures: media.displayFeatures,
       spreadEnabled: setting,
     );
+    if (kDebugMode) {
+      final features = media.displayFeatures
+          .map((f) => '${f.type}/${f.state}@${f.bounds}')
+          .join(', ');
+      debugPrint(
+        '[MushafGate] size=${media.size} dpr=${media.devicePixelRatio} '
+        'padding=${media.padding} viewPadding=${media.viewPadding} '
+        'features=[$features] -> showSpread=${metrics.showSpread} '
+        'page=${metrics.pageSize} (${metrics.reason})',
+      );
+    }
     if (metrics.showSpread == _spread) return;
     _setSpreadMode(metrics.showSpread);
   }
@@ -660,13 +672,18 @@ class _MushafSpread extends ConsumerWidget {
                 hinge: hinge,
               ),
             ),
-            MushafPageNumberBadge(
-              pageNo: rightPage,
-              rangeEnd: leftPage,
-              rangeLabel: AppLocalizations.formatMushafPageRange(
-                rightPage,
-                leftPage,
-                appLanguage,
+            Padding(
+              padding: EdgeInsets.only(
+                bottom: systemBottomInset(media) + 4,
+              ),
+              child: MushafPageNumberBadge(
+                pageNo: rightPage,
+                rangeEnd: leftPage,
+                rangeLabel: AppLocalizations.formatMushafPageRange(
+                  rightPage,
+                  leftPage,
+                  appLanguage,
+                ),
               ),
             ),
           ],
