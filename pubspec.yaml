@@ -95,6 +95,9 @@ flutter:
     - assets/mushaf/layout/qpc_v2_15_lines.sqlite
     - assets/mushaf/script/qpc_v2_words.sqlite
     - assets/fonts/qpc_v2/
+
+  shaders:
+    - shaders/page_curl.frag
   
   fonts:
     - family: DigitalKhattV2

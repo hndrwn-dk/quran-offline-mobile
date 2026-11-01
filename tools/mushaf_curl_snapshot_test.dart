@@ -16,14 +16,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/mushaf/page_turn/page_curl_painter.dart';
+import 'package:quran_offline/core/mushaf/page_turn/page_curl_shader.dart';
 import 'package:quran_offline/core/mushaf/page_turn/page_turn_geometry.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_sheet.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 const _layoutDb = 'assets/mushaf/layout/qpc_v2_15_lines.sqlite';
 const _wordsDb = 'assets/mushaf/script/qpc_v2_words.sqlite';
-const _progressValues = [0.25, 0.5, 0.75];
+const _progressValues = [0.0, 0.25, 0.5, 0.75, 1.0];
 const _pages = [1, 2, 3, 4];
 
 Future<void> _loadFonts() async {
@@ -149,6 +151,15 @@ Future<ui.Image> _renderPage(
   final key = GlobalKey();
   // Mutable on purpose: the glyph renderer registers an ayah key per line.
   final ayahKeys = <String, GlobalKey>{};
+  final fullContent = _loadPage(pageNo);
+  final content = QpcV2PageContent(
+    pageNumber: fullContent.pageNumber,
+    // Header/basmallah rows pull in app services; the curl only needs glyph ink.
+    lines: fullContent.lines.where((line) => line.isAyah).toList(),
+    fontFamily: fullContent.fontFamily,
+    basmallahFontFamily: fullContent.basmallahFontFamily,
+    bismillahGlyphText: fullContent.bismillahGlyphText,
+  );
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
@@ -158,12 +169,17 @@ Future<ui.Image> _renderPage(
           body: Center(
             child: RepaintBoundary(
               key: key,
-              child: SizedBox.fromSize(
-                size: size,
-                child: MushafPageSheet(
-                  content: _loadPage(pageNo),
-                  colorScheme: scheme,
-                  ayahKeys: ayahKeys,
+              // The app's page boundary wraps an opaque ColoredBox, so the
+              // snapshot is paper, not transparent glyphs.
+              child: ColoredBox(
+                color: scheme.surface,
+                child: SizedBox.fromSize(
+                  size: size,
+                  child: MushafPageSheet(
+                    content: content,
+                    colorScheme: scheme,
+                    ayahKeys: ayahKeys,
+                  ),
                 ),
               ),
             ),
@@ -183,7 +199,15 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('mushaf curl snapshots', (tester) async {
+    // ignore: invalid_use_of_visible_for_testing_member
+    SharedPreferences.setMockInitialValues({});
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('com.ryanheise.just_audio.methods'),
+      (call) async => call.method == 'init' ? null : <String, dynamic>{},
+    );
     await _loadFonts();
+    final shader = await loadPageCurlShader();
     final outDir = Directory(
       Platform.environment['GOLDEN_DIR'] ?? 'build/mushaf_curls',
     );
@@ -277,6 +301,8 @@ void main() {
                           frontImage: images[spread ? 2 : 1],
                           backImage: images[spread ? 3 : 2],
                           belowPages: below,
+                          tilt: 0.35,
+                          shader: shader,
                         ),
                       ),
                     ),

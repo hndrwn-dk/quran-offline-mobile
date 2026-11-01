@@ -18,6 +18,7 @@ class MushafPageTurnOverlay extends StatelessWidget {
     required this.background,
     required this.ink,
     this.spine = PageCurlSpine.soft,
+    this.shader,
   });
 
   final PageTurnController controller;
@@ -27,6 +28,9 @@ class MushafPageTurnOverlay extends StatelessWidget {
   final Color background;
   final Color ink;
   final PageCurlSpine spine;
+
+  /// Cylindrical fold shader; null keeps the mesh painter fallback.
+  final ui.FragmentShader? shader;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +50,9 @@ class MushafPageTurnOverlay extends StatelessWidget {
                 backImage: backImage,
                 belowPages: belowPages,
                 spineStyle: spine,
+                tilt: controller.tilt,
+                devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
+                shader: shader,
               ),
               isComplex: true,
               willChange: true,

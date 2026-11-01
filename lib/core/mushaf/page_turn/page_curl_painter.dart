@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_offline/core/mushaf/page_turn/page_turn_geometry.dart';
 
@@ -15,13 +16,11 @@ class PageTurnBelowPage {
 
 /// Paints the curled leaf over the already-rasterized pages.
 ///
-/// Only used while a turn is active: idle pages stay live widgets, so the painter
-/// never touches static rendering. The leaf is a textured mesh (the page
-/// snapshot) whose free edge bows outward; shading and shadows are painted on
-/// top of it, and the page below gets a soft shadow under the free edge.
-///
-/// A fragment shader would allow a real cylindrical curl; for this first pass the
-/// mesh + gradients are enough and keep the turn cheap and testable.
+/// The preferred path is the cylindrical fold fragment shader
+/// (`shaders/page_curl.frag`); the textured-mesh renderer below is only used
+/// when the shader could not be loaded/compiled. Both paths draw the paper
+/// background, the revealed pages and the gutter shade first, so the reader
+/// never sees a blank hole while the leaf moves.
 class PageCurlPainter extends CustomPainter {
   PageCurlPainter({
     required this.geometry,
@@ -32,6 +31,9 @@ class PageCurlPainter extends CustomPainter {
     required this.belowPages,
     this.spineStyle = PageCurlSpine.soft,
     this.spineWidth = 12,
+    this.tilt = 0,
+    this.devicePixelRatio = 1,
+    this.shader,
   });
 
   final PageTurnGeometry geometry;
@@ -42,6 +44,21 @@ class PageCurlPainter extends CustomPainter {
   final List<PageTurnBelowPage> belowPages;
   final PageCurlSpine spineStyle;
   final double spineWidth;
+
+  /// Finger y inside the page: -1 top .. 1 bottom.
+  final double tilt;
+
+  /// Used for antialias widths in the shader (coordinates stay logical).
+  final double devicePixelRatio;
+
+  /// Cylindrical fold shader. Null uses the CustomPainter mesh fallback.
+  final ui.FragmentShader? shader;
+
+  static String? _loggedPath;
+
+  /// Which renderer painted last (`shader` or `painterFallback`), for tests.
+  @visibleForTesting
+  static String? get debugLastDrawPath => _loggedPath;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -64,53 +81,141 @@ class PageCurlPainter extends CustomPainter {
       _drawSpineShade(canvas, stage);
     }
 
-    final showFront = geometry.progress <= 0.5;
-    final freeEdge = geometry.freeEdgeX;
-    final edgeSign = geometry.freeEdgeSign;
-
-    // 4. Soft shadow the lifted leaf casts on the page below the free edge.
-    _drawFreeEdgeShadow(canvas, stage, freeEdge, edgeSign);
-
-    // 5. The curled leaf itself (front before half a turn, back after).
-    final rect = showFront ? geometry.frontRect : geometry.backRect;
-    final image = showFront ? frontImage : backImage;
-    if (!rect.isEmpty) {
-      // A spread's hinge is the gutter centre; the front page content runs from
-      // the outer edge inward, the back page content from the hinge outward.
-      final innerIsLeft = geometry.pivotX <= rect.center.dx;
-      final texAtInner = showFront
-          ? (geometry.isForward ? 1.0 : 0.0)
-          : (geometry.isForward ? 0.0 : 1.0);
-      final texSign = showFront
-          ? (geometry.isForward ? -1.0 : 1.0)
-          : (geometry.isForward ? 1.0 : -1.0);
-      final leafPath = _leafPath(
-        rect: rect,
-        innerIsLeft: innerIsLeft,
-        bow: geometry.curlDepth,
-      );
-      _drawLeafImage(
-        canvas,
-        rect: rect,
-        image: image,
-        innerIsLeft: innerIsLeft,
-        bow: geometry.curlDepth,
-        texAtInner: texAtInner,
-        texSign: texSign,
-      );
-      canvas.save();
-      canvas.clipPath(leafPath);
-      _drawLeafShading(canvas, rect, innerIsLeft);
-      canvas.restore();
-      _drawFreeEdgeLine(canvas, leafPath);
+    // 4. The leaf itself.
+    final fragmentShader = shader;
+    if (fragmentShader != null && frontImage != null && backImage != null) {
+      _paintShader(canvas, fragmentShader, stage);
+    } else {
+      _paintMesh(canvas, stage);
+      _logPath('painterFallback');
     }
 
     canvas.restore();
   }
 
+  void _logPath(String path) {
+    if (_loggedPath == path) return;
+    _loggedPath = path;
+    debugPrint('[MushafCurl] draw=$path');
+  }
+
+  /// Real cylindrical fold: one shader quad over the stage.
+  void _paintShader(
+    Canvas canvas,
+    ui.FragmentShader fragmentShader,
+    Rect stage,
+  ) {
+    final origin = stage.topLeft;
+    final leaf = geometry.leafRect.shift(-origin);
+    final landed = geometry.landedRect.shift(-origin);
+    final front = geometry.frontRect.shift(-origin);
+    final back = geometry.backRect.shift(-origin);
+    final radius = pageCurlRadius(geometry.leafRect.width, geometry.progress);
+
+    var index = 0;
+    void f(double value) => fragmentShader.setFloat(index++, value);
+
+    // Must match the declaration order in shaders/page_curl.frag.
+    f(stage.width);
+    f(stage.height);
+    f(leaf.left);
+    f(leaf.top);
+    f(leaf.width);
+    f(leaf.height);
+    f(landed.left);
+    f(landed.top);
+    f(landed.width);
+    f(landed.height);
+    f(front.left);
+    f(front.top);
+    f(front.width);
+    f(front.height);
+    f(back.left);
+    f(back.top);
+    f(back.width);
+    f(back.height);
+    f(geometry.progress);
+    f(geometry.isForward ? 1.0 : 0.0);
+    f(geometry.spread ? 1.0 : 0.0);
+    f(pageCurlDiagonalOffset(
+      tilt: tilt,
+      pageWidth: geometry.leafRect.width,
+      progress: geometry.progress,
+    ));
+    f(radius);
+    f(devicePixelRatio);
+    f(background.r);
+    f(background.g);
+    f(background.b);
+    f(background.a);
+
+    fragmentShader.setImageSampler(
+      0,
+      frontImage!,
+      filterQuality: ui.FilterQuality.medium,
+    );
+    fragmentShader.setImageSampler(
+      1,
+      backImage!,
+      filterQuality: ui.FilterQuality.medium,
+    );
+
+    canvas.save();
+    canvas.translate(origin.dx, origin.dy);
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, stage.width, stage.height),
+      Paint()..shader = fragmentShader,
+    );
+    canvas.restore();
+    _logPath('shader');
+  }
+
+  void _paintMesh(Canvas canvas, Rect stage) {
+    final showFront = geometry.progress <= 0.5;
+    final freeEdge = geometry.freeEdgeX;
+    final edgeSign = geometry.freeEdgeSign;
+
+    // Soft shadow the lifted leaf casts on the page below the free edge.
+    _drawFreeEdgeShadow(canvas, stage, freeEdge, edgeSign);
+
+    final rect = showFront ? geometry.frontRect : geometry.backRect;
+    final image = showFront ? frontImage : backImage;
+    if (rect.isEmpty) return;
+
+    // A spread's hinge is the gutter centre; the front page content runs from
+    // the outer edge inward, the back page content from the hinge outward.
+    final innerIsLeft = geometry.pivotX <= rect.center.dx;
+    final texAtInner = showFront
+        ? (geometry.isForward ? 1.0 : 0.0)
+        : (geometry.isForward ? 0.0 : 1.0);
+    final texSign = showFront
+        ? (geometry.isForward ? -1.0 : 1.0)
+        : (geometry.isForward ? 1.0 : -1.0);
+    final leafPath = _leafPath(
+      rect: rect,
+      innerIsLeft: innerIsLeft,
+      bow: geometry.curlDepth,
+    );
+    _drawLeafImage(
+      canvas,
+      rect: rect,
+      image: image,
+      innerIsLeft: innerIsLeft,
+      bow: geometry.curlDepth,
+      texAtInner: texAtInner,
+      texSign: texSign,
+    );
+    canvas.save();
+    canvas.clipPath(leafPath);
+    _drawLeafShading(canvas, rect, innerIsLeft);
+    canvas.restore();
+    _drawFreeEdgeLine(canvas, leafPath);
+  }
+
   void _drawPageImage(Canvas canvas, ui.Image? image, Rect rect) {
     if (image == null) {
-      // Snapshot not ready yet (cold start): keep the page tone, never a hole.
+      // Never expected while a turn runs (the reader skips the curl instead),
+      // but keep the page tone rather than a hole if a late frame lands here.
       canvas.drawRect(rect, Paint()..color = background);
       return;
     }
@@ -185,8 +290,7 @@ class PageCurlPainter extends CustomPainter {
     required double texSign,
   }) {
     if (image == null) {
-      final fallback = Paint()..color = background;
-      canvas.drawRect(rect, fallback);
+      canvas.drawRect(rect, Paint()..color = background);
       return;
     }
     const columns = kPageTurnMeshColumns;
@@ -319,9 +423,12 @@ class PageCurlPainter extends CustomPainter {
   bool shouldRepaint(PageCurlPainter oldDelegate) {
     return oldDelegate.geometry.progress != geometry.progress ||
         oldDelegate.geometry.frontRect != geometry.frontRect ||
+        oldDelegate.geometry.backRect != geometry.backRect ||
+        oldDelegate.tilt != tilt ||
         oldDelegate.frontImage != frontImage ||
         oldDelegate.backImage != backImage ||
         oldDelegate.background != background ||
+        oldDelegate.shader != shader ||
         oldDelegate.belowPages != belowPages;
   }
 }
