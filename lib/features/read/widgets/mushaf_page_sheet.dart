@@ -58,20 +58,17 @@ class MushafSpreadRow extends StatelessWidget {
     required this.left,
     required this.right,
     required this.hinge,
-    this.gutterDivider = true,
+    this.spine = MushafSpineStyle.softShade,
   });
 
   final Widget left;
   final Widget right;
   final MushafHingeLayout hinge;
-  final bool gutterDivider;
+  final MushafSpineStyle spine;
 
   @override
   Widget build(BuildContext context) {
-    final dividerColor = Theme.of(context)
-        .colorScheme
-        .outlineVariant
-        .withValues(alpha: 0.35);
+    final ink = Theme.of(context).colorScheme.onSurface;
     return Padding(
       padding: EdgeInsets.only(
         left: hinge.leftInset,
@@ -84,11 +81,25 @@ class MushafSpreadRow extends StatelessWidget {
             Expanded(child: left),
             SizedBox(
               width: hinge.gap,
-              child: gutterDivider
-                  ? Center(
-                      child: Container(width: 1, color: dividerColor),
-                    )
-                  : null,
+              child: switch (spine) {
+                MushafSpineStyle.none => null,
+                MushafSpineStyle.softShade => Center(
+                    child: Container(
+                      width: 12,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                            ink.withValues(alpha: 0),
+                            ink.withValues(alpha: 0.04),
+                            ink.withValues(alpha: 0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              },
             ),
             Expanded(child: right),
           ],
@@ -96,4 +107,13 @@ class MushafSpreadRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// How the gutter between the two pages of a spread is drawn.
+enum MushafSpineStyle {
+  /// Empty gutter.
+  none,
+
+  /// Very soft 12dp shade (<= 4% ink), like the fold of a printed book.
+  softShade,
 }

@@ -2,147 +2,141 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-/// Option-I surah header cartouche: a thin, single-colour ogee outline around
-/// the surah-name ink with one hairline per side. No fill, no tint — the lines
-/// use the same colour as the Mushaf text at 50% opacity so light/dark/sepia
-/// follow the theme automatically.
+/// Open end-caps for the surah header: two ornamental brackets ﴾ ﴿ that sit
+/// beside the name, opening toward it. No closed outline, no hairlines — the
+/// glyph keeps its full ink size and nothing is drawn above or below it.
 @immutable
-class MushafCartoucheGeometry {
-  const MushafCartoucheGeometry({
-    required this.cartouche,
-    required this.hairlines,
+class MushafEndCapsGeometry {
+  const MushafEndCapsGeometry({
+    required this.leftCap,
+    required this.rightCap,
     required this.strokeWidth,
-    required this.hairlineWidth,
+    required this.innerStrokeWidth,
+    required this.dotRadius,
+    required this.innerInset,
   });
 
-  final Rect cartouche;
-  final List<(Offset, Offset)> hairlines;
+  final Rect leftCap;
+  final Rect rightCap;
   final double strokeWidth;
-  final double hairlineWidth;
+  final double innerStrokeWidth;
+  final double dotRadius;
+  final double innerInset;
 
   @override
   bool operator ==(Object other) =>
-      other is MushafCartoucheGeometry &&
-      other.cartouche == cartouche &&
+      other is MushafEndCapsGeometry &&
+      other.leftCap == leftCap &&
+      other.rightCap == rightCap &&
       other.strokeWidth == strokeWidth &&
-      other.hairlineWidth == hairlineWidth &&
-      _sameHairlines(other.hairlines, hairlines);
+      other.innerStrokeWidth == innerStrokeWidth &&
+      other.dotRadius == dotRadius &&
+      other.innerInset == innerInset;
 
   @override
-  int get hashCode => Object.hash(cartouche, strokeWidth, hairlineWidth,
-      hairlines.length, hairlines.isEmpty ? null : hairlines.first);
-
-  static bool _sameHairlines(
-    List<(Offset, Offset)> a,
-    List<(Offset, Offset)> b,
-  ) {
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i].$1 != b[i].$1 || a[i].$2 != b[i].$2) return false;
-    }
-    return true;
-  }
+  int get hashCode => Object.hash(
+        leftCap,
+        rightCap,
+        strokeWidth,
+        innerStrokeWidth,
+        dotRadius,
+        innerInset,
+      );
 }
 
-/// Cartouche width padding per side, as a share of the row height.
-const double kMushafCartoucheSidePadding = 0.6;
+/// Gap between the name ink and the inner arc, as a share of the row height.
+const double kMushafEndCapGap = 0.6;
 
-/// Minimum cartouche width, as a share of the row height.
-const double kMushafCartoucheMinWidth = 2.4;
+/// Cap height, as a share of the row height.
+const double kMushafEndCapHeight = 0.9;
 
-/// Reference stroke widths in page-layout units. The whole page is scaled into
-/// its frame, so at the 933x704 spread (~1.235x) these render ~0.9dp / ~0.6dp.
-const double kMushafCartoucheStroke = 0.73;
-const double kMushafCartoucheHairline = 0.49;
+/// Reference strokes in page-layout units (scaled with the frame).
+/// At the 933x704 spread (~1.235x) these render ~1.0dp and ~0.5dp.
+const double kMushafEndCapStroke = 0.81;
+const double kMushafEndCapInnerStroke = 0.405;
 
-/// Builds the cartouche around [inkRect] inside a [box] of pageWidth x rowHeight.
-///
-/// The outline keeps a little breathing room around the ink and never leaves
-/// the row; the side hairlines run from the tips to 4% before the page edge.
-MushafCartoucheGeometry layoutMushafCartouche({
+const double _capWidthFactor = 0.28;
+const double _innerInset = 2.2;
+const double _dotRadius = 0.8;
+
+MushafEndCapsGeometry layoutMushafEndCaps({
   required Size box,
   required Rect inkRect,
-  double strokeWidth = kMushafCartoucheStroke,
-  double hairlineWidth = kMushafCartoucheHairline,
 }) {
   final rowHeight = box.height;
-  final padX = rowHeight * kMushafCartoucheSidePadding;
-  final maxWidth = box.width * 0.86;
-  final targetWidth = math.max(
-    inkRect.width + padX * 2,
-    math.min(rowHeight * kMushafCartoucheMinWidth, maxWidth),
-  );
-  final width = targetWidth.clamp(0.0, maxWidth).toDouble();
-  final height = math
-      .max(inkRect.height + rowHeight * 0.04, rowHeight * 0.5)
-      .clamp(0.0, math.max(0.0, rowHeight - strokeWidth * 2))
-      .toDouble();
+  final capHeight = (rowHeight * kMushafEndCapHeight).clamp(0.0, rowHeight);
+  final capWidth = math.max(2.0, capHeight * _capWidthFactor);
+  final gap = rowHeight * kMushafEndCapGap;
+  final centerY = inkRect.center.dy;
 
-  final rect = Rect.fromCenter(
-    center: inkRect.center,
-    width: width,
-    height: height,
-  );
+  var top = centerY - capHeight / 2;
+  top = top.clamp(0.0, math.max(0.0, box.height - capHeight));
 
-  final edgeInset = box.width * 0.04;
-  final tipGap = strokeWidth;
-  final y = inkRect.center.dy;
-  final hairlines = <(Offset, Offset)>[];
-  if (rect.left - tipGap > edgeInset) {
-    hairlines.add(
-      (Offset(edgeInset, y), Offset(rect.left - tipGap, y)),
-    );
-  }
-  if (rect.right + tipGap < box.width - edgeInset) {
-    hairlines.add(
-      (Offset(rect.right + tipGap, y), Offset(box.width - edgeInset, y)),
-    );
-  }
+  var leftX = inkRect.left - gap - capWidth;
+  leftX = leftX.clamp(1.0, math.max(1.0, box.width - 2 * capWidth - 2));
+  var rightX = inkRect.right + gap;
+  rightX = math.min(rightX, box.width - capWidth - 1);
 
-  return MushafCartoucheGeometry(
-    cartouche: rect,
-    hairlines: hairlines,
-    strokeWidth: strokeWidth,
-    hairlineWidth: hairlineWidth,
+  return MushafEndCapsGeometry(
+    leftCap: Rect.fromLTWH(leftX, top, capWidth, capHeight),
+    rightCap: Rect.fromLTWH(rightX, top, capWidth, capHeight),
+    strokeWidth: kMushafEndCapStroke,
+    innerStrokeWidth: kMushafEndCapInnerStroke,
+    dotRadius: _dotRadius,
+    innerInset: _innerInset,
   );
 }
 
-/// Pointed ogee outline: pointed left/right tips, gently curved shoulders.
-Path mushafCartouchePath(Rect rect) {
-  final path = Path();
-  final x0 = rect.left;
-  final x1 = rect.right;
-  final y0 = rect.top;
-  final y1 = rect.bottom;
-  final ym = rect.center.dy;
-  final w = rect.width;
-  final h = rect.height;
-  final cx = rect.center.dx;
+/// A single bracket arc. [openingRight] means the arc bulges left and its tips
+/// point right (the left cap of a name).
+Path mushafEndCapPath(
+  Rect rect, {
+  required bool openingRight,
+  double inset = 0,
+}) {
+  final r = Rect.fromLTWH(
+    rect.left + (openingRight ? inset * 0.35 : 0),
+    rect.top + inset,
+    rect.width - inset * 0.35,
+    math.max(0.0, rect.height - inset * 2),
+  );
+  if (r.height <= 0 || r.width <= 0) return Path();
 
-  path.moveTo(x0, ym);
-  path.cubicTo(x0 + w * 0.10, y0 + h * 0.10, x0 + w * 0.28, y0, cx, y0);
-  path.cubicTo(x1 - w * 0.28, y0, x1 - w * 0.10, y0 + h * 0.10, x1, ym);
-  path.cubicTo(x1 - w * 0.10, y1 - h * 0.10, x1 - w * 0.28, y1, cx, y1);
-  path.cubicTo(x0 + w * 0.28, y1, x0 + w * 0.10, y1 - h * 0.10, x0, ym);
-  path.close();
+  final xTip = openingRight ? r.right : r.left;
+  final xBulge = openingRight ? r.left : r.right;
+  final dx = xTip - xBulge;
+
+  final path = Path()
+    ..moveTo(xTip, r.top)
+    ..cubicTo(
+      xTip - dx * 0.55,
+      r.top + r.height * 0.12,
+      xBulge,
+      r.top + r.height * 0.30,
+      xBulge,
+      r.center.dy,
+    )
+    ..cubicTo(
+      xBulge,
+      r.bottom - r.height * 0.30,
+      xTip - dx * 0.55,
+      r.bottom - r.height * 0.12,
+      xTip,
+      r.bottom,
+    );
   return path;
 }
 
-/// Paints the cartouche and its two hairlines. Strokes only, never a fill.
-class MushafSurahCartouchePainter extends CustomPainter {
-  const MushafSurahCartouchePainter({
+class MushafSurahEndCapsPainter extends CustomPainter {
+  const MushafSurahEndCapsPainter({
     required this.geometry,
     required this.color,
   });
 
-  final MushafCartoucheGeometry geometry;
+  final MushafEndCapsGeometry geometry;
   final Color color;
 
-  /// Test hook: the paint used for the outline (stroke only).
-  static Paint strokePaint(
-    Color color,
-    MushafCartoucheGeometry geometry,
-  ) {
+  static Paint outerPaint(Color color, MushafEndCapsGeometry geometry) {
     return Paint()
       ..color = color.withValues(alpha: 0.5)
       ..style = PaintingStyle.stroke
@@ -153,40 +147,60 @@ class MushafSurahCartouchePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final stroke = strokePaint(color, geometry);
-    canvas.drawPath(mushafCartouchePath(geometry.cartouche), stroke);
-
-    final hairline = Paint()
-      ..color = color.withValues(alpha: 0.5)
+    final outer = outerPaint(color, geometry);
+    final inner = Paint()
+      ..color = color.withValues(alpha: 0.35)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = geometry.hairlineWidth
+      ..strokeWidth = geometry.innerStrokeWidth
       ..strokeCap = StrokeCap.round
       ..isAntiAlias = true;
-    for (final (from, to) in geometry.hairlines) {
-      canvas.drawLine(from, to, hairline);
+
+    for (final cap in [geometry.leftCap, geometry.rightCap]) {
+      final openingRight = cap == geometry.leftCap;
+      canvas.drawPath(
+        mushafEndCapPath(cap, openingRight: openingRight),
+        outer,
+      );
+      canvas.drawPath(
+        mushafEndCapPath(
+          cap,
+          openingRight: openingRight,
+          inset: geometry.innerInset,
+        ),
+        inner,
+      );
+      // Small dot at the outer tip.
+      final tip = Offset(
+        openingRight ? cap.left : cap.right,
+        cap.center.dy,
+      );
+      canvas.drawCircle(
+        tip,
+        geometry.dotRadius,
+        Paint()
+          ..color = color.withValues(alpha: 0.5)
+          ..style = PaintingStyle.fill
+          ..isAntiAlias = true,
+      );
     }
   }
 
   @override
-  bool shouldRepaint(MushafSurahCartouchePainter oldDelegate) {
+  bool shouldRepaint(MushafSurahEndCapsPainter oldDelegate) {
     return oldDelegate.geometry != geometry || oldDelegate.color != color;
   }
 }
 
-/// Paints the cartouche around an existing (1.0.21+69) glyph without touching
-/// the glyph itself. Used by the < 600dp Mushaf path.
-class MushafSurahCartoucheOverlay extends StatelessWidget {
-  const MushafSurahCartoucheOverlay({
+/// End-caps drawn over an existing (1.0.21+69) glyph without touching it.
+class MushafSurahEndCapsOverlay extends StatelessWidget {
+  const MushafSurahEndCapsOverlay({
     super.key,
     required this.box,
     required this.inkRect,
     required this.color,
   });
 
-  /// Page width x header row height.
   final Size box;
-
-  /// Glyph ink rect in [box] coordinates.
   final Rect inkRect;
   final Color color;
 
@@ -194,8 +208,8 @@ class MushafSurahCartoucheOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return IgnorePointer(
       child: CustomPaint(
-        painter: MushafSurahCartouchePainter(
-          geometry: layoutMushafCartouche(box: box, inkRect: inkRect),
+        painter: MushafSurahEndCapsPainter(
+          geometry: layoutMushafEndCaps(box: box, inkRect: inkRect),
           color: color,
         ),
         child: const SizedBox.expand(),

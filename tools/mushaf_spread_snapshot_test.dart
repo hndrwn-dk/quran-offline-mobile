@@ -137,7 +137,7 @@ QpcV2PageContent _loadPage(int pageNumber) {
   }
 }
 
-Widget _spread(int oddPage, int evenPage, ColorScheme scheme) {
+Widget _spread(int oddPage, int evenPage, ColorScheme scheme, {MushafSpineStyle spine = MushafSpineStyle.softShade}) {
   final hinge = const MushafHingeLayout();
   return Column(
     children: [
@@ -146,6 +146,7 @@ Widget _spread(int oddPage, int evenPage, ColorScheme scheme) {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: MushafSpreadRow(
             hinge: hinge,
+            spine: spine,
             left: MushafPageSheet(
               content: _loadPage(evenPage),
               colorScheme: scheme,
@@ -187,33 +188,39 @@ void main() {
 
     for (final odd in _spreads) {
       final even = odd + 1;
-      final key = GlobalKey();
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            theme: ThemeData(useMaterial3: true, colorScheme: scheme),
-            home: Scaffold(
-              body: RepaintBoundary(
-                key: key,
-                child: _spread(odd, even, scheme),
+      for (final (suffix, spine) in [
+        ('', MushafSpineStyle.softShade),
+        if (odd == 1) ('_nospine', MushafSpineStyle.none),
+      ]) {
+        final key = GlobalKey();
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              theme: ThemeData(useMaterial3: true, colorScheme: scheme),
+              home: Scaffold(
+                body: RepaintBoundary(
+                  key: key,
+                  child: _spread(odd, even, scheme, spine: spine),
+                ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pump();
-      final boundary =
-          key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-      final image = await tester.runAsync(() => boundary.toImage(pixelRatio: 1));
-      final data = await tester.runAsync(
-        () => image!.toByteData(format: ui.ImageByteFormat.png),
-      );
-      File('${outDir.path}/spread_${odd}_${even}_933x704.png')
-          .writeAsBytesSync(data!.buffer.asUint8List());
-      image!.dispose();
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump();
+        );
+        await tester.pump();
+        final boundary =
+            key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+        final image = await tester.runAsync(() => boundary.toImage(pixelRatio: 1));
+        final data = await tester.runAsync(
+          () => image!.toByteData(format: ui.ImageByteFormat.png),
+        );
+        File('${outDir.path}/spread_${odd}_${even}_933x704$suffix.png')
+            .writeAsBytesSync(data!.buffer.asUint8List());
+        image!.dispose();
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+      }
     }
     while (tester.takeException() != null) {}
   });
 }
+

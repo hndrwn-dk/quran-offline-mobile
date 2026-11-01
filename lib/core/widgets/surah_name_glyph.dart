@@ -251,8 +251,8 @@ class _SurahNameInkPainter extends CustomPainter {
       (size.width + layout.inkWidth) / 2,
       layout.baselineForSlot(size.height) - layout.inkBottomAboveBaseline,
     );
-    MushafSurahCartouchePainter(
-      geometry: layoutMushafCartouche(box: size, inkRect: inkRect),
+    MushafSurahEndCapsPainter(
+      geometry: layoutMushafEndCaps(box: size, inkRect: inkRect),
       color: color,
     ).paint(canvas, size);
   }
@@ -305,7 +305,7 @@ class SurahNameMushafFlowHeader extends ConsumerWidget {
                   mushafFontSize: mushafFontSize,
                 ),
                 Positioned.fill(
-                  child: MushafSurahCartoucheOverlay(
+                  child: MushafSurahEndCapsOverlay(
                     box: Size(pageWidth, rowHeight),
                     inkRect: ink,
                     color: inkColor,
@@ -395,3 +395,4 @@ Rect _flowInkRect({
   final inkHeight = ink.inkHeightUnits * unit;
   return Rect.fromLTWH(inkLeft, inkTop, inkWidth, inkHeight);
 }
+
