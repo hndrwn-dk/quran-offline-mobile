@@ -254,6 +254,26 @@ class LastReadCard extends ConsumerWidget {
             completion: completion,
             nextSurahName: nextSurah?.englishName,
           );
+          final actionLabel = completion == null
+              ? AppLocalizations.getContinueOpenLastPage(appLanguage)
+              : completion.nextJuzNo != null
+                  ? AppLocalizations.formatContinueStartJuz(
+                      completion.nextJuzNo!,
+                      appLanguage,
+                    )
+                  : completion.nextPageNo != null
+                      ? AppLocalizations.formatContinueStartPage(
+                          completion.nextPageNo!,
+                          appLanguage,
+                        )
+                      : AppLocalizations.formatContinueStartSurah(
+                          nextSurah?.englishName ??
+                              AppLocalizations.getMenuText(
+                                'surah',
+                                appLanguage,
+                              ),
+                          appLanguage,
+                        );
 
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -338,17 +358,31 @@ class LastReadCard extends ConsumerWidget {
                       ],
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: HomeCircleArrowButton(
-                      onPressed: onTap,
-                      tooltip:
-                          AppLocalizations.getHomeContinueButton(appLanguage),
-                      semanticsLabel:
-                          AppLocalizations.getHomeContinueCta(appLanguage),
-                      onTintedCard: true,
-                    ),
+                  const SizedBox(height: 12),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.55),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          actionLabel,
+                          style:
+                              Theme.of(context).textTheme.labelLarge?.copyWith(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward,
+                        size: 18,
+                        color: colorScheme.primary,
+                      ),
+                    ],
                   ),
                 ],
               ),

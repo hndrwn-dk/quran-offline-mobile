@@ -113,6 +113,44 @@ void main() {
     expect(find.text('Beranda'), findsNothing);
   });
 
+  testWidgets('switching tabs animates without layout exceptions', (
+    tester,
+  ) async {
+    var selectedIndex = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: StatefulBuilder(
+              builder: (context, setState) => FloatingNavBar(
+                selectedIndex: selectedIndex,
+                onDestinationSelected: (index) {
+                  setState(() => selectedIndex = index);
+                },
+                destinations: destinations,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    for (var i = 1; i <= destinations.length * 2; i++) {
+      final index = i % destinations.length;
+      await tester.tap(find.byKey(destinations[index].key!));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 120));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'switching to destination $index',
+      );
+    }
+  });
+
   test('clearance is the bar, its margin, and the system inset', () {
     expect(
       floatingNavBarBottomPadding(

@@ -7,12 +7,9 @@ import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
 import 'package:quran_offline/features/home/widgets/home_activity_section.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
-import 'package:quran_offline/features/home/widgets/home_explore_favorites_section.dart';
 import 'package:quran_offline/features/home/widgets/home_hero_card.dart';
 import 'package:quran_offline/features/home/widgets/home_notes_section.dart';
-import 'package:quran_offline/features/home/widgets/home_quick_actions.dart';
-import 'package:quran_offline/features/home/widgets/reading_milestone_card.dart';
-import 'package:quran_offline/features/home/widgets/ramadan_promo_banner.dart';
+import 'package:quran_offline/features/home/widgets/home_search_section.dart';
 import 'package:quran_offline/features/read/widgets/last_read_card.dart';
 import 'package:quran_offline/features/read/widgets/weekly_reflection_card.dart';
 import 'package:quran_offline/features/settings/about_screen.dart';
@@ -28,8 +25,6 @@ class BerandaScreen extends ConsumerStatefulWidget {
 }
 
 class _BerandaScreenState extends ConsumerState<BerandaScreen> {
-  bool _ramadanPromoDismissed = false;
-
   @override
   void initState() {
     super.initState();
@@ -39,13 +34,6 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
     });
   }
 
-  Widget _ramadanPromoBanner() {
-    if (_ramadanPromoDismissed) return const SizedBox.shrink();
-    return RamadanPromoBanner(
-      onDismiss: () => setState(() => _ramadanPromoDismissed = true),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
@@ -53,24 +41,21 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final isLargeScreen = Responsive.isLargeScreen(context);
 
-    final phoneBody = Column(
+    const phoneBody = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const HomeHeroCard(),
-        _ramadanPromoBanner(),
-        const WeeklyReflectionCard(forHome: true),
-        const HomeQuickActions(),
-        const ReadingMilestoneSlot(),
-        const LastReadCard(forHome: true),
-        const HomeExploreFavoritesSection(),
-        const HomeNotesSection(),
-        const HomeActivitySection(),
-        const SizedBox(height: 8),
+        HomeHeroCard(),
+        LastReadCard(forHome: true),
+        HomeSearchSection(),
+        WeeklyReflectionCard(forHome: true),
+        HomeNotesSection(),
+        HomeActivitySection(),
+        SizedBox(height: 8),
       ],
     );
 
-    final tabletBody = Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+    const tabletBody = Padding(
+      padding: EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -78,20 +63,17 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const HomeHeroCard(),
-                _ramadanPromoBanner(),
-                const WeeklyReflectionCard(forHome: true),
-                const HomeQuickActions(),
+                HomeHeroCard(),
+                LastReadCard(forHome: true),
+                HomeSearchSection(),
+                WeeklyReflectionCard(forHome: true),
               ],
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ReadingMilestoneSlot(),
-                LastReadCard(forHome: true),
-                HomeExploreFavoritesSection(),
                 HomeNotesSection(),
                 HomeActivitySection(),
               ],

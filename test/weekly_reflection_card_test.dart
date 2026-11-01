@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_offline/core/models/dua_entry.dart';
 import 'package:quran_offline/core/models/reflection_lens.dart';
 import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
+import 'package:quran_offline/features/home/widgets/home_cta_buttons.dart';
 import 'package:quran_offline/features/read/widgets/weekly_reflection_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -68,5 +69,50 @@ void main() {
     expect(reflectionText.maxLines, 2);
     expect(reflectionText.overflow, TextOverflow.ellipsis);
     expect(reflectionText.style?.color, const Color(0xFF5F6459));
+  });
+
+  testWidgets('home card replaces the round arrow with a text action', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      'language': 'id',
+      'appLanguage': 'id',
+    });
+    const text = LocalizedText(
+      id: 'Teks',
+      en: 'Text',
+      zh: 'Text',
+      ja: 'Text',
+    );
+    const pick = ReflectionPick(
+      entry: ReflectionLensEntry(
+        id: 'jumat_kahf',
+        sort: 0,
+        priority: 50,
+        badgeKey: 'friday',
+        title: text,
+        summary: text,
+        reflection: text,
+        ayahRefs: [DuaAyahRef(surah: 18, from: 1, to: 10)],
+        trigger: ReflectionTrigger(type: 'weekday', weekday: 5),
+      ),
+      source: ReflectionPickSource.calendar,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          reflectionPickProvider.overrideWith((ref) async => pick),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(body: WeeklyReflectionCard(forHome: true)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Baca ayatnya'), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_forward), findsOneWidget);
+    expect(find.byType(HomeCircleArrowButton), findsNothing);
   });
 }
