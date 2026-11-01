@@ -3730,46 +3730,6 @@ class AppLocalizations {
     };
   }
 
-  static String getHomeNotesSectionTitle(String language) {
-    return switch (language) {
-      'id' => 'CATATAN',
-      'en' => 'NOTES',
-      'zh' => '笔记',
-      'ja' => 'メモ',
-      _ => 'NOTES',
-    };
-  }
-
-  static String getHomeOpenNotesCta(String language) {
-    return switch (language) {
-      'id' => 'Buka catatan',
-      'en' => 'Open notes',
-      'zh' => '打开笔记',
-      'ja' => 'メモを開く',
-      _ => 'Open notes',
-    };
-  }
-
-  static String getHomeAllNotesLink(String language) {
-    return switch (language) {
-      'id' => 'Semua catatan',
-      'en' => 'All notes',
-      'zh' => '全部笔记',
-      'ja' => 'すべてのメモ',
-      _ => 'All notes',
-    };
-  }
-
-  static String getHomeNotesEmpty(String language) {
-    return switch (language) {
-      'id' => 'Belum ada catatan. Tulis saat belajar di reader.',
-      'en' => 'No notes yet. Add one while reading in the reader.',
-      'zh' => '尚无笔记。在阅读时添加吧。',
-      'ja' => 'メモはまだありません。リーダーで追加できます。',
-      _ => 'No notes yet. Add one while reading in the reader.',
-    };
-  }
-
   static String getHomeCollectionSectionTitle(String language) {
     return switch (language) {
       'id' => 'KOLEKSI',
@@ -3780,37 +3740,48 @@ class AppLocalizations {
     };
   }
 
-  static String getHomeKoleksiEmpty(String language) {
+  /// Header link from Home KOLEKSI to the Koleksi screen.
+  static String getHomeSeeAllLink(String language) {
     return switch (language) {
-      'id' => 'Belum ada penanda atau sorotan.',
-      'en' => 'No bookmarks or highlights yet.',
-      'zh' => '尚无书签或高亮。',
-      'ja' => 'ブックマークやハイライトはまだありません。',
-      _ => 'No bookmarks or highlights yet.',
+      'id' => 'Lihat semua',
+      'en' => 'See all',
+      'zh' => '查看全部',
+      'ja' => 'すべて見る',
+      _ => 'See all',
     };
   }
 
-  static String formatHomeKoleksiStats({
-    required int bookmarks,
-    required int highlights,
-    required String language,
-  }) {
-    final b = switch (language) {
-      'id' => '$bookmarks penanda',
-      'zh' => '$bookmarks 个书签',
-      'ja' => 'ブックマーク $bookmarks',
-      _ => '$bookmarks bookmarks',
-    };
-    final h = switch (language) {
-      'id' => '$highlights sorotan',
-      'zh' => '$highlights 条高亮',
-      'ja' => 'ハイライト $highlights',
-      _ => '$highlights highlights',
-    };
+  /// Home KOLEKSI when there are no notes, bookmarks or highlights yet.
+  static String getHomeCollectionEmpty(String language) {
     return switch (language) {
-      'zh' => '$b · $h',
-      'ja' => '$b · $h',
-      _ => '$b · $h',
+      'id' => 'Belum ada catatan, penanda, atau sorotan. Simpan saat kamu membaca.',
+      'en' => 'No notes, bookmarks or highlights yet. Save them while you read.',
+      'zh' => '尚无笔记、书签或高亮。阅读时即可保存。',
+      'ja' => 'メモ、ブックマーク、ハイライトはまだありません。読みながら保存できます。',
+      _ => 'No notes, bookmarks or highlights yet. Save them while you read.',
+    };
+  }
+
+  /// Home KOLEKSI count chip: "2 catatan", "4 penanda", "1 sorotan".
+  /// [kind] is `note`, `bookmark` or `highlight`.
+  static String formatHomeCollectionCount(
+    String kind,
+    int count,
+    String language,
+  ) {
+    return switch ((language, kind)) {
+      ('id', 'note') => '$count catatan',
+      ('id', 'bookmark') => '$count penanda',
+      ('id', 'highlight') => '$count sorotan',
+      ('zh', 'note') => '$count 条笔记',
+      ('zh', 'bookmark') => '$count 个书签',
+      ('zh', 'highlight') => '$count 处高亮',
+      ('ja', 'note') => 'メモ $count',
+      ('ja', 'bookmark') => 'ブックマーク $count',
+      ('ja', 'highlight') => 'ハイライト $count',
+      (_, 'note') => count == 1 ? '1 note' : '$count notes',
+      (_, 'bookmark') => count == 1 ? '1 bookmark' : '$count bookmarks',
+      (_, _) => count == 1 ? '1 highlight' : '$count highlights',
     };
   }
 

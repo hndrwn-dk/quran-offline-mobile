@@ -6,9 +6,8 @@ import 'package:quran_offline/core/models/reflection_lens.dart';
 import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/features/home/home_search_suggestions.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
-import 'package:quran_offline/features/home/widgets/home_activity_section.dart';
+import 'package:quran_offline/features/home/widgets/home_collection_section.dart';
 import 'package:quran_offline/features/home/widgets/home_hero_card.dart';
-import 'package:quran_offline/features/home/widgets/home_notes_section.dart';
 import 'package:quran_offline/features/home/widgets/home_search_section.dart';
 import 'package:quran_offline/features/read/widgets/last_read_card.dart';
 import 'package:quran_offline/features/read/widgets/weekly_reflection_card.dart';
@@ -80,8 +79,7 @@ void main() {
       find.byType(LastReadCard),
       find.byType(HomeSearchSection),
       find.byType(WeeklyReflectionCard),
-      find.byType(HomeNotesSection),
-      find.byType(HomeActivitySection),
+      find.byType(HomeCollectionSection),
     ]) {
       expect(finder, findsOneWidget);
     }
@@ -103,8 +101,7 @@ void main() {
         LastReadCard,
         HomeSearchSection,
         WeeklyReflectionCard,
-        HomeNotesSection,
-        HomeActivitySection,
+        HomeCollectionSection,
         SizedBox,
       ],
     );
