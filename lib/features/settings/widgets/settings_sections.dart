@@ -11,6 +11,7 @@ import 'package:quran_offline/core/feedback/feedback_context.dart';
 import 'package:quran_offline/core/feedback/feedback_email_fallback.dart';
 import 'package:quran_offline/core/feedback/feedback_type.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_page_turn_picker.dart';
 import 'package:quran_offline/features/settings/feedback_form_sheet.dart';
 import 'package:quran_offline/features/settings/audio_downloads_screen.dart';
 import 'package:quran_offline/features/settings/settings_link_actions.dart';
@@ -194,7 +195,7 @@ class SettingsQuranSection extends ConsumerWidget {
         ),
         // Also in the Mushaf text settings (framed); phones only have it here.
         ListTile(
-          leading: Icon(Icons.auto_stories_outlined, color: colorScheme.primary),
+          leading: Icon(Icons.auto_stories, color: colorScheme.primary),
           title: Text(AppLocalizations.getSettingsText('page_turn_title', appLanguage)),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4),
@@ -208,28 +209,12 @@ class SettingsQuranSection extends ConsumerWidget {
                       ),
                 ),
                 const SizedBox(height: 8),
-                SegmentedButton<MushafPageTurn>(
-                  key: const Key('settings-page-turn'),
-                  showSelectedIcon: false,
-                  style: const ButtonStyle(visualDensity: VisualDensity.compact),
-                  segments: [
-                    for (final (turn, key) in const [
-                      (MushafPageTurn.curl, 'page_turn_curl'),
-                      (MushafPageTurn.slide, 'page_turn_slide'),
-                      (MushafPageTurn.none, 'page_turn_none'),
-                    ])
-                      ButtonSegment<MushafPageTurn>(
-                        value: turn,
-                        label: Text(
-                          AppLocalizations.getSettingsText(key, appLanguage),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                  ],
-                  selected: {settings.mushafPageTurn},
-                  onSelectionChanged: (selection) => ref
+                MushafPageTurnPicker(
+                  value: settings.mushafPageTurn,
+                  language: appLanguage,
+                  onChanged: (turn) => ref
                       .read(settingsProvider.notifier)
-                      .updateMushafPageTurn(selection.first),
+                      .updateMushafPageTurn(turn),
                 ),
               ],
             ),

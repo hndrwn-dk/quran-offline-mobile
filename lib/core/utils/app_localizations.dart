@@ -4687,6 +4687,9 @@ class AppLocalizations {
       'page_turn_curl' => _getPageTurnCurl(language),
       'page_turn_slide' => _getPageTurnSlide(language),
       'page_turn_none' => _getPageTurnNone(language),
+      'page_turn_hint_curl' => _getPageTurnHintCurl(language),
+      'page_turn_hint_slide' => _getPageTurnHintSlide(language),
+      'page_turn_hint_none' => _getPageTurnHintNone(language),
       'apply' => _getApply(language),
       'transliteration_style_title' => _getTransliterationStyleTitle(language),
       'transliteration_style_original' =>
@@ -6091,31 +6094,31 @@ class AppLocalizations {
 
   static String _getPageTurnTitle(String language) {
     return switch (language) {
-      'id' => 'Animasi balik halaman',
-      'en' => 'Page turn animation',
-      'zh' => '翻页动画',
-      'ja' => 'ページめくりアニメーション',
-      _ => 'Page turn animation',
+      'id' => 'Efek ganti halaman Mushaf',
+      'en' => 'Mushaf page turn',
+      'zh' => '古兰经页面翻页效果',
+      'ja' => 'ムスハフのページめくり効果',
+      _ => 'Mushaf page turn',
     };
   }
 
   static String _getPageTurnSubtitle(String language) {
     return switch (language) {
-      'id' => 'Saat kamu membalik halaman: lembar seperti buku, geser, atau langsung.',
-      'en' => 'How pages turn while you read: leaf, slide, or instant.',
-      'zh' => '阅读时翻页的方式：像书页一样翻动、滑动或立即切换。',
-      'ja' => '読書中のページのめくり方：紙のよう、スライド、すぐに切り替え。',
-      _ => 'How pages turn while you read: leaf, slide, or instant.',
+      'id' => 'Pilih cara halaman berganti saat kamu membaca Mushaf.',
+      'en' => 'Choose how pages change while you read the Mushaf.',
+      'zh' => '选择阅读古兰经时页面切换的方式。',
+      'ja' => 'ムスハフを読むときのページの切り替え方を選びます。',
+      _ => 'Choose how pages change while you read the Mushaf.',
     };
   }
 
   static String _getPageTurnCurl(String language) {
     return switch (language) {
-      'id' => 'Lembar',
-      'en' => 'Curl',
-      'zh' => '翻页',
-      'ja' => 'めくる',
-      _ => 'Curl',
+      'id' => 'Seperti buku',
+      'en' => 'Like a book',
+      'zh' => '翻书',
+      'ja' => '本のように',
+      _ => 'Like a book',
     };
   }
 
@@ -6131,11 +6134,44 @@ class AppLocalizations {
 
   static String _getPageTurnNone(String language) {
     return switch (language) {
-      'id' => 'Tanpa',
-      'en' => 'None',
-      'zh' => '无',
-      'ja' => 'なし',
-      _ => 'None',
+      'id' => 'Langsung',
+      'en' => 'Instant',
+      'zh' => '即时',
+      'ja' => 'すぐに',
+      _ => 'Instant',
+    };
+  }
+
+  static String _getPageTurnHintCurl(String language) {
+    return switch (language) {
+      'id' =>
+        'Halaman melengkung dan dibalik seperti mushaf cetak. Paling pas di HP lipat dan tablet.',
+      'en' =>
+        'Pages curl and turn like a printed mushaf. Best on foldables and tablets.',
+      'zh' => '页面像印刷版古兰经一样卷曲翻动。最适合折叠屏手机和平板。',
+      'ja' => '印刷されたムスハフのようにページが曲がってめくれます。折りたたみスマホやタブレットに最適です。',
+      _ =>
+        'Pages curl and turn like a printed mushaf. Best on foldables and tablets.',
+    };
+  }
+
+  static String _getPageTurnHintSlide(String language) {
+    return switch (language) {
+      'id' => 'Halaman bergeser ke samping.',
+      'en' => 'Pages slide sideways.',
+      'zh' => '页面横向滑动。',
+      'ja' => 'ページが横にスライドします。',
+      _ => 'Pages slide sideways.',
+    };
+  }
+
+  static String _getPageTurnHintNone(String language) {
+    return switch (language) {
+      'id' => 'Halaman langsung berganti tanpa animasi.',
+      'en' => 'Pages change instantly, without animation.',
+      'zh' => '页面立即切换，没有动画。',
+      'ja' => 'アニメーションなしで、すぐにページが切り替わります。',
+      _ => 'Pages change instantly, without animation.',
     };
   }
 

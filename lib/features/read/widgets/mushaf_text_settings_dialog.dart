@@ -5,6 +5,7 @@ import 'package:quran_offline/core/mushaf/qpc_v2_glyph_fit.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_mushaf_layout.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_page_turn_picker.dart';
 
 /// Re-enable when QPC V2 glyph Mushaf font-size slider is wired again.
 const kMushafGlyphTextSettingsUiEnabled = false;
@@ -251,51 +252,10 @@ class _MushafTextSettingsDialogState
                     ),
               ),
               const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: SegmentedButton<MushafPageTurn>(
-                  key: const Key('mushaf-page-turn'),
-                  showSelectedIcon: false,
-                  style: const ButtonStyle(
-                    visualDensity: VisualDensity.compact,
-                  ),
-                  segments: [
-                    ButtonSegment<MushafPageTurn>(
-                      value: MushafPageTurn.curl,
-                      label: Text(
-                        AppLocalizations.getSettingsText(
-                          'page_turn_curl',
-                          appLanguage,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    ButtonSegment<MushafPageTurn>(
-                      value: MushafPageTurn.slide,
-                      label: Text(
-                        AppLocalizations.getSettingsText(
-                          'page_turn_slide',
-                          appLanguage,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    ButtonSegment<MushafPageTurn>(
-                      value: MushafPageTurn.none,
-                      label: Text(
-                        AppLocalizations.getSettingsText(
-                          'page_turn_none',
-                          appLanguage,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                  selected: {_pageTurn},
-                  onSelectionChanged: (selection) {
-                    setState(() => _pageTurn = selection.first);
-                  },
-                ),
+              MushafPageTurnPicker(
+                value: _pageTurn,
+                language: appLanguage,
+                onChanged: (turn) => setState(() => _pageTurn = turn),
               ),
               const SizedBox(height: 16),
               Container(

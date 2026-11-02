@@ -46,14 +46,14 @@ void main() {
           expect(label, isNot(contains('?')));
         }
       }
-      expect(labels['id']![0], 'Animasi balik halaman');
-      expect(labels['id']![2], 'Lembar');
-      expect(labels['id']![4], 'Tanpa');
-      expect(labels['en']![0], 'Page turn animation');
-      expect(labels['zh']![0], '翻页动画');
-      expect(labels['zh']![4], '无');
-      expect(labels['ja']![0], 'ページめくりアニメーション');
-      expect(labels['ja']![4], 'なし');
+      expect(labels['id']![0], 'Efek ganti halaman Mushaf');
+      expect(labels['id']![2], 'Seperti buku');
+      expect(labels['id']![4], 'Langsung');
+      expect(labels['en']![0], 'Mushaf page turn');
+      expect(labels['zh']![0], '古兰经页面翻页效果');
+      expect(labels['zh']![4], '即时');
+      expect(labels['ja']![0], 'ムスハフのページめくり効果');
+      expect(labels['ja']![4], 'すぐに');
       // Distinct labels for the three choices.
       for (final entry in labels.entries) {
         expect(entry.value.sublist(2).toSet().length, 3);
@@ -97,13 +97,13 @@ void main() {
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Animasi balik halaman'), findsOneWidget);
+      expect(find.text('Efek ganti halaman Mushaf'), findsOneWidget);
       expect(find.byKey(const Key('mushaf-page-turn')), findsOneWidget);
-      expect(find.text('Lembar'), findsOneWidget);
+      expect(find.text('Seperti buku'), findsOneWidget);
       expect(find.text('Geser'), findsOneWidget);
-      expect(find.text('Tanpa'), findsOneWidget);
+      expect(find.text('Langsung'), findsOneWidget);
 
-      await tester.tap(find.text('Tanpa'));
+      await tester.tap(find.text('Langsung'));
       await tester.pump();
       await tester.ensureVisible(find.text('Terapkan'));
       await tester.pump();
