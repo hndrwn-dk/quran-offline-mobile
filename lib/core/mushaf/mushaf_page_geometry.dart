@@ -137,10 +137,11 @@ int mushafSpreadPageForIndex(int index) => index * 2 + 1;
 ///
 /// Cutouts are not creases. While a foldable folds or unfolds it can report
 /// one screen's fold with the other screen's window size, and keep it until
-/// the next change (Galaxy Z Fold: the cover's 751dp-tall fold at x=238 in the
-/// 933x704 inner window). Laid out as a hinge that phantom fold squeezed the
-/// spread into single-page mode until the app restarted. A real fold or hinge
-/// always runs from edge to edge of the window, so anything else is dropped.
+/// the next change (Galaxy Z Fold: the cover's fold at x=238 in the 933x704
+/// inner window, either 751dp tall or stretched to 704dp). Laid out as a hinge
+/// that phantom fold squeezed the spread into single-page mode until the app
+/// restarted. A real fold or hinge runs from edge to edge of the window,
+/// through its middle, so anything else is dropped.
 List<DisplayFeature> mushafCreaseFeatures(
   Size window,
   Iterable<DisplayFeature> features,
@@ -162,9 +163,17 @@ bool _crossesWindow(Rect bounds, Size window) {
     return false;
   }
   return bounds.height >= bounds.width
-      ? bounds.top <= slack && bounds.bottom >= window.height - slack
-      : bounds.left <= slack && bounds.right >= window.width - slack;
+      ? bounds.top <= slack &&
+          bounds.bottom >= window.height - slack &&
+          _nearMiddle(bounds.center.dx, window.width)
+      : bounds.left <= slack &&
+          bounds.right >= window.width - slack &&
+          _nearMiddle(bounds.center.dy, window.height);
 }
+
+/// Book-style foldables hinge in the middle of the screen.
+bool _nearMiddle(double position, double extent) =>
+    (position - extent / 2).abs() <= extent * 0.1;
 
 /// True when a display feature lies horizontally (fold above/below the text).
 ///

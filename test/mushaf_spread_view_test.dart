@@ -61,7 +61,8 @@ final Finder _pageFrameBoxes = find.byWidgetPredicate(
   (widget) => widget is FittedBox && widget.fit == BoxFit.contain,
 );
 
-void _setViewSize(WidgetTester tester, Size size) {  tester.view.physicalSize = size;
+void _setViewSize(WidgetTester tester, Size size) {
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
 }
@@ -139,7 +140,8 @@ void main() {
       );
     });
 
-    testWidgets('page frames never grow past the window height', (tester) async {
+    testWidgets('page frames never grow past the window height',
+        (tester) async {
       for (final size in const [
         Size(933, 704),
         Size(1024, 768),
@@ -277,7 +279,8 @@ void main() {
     testWidgets('two page bodies are laid out on a Fold inner screen',
         (tester) async {
       await pumpView(tester, const Size(933, 704), initialPage: 1);
-      expect(find.byType(MushafPageBody, skipOffstage: false), findsNWidgets(2));
+      expect(
+          find.byType(MushafPageBody, skipOffstage: false), findsNWidgets(2));
     });
 
     testWidgets('single page on the cover screen', (tester) async {
@@ -307,56 +310,66 @@ void main() {
       expect(bodies.every((body) => body.framed), isTrue);
     });
 
-    testWidgets(
-        'unfolding with the cover fold still reported brings the spread back',
-        (tester) async {
-      // Galaxy Z Fold, app in the background while unfolding: the inner
-      // window arrived together with the cover's fold, and nothing changed
-      // after that. The spread (and the Tampilan Mushaf entry) stayed off
-      // until the app restarted.
-      const innerFold = DisplayFeature(
-        bounds: Rect.fromLTWH(466, 0, 0, 704),
-        type: DisplayFeatureType.fold,
-        state: DisplayFeatureState.postureFlat,
-      );
-      const coverFold = DisplayFeature(
-        bounds: Rect.fromLTWH(238, 0, 0, 751),
-        type: DisplayFeatureType.fold,
-        state: DisplayFeatureState.postureFlat,
-      );
-      const cutout = DisplayFeature(
-        bounds: Rect.fromLTWH(224, 0, 27, 40),
-        type: DisplayFeatureType.cutout,
-        state: DisplayFeatureState.unknown,
-      );
-      tester.view.displayFeatures = [innerFold];
-      addTearDown(tester.view.resetDisplayFeatures);
-      await pumpView(tester, const Size(933, 704), initialPage: 4);
+    // Logged on a Z Fold: the cover's fold as is, and stretched to the inner
+    // window's height.
+    for (final staleHeight in [751.0, 704.0]) {
+      testWidgets(
+          'unfolding with the cover fold still reported brings the spread back '
+          '(${staleHeight.round()}dp fold)', (tester) async {
+        // Galaxy Z Fold, app in the background while unfolding: the inner
+        // window arrived together with the cover's fold, and nothing changed
+        // after that. The spread (and the Tampilan Mushaf entry) stayed off
+        // until the app restarted.
+        const innerFold = DisplayFeature(
+          bounds: Rect.fromLTWH(466, 0, 0, 704),
+          type: DisplayFeatureType.fold,
+          state: DisplayFeatureState.postureFlat,
+        );
+        const coverFold = DisplayFeature(
+          bounds: Rect.fromLTWH(238, 0, 0, 751),
+          type: DisplayFeatureType.fold,
+          state: DisplayFeatureState.postureFlat,
+        );
+        const cutout = DisplayFeature(
+          bounds: Rect.fromLTWH(224, 0, 27, 40),
+          type: DisplayFeatureType.cutout,
+          state: DisplayFeatureState.unknown,
+        );
+        tester.view.displayFeatures = [innerFold];
+        addTearDown(tester.view.resetDisplayFeatures);
+        await pumpView(tester, const Size(933, 704), initialPage: 4);
 
-      tester.view.physicalSize = const Size(475, 751);
-      tester.view.displayFeatures = [coverFold, cutout];
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.text('Mushaf - Halaman 4'), findsOneWidget);
-      expect(find.byIcon(Icons.tune), findsNothing);
+        tester.view.physicalSize = const Size(475, 751);
+        tester.view.displayFeatures = [coverFold, cutout];
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+        expect(find.text('Mushaf - Halaman 4'), findsOneWidget);
+        expect(find.byIcon(Icons.tune), findsNothing);
 
-      tester.view.physicalSize = const Size(933, 704);
-      tester.view.displayFeatures = [coverFold];
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      final bodies = tester
-          .widgetList<MushafPageBody>(
-            find.byType(MushafPageBody, skipOffstage: false),
-          )
-          .toList();
-      expect(bodies.length, 2);
-      expect(bodies.every((body) => body.framed), isTrue);
+        tester.view.physicalSize = const Size(933, 704);
+        tester.view.displayFeatures = [
+          DisplayFeature(
+            bounds: Rect.fromLTWH(238, 0, 0, staleHeight),
+            type: DisplayFeatureType.fold,
+            state: DisplayFeatureState.postureFlat,
+          ),
+        ];
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+        final bodies = tester
+            .widgetList<MushafPageBody>(
+              find.byType(MushafPageBody, skipOffstage: false),
+            )
+            .toList();
+        expect(bodies.length, 2);
+        expect(bodies.every((body) => body.framed), isTrue);
 
-      await showChrome(tester);
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.text('Mushaf · Halaman 3–4'), findsOneWidget);
-      expect(find.byIcon(Icons.tune), findsOneWidget);
-    });
+        await showChrome(tester);
+        await tester.pump(const Duration(milliseconds: 50));
+        expect(find.text('Mushaf · Halaman 3–4'), findsOneWidget);
+        expect(find.byIcon(Icons.tune), findsOneWidget);
+      });
+    }
 
     testWidgets('last read follows spread navigation', (tester) async {
       await pumpView(tester, const Size(933, 704), initialPage: 1);
