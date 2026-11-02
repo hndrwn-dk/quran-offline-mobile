@@ -5,7 +5,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:quran_offline/core/mushaf/mushaf_sheet_layout.dart';
 import 'package:quran_offline/core/mushaf/page_turn/page_curl_geometry.dart';

@@ -106,10 +106,16 @@ class PageTurnStats {
             f.buildDuration.inMicroseconds > budget ||
             f.rasterDuration.inMicroseconds > budget)
         .toList();
-    final jank = slow.length;
+    // Slow frames while nothing moves (idle prewarm/prebuild after a turn
+    // settled) are not visible as stutter; they are reported apart.
+    String phaseOf(ui.FrameTiming f) =>
+        _phaseAt(f.timestampInMicroseconds(ui.FramePhase.vsyncStart));
+    const moving = {'begin', 'drag', 'anim', 'settle'};
+    final jank = slow.where((f) => moving.contains(phaseOf(f))).length;
+    final idleSlow = slow.length - jank;
     for (final f in slow) {
       debugPrint(
-        '[MushafTurnJank] phase=${_phaseAt(f.timestampInMicroseconds(ui.FramePhase.vsyncStart))} '
+        '[MushafTurnJank] phase=${phaseOf(f)} '
         'ui=${(f.buildDuration.inMicroseconds / 1000).toStringAsFixed(1)} '
         'raster=${(f.rasterDuration.inMicroseconds / 1000).toStringAsFixed(1)}',
       );
@@ -118,7 +124,7 @@ class PageTurnStats {
       '[MushafTurnStats] turns=$_turns frames=${_frames.length} '
       'hz=${_refreshRate.round()} '
       'ui(p50/p90/max ms)=${_pct(build)} raster=${_pct(raster)} '
-      'jank=$jank fallbacks=$_fallbacks '
+      'jank=$jank idleSlow=$idleSlow fallbacks=$_fallbacks '
       'captures=${_captureMicros.length} capture(p50/p90 ms)=${_pct(_captureMicros, two: true)} '
       'cache(peak/now MB)=${_mb(_peakBytes)}/${_mb(_lastBytes)}',
     );
