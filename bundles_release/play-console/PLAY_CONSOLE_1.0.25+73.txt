@@ -1,0 +1,28 @@
+<en-US>
+• Turn Mushaf pages like a real book on foldables and tablets
+• Choose your page effect: like a book, slide, or instant
+• New Mushaf display panel: two-page view and page effect in one place
+• Two-page view comes back reliably after unfolding the Fold
+• Smoother page turns and small fixes
+</en-US>
+<id>
+• Balik halaman Mushaf seperti buku sungguhan di HP lipat dan tablet
+• Pilih efek ganti halaman: seperti buku, geser, atau langsung
+• Panel Tampilan Mushaf baru: tampilan dua halaman dan efek halaman dalam satu tempat
+• Tampilan dua halaman kembali dengan benar setelah HP lipat dibuka
+• Pergantian halaman lebih mulus dan perbaikan kecil
+</id>
+<zh-CN>
+• 在折叠屏和平板上，像真正的书一样翻动古兰经页面
+• 选择翻页效果：翻书、滑动或即时
+• 全新古兰经显示面板：双页显示和翻页效果集中在一处
+• 展开折叠屏后，双页显示能可靠恢复
+• 翻页更流畅，并修复了一些小问题
+</zh-CN>
+<ja-JP>
+• 折りたたみ端末やタブレットで、本物の本のようにムスハフのページをめくれます
+• ページ効果を選べます：本のように、スライド、すぐに
+• 新しいムスハフ表示パネル：2ページ表示とページ効果を1か所に
+• 折りたたみ端末を開いた後も、2ページ表示が確実に戻ります
+• ページめくりがよりなめらかに、細かな修正も
+</ja-JP>
