@@ -106,6 +106,10 @@ const double kPageCurlRadiusFactor = 0.10;
 /// page's horizontal, so a vertical drag never folds the page sideways.
 const double _kMinNormalX = 0.5;
 
+/// Fold slope allowed when the fold is at the free edge; it falls with the
+/// square of the fold's distance from the spine.
+const double _kMaxTiltAtFreeEdge = 1.2;
+
 /// Fold for a finger at [finger] that grabbed the leaf at [grab] (leaf space).
 ///
 /// The grabbed point of the free edge wraps over the cylinder and lands under
@@ -148,9 +152,20 @@ PageCurlFrame computePageCurl({
   // cylinder (pi * r) and back, ending under the finger.
   final fingerDistance = (math.pi * radius - len) / 2;
   var origin = f - normal * fingerDistance;
+  double uAt(double v) => origin.dx - (v - origin.dy) * normal.dy / normal.dx;
+
+  // Paper bound at the spine cannot fold steeply close to it: the tilt
+  // shrinks with the fold's distance from the spine, so the leaf straightens
+  // as it lands instead of arriving rotated.
+  final spineDistance = math.max(0.0, uAt(h / 2) / edge);
+  final maxTan = _kMaxTiltAtFreeEdge * spineDistance * spineDistance;
+  if ((normal.dy / normal.dx).abs() > maxTan) {
+    final tan = normal.dy >= 0 ? maxTan : -maxTan;
+    normal = Offset(1, tan) / math.sqrt(1 + tan * tan);
+    origin = f - normal * fingerDistance;
+  }
 
   // Keep the spine flat: the fold may not reach u < 0 at the top or bottom.
-  double uAt(double v) => origin.dx - (v - origin.dy) * normal.dy / normal.dx;
   final minU = math.min(uAt(0), uAt(h));
   if (minU < 0) origin = origin.translate(-minU, 0);
 

@@ -139,6 +139,23 @@ void main() {
       }
     });
 
+    test('the leaf straightens as it nears the spine', () {
+      // A finger held well above the grab point would otherwise keep the
+      // fold steep and land the leaf rotated.
+      var lastTilt = double.infinity;
+      for (final t in [0.6, 0.75, 0.9, 0.98]) {
+        final f = computePageCurl(
+          leaf: leaf,
+          grab: Offset(edge, h * 0.9),
+          finger: Offset(edge - 2 * edge * t, h * 0.6),
+        );
+        final tilt = (f.normal.dy / f.normal.dx).abs();
+        expect(tilt, lessThanOrEqualTo(lastTilt + 1e-9));
+        lastTilt = tilt;
+      }
+      expect(lastTilt, lessThan(0.08));
+    });
+
     test('progress grows as the finger crosses towards the spine', () {
       var last = -1.0;
       for (var u = edge; u >= -edge; u -= 20) {
