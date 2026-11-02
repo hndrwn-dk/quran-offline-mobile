@@ -25,5 +25,9 @@ Also follow the scoped rules in `.cursor/rules/` (AI search, Android R8, edge-to
 
 ## Device verification
 - Devices: Pixel 8 Pro (`3A251FDJG0045D`) and Galaxy Z Fold 8 (wireless adb; ask me for the current address). Fold 8 inner screen is about 933x704dp landscape; cover about 475x751dp.
-- For any UI change, install a debug build, capture screenshots with `adb exec-out screencap -p`, LOOK at them yourself, and iterate until they match the spec before reporting.
+- Two apps live side by side on both devices:
+  - **DEV app** (`com.tursinalabs.quranoffline.dev`, built with `QO_APP_ID_SUFFIX=.dev`, label "Quran Offline DEV", launcher icon with a "DEV" badge). Use it for ALL development and feature testing on the Pixel and the Fold. It can be installed, reinstalled, or cleared freely.
+  - **Main app** (`com.tursinalabs.quranoffline`). Keep it installed at all times; it holds my real data. Touch it only for a release smoke test: update it with the release APK via `adb install -r` (keeps data), never uninstall it or clear its data.
+- Release builds must never carry the DEV label, icon badge, or suffix; verify the release merged manifest.
+- For any UI change, install a DEV build, capture screenshots with `adb exec-out screencap -p`, LOOK at them yourself, and iterate until they match the spec before reporting.
 - Keep the screen awake while capturing (`adb shell svc power stayon true`), and restore it afterwards.
