@@ -16,6 +16,8 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+val devAppIdSuffix = System.getenv("QO_APP_ID_SUFFIX")?.takeIf { it.isNotBlank() }
+
 android {
     namespace = "com.tursinalabs.quranoffline"
     compileSdk = flutter.compileSdkVersion
@@ -44,11 +46,20 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        // Dev only: QO_APP_ID_SUFFIX=.curllab installs a side-by-side debug
-        // build (e.g. the Curl Lab) without replacing the installed app.
-        System.getenv("QO_APP_ID_SUFFIX")?.takeIf { it.isNotBlank() }?.let {
+        manifestPlaceholders["appLabel"] = "Quran Offline"
+        manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
+        // Dev only: QO_APP_ID_SUFFIX=.dev installs a side-by-side build without
+        // replacing the installed app, labelled "Quran Offline DEV" with a badged
+        // icon (src/dev/res, from tools/make_dev_launcher_icon.py).
+        devAppIdSuffix?.let {
             applicationIdSuffix = it
+            manifestPlaceholders["appLabel"] = "Quran Offline DEV"
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_dev"
         }
+    }
+
+    if (devAppIdSuffix != null) {
+        sourceSets["main"].res.srcDir("src/dev/res")
     }
 
     buildFeatures {
