@@ -438,8 +438,9 @@ class _RenderCenteredOverflow extends RenderShiftedBox {
     textScaler: textScaler,
   );
   if (!enabled) return (blockWidth: blockWidth, shift: 0.0);
-  final shift =
-      textScaler.scale(qpcV2PageInkShift(content.pageNumber)) * shiftScale;
+  // TextScaler only takes non-negative sizes; the shift may point left.
+  final raw = qpcV2PageInkShift(content.pageNumber);
+  final shift = raw.sign * textScaler.scale(raw.abs()) * shiftScale;
   return (blockWidth: blockWidth, shift: shift);
 }
 
