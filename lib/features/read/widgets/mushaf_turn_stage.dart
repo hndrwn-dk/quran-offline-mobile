@@ -826,13 +826,20 @@ class _MushafTurnStageState extends State<MushafTurnStage>
     _programmatic = false;
     _fingerAt = null;
     _slideAt = null;
+    // The landed leaf and the live page look the same, so this frame only
+    // swaps clips. Page-change bookkeeping (providers, last-read) and
+    // dropping far items wait for the next frame, which nothing animates.
     setState(() {
       _turn = null;
       _index = index;
-      _resetWindow();
+      _window.addAll([index - 1, index, index + 1].where(_inBounds));
     });
     _stats.end();
-    if (changed) widget.onIndexChanged(index, programmatic: programmatic);
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (changed) widget.onIndexChanged(index, programmatic: programmatic);
+      if (_turn == null) setState(_resetWindow);
+    });
     final pending = _pending;
     _pending = null;
     _trimCache();
