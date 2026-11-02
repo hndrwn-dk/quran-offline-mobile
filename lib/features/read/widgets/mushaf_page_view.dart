@@ -45,6 +45,8 @@ import 'package:quran_offline/features/read/widgets/mushaf_gesture_hint_banner.d
 import 'package:quran_offline/features/read/widgets/mushaf_page_number_badge.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_sheet.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_turn_stage.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_paper.dart';
 import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
 import 'package:quran_offline/features/reader/widgets/reader_back_button.dart';
 import 'package:quran_offline/features/reader/widgets/resume_hint_chip.dart';
@@ -69,6 +71,9 @@ class MushafPageView extends ConsumerStatefulWidget {
 class _MushafPageViewState extends ConsumerState<MushafPageView> {
   late PageController _controller;
   final List<PageController> _retiredControllers = [];
+
+  /// Drives the Lembar/Tanpa pager (the Geser pager uses [_controller]).
+  final MushafTurnController _turnController = MushafTurnController();
   int? _selectedSurahId;
   int? _selectedAyahNo;
   late int _visiblePageNo;
@@ -326,6 +331,12 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
 
     if (_visiblePages.contains(pageNo)) return;
 
+    if (_turnStyle != null) {
+      // Visible page, last-read and completion follow when the turn settles.
+      _turnController.animateTo(_pagerIndexForPage(pageNo));
+      return;
+    }
+
     _programmaticPageChange = true;
     _visiblePageNo = pageNo;
     _activePageNo = null;
@@ -428,9 +439,109 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     _FlowingMushafText.showAyahSheet(context, ref, surahId, ayahNo);
   }
 
+  /// Page change from either pager (Geser: on swipe; Lembar/Tanpa: when a
+  /// turn settles).
+  void _onPagerIndexChanged(int index) {
+    final pageNo = _spread ? mushafSpreadPageForIndex(index) : index + 1;
+    _visiblePageNo = pageNo;
+    _activePageNo = null;
+    ref.read(mushafVisiblePageProvider.notifier).state = pageNo;
+    MushafLayout.prewarmNeighbors(context, pageNo);
+    if (_programmaticPageChange) {
+      _programmaticPageChange = false;
+    } else {
+      if (ref.read(audioPlayerProvider).isActive) {
+        _userPagedDuringPlayback = true;
+      }
+      setState(() {
+        _scrollToSurahId = null;
+        _scrollToAyahNo = null;
+        _selectedSurahId = null;
+        _selectedAyahNo = null;
+      });
+      ref.read(lastReadProvider.notifier).saveLastRead(PageSource(pageNo));
+      unawaited(_checkCompletionForPage(pageNo));
+    }
+  }
+
+  /// Lembar/Tanpa use the turn stage; Geser (and "Remove animations") the
+  /// swipe pager. Null means the swipe pager.
+  MushafTurnStyle? get _turnStyle {
+    final setting = ref.read(settingsProvider).mushafPageTurn;
+    if (setting == MushafPageTurn.none) return MushafTurnStyle.none;
+    if (setting == MushafPageTurn.slide ||
+        MediaQuery.disableAnimationsOf(context)) {
+      return null;
+    }
+    return MushafTurnStyle.curl;
+  }
+
+  Widget _buildPagerItem(BuildContext context, int index) {
+    // Single: index 0 = page 1, index 603 = page 604 (reverse keeps
+    // RTL order). Spread: index 0 = 1|2, index 301 = 603|604.
+    if (_spread) {
+      final oddPage = mushafSpreadPageForIndex(index);
+      final evenPage = oddPage + 1;
+      return _MushafSpread(
+        leftPage: evenPage,
+        rightPage: oddPage,
+        chromeVisible: _chromeVisible,
+        onToggleChrome: _toggleChrome,
+        targetSurahId: _scrollToSurahId,
+        targetAyahNo: _scrollToAyahNo,
+        selectedSurahId: _selectedSurahId,
+        selectedAyahNo: _selectedAyahNo,
+        onAyahTap: (surahId, ayahNo, pageNo) =>
+            _onAyahTap(surahId, ayahNo, pageNo: pageNo),
+        onAyahLongPress: (surahId, ayahNo, pageNo) =>
+            _onAyahLongPress(surahId, ayahNo, pageNo: pageNo),
+        onBismillahTap: (surahId, pageNo) =>
+            _onBismillahTap(surahId, pageNo: pageNo),
+        onBismillahLongPress: (surahId, pageNo) =>
+            _onBismillahLongPress(surahId, pageNo: pageNo),
+        onComputed: () {
+          if (evenPage < kMushafTotalPages) {
+            MushafLayout.prewarm(context, evenPage + 1);
+          }
+        },
+      );
+    }
+    final pageNo = index + 1;
+    final framedSingle = MediaQuery.sizeOf(context).width >=
+        kMushafMinSpreadWindowWidth;
+    return MushafPage(
+      pageNo: pageNo,
+      // < 600dp: exact 1.0.21+69 flow layout. >= 600dp single page
+      // (Fold portrait, tablet portrait, spread turned off) uses the
+      // same fixed frame as one page of a spread.
+      framed: framedSingle,
+      chromeVisible: _chromeVisible,
+      onToggleChrome: _toggleChrome,
+      targetSurahId: _scrollToSurahId,
+      targetAyahNo: _scrollToAyahNo,
+      selectedSurahId: _selectedSurahId,
+      selectedAyahNo: _selectedAyahNo,
+      onAyahTap: (surahId, ayahNo, pageNo) =>
+          _onAyahTap(surahId, ayahNo, pageNo: pageNo),
+      onAyahLongPress: (surahId, ayahNo, pageNo) =>
+          _onAyahLongPress(surahId, ayahNo, pageNo: pageNo),
+      onBismillahTap: (surahId, pageNo) =>
+          _onBismillahTap(surahId, pageNo: pageNo),
+      onBismillahLongPress: (surahId, pageNo) =>
+          _onBismillahLongPress(surahId, pageNo: pageNo),
+      onComputed: () {
+        if (pageNo < kMushafTotalPages) {
+          MushafLayout.prewarm(context, pageNo + 1);
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.watch(settingsProvider.select((s) => s.mushafFontSize));
+    ref.watch(settingsProvider.select((s) => s.mushafPageTurn));
+    final turnStyle = _turnStyle;
 
     ref.listen<bool>(
       settingsProvider.select((s) => s.mushafTwoPageSpread),
@@ -490,98 +601,37 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
       child: Stack(
         children: [
           Positioned.fill(
-            child: PageView.builder(
-              key: ValueKey<bool>(_spread),
-              controller: _controller,
-              // RTL direction: swipe right-to-left = next page/spread.
-              reverse: true,
-              onPageChanged: (index) {
-                final pageNo =
-                    _spread ? mushafSpreadPageForIndex(index) : index + 1;
-                _visiblePageNo = pageNo;
-                _activePageNo = null;
-                ref.read(mushafVisiblePageProvider.notifier).state = pageNo;
-                MushafLayout.prewarmNeighbors(context, pageNo);
-                if (_programmaticPageChange) {
-                  _programmaticPageChange = false;
-                } else {
-                  if (ref.read(audioPlayerProvider).isActive) {
-                    _userPagedDuringPlayback = true;
-                  }
-                  setState(() {
-                    _scrollToSurahId = null;
-                    _scrollToAyahNo = null;
-                    _selectedSurahId = null;
-                    _selectedAyahNo = null;
-                  });
-                  ref
-                      .read(lastReadProvider.notifier)
-                      .saveLastRead(PageSource(pageNo));
-                  unawaited(_checkCompletionForPage(pageNo));
-                }
-              },
-              itemCount: _spread ? kMushafSpreadCount : kMushafTotalPages,
-              itemBuilder: (context, index) {
-                // Single: index 0 = page 1, index 603 = page 604 (reverse keeps
-                // RTL order). Spread: index 0 = 1|2, index 301 = 603|604.
-                if (_spread) {
-                  final oddPage = mushafSpreadPageForIndex(index);
-                  final evenPage = oddPage + 1;
-                  return _MushafSpread(
-                    leftPage: evenPage,
-                    rightPage: oddPage,
-                    chromeVisible: _chromeVisible,
-                    onToggleChrome: _toggleChrome,
-                    targetSurahId: _scrollToSurahId,
-                    targetAyahNo: _scrollToAyahNo,
-                    selectedSurahId: _selectedSurahId,
-                    selectedAyahNo: _selectedAyahNo,
-                    onAyahTap: (surahId, ayahNo, pageNo) =>
-                        _onAyahTap(surahId, ayahNo, pageNo: pageNo),
-                    onAyahLongPress: (surahId, ayahNo, pageNo) =>
-                        _onAyahLongPress(surahId, ayahNo, pageNo: pageNo),
-                    onBismillahTap: (surahId, pageNo) =>
-                        _onBismillahTap(surahId, pageNo: pageNo),
-                    onBismillahLongPress: (surahId, pageNo) =>
-                        _onBismillahLongPress(surahId, pageNo: pageNo),
-                    onComputed: () {
-                      if (evenPage < kMushafTotalPages) {
-                        MushafLayout.prewarm(context, evenPage + 1);
-                      }
+            child: turnStyle != null
+                ? MushafTurnStage(
+                    key: ValueKey<(bool, MushafTurnStyle)>(
+                      (_spread, turnStyle),
+                    ),
+                    controller: _turnController,
+                    style: turnStyle,
+                    spread: _spread,
+                    itemCount:
+                        _spread ? kMushafSpreadCount : kMushafTotalPages,
+                    initialIndex: _pagerIndexForPage(_visiblePageNo),
+                    paperColor: _framedMode
+                        ? MushafPaperPalette.of(Theme.of(context).colorScheme)
+                            .sheet
+                        : Theme.of(context).scaffoldBackgroundColor,
+                    itemBuilder: _buildPagerItem,
+                    onIndexChanged: (index, {required programmatic}) {
+                      _programmaticPageChange = programmatic;
+                      _onPagerIndexChanged(index);
                     },
-                  );
-                }
-                final pageNo = index + 1;
-                final framedSingle = MediaQuery.sizeOf(context).width >=
-                    kMushafMinSpreadWindowWidth;
-                return MushafPage(
-                  pageNo: pageNo,
-                  // < 600dp: exact 1.0.21+69 flow layout. >= 600dp single page
-                  // (Fold portrait, tablet portrait, spread turned off) uses the
-                  // same fixed frame as one page of a spread.
-                  framed: framedSingle,
-                  chromeVisible: _chromeVisible,
-                  onToggleChrome: _toggleChrome,
-                  targetSurahId: _scrollToSurahId,
-                  targetAyahNo: _scrollToAyahNo,
-                  selectedSurahId: _selectedSurahId,
-                  selectedAyahNo: _selectedAyahNo,
-                  onAyahTap: (surahId, ayahNo, pageNo) =>
-                      _onAyahTap(surahId, ayahNo, pageNo: pageNo),
-                  onAyahLongPress: (surahId, ayahNo, pageNo) =>
-                      _onAyahLongPress(surahId, ayahNo, pageNo: pageNo),
-                  onBismillahTap: (surahId, pageNo) =>
-                      _onBismillahTap(surahId, pageNo: pageNo),
-                  onBismillahLongPress: (surahId, pageNo) =>
-                      _onBismillahLongPress(surahId, pageNo: pageNo),
-                  onComputed: () {
-                    if (pageNo < kMushafTotalPages) {
-                      MushafLayout.prewarm(context, pageNo + 1);
-                    }
-                  },
-                );
-              },
-            ),
+                  )
+                : PageView.builder(
+                    key: ValueKey<bool>(_spread),
+                    controller: _controller,
+                    // RTL direction: swipe right-to-left = next page/spread.
+                    reverse: true,
+                    onPageChanged: _onPagerIndexChanged,
+                    itemCount:
+                        _spread ? kMushafSpreadCount : kMushafTotalPages,
+                    itemBuilder: _buildPagerItem,
+                  ),
           ),
           if (_resumeHint?.mode == ResumeHintMode.page)
             Positioned(
@@ -671,23 +721,44 @@ class MushafPage extends StatelessWidget {
       pageNumbers: [pageNo],
       chromeVisible: chromeVisible,
       onToggleChrome: onToggleChrome,
-      child: MushafPageBody(
-        pageNo: pageNo,
-        framed: framed,
-        targetSurahId: targetSurahId,
-        targetAyahNo: targetAyahNo,
-        selectedSurahId: selectedSurahId,
-        selectedAyahNo: selectedAyahNo,
-        showBanners: !framed || chromeVisible,
-        showBadge: chromeVisible,
-        onAyahTap: (surahId, ayahNo) =>
-            onAyahTap?.call(surahId, ayahNo, pageNo),
-        onAyahLongPress: (surahId, ayahNo) =>
-            onAyahLongPress?.call(surahId, ayahNo, pageNo),
-        onBismillahTap: (surahId) => onBismillahTap?.call(surahId, pageNo),
-        onBismillahLongPress: (surahId) =>
-            onBismillahLongPress?.call(surahId, pageNo),
-        onComputed: onComputed,
+      child: _PhoneTurnRegion(
+        child: MushafPageBody(
+          pageNo: pageNo,
+          framed: framed,
+          targetSurahId: targetSurahId,
+          targetAyahNo: targetAyahNo,
+          selectedSurahId: selectedSurahId,
+          selectedAyahNo: selectedAyahNo,
+          showBanners: !framed || chromeVisible,
+          showBadge: chromeVisible,
+          onAyahTap: (surahId, ayahNo) =>
+              onAyahTap?.call(surahId, ayahNo, pageNo),
+          onAyahLongPress: (surahId, ayahNo) =>
+              onAyahLongPress?.call(surahId, ayahNo, pageNo),
+          onBismillahTap: (surahId) => onBismillahTap?.call(surahId, pageNo),
+          onBismillahLongPress: (surahId) =>
+              onBismillahLongPress?.call(surahId, pageNo),
+          onComputed: onComputed,
+        ),
+      ),
+    );
+  }
+}
+
+/// The phone page as a turn region: painted on the page colour so its
+/// snapshot is opaque (the same colour the Scaffold already shows behind it).
+class _PhoneTurnRegion extends StatelessWidget {
+  const _PhoneTurnRegion({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (MushafTurnScope.maybeOf(context) == null) return child;
+    return MushafTurnRegion(
+      child: ColoredBox(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: child,
       ),
     );
   }
@@ -846,13 +917,17 @@ class _MushafFramedBody extends ConsumerWidget {
         Expanded(
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: sheetGap),
-            child: MushafFramedSheets(
-              pages: pages,
-              focus: !chromeVisible,
-              legacyVerticalChrome: legacyChrome - sheetGap * 2,
-              pageBuilder: pageBody,
-              pageNumberLabel: (pageNo) =>
-                  AppLocalizations.getPageText(pageNo, appLanguage),
+            child: MushafTurnRegion(
+              child: MushafFramedSheets(
+                pages: pages,
+                focus: !chromeVisible,
+                legacyVerticalChrome: legacyChrome - sheetGap * 2,
+                pageBuilder: pageBody,
+                pageNumberLabel: (pageNo) =>
+                    AppLocalizations.getPageText(pageNo, appLanguage),
+                onLayout: (layout) =>
+                    MushafTurnScope.maybeOf(context)?.layout = layout,
+              ),
             ),
           ),
         ),
@@ -1017,7 +1092,13 @@ class _MushafChromeState extends State<_MushafChrome> {
                       // Taps on empty margins/gutter toggle the bars; taps on a
                       // glyph are claimed by the ayah recognizer and still play.
                       behavior: HitTestBehavior.translucent,
-                      onTap: widget.onToggleChrome,
+                      // Lembar/Tanpa: the outer edges turn the page first.
+                      onTapUp: (details) {
+                        final turned = MushafTurnScope.maybeOf(context)
+                                ?.handleTap(details.globalPosition) ??
+                            false;
+                        if (!turned) widget.onToggleChrome?.call();
+                      },
                       child: widget.child,
                     ),
             ),
@@ -1551,6 +1632,7 @@ class _MushafPageBodyState extends ConsumerState<MushafPageBody> {
           return const Center(child: Text('Error: empty page'));
         }
         widget.onComputed?.call();
+        MushafTurnScope.maybeOf(context)?.pageReady(widget.pageNo);
 
         // Scroll to target ayah if needed (framed pages are fully visible).
         if (!widget.framed &&

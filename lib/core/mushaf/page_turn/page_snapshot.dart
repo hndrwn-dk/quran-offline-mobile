@@ -95,6 +95,40 @@ Future<double> snapshotInkCoverage(
   );
 }
 
+/// [snapshotInkCoverage] on a small downscaled copy of the page interior.
+///
+/// Cheap enough to run after every capture: the GPU scales the image to
+/// 96x144 and only those pixels are read back.
+Future<double> snapshotProxyInk(
+  ui.Image image, {
+  required Color paper,
+}) async {
+  const w = 96, h = 144;
+  final recorder = ui.PictureRecorder();
+  // The inner 80%: the sheet frame and page number alone never pass.
+  final src = Rect.fromLTRB(
+    image.width * 0.1,
+    image.height * 0.1,
+    image.width * 0.9,
+    image.height * 0.9,
+  );
+  Canvas(recorder).drawImageRect(
+    image,
+    src,
+    const Rect.fromLTWH(0, 0, w + 0.0, h + 0.0),
+    Paint()..filterQuality = FilterQuality.medium,
+  );
+  final picture = recorder.endRecording();
+  final proxy = picture.toImageSync(w, h);
+  picture.dispose();
+  try {
+    // Scaling softens thin strokes, so a lower threshold than full size.
+    return await snapshotInkCoverage(proxy, paper: paper, threshold: 30);
+  } finally {
+    proxy.dispose();
+  }
+}
+
 /// [snapshotInkCoverage] on raw RGBA bytes.
 double inkCoverageOfRgba(
   Uint8List bytes, {
@@ -104,8 +138,9 @@ double inkCoverageOfRgba(
   Rect? within,
   int threshold = 60,
 }) {
-  final region = (within ?? Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()))
-      .intersect(Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()));
+  final region =
+      (within ?? Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()))
+          .intersect(Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()));
   if (region.isEmpty) return 0;
   final pr = (paper.r * 255).round();
   final pg = (paper.g * 255).round();
