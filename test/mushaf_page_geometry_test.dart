@@ -264,6 +264,25 @@ void main() {
     test("drops the other screen's fold reported mid fold/unfold", () {
       expect(mushafCreaseFeatures(inner, [coverFold]), isEmpty);
       expect(mushafCreaseFeatures(cover, [innerFold]), isEmpty);
+      // Logged on a Z Fold: the cover's x=238 fold stretched to the inner
+      // window's full height.
+      final stretched =
+          feature(const Rect.fromLTWH(238, 0, 0, 704), DisplayFeatureType.fold);
+      expect(mushafCreaseFeatures(inner, [stretched]), isEmpty);
+    });
+
+    test('keeps a hinge near the middle, drops one far off it', () {
+      final nearMiddle =
+          feature(const Rect.fromLTWH(500, 0, 0, 704), DisplayFeatureType.fold);
+      expect(mushafCreaseFeatures(inner, [nearMiddle]), [nearMiddle]);
+      final offMiddle =
+          feature(const Rect.fromLTWH(600, 0, 0, 704), DisplayFeatureType.fold);
+      expect(mushafCreaseFeatures(inner, [offMiddle]), isEmpty);
+      final lowHinge = feature(
+        const Rect.fromLTWH(0, 600, 933, 0),
+        DisplayFeatureType.hinge,
+      );
+      expect(mushafCreaseFeatures(inner, [lowHinge]), isEmpty);
     });
 
     test('drops cutouts', () {
