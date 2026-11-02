@@ -1,0 +1,32 @@
+<en-US>
+• Search is back on the Read screen on tablets, foldables and landscape phones
+• Calmer Mushaf on large screens: paper pages, thin frame, page numbers
+• Mushaf text is now centered and balanced on phones
+• New surah name ornament
+• Notes, bookmarks and highlights together in one Home section
+• Surah search understands names like "yasin"
+</en-US>
+<id>
+• Pencarian kembali ada di layar Baca untuk tablet, HP lipat, dan HP landscape
+• Mushaf lebih tenang di layar besar: lembar kertas, bingkai tipis, nomor halaman
+• Teks Mushaf kini rata tengah dan seimbang di HP
+• Hiasan baru pada nama surah
+• Catatan, penanda, dan sorotan kini dalam satu bagian di Beranda
+• Cari surah lebih mudah, misalnya "yasin"
+</id>
+<zh-CN>
+• 平板、折叠屏和横屏手机的阅读页面恢复搜索
+• 大屏 Mushaf 更宁静：纸张页面、细边框、页码
+• 手机上的 Mushaf 文字现在居中且均衡
+• 全新的苏拉名称装饰
+• 笔记、书签和高亮整合在首页的同一区域
+• 苏拉搜索支持 "yasin" 等写法
+</zh-CN>
+<ja-JP>
+• タブレット、折りたたみ端末、横向きのスマホで「読む」画面の検索が復活
+• 大画面のムスハフがより落ち着いたデザインに：紙のページ、細い枠、ページ番号
+• スマホでムスハフの本文が中央揃えでバランスよく表示
+• スーラ名の新しい装飾
+• メモ、ブックマーク、ハイライトをホームの1つのセクションに
+• 「yasin」などの表記でもスーラを検索可能
+</ja-JP>

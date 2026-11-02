@@ -2,7 +2,8 @@
 
 | Version | AAB | What's new | Status |
 |---------|-----|------------|--------|
-| **1.0.23+71** | `../v1.0.23+71/quran-offline-1.0.23+71.aab` | [PLAY_CONSOLE_1.0.23+71.txt](PLAY_CONSOLE_1.0.23+71.txt) | **Ready to upload** |
+| **1.0.24+72** | `../v1.0.24+72/quran-offline-1.0.24+72.aab` | [PLAY_CONSOLE_1.0.24+72.txt](PLAY_CONSOLE_1.0.24+72.txt) | **Ready to upload** |
+| 1.0.23+71 | `../release-name/quran-offline-1.0.23+71.aab` | [PLAY_CONSOLE_1.0.23+71.txt](PLAY_CONSOLE_1.0.23+71.txt) | Superseded by 1.0.24+72 |
 | 1.0.22+70 | `../v1.0.22+70/quran-offline-1.0.22+70.aab` | [PLAY_CONSOLE_1.0.22+70.txt](PLAY_CONSOLE_1.0.22+70.txt) | Internal testing only; superseded (never promoted to production) |
 | 1.0.21+69 | `../release-name/quran-offline-1.0.21+69.aab` | [PLAY_CONSOLE_1.0.21+69.txt](PLAY_CONSOLE_1.0.21+69.txt) | Superseded |
 | 1.0.21+68 | `../release-name/quran-offline-1.0.21+68.aab` | [PLAY_CONSOLE_1.0.21+68.txt](PLAY_CONSOLE_1.0.21+68.txt) | Superseded |
