@@ -61,8 +61,9 @@ class PageTurnStats {
       _fallbacks = 0;
       _phases.clear();
       _peakBytes = _lastBytes;
-      final displays = WidgetsBinding.instance.platformDispatcher.displays;
-      if (displays.isNotEmpty) _refreshRate = displays.first.refreshRate;
+      // The display showing the app (the Fold's cover is not displays.first).
+      final views = WidgetsBinding.instance.platformDispatcher.views;
+      if (views.isNotEmpty) _refreshRate = views.first.display.refreshRate;
     }
     if (!_listening) {
       _listening = true;
@@ -156,8 +157,8 @@ class MushafFrameLog {
     if (_started || !const bool.fromEnvironment('QO_FRAME_LOG')) return;
     _started = true;
     SchedulerBinding.instance.addTimingsCallback((timings) {
-      final displays = WidgetsBinding.instance.platformDispatcher.displays;
-      final hz = displays.isEmpty ? 60.0 : displays.first.refreshRate;
+      final views = WidgetsBinding.instance.platformDispatcher.views;
+      final hz = views.isEmpty ? 60.0 : views.first.display.refreshRate;
       final budget = 1000000 / hz;
       for (final f in timings) {
         final b = f.buildDuration.inMicroseconds;
