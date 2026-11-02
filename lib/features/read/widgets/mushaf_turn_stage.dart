@@ -40,6 +40,9 @@ const Duration kMushafTurnChainFinish = Duration(milliseconds: 120);
 /// Idle time after a turn settles before neighbours are rasterized.
 const Duration kMushafTurnPrewarmDelay = Duration(milliseconds: 300);
 
+/// Idle time before pages two away are built ahead of time.
+const Duration kMushafTurnPrebuildDelay = Duration(milliseconds: 700);
+
 /// Longest an auto turn waits for a missing snapshot before it slides.
 const Duration kMushafTurnSnapshotWait = Duration(milliseconds: 150);
 
@@ -295,6 +298,7 @@ class _MushafTurnStageState extends State<MushafTurnStage>
 
   final ValueNotifier<int> _tick = ValueNotifier(0);
   Timer? _prewarmTimer;
+  Timer? _prebuildTimer;
   Size? _lastSize;
   ColorScheme? _lastScheme;
   final PageTurnStats _stats = PageTurnStats();
@@ -410,6 +414,7 @@ class _MushafTurnStageState extends State<MushafTurnStage>
     WidgetsBinding.instance.removeObserver(this);
     if (widget.controller?._state == this) widget.controller?._state = null;
     _prewarmTimer?.cancel();
+    _prebuildTimer?.cancel();
     _anim.dispose();
     _tick.dispose();
     _shader?.dispose();
@@ -423,10 +428,10 @@ class _MushafTurnStageState extends State<MushafTurnStage>
   bool _inBounds(int index) => index >= 0 && index < widget.itemCount;
 
   /// Live items: the current one and its neighbours, plus already built
-  /// items one further out (so turning back and forth never rebuilds a page).
+  /// items up to three away (so turning back and forth never rebuilds one).
   void _resetWindow() {
     _window
-      ..removeWhere((i) => (i - _index).abs() > 2)
+      ..removeWhere((i) => (i - _index).abs() > 3)
       ..addAll([_index - 1, _index, _index + 1].where(_inBounds));
   }
 
@@ -603,14 +608,20 @@ class _MushafTurnStageState extends State<MushafTurnStage>
       _snapshot(int.parse(parts[0]), _Side.values.byName(parts[1]));
     }
     _trimCache();
-    // Idle: build one more page ahead (then behind), so quick successive
-    // turns find their pages already built and painted. One per idle beat
-    // keeps each build in a frame where nothing moves.
+    _prebuildTimer?.cancel();
+    _prebuildTimer = Timer(kMushafTurnPrebuildDelay, _prebuild);
+  }
+
+  /// Real idle: build one more page ahead (then behind), so a later burst of
+  /// turns finds its pages built and painted. One per beat, and never while
+  /// the reader is turning, so a page build never lands next to a turn.
+  void _prebuild() {
+    if (!mounted || _turn != null || _anim.isAnimating) return;
     for (final next in [_index + 2, _index - 2]) {
       if (_inBounds(next) && !_window.contains(next)) {
         setState(() => _window.add(next));
         _schedulePrewarm();
-        break;
+        return;
       }
     }
   }
@@ -643,6 +654,7 @@ class _MushafTurnStageState extends State<MushafTurnStage>
   _Turn? _beginTurn(int direction) {
     final target = _index + direction;
     if (!_inBounds(target)) return null;
+    _prebuildTimer?.cancel();
     final a = direction > 0 ? _index : target;
     // The item after the target joins the window now, so a chained turn
     // finds it built and painted.

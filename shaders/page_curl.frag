@@ -90,7 +90,9 @@ void main() {
 
   // 3. Back of the leaf: over the cylinder top, then flat and mirrored.
   vec2 qb = vec2(-1.0e4);
-  float backShade = 0.93;
+  // Lying flat (landed, or just lifting off) the back must match the live
+  // page exactly; it dims only while the leaf is in the air.
+  float backShade = 1.0 - 0.07 * strength;
   if (d < 0.0) {
     qb = p + n * (PI * r - 2.0 * d);
   } else if (d < r && r > 0.0) {
@@ -98,7 +100,7 @@ void main() {
     qb = p + n * (r * (PI - th) - d);
     float c = cos(th);
     // Darker where the sheet turns edge-on, a thin highlight at the crest.
-    backShade = 0.70 + 0.23 * c;
+    backShade *= 0.75 + 0.25 * c;
     float k = (th - 1.25) / 0.18;
     backShade += (0.10 + 0.05 * uDark) * exp(-k * k);
   }
