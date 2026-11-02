@@ -34,7 +34,7 @@ bool mushafSpreadAvailable(BuildContext context) {
       media.size.width,
       media.size.height - kMushafReaderChromeHeight,
     ),
-    displayFeatures: media.displayFeatures,
+    displayFeatures: mushafCreaseFeatures(media.size, media.displayFeatures),
     spreadEnabled: true,
   );
   return metrics.showSpread;

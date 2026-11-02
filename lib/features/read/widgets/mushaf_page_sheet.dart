@@ -103,16 +103,18 @@ class MushafFramedSheets extends StatelessWidget {
           final area = constraints.biggest;
           if (!area.isFinite || area.isEmpty) return const SizedBox.shrink();
 
+          final creases =
+              mushafCreaseFeatures(media.size, media.displayFeatures);
           final hinge = spread
               ? mushafSheetHinge(
                   size: area,
-                  displayFeatures: media.displayFeatures,
+                  displayFeatures: creases,
                 )
               : const MushafHingeLayout(gap: 0);
           final legacyHinge = spread
               ? mushafHingeLayout(
                   size: area,
-                  displayFeatures: media.displayFeatures,
+                  displayFeatures: creases,
                 )
               : const MushafHingeLayout();
           // A side cutout is mirrored so both outer edges keep one clearance.

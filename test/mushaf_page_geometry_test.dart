@@ -229,4 +229,66 @@ void main() {
       expect(metrics.pageSize.height, closeTo(569, 1));
     });
   });
+
+  group('mushafCreaseFeatures', () {
+    const inner = Size(933, 704);
+    const cover = Size(475, 751);
+    DisplayFeature feature(Rect bounds, DisplayFeatureType type) =>
+        DisplayFeature(
+          bounds: bounds,
+          type: type,
+          state: type == DisplayFeatureType.cutout
+              ? DisplayFeatureState.unknown
+              : DisplayFeatureState.postureFlat,
+        );
+    // What a Galaxy Z Fold reports on each screen.
+    final innerFold =
+        feature(const Rect.fromLTWH(466, 0, 0, 704), DisplayFeatureType.fold);
+    final coverFold =
+        feature(const Rect.fromLTWH(238, 0, 0, 751), DisplayFeatureType.fold);
+    final cutout = feature(
+      const Rect.fromLTWH(224, 0, 27, 40),
+      DisplayFeatureType.cutout,
+    );
+
+    test('keeps a fold that crosses the window', () {
+      expect(mushafCreaseFeatures(inner, [innerFold]), [innerFold]);
+      expect(mushafCreaseFeatures(cover, [coverFold]), [coverFold]);
+      final tabletop = feature(
+        const Rect.fromLTWH(0, 352, 933, 0),
+        DisplayFeatureType.hinge,
+      );
+      expect(mushafCreaseFeatures(inner, [tabletop]), [tabletop]);
+    });
+
+    test("drops the other screen's fold reported mid fold/unfold", () {
+      expect(mushafCreaseFeatures(inner, [coverFold]), isEmpty);
+      expect(mushafCreaseFeatures(cover, [innerFold]), isEmpty);
+    });
+
+    test('drops cutouts', () {
+      expect(mushafCreaseFeatures(cover, [coverFold, cutout]), [coverFold]);
+      expect(mushafCreaseFeatures(inner, [cutout]), isEmpty);
+    });
+
+    test('a stale cover fold no longer collapses the inner spread', () {
+      // Unfiltered, the phantom fold leaves 210dp pages: single page.
+      expect(
+        resolveMushafSpread(
+          available: inner,
+          displayFeatures: [coverFold],
+          spreadEnabled: true,
+        ).showSpread,
+        isFalse,
+      );
+      expect(
+        resolveMushafSpread(
+          available: inner,
+          displayFeatures: mushafCreaseFeatures(inner, [coverFold]),
+          spreadEnabled: true,
+        ).showSpread,
+        isTrue,
+      );
+    });
+  });
 }
