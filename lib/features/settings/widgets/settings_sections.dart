@@ -192,6 +192,49 @@ class SettingsQuranSection extends ConsumerWidget {
             },
           ),
         ),
+        // Also in the Mushaf text settings (framed); phones only have it here.
+        ListTile(
+          leading: Icon(Icons.auto_stories_outlined, color: colorScheme.primary),
+          title: Text(AppLocalizations.getSettingsText('page_turn_title', appLanguage)),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  AppLocalizations.getSettingsText('page_turn_subtitle', appLanguage),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                SegmentedButton<MushafPageTurn>(
+                  key: const Key('settings-page-turn'),
+                  showSelectedIcon: false,
+                  style: const ButtonStyle(visualDensity: VisualDensity.compact),
+                  segments: [
+                    for (final (turn, key) in const [
+                      (MushafPageTurn.curl, 'page_turn_curl'),
+                      (MushafPageTurn.slide, 'page_turn_slide'),
+                      (MushafPageTurn.none, 'page_turn_none'),
+                    ])
+                      ButtonSegment<MushafPageTurn>(
+                        value: turn,
+                        label: Text(
+                          AppLocalizations.getSettingsText(key, appLanguage),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                  ],
+                  selected: {settings.mushafPageTurn},
+                  onSelectionChanged: (selection) => ref
+                      .read(settingsProvider.notifier)
+                      .updateMushafPageTurn(selection.first),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
