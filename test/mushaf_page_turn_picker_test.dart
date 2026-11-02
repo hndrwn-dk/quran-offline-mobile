@@ -9,6 +9,7 @@ import 'package:quran_offline/core/constants/app_colors.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_turn_picker.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_text_settings_dialog.dart';
 import 'package:quran_offline/features/settings/widgets/settings_sections.dart';
 
 import 'support/mushaf_real_pages.dart';
@@ -123,6 +124,80 @@ void main() {
           }
         });
       }
+    }
+  }
+
+  for (final language in const ['id', 'en', 'zh', 'ja']) {
+    for (final scale in const [1.0, 1.3]) {
+      final name = 'sheet_360_${language}_x$scale';
+      testWidgets(name, (tester) async {
+        tester.view.physicalSize = const Size(360, 640);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final key = GlobalKey();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              settingsProvider.overrideWith(
+                (ref) => StaticTestSettings(AppSettings(appLanguage: language)),
+              ),
+            ],
+            child: MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: ThemeData(
+                colorScheme: AppColors.lightColorScheme(),
+                fontFamily: 'Roboto',
+              ),
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.linear(scale),
+                ),
+                child: child!,
+              ),
+              home: Scaffold(
+                backgroundColor: Colors.black54,
+                body: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: RepaintBoundary(
+                    key: key,
+                    child: const MushafTextSettingsDialog(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: 'overflow in $name');
+        expect(
+          find.text(AppLocalizations.getSettingsText(
+            'mushaf_display_title',
+            language,
+          )),
+          findsOneWidget,
+        );
+        // Phone width: no spread toggle, phone default (slide) selected.
+        expect(find.byType(Switch), findsNothing);
+        expect(
+          find.text(AppLocalizations.getSettingsText(
+            'page_turn_hint_slide',
+            language,
+          )),
+          findsOneWidget,
+        );
+        if (shots != null) {
+          final boundary =
+              key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+          final bytes = await tester.runAsync(() async {
+            final image = await boundary.toImage(pixelRatio: 2);
+            final data = await image.toByteData(format: ui.ImageByteFormat.png);
+            image.dispose();
+            return data!.buffer.asUint8List();
+          });
+          Directory(shots).createSync(recursive: true);
+          File('$shots/$name.png').writeAsBytesSync(bytes!);
+        }
+      });
     }
   }
 

@@ -12,8 +12,20 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('page turn setting', () {
-    test('defaults to Geser (slide) until Lembar is approved', () {
-      expect(AppSettings().mushafPageTurn, MushafPageTurn.slide);
+    test('default depends on the window: book when framed, slide on phones',
+        () {
+      final settings = AppSettings();
+      expect(settings.mushafPageTurn, isNull);
+      expect(settings.pageTurnFor(framed: true), MushafPageTurn.curl);
+      expect(settings.pageTurnFor(framed: false), MushafPageTurn.slide);
+    });
+
+    test("the reader's explicit choice wins in every window", () {
+      for (final mode in MushafPageTurn.values) {
+        final settings = AppSettings(mushafPageTurn: mode);
+        expect(settings.pageTurnFor(framed: true), mode);
+        expect(settings.pageTurnFor(framed: false), mode);
+      }
     });
 
     test('json round trip keeps the mode', () {
@@ -23,9 +35,10 @@ void main() {
         expect(restored.mushafPageTurn, mode);
         expect(settings.toJson()['mushafPageTurn'], mode.name);
       }
-      // Unknown values fall back to Geser instead of crashing.
-      final restored = AppSettings.fromJson({'mushafPageTurn': 'nope'});
-      expect(restored.mushafPageTurn, MushafPageTurn.slide);
+      // No or unknown values mean "not chosen" instead of crashing.
+      expect(AppSettings.fromJson({'mushafPageTurn': 'nope'}).mushafPageTurn,
+          isNull);
+      expect(AppSettings.fromJson(const {}).mushafPageTurn, isNull);
     });
 
     test('labels exist and are translated in every language', () {
@@ -60,7 +73,7 @@ void main() {
       }
     });
 
-    testWidgets('dialog exposes the three modes and applies the choice',
+    testWidgets('sheet exposes the three modes and applies at once',
         (tester) async {
       SharedPreferences.setMockInitialValues({
         'language': 'id',
@@ -97,17 +110,23 @@ void main() {
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
+      expect(find.text('Tampilan Mushaf'), findsOneWidget);
+      expect(find.text('Terapkan'), findsNothing);
       expect(find.text('Efek ganti halaman Mushaf'), findsOneWidget);
+      // Framed window, nothing chosen yet: the book turn is selected.
+      expect(
+        find.text(
+          'Halaman melengkung dan dibalik seperti mushaf cetak. '
+          'Paling pas di HP lipat dan tablet.',
+        ),
+        findsOneWidget,
+      );
       expect(find.byKey(const Key('mushaf-page-turn')), findsOneWidget);
       expect(find.text('Seperti buku'), findsOneWidget);
       expect(find.text('Geser'), findsOneWidget);
       expect(find.text('Langsung'), findsOneWidget);
 
       await tester.tap(find.text('Langsung'));
-      await tester.pump();
-      await tester.ensureVisible(find.text('Terapkan'));
-      await tester.pump();
-      await tester.tap(find.text('Terapkan'));
       await tester.pumpAndSettle();
 
       final prefs = await SharedPreferences.getInstance();
