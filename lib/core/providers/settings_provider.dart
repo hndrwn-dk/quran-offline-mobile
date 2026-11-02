@@ -2,6 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/notifications/weekly_reminder_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// How Mushaf pages turn. [curl] is the printed-book leaf turn.
+enum MushafPageTurn { curl, slide, none }
+
+/// Page turn when the reader has not chosen one: the book turn where pages
+/// sit on paper sheets (window >= 600dp), the slide on phones and the cover.
+MushafPageTurn defaultMushafPageTurn({required bool framed}) =>
+    framed ? MushafPageTurn.curl : MushafPageTurn.slide;
+
+MushafPageTurn? _parsePageTurn(Object? name) {
+  for (final turn in MushafPageTurn.values) {
+    if (turn.name == name) return turn;
+  }
+  return null;
+}
 class AppSettings {
   final String language; // For translation
   final String appLanguage; // For UI/menu
@@ -12,6 +27,13 @@ class AppSettings {
   final double translationFontSize;
   final double mushafFontSize;
   final bool mushafTwoPageSpread;
+  /// The reader's explicit choice (applies everywhere); null = per-window
+  /// default, see [pageTurnFor].
+  final MushafPageTurn? mushafPageTurn;
+
+  /// Page turn in effect for a framed (>= 600dp) or phone window.
+  MushafPageTurn pageTurnFor({required bool framed}) =>
+      mushafPageTurn ?? defaultMushafPageTurn(framed: framed);
   final ThemeMode themeMode;
   final bool weeklyReminderEnabled;
   final int weeklyReminderHour;
@@ -27,6 +49,7 @@ class AppSettings {
     this.translationFontSize = 16.0,
     this.mushafFontSize = 38.0,
     this.mushafTwoPageSpread = true,
+    this.mushafPageTurn,
     this.themeMode = ThemeMode.system,
     this.weeklyReminderEnabled = false,
     this.weeklyReminderHour = 15,
@@ -43,6 +66,7 @@ class AppSettings {
     double? translationFontSize,
     double? mushafFontSize,
     bool? mushafTwoPageSpread,
+    MushafPageTurn? mushafPageTurn,
     ThemeMode? themeMode,
     bool? weeklyReminderEnabled,
     int? weeklyReminderHour,
@@ -58,6 +82,7 @@ class AppSettings {
       translationFontSize: translationFontSize ?? this.translationFontSize,
       mushafFontSize: mushafFontSize ?? this.mushafFontSize,
       mushafTwoPageSpread: mushafTwoPageSpread ?? this.mushafTwoPageSpread,
+      mushafPageTurn: mushafPageTurn ?? this.mushafPageTurn,
       themeMode: themeMode ?? this.themeMode,
       weeklyReminderEnabled: weeklyReminderEnabled ?? this.weeklyReminderEnabled,
       weeklyReminderHour: weeklyReminderHour ?? this.weeklyReminderHour,
@@ -76,6 +101,7 @@ class AppSettings {
       'translationFontSize': translationFontSize,
       'mushafFontSize': mushafFontSize,
       'mushafTwoPageSpread': mushafTwoPageSpread,
+      'mushafPageTurn': mushafPageTurn?.name,
       'themeMode': themeMode.name,
       'weeklyReminderEnabled': weeklyReminderEnabled,
       'weeklyReminderHour': weeklyReminderHour,
@@ -95,6 +121,7 @@ class AppSettings {
       translationFontSize: (json['translationFontSize'] as num?)?.toDouble() ?? 16.0,
       mushafFontSize: (json['mushafFontSize'] as num?)?.toDouble() ?? 38.0,
       mushafTwoPageSpread: json['mushafTwoPageSpread'] as bool? ?? true,
+      mushafPageTurn: _parsePageTurn(json['mushafPageTurn']),
       themeMode: ThemeMode.values.firstWhere(
         (e) => e.name == json['themeMode'],
         orElse: () => ThemeMode.system,
@@ -123,6 +150,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final mushafFontSize = prefs.getDouble('mushafFontSize') ?? 38.0;
     final mushafTwoPageSpread =
         prefs.getBool('mushafTwoPageSpread') ?? true;
+    final mushafPageTurn = _parsePageTurn(prefs.getString('mushafPageTurn'));
     final themeModeStr = prefs.getString('themeMode') ?? 'system';
     final themeMode = ThemeMode.values.firstWhere(
       (e) => e.name == themeModeStr,
@@ -147,6 +175,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       translationFontSize: translationFontSize,
       mushafFontSize: mushafFontSize,
       mushafTwoPageSpread: mushafTwoPageSpread,
+      mushafPageTurn: mushafPageTurn,
       themeMode: themeMode,
       weeklyReminderEnabled: weeklyReminderEnabled,
       weeklyReminderHour: weeklyReminderHour,
@@ -198,6 +227,13 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('showTafsir', show);
     state = state.copyWith(showTafsir: show);
+  }
+
+  /// Page-turn animation for the Mushaf (Lembar/Geser/Tanpa).
+  Future<void> updateMushafPageTurn(MushafPageTurn turn) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('mushafPageTurn', turn.name);
+    state = state.copyWith(mushafPageTurn: turn);
   }
 
   /// Two Mushaf pages side by side on wide windows (default on).

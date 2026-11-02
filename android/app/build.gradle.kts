@@ -44,6 +44,11 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Dev only: QO_APP_ID_SUFFIX=.curllab installs a side-by-side debug
+        // build (e.g. the Curl Lab) without replacing the installed app.
+        System.getenv("QO_APP_ID_SUFFIX")?.takeIf { it.isNotBlank() }?.let {
+            applicationIdSuffix = it
+        }
     }
 
     buildFeatures {

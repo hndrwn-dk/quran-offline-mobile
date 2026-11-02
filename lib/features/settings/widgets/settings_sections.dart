@@ -6,11 +6,13 @@ import 'package:quran_offline/core/providers/audio_download_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/package_info_provider.dart';
 import 'package:quran_offline/core/providers/reciter_provider.dart';
+import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/feedback/feedback_context.dart';
 import 'package:quran_offline/core/feedback/feedback_email_fallback.dart';
 import 'package:quran_offline/core/feedback/feedback_type.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_page_turn_picker.dart';
 import 'package:quran_offline/features/settings/feedback_form_sheet.dart';
 import 'package:quran_offline/features/settings/audio_downloads_screen.dart';
 import 'package:quran_offline/features/settings/settings_link_actions.dart';
@@ -190,6 +192,36 @@ class SettingsQuranSection extends ConsumerWidget {
             onChanged: (value) {
               ref.read(settingsProvider.notifier).updateShowTafsir(value);
             },
+          ),
+        ),
+        // Also in the Mushaf text settings (framed); phones only have it here.
+        ListTile(
+          leading: Icon(Icons.auto_stories, color: colorScheme.primary),
+          title: Text(AppLocalizations.getSettingsText('page_turn_title', appLanguage)),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  AppLocalizations.getSettingsText('page_turn_subtitle', appLanguage),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                MushafPageTurnPicker(
+                  value: settings.pageTurnFor(
+                    framed: MediaQuery.sizeOf(context).width >=
+                        kMushafMinSpreadWindowWidth,
+                  ),
+                  language: appLanguage,
+                  onChanged: (turn) => ref
+                      .read(settingsProvider.notifier)
+                      .updateMushafPageTurn(turn),
+                ),
+              ],
+            ),
           ),
         ),
       ],

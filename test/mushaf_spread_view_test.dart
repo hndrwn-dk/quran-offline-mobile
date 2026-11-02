@@ -8,6 +8,7 @@ import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:quran_offline/core/widgets/mushaf_page_frame.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_sheet.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
+import 'package:quran_offline/features/read/widgets/mushaf_turn_stage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// A page shaped like a real QPC page: surah banner, bismillah, ayah rows.
@@ -219,6 +220,8 @@ void main() {
       SharedPreferences.setMockInitialValues({
         'language': 'id',
         'appLanguage': 'id',
+        // These cases cover the swipe pager; the turn stage has its own tests.
+        'mushafPageTurn': 'slide',
       });
     });
 
@@ -326,6 +329,7 @@ void main() {
         'language': 'id',
         'appLanguage': 'id',
         'mushafTwoPageSpread': false,
+        'mushafPageTurn': 'slide',
       });
       await pumpView(tester, const Size(933, 704), initialPage: 4);
 
@@ -335,6 +339,54 @@ void main() {
       expect(body.framed, isTrue);
       await showChrome(tester);
       expect(find.text('Mushaf · Halaman 4'), findsOneWidget);
+    });
+  });
+  group('page turn default', () {
+    Future<void> pump(WidgetTester tester, Size size, {String? choice}) async {
+      SharedPreferences.setMockInitialValues({
+        'language': 'id',
+        'appLanguage': 'id',
+        if (choice != null) 'mushafPageTurn': choice,
+      });
+      _setViewSize(tester, size);
+      await tester.pumpWidget(
+        ProviderScope(
+          // A fresh scope per pump, so the saved choice is read again.
+          key: UniqueKey(),
+          child: const MaterialApp(home: MushafPageView(initialPage: 3)),
+        ),
+      );
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 40));
+      }
+    }
+
+    MushafTurnStyle? styleOf(WidgetTester tester) {
+      final stage = find.byType(MushafTurnStage);
+      if (stage.evaluate().isEmpty) return null;
+      return tester.widget<MushafTurnStage>(stage).style;
+    }
+
+    testWidgets('framed window with no choice turns like a book',
+        (tester) async {
+      await pump(tester, const Size(933, 704));
+      expect(styleOf(tester), MushafTurnStyle.curl);
+      expect(find.byType(PageView), findsNothing);
+    });
+
+    testWidgets('phone with no choice slides', (tester) async {
+      await pump(tester, const Size(390, 844));
+      expect(styleOf(tester), isNull);
+      expect(find.byType(PageView), findsOneWidget);
+    });
+
+    testWidgets('an explicit choice applies on every window', (tester) async {
+      await pump(tester, const Size(933, 704), choice: 'slide');
+      expect(styleOf(tester), isNull);
+      await pump(tester, const Size(390, 844), choice: 'curl');
+      expect(styleOf(tester), MushafTurnStyle.curl);
+      await pump(tester, const Size(390, 844), choice: 'none');
+      expect(styleOf(tester), MushafTurnStyle.none);
     });
   });
 }

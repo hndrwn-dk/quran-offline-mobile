@@ -118,10 +118,6 @@ void main() {
 
       await tester.tap(find.byType(Switch));
       await tester.pump();
-      await tester.ensureVisible(find.text('Terapkan'));
-      await tester.pump();
-      await tester.tap(find.text('Terapkan'));
-      await tester.pump();
       await tester.pump();
 
       final prefs = await SharedPreferences.getInstance();

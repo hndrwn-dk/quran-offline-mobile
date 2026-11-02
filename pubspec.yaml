@@ -66,6 +66,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  shaders:
+    - shaders/page_curl.frag
   
   assets:
     - assets/quran/
