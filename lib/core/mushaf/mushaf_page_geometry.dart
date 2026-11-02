@@ -1,5 +1,5 @@
 import 'dart:math' as math;
-import 'dart:ui' show DisplayFeature;
+import 'dart:ui' show DisplayFeature, DisplayFeatureType;
 
 import 'package:flutter/widgets.dart';
 
@@ -131,6 +131,40 @@ int mushafSpreadIndexForPage(int pageNo) {
 
 /// Zero-based spread index -> the odd/right page of that spread.
 int mushafSpreadPageForIndex(int index) => index * 2 + 1;
+
+/// The folds and hinges of [features] that cross the [window]: what the spread
+/// and sheet layouts treat as a crease.
+///
+/// Cutouts are not creases. While a foldable folds or unfolds it can report
+/// one screen's fold with the other screen's window size, and keep it until
+/// the next change (Galaxy Z Fold: the cover's 751dp-tall fold at x=238 in the
+/// 933x704 inner window). Laid out as a hinge that phantom fold squeezed the
+/// spread into single-page mode until the app restarted. A real fold or hinge
+/// always runs from edge to edge of the window, so anything else is dropped.
+List<DisplayFeature> mushafCreaseFeatures(
+  Size window,
+  Iterable<DisplayFeature> features,
+) {
+  return [
+    for (final feature in features)
+      if (feature.type != DisplayFeatureType.cutout &&
+          _crossesWindow(feature.bounds, window))
+        feature,
+  ];
+}
+
+bool _crossesWindow(Rect bounds, Size window) {
+  const slack = 1.0;
+  if (bounds.left < -slack ||
+      bounds.top < -slack ||
+      bounds.right > window.width + slack ||
+      bounds.bottom > window.height + slack) {
+    return false;
+  }
+  return bounds.height >= bounds.width
+      ? bounds.top <= slack && bounds.bottom >= window.height - slack
+      : bounds.left <= slack && bounds.right >= window.width - slack;
+}
 
 /// True when a display feature lies horizontally (fold above/below the text).
 ///

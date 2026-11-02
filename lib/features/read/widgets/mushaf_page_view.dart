@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
@@ -175,20 +175,25 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     // unfolding or rotating rebuilds the pager around the page already in view.
     final media = MediaQuery.of(context);
     final setting = ref.read(settingsProvider).mushafTwoPageSpread;
+    final creases = mushafCreaseFeatures(media.size, media.displayFeatures);
     final metrics = resolveMushafSpread(
       available: media.size,
-      displayFeatures: media.displayFeatures,
+      displayFeatures: creases,
       spreadEnabled: setting,
     );
-    if (kDebugMode) {
+    if (!kReleaseMode) {
+      // Numbers spelled out: profile builds strip Size/Rect.toString.
+      String r(Rect b) => '${b.left.round()},${b.top.round()} '
+          '${b.width.round()}x${b.height.round()}';
       final features = media.displayFeatures
-          .map((f) => '${f.type}/${f.state}@${f.bounds}')
+          .map((f) => '${f.type.name}/${f.state.name}@${r(f.bounds)}')
           .join(', ');
       debugPrint(
-        '[MushafGate] size=${media.size} dpr=${media.devicePixelRatio} '
-        'padding=${media.padding} viewPadding=${media.viewPadding} '
-        'features=[$features] -> showSpread=${metrics.showSpread} '
-        'page=${metrics.pageSize} (${metrics.reason})',
+        '[MushafGate] size=${media.size.width.round()}x'
+        '${media.size.height.round()} spread=$_spread '
+        'features=[$features] creases=${creases.length} '
+        '-> showSpread=${metrics.showSpread} '
+        '(${metrics.reason})',
       );
     }
     if (!_chromeInitialized) {
@@ -552,7 +557,8 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
         final media = MediaQuery.of(context);
         final metrics = resolveMushafSpread(
           available: media.size,
-          displayFeatures: media.displayFeatures,
+          displayFeatures:
+              mushafCreaseFeatures(media.size, media.displayFeatures),
           spreadEnabled: next,
         );
         if (metrics.showSpread == _spread) return;
@@ -1316,11 +1322,17 @@ class _MushafTextSettingsAction extends StatefulWidget {
 
 class _MushafTextSettingsActionState extends State<_MushafTextSettingsAction> {
   Future<bool>? _visibleFuture;
+  bool? _spreadFits;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _visibleFuture ??= isMushafTextSettingsAppBarVisible(context);
+    // Re-evaluated when the window changes (fold, unfold, rotate): the entry
+    // follows whether a spread fits.
+    final fits = mushafSpreadAvailable(context);
+    if (_visibleFuture != null && fits == _spreadFits) return;
+    _spreadFits = fits;
+    _visibleFuture = isMushafTextSettingsAppBarVisible(context);
   }
 
   @override
