@@ -450,14 +450,16 @@ class _MushafTurnStageState extends State<MushafTurnStage>
   _Side get _backSide => widget.spread ? _Side.right : _Side.single;
 
   /// Snapshot keys the turns out of [index] need (both directions).
+  ///
+  /// A single page's leaf back is plain paper, so only fronts are needed.
   Set<String> _neededFor(int index) => {
         if (_inBounds(index + 1)) ...{
           _key(index, _frontSide),
-          _key(index + 1, _backSide),
+          if (widget.spread) _key(index + 1, _backSide),
         },
         if (_inBounds(index - 1)) ...{
           _key(index - 1, _frontSide),
-          _key(index, _backSide),
+          if (widget.spread) _key(index, _backSide),
         },
       };
 
@@ -676,7 +678,7 @@ class _MushafTurnStageState extends State<MushafTurnStage>
       try {
         leaf = _leafFor(_slot(_index), region.size);
         front = _snapshot(a, _frontSide);
-        back = _snapshot(a + 1, _backSide);
+        back = widget.spread ? _snapshot(a + 1, _backSide) : front;
         if (leaf == null) reason = 'no sheet layout';
         if (front == null) reason = 'front p${a}L not painted';
         if (back == null) reason = 'back ${a + 1}R not painted';
@@ -1138,6 +1140,9 @@ class _MushafTurnStageState extends State<MushafTurnStage>
                       shader: _shader!,
                       turn: turn,
                       dark: Theme.of(context).brightness == Brightness.dark,
+                      // Single page: plain paper back, not the next page
+                      // (that one already shows underneath).
+                      paperBack: widget.spread ? null : widget.paperColor,
                       repaint: _tick,
                     ),
                   ),
@@ -1215,8 +1220,11 @@ class _LeafPainter extends CustomPainter {
     required this.shader,
     required this.turn,
     required this.dark,
+    required this.paperBack,
     required Listenable repaint,
   }) : super(repaint: repaint);
+
+  final Color? paperBack;
 
   final ui.FragmentShader shader;
   final _Turn turn;
@@ -1232,10 +1240,13 @@ class _LeafPainter extends CustomPainter {
       front: turn.front!,
       back: turn.back!,
       dark: dark,
+      paperBack: paperBack,
     ).paint(canvas, size);
   }
 
   @override
   bool shouldRepaint(_LeafPainter oldDelegate) =>
-      oldDelegate.turn != turn || oldDelegate.dark != dark;
+      oldDelegate.turn != turn ||
+      oldDelegate.dark != dark ||
+      oldDelegate.paperBack != paperBack;
 }

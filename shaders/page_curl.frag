@@ -24,9 +24,11 @@ uniform vec2 uNormal;    // unit normal of the fold line, towards the free edge
 uniform float uRadius;   // cylinder radius (px)
 uniform float uStrength; // shadow strength 0..1
 uniform float uDark;     // 1 for a dark colour scheme
+uniform float uPaperBack; // 1: back is plain paper with the front's ink showing through
+uniform vec3 uPaper;     // paper colour (0..1)
 
 uniform sampler2D uFront; // current page (front of the leaf)
-uniform sampler2D uBack;  // next page (back of the leaf)
+uniform sampler2D uBack;  // next page (back of the leaf), spreads only
 
 out vec4 fragColor;
 
@@ -112,12 +114,25 @@ void main() {
   }
   float covB = 1.0 - smoothstep(0.0, AA, outB);
   if (covB > 0.0) {
-    vec2 uv = vec2(s > 0.0 ? (qb.x - u0) / w : (u0 + w - qb.x) / w, qb.y / h);
-    uv = clamp(uv, vec2(0.0), vec2(1.0));
+    vec4 tex;
+    if (uPaperBack > 0.5) {
+      // Single page: the back is blank paper; the front's ink shows through
+      // faintly, mirrored because it is seen from behind.
+      vec2 uvf = vec2(s > 0.0 ? (u0 + w - qb.x) / w : (qb.x - u0) / w, qb.y / h);
+      uvf = clamp(uvf, vec2(0.0), vec2(1.0));
 #ifdef IMPELLER_TARGET_OPENGLES
-    uv.y = 1.0 - uv.y;
+      uvf.y = 1.0 - uvf.y;
 #endif
-    vec4 tex = texture(uBack, uv);
+      vec3 front = texture(uFront, uvf).rgb;
+      tex = vec4(mix(uPaper, front, 0.07), 1.0);
+    } else {
+      vec2 uv = vec2(s > 0.0 ? (qb.x - u0) / w : (u0 + w - qb.x) / w, qb.y / h);
+      uv = clamp(uv, vec2(0.0), vec2(1.0));
+#ifdef IMPELLER_TARGET_OPENGLES
+      uv.y = 1.0 - uv.y;
+#endif
+      tex = texture(uBack, uv);
+    }
     acc = over(vec4(tex.rgb * backShade, 1.0) * covB, acc);
   }
 

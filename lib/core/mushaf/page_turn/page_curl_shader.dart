@@ -31,6 +31,7 @@ void setPageCurlUniforms(
   required bool dark,
   required ui.Image front,
   required ui.Image back,
+  Color? paperBack,
 }) {
   var i = 0;
   void f(double value) => shader.setFloat(i++, value);
@@ -49,6 +50,11 @@ void setPageCurlUniforms(
   f(frame.radius);
   f(frame.strength);
   f(dark ? 1 : 0);
+  // Single page: plain paper back (the back sampler is bound but unused).
+  f(paperBack == null ? 0 : 1);
+  f(paperBack?.r ?? 0);
+  f(paperBack?.g ?? 0);
+  f(paperBack?.b ?? 0);
   shader.setImageSampler(0, front, filterQuality: ui.FilterQuality.low);
   shader.setImageSampler(1, back, filterQuality: ui.FilterQuality.low);
 }
@@ -62,6 +68,7 @@ class PageCurlPainter extends CustomPainter {
     required this.front,
     required this.back,
     required this.dark,
+    this.paperBack,
   });
 
   final ui.FragmentShader shader;
@@ -70,6 +77,9 @@ class PageCurlPainter extends CustomPainter {
   final ui.Image front;
   final ui.Image back;
   final bool dark;
+
+  /// Paper colour for a plain back (single page); null shows [back].
+  final Color? paperBack;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -81,6 +91,7 @@ class PageCurlPainter extends CustomPainter {
       dark: dark,
       front: front,
       back: back,
+      paperBack: paperBack,
     );
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
   }
