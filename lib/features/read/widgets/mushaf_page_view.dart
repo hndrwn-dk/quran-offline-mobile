@@ -27,6 +27,7 @@ import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/bismillah.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
+import 'package:quran_offline/core/mushaf/page_turn/page_turn_stats.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_glyph_fit.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_mushaf_layout.dart';
@@ -127,6 +128,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   @override
   void initState() {
     super.initState();
+    MushafFrameLog.start();
     _resumeHint = ref.read(resumeHintProvider);
     _completionGate = ReadingCompletionGate(
       minimumSession: Duration.zero,
@@ -617,6 +619,15 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
                             .sheet
                         : Theme.of(context).scaffoldBackgroundColor,
                     itemBuilder: _buildPagerItem,
+                    itemsKey: (
+                      _chromeVisible,
+                      _scrollToSurahId,
+                      _scrollToAyahNo,
+                      _selectedSurahId,
+                      _selectedAyahNo,
+                      MediaQuery.sizeOf(context).width >=
+                          kMushafMinSpreadWindowWidth,
+                    ),
                     onIndexChanged: (index, {required programmatic}) {
                       _programmaticPageChange = programmatic;
                       _onPagerIndexChanged(index);

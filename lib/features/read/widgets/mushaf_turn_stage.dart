@@ -94,9 +94,9 @@ class MushafTurnSlot {
   bool handleTap(Offset globalPosition) =>
       _stage._handleEdgeTap(this, globalPosition);
 
-  RenderRepaintBoundary? get boundary {
+  RenderSnapshotBoundary? get boundary {
     final object = boundaryKey.currentContext?.findRenderObject();
-    return object is RenderRepaintBoundary && object.attached && object.hasSize
+    return object is RenderSnapshotBoundary && object.attached && object.hasSize
         ? object
         : null;
   }
@@ -128,7 +128,7 @@ class MushafTurnRegion extends StatelessWidget {
   Widget build(BuildContext context) {
     final slot = MushafTurnScope.maybeOf(context);
     if (slot == null) return child;
-    return RepaintBoundary(key: slot.boundaryKey, child: child);
+    return SnapshotBoundary(key: slot.boundaryKey, child: child);
   }
 }
 
@@ -164,6 +164,7 @@ class MushafTurnStage extends StatefulWidget {
     required this.itemBuilder,
     required this.onIndexChanged,
     required this.paperColor,
+    this.itemsKey,
     this.controller,
   });
 
@@ -180,6 +181,11 @@ class MushafTurnStage extends StatefulWidget {
 
   /// Paper colour of the turn region, for snapshot validation.
   final Color paperColor;
+
+  /// Everything the items show besides their index (bars, selection, ...).
+  /// Items are rebuilt only when it changes: rebuilding a live page is the
+  /// most expensive thing a turn could trigger, and it makes snapshots stale.
+  final Object? itemsKey;
   final MushafTurnController? controller;
 
   @override
@@ -309,17 +315,54 @@ class _MushafTurnStageState extends State<MushafTurnStage>
       final program = await loadPageCurlProgram();
       if (!mounted) return;
       _shader = program.fragmentShader();
+      _warmUpShader();
     } catch (error) {
       _shaderFailed = true;
       logPageCurl('shader unavailable, turns slide: $error');
     }
   }
 
+  /// Draws the leaf once off screen so the GPU pipeline is compiled before
+  /// the first real turn instead of during its first frame.
+  void _warmUpShader() {
+    final shader = _shader;
+    if (shader == null) return;
+    final recorder = ui.PictureRecorder();
+    final pixel = (() {
+      final r = ui.PictureRecorder();
+      Canvas(r).drawRect(
+        const Rect.fromLTWH(0, 0, 4, 4),
+        Paint()..color = widget.paperColor,
+      );
+      final picture = r.endRecording();
+      final image = picture.toImageSync(4, 4);
+      picture.dispose();
+      return image;
+    })();
+    const leaf = PageCurlLeaf(rect: Rect.fromLTWH(0, 0, 16, 16), hingeX: 16, side: 1);
+    PageCurlPainter(
+      shader: shader,
+      leaf: leaf,
+      frame: computePageCurl(
+        leaf: leaf,
+        grab: const Offset(16, 8),
+        finger: const Offset(4, 6),
+      ),
+      front: pixel,
+      back: pixel,
+      dark: false,
+    ).paint(Canvas(recorder), const Size(16, 16));
+    final picture = recorder.endRecording();
+    picture.toImageSync(16, 16).dispose();
+    picture.dispose();
+    pixel.dispose();
+  }
+
   @override
   void didUpdateWidget(MushafTurnStage oldWidget) {
     super.didUpdateWidget(oldWidget);
     // The pager rebuilt (selection, chrome, settings): items follow.
-    _items.clear();
+    if (oldWidget.itemsKey != widget.itemsKey) _items.clear();
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller?._state = null;
       widget.controller?._state = this;
@@ -379,9 +422,11 @@ class _MushafTurnStageState extends State<MushafTurnStage>
 
   bool _inBounds(int index) => index >= 0 && index < widget.itemCount;
 
+  /// Live items: the current one and its neighbours, plus already built
+  /// items one further out (so turning back and forth never rebuilds a page).
   void _resetWindow() {
     _window
-      ..clear()
+      ..removeWhere((i) => (i - _index).abs() > 2)
       ..addAll([_index - 1, _index, _index + 1].where(_inBounds));
   }
 
@@ -425,25 +470,36 @@ class _MushafTurnStageState extends State<MushafTurnStage>
     _cache.clear();
   }
 
+  /// Sliding window: snapshots of the turns next to the current item stay
+  /// (so flipping back and forth captures nothing new); others go, farthest
+  /// first, once the cache is over budget or more than two items away.
   void _trimCache() {
     final keep = {
       ..._neededFor(_index),
       if (_pending != null) ..._neededFor(_index + _pending!),
     };
+    int distance(String key) =>
+        (int.parse(key.split(':').first) - _index).abs();
     _cache.removeWhere((key, snapshot) {
-      if (keep.contains(key)) return false;
+      if (keep.contains(key) || distance(key) <= 2) return false;
       snapshot.image.dispose();
       return true;
     });
-    // Over budget (huge windows): drop what the next turns need least.
-    while (_cacheBytes > kMushafTurnCacheBudget && _cache.isNotEmpty) {
-      final key = _cache.keys.firstWhere(
-        (k) => !_neededFor(_index).contains(k),
-        orElse: () => _cache.keys.first,
-      );
-      _cache.remove(key)!.image.dispose();
-    }
+    _makeRoom(0, keep);
     _stats.recordCache(_cacheBytes);
+  }
+
+  /// Evicts snapshots outside [keep], farthest first, until [incoming] more
+  /// bytes fit in the budget.
+  void _makeRoom(int incoming, Set<String> keep) {
+    int distance(String key) =>
+        (int.parse(key.split(':').first) - _index).abs();
+    while (_cacheBytes + incoming > kMushafTurnCacheBudget) {
+      final spare = _cache.keys.where((k) => !keep.contains(k)).toList()
+        ..sort((a, b) => distance(b).compareTo(distance(a)));
+      if (spare.isEmpty) break;
+      _cache.remove(spare.first)!.image.dispose();
+    }
   }
 
   /// A fresh snapshot of [index]'s [side], capturing it now if needed.
@@ -460,11 +516,41 @@ class _MushafTurnStageState extends State<MushafTurnStage>
     if (boundary == null) return null;
     final rect = _sideRect(slot, side, boundary.size);
     if (rect == null) return null;
-    final watch = Stopwatch()..start();
     final dpr = MediaQuery.devicePixelRatioOf(context) * kMushafLeafRasterScale;
-    final image =
-        captureSheetSnapshots(boundary, [rect], pixelRatio: dpr).single;
-    _stats.recordCapture(watch.elapsedMicroseconds);
+    _cache.remove(key)?.image.dispose();
+    _makeRoom(
+      ((rect.width * dpr).ceil() * (rect.height * dpr).ceil() * 4),
+      {
+        ..._neededFor(_index),
+        if (_turn != null) ...{
+          _key(_turn!.a, _frontSide),
+          _key(_turn!.b, _backSide),
+        },
+      },
+    );
+    final watch = Stopwatch()..start();
+    final image = boundary.captureRect(rect, pixelRatio: dpr);
+    final captureMicros = watch.elapsedMicroseconds;
+    _stats.recordCapture(captureMicros);
+    if (const bool.fromEnvironment('QO_CAPTURE_BENCH')) {
+      // Compare with the async path: time until the image is ready.
+      final async = Stopwatch()..start();
+      unawaited(
+        boundary.captureRectAsync(rect, pixelRatio: dpr).then((full) {
+          logPageCurl(
+            'bench $key toImageSync ${captureMicros}us (UI), '
+            'toImage ${async.elapsedMicroseconds}us (await)',
+          );
+          full.dispose();
+        }),
+      );
+    }
+    if (kProfileMode || kDebugMode) {
+      logPageCurl(
+        'capture $key ${cached == null ? 'missing' : 'stale g${cached.generation}->g${slot.generation}'} '
+        '${captureMicros}us',
+      );
+    }
     _cache.remove(key)?.image.dispose();
     final snapshot = _Snapshot(image, slot.generation);
     _cache[key] = snapshot;
@@ -511,11 +597,22 @@ class _MushafTurnStageState extends State<MushafTurnStage>
 
   void _prewarm() {
     if (!mounted || _turn != null || _anim.isAnimating) return;
+    _stats.mark('prewarm');
     for (final key in _neededFor(_index)) {
       final parts = key.split(':');
       _snapshot(int.parse(parts[0]), _Side.values.byName(parts[1]));
     }
     _trimCache();
+    // Idle: build one more page ahead (then behind), so quick successive
+    // turns find their pages already built and painted. One per idle beat
+    // keeps each build in a frame where nothing moves.
+    for (final next in [_index + 2, _index - 2]) {
+      if (_inBounds(next) && !_window.contains(next)) {
+        setState(() => _window.add(next));
+        _schedulePrewarm();
+        break;
+      }
+    }
   }
 
   // -------------------------------------------------------------- turns
@@ -589,6 +686,7 @@ class _MushafTurnStageState extends State<MushafTurnStage>
     turn.grab = turn.rest;
     turn.finger = topIsA ? turn.rest : turn.landing;
     _stats.begin(MediaQuery.maybeOf(context));
+    _stats.mark('begin');
     setState(() => _turn = turn);
     return turn;
   }
@@ -603,6 +701,7 @@ class _MushafTurnStageState extends State<MushafTurnStage>
       stageWidth: context.size!.width,
     )..slide = topIsA ? 0 : 1;
     _stats.begin(MediaQuery.maybeOf(context));
+    _stats.mark('begin');
     setState(() => _turn = turn);
     return turn;
   }
@@ -681,6 +780,7 @@ class _MushafTurnStageState extends State<MushafTurnStage>
   }
 
   void _onAnimTick() {
+    _stats.mark('anim');
     final turn = _turn;
     if (turn == null) return;
     final t = _anim.value;
@@ -709,6 +809,7 @@ class _MushafTurnStageState extends State<MushafTurnStage>
   }
 
   void _settle(int index) {
+    _stats.mark('settle');
     final changed = index != _index;
     final programmatic = _programmatic;
     _programmatic = false;
@@ -865,6 +966,7 @@ class _MushafTurnStageState extends State<MushafTurnStage>
   }
 
   void _applyDrag(_Turn turn, Offset start, Offset position) {
+    _stats.mark('drag');
     if (turn.curl) {
       final leaf = turn.leaf!;
       final delta = leaf.toLeaf(position - turn.region.topLeft) -
@@ -907,6 +1009,27 @@ class _MushafTurnStageState extends State<MushafTurnStage>
   // ------------------------------------------------------------ build
 
   Widget _host(int index, {required bool visible, required bool top}) {
+    final turn = _turn;
+    // Hidden: clipped to nothing. During a curl the page underneath is drawn
+    // ABOVE the top page, clipped to the leaf's side: only axis-aligned
+    // rect clips, which the GPU applies as a scissor.
+    final Rect? clip;
+    if (!visible) {
+      clip = Rect.zero;
+    } else if (turn != null && turn.curl && !top) {
+      clip = _holeOf(turn) ?? Rect.zero;
+    } else {
+      clip = null;
+    }
+    return _hostWithClip(index, visible: visible, top: top, clip: clip);
+  }
+
+  Widget _hostWithClip(
+    int index, {
+    required bool visible,
+    required bool top,
+    required Rect? clip,
+  }) {
     final slot = _slot(index);
     final turn = _turn;
     // The same widget instance across stage rebuilds: starting or settling
@@ -919,10 +1042,7 @@ class _MushafTurnStageState extends State<MushafTurnStage>
       key: ValueKey<int>(index),
       visible: visible,
       interactive: visible && (turn == null || top),
-      clipper: _TurnItemClipper(
-        visible: visible,
-        hole: top && turn != null && turn.curl ? _holeOf(turn) : null,
-      ),
+      clipper: _TurnItemClipper(clip),
       offsetOf: turn != null && !turn.curl && visible
           ? () => _slideOffset(index)
           : null,
@@ -956,12 +1076,15 @@ class _MushafTurnStageState extends State<MushafTurnStage>
     final turn = _turn;
     final shown = turn == null ? {_index} : {turn.a, turn.b};
     final top = turn == null ? _index : (turn.topIsA ? turn.a : turn.b);
+    final under = shown.where((i) => i != top);
+    final curl = turn != null && turn.curl;
     final order = [
       for (final i in _window)
         if (!shown.contains(i)) i,
-      for (final i in shown)
-        if (i != top) i,
+      if (!curl) ...under,
       top,
+      // Curl: the revealed page goes over the top one, clipped to its half.
+      if (curl) ...under,
     ];
     _slots.removeWhere((i, _) => !order.contains(i));
     _items.removeWhere((i, _) => !order.contains(i));
@@ -1037,7 +1160,7 @@ class _TurnItemHost extends StatelessWidget {
         excluding: !visible,
         child: IgnorePointer(
           ignoring: !interactive,
-          child: ClipPath(
+          child: ClipRect(
             clipper: clipper,
             child: offsetOf == null
                 ? child
@@ -1056,30 +1179,17 @@ class _TurnItemHost extends StatelessWidget {
   }
 }
 
-/// Full item, nothing (hidden), or the item minus the leaf's half.
-class _TurnItemClipper extends CustomClipper<Path> {
-  _TurnItemClipper({required this.visible, this.hole});
+/// Full item (null), nothing (hidden) or the leaf's half of the region.
+class _TurnItemClipper extends CustomClipper<Rect> {
+  _TurnItemClipper(this.clip);
 
-  final bool visible;
-  final Rect? hole;
-
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    if (!visible) return path;
-    path.addRect(Offset.zero & size);
-    final hole = this.hole;
-    if (hole != null) {
-      path
-        ..fillType = PathFillType.evenOdd
-        ..addRect(hole);
-    }
-    return path;
-  }
+  final Rect? clip;
 
   @override
-  bool shouldReclip(_TurnItemClipper oldClipper) =>
-      oldClipper.visible != visible || oldClipper.hole != hole;
+  Rect getClip(Size size) => clip ?? Offset.zero & size;
+
+  @override
+  bool shouldReclip(_TurnItemClipper oldClipper) => oldClipper.clip != clip;
 }
 
 class _LeafPainter extends CustomPainter {

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'dart:developer' show Timeline;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
@@ -25,6 +27,25 @@ class PageTurnStats {
   Timer? _idleTimer;
   double _refreshRate = 60;
 
+  /// (monotonic µs, phase) marks, to name the phase of each slow frame.
+  final List<(int, String)> _phases = [];
+
+  /// Notes what the stage is doing from now on (begin, drag, anim, ...).
+  void mark(String phase) {
+    if (!_enabled || !_inSession) return;
+    if (_phases.isNotEmpty && _phases.last.$2 == phase) return;
+    _phases.add((Timeline.now, phase));
+  }
+
+  String _phaseAt(int micros) {
+    var phase = 'idle';
+    for (final (at, name) in _phases) {
+      if (at > micros) break;
+      phase = name;
+    }
+    return phase;
+  }
+
   bool get _enabled => !kReleaseMode;
 
   void begin(MediaQueryData? media) {
@@ -38,6 +59,7 @@ class PageTurnStats {
       _captureMicros.clear();
       _turns = 1;
       _fallbacks = 0;
+      _phases.clear();
       _peakBytes = _lastBytes;
       final displays = WidgetsBinding.instance.platformDispatcher.displays;
       if (displays.isNotEmpty) _refreshRate = displays.first.refreshRate;
@@ -77,17 +99,25 @@ class PageTurnStats {
     if (!_inSession) return;
     _inSession = false;
     final budget = 1000000 / _refreshRate;
-    final ui = [for (final f in _frames) f.buildDuration.inMicroseconds];
+    final build = [for (final f in _frames) f.buildDuration.inMicroseconds];
     final raster = [for (final f in _frames) f.rasterDuration.inMicroseconds];
-    final jank = _frames
+    final slow = _frames
         .where((f) =>
             f.buildDuration.inMicroseconds > budget ||
             f.rasterDuration.inMicroseconds > budget)
-        .length;
+        .toList();
+    final jank = slow.length;
+    for (final f in slow) {
+      debugPrint(
+        '[MushafTurnJank] phase=${_phaseAt(f.timestampInMicroseconds(ui.FramePhase.vsyncStart))} '
+        'ui=${(f.buildDuration.inMicroseconds / 1000).toStringAsFixed(1)} '
+        'raster=${(f.rasterDuration.inMicroseconds / 1000).toStringAsFixed(1)}',
+      );
+    }
     debugPrint(
       '[MushafTurnStats] turns=$_turns frames=${_frames.length} '
       'hz=${_refreshRate.round()} '
-      'ui(p50/p90/max ms)=${_pct(ui)} raster=${_pct(raster)} '
+      'ui(p50/p90/max ms)=${_pct(build)} raster=${_pct(raster)} '
       'jank=$jank fallbacks=$_fallbacks '
       'captures=${_captureMicros.length} capture(p50/p90 ms)=${_pct(_captureMicros, two: true)} '
       'cache(peak/now MB)=${_mb(_peakBytes)}/${_mb(_lastBytes)}',
@@ -108,5 +138,30 @@ class PageTurnStats {
   void dispose() {
     _idleTimer?.cancel();
     if (_listening) SchedulerBinding.instance.removeTimingsCallback(_onTimings);
+  }
+}
+
+/// Opt-in (`--dart-define=QO_FRAME_LOG=true`, profile builds): logs every
+/// slow frame of the Mushaf reader, whatever pager is active, for baselines.
+class MushafFrameLog {
+  static bool _started = false;
+
+  static void start() {
+    if (_started || !const bool.fromEnvironment('QO_FRAME_LOG')) return;
+    _started = true;
+    SchedulerBinding.instance.addTimingsCallback((timings) {
+      final displays = WidgetsBinding.instance.platformDispatcher.displays;
+      final hz = displays.isEmpty ? 60.0 : displays.first.refreshRate;
+      final budget = 1000000 / hz;
+      for (final f in timings) {
+        final b = f.buildDuration.inMicroseconds;
+        final r = f.rasterDuration.inMicroseconds;
+        debugPrint(
+          '[MushafFrame] ui=${(b / 1000).toStringAsFixed(1)} '
+          'raster=${(r / 1000).toStringAsFixed(1)}'
+          '${b > budget || r > budget ? ' SLOW' : ''}',
+        );
+      }
+    });
   }
 }

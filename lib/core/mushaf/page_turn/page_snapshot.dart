@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/scheduler.dart';
 
 /// Minimum share of a page's text box that must differ from the paper before
@@ -41,6 +42,30 @@ List<ui.Image> captureSheetSnapshots(
     return [for (final rect in rects) cropImage(full, rect, pixelRatio)];
   } finally {
     full.dispose();
+  }
+}
+
+/// A repaint boundary that can rasterize just part of itself.
+class SnapshotBoundary extends SingleChildRenderObjectWidget {
+  const SnapshotBoundary({super.key, super.child});
+
+  @override
+  RenderSnapshotBoundary createRenderObject(BuildContext context) =>
+      RenderSnapshotBoundary();
+}
+
+class RenderSnapshotBoundary extends RenderRepaintBoundary {
+  /// Rasterizes only [rect] (logical px): no full-region image, no crop pass,
+  /// and the GPU culls everything outside the rect.
+  ui.Image captureRect(Rect rect, {required double pixelRatio}) {
+    final layer = this.layer! as OffsetLayer;
+    return layer.toImageSync(rect, pixelRatio: pixelRatio);
+  }
+
+  /// The async equivalent of [captureRect] (benchmarks only).
+  Future<ui.Image> captureRectAsync(Rect rect, {required double pixelRatio}) {
+    final layer = this.layer! as OffsetLayer;
+    return layer.toImage(rect, pixelRatio: pixelRatio);
   }
 }
 
