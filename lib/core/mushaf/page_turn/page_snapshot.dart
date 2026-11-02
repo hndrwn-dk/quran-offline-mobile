@@ -9,6 +9,14 @@ import 'package:flutter/scheduler.dart';
 /// even the sparse opening pages; blank paper is 0.
 const double kPageSnapshotMinInk = 0.01;
 
+/// Most of a text box a real page ever inks (dense pages are ~15%). More means
+/// the snapshot shows something else: an error box, a scrim, a solid fill.
+const double kPageSnapshotMaxInk = 0.40;
+
+/// Whether an ink coverage looks like a printed Mushaf page.
+bool pageSnapshotInkIsValid(double ink) =>
+    ink >= kPageSnapshotMinInk && ink <= kPageSnapshotMaxInk;
+
 /// Waits until everything built so far has been laid out and painted.
 Future<void> waitForPaintedFrame() async {
   final binding = SchedulerBinding.instance;

@@ -56,6 +56,14 @@ Future<_Captured> _capture(
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(colorScheme: scheme, fontFamily: 'Roboto'),
+        // The Fold 8's system font scale. A linear scaler (unlike the test
+        // default) asserts on negative sizes, as on the device.
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(0.9),
+          ),
+          child: child!,
+        ),
         home: RepaintBoundary(
           key: key,
           child: MushafFramedSheets(
@@ -77,6 +85,8 @@ Future<_Captured> _capture(
     ),
   );
   await tester.pump();
+  // A failed build paints a solid error box, which must not pass as ink.
+  expect(tester.takeException(), isNull);
   final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final images = await tester.runAsync(
     () async => captureSheetSnapshots(boundary, layout!.sheets, pixelRatio: 1),
@@ -139,9 +149,9 @@ void main() {
           if (!_leafPages.contains(page)) continue;
           final ink = await _textInk(tester, captured, i, paper);
           expect(
-            ink,
-            greaterThan(kPageSnapshotMinInk),
-            reason: 'p$page snapshot is blank paper ($theme): ink $ink',
+            pageSnapshotInkIsValid(ink),
+            isTrue,
+            reason: 'p$page snapshot is not a printed page ($theme): ink $ink',
           );
         }
         for (final image in captured.images) {
@@ -150,11 +160,12 @@ void main() {
       }, skip: !mushafRealPagesAvailable);
     }
 
-    testWidgets('blank sheets measure as blank ($theme)', (tester) async {
+    testWidgets('blank sheets are rejected ($theme)', (tester) async {
       final captured = await _capture(tester, [4, 3], scheme, blank: true);
       for (var i = 0; i < 2; i++) {
         final ink = await _textInk(tester, captured, i, paper);
         expect(ink, lessThan(kPageSnapshotMinInk / 10));
+        expect(pageSnapshotInkIsValid(ink), isFalse);
       }
       for (final image in captured.images) {
         image.dispose();

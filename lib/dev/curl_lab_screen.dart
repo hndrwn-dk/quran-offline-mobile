@@ -252,7 +252,7 @@ class _CurlLabScreenState extends State<CurlLabScreen>
     final bytes = _pageImages.values.fold<int>(0, (a, i) => a + imageBytes(i));
     final front = _pageInk[turn.frontPage] ?? 0;
     final back = _pageInk[turn.backPage] ?? 0;
-    final ok = front >= kPageSnapshotMinInk && back >= kPageSnapshotMinInk;
+    final ok = pageSnapshotInkIsValid(front) && pageSnapshotInkIsValid(back);
     logPageCurl(
       'lab: ${turn.label} captured in ${ms}ms, '
       'front p${turn.frontPage} ink ${(front * 100).toStringAsFixed(1)}%, '
@@ -266,7 +266,7 @@ class _CurlLabScreenState extends State<CurlLabScreen>
       _status = ok
           ? '${turn.label}: ready in ${ms}ms · '
               'cache ${(bytes / 1048576).toStringAsFixed(1)} MB'
-          : '${turn.label}: BLANK snapshot → would fall back to slide';
+          : '${turn.label}: INVALID snapshot → would fall back to slide';
     });
   }
 
