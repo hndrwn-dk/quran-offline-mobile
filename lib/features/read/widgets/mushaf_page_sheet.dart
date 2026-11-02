@@ -74,6 +74,7 @@ class MushafFramedSheets extends StatelessWidget {
     this.focus = false,
     this.wantNumber = true,
     this.pageNumberLabel,
+    this.onLayout,
   });
 
   final List<int> pages;
@@ -84,6 +85,10 @@ class MushafFramedSheets extends StatelessWidget {
   final bool focus;
   final bool wantNumber;
   final String Function(int pageNo)? pageNumberLabel;
+
+  /// Reports the resolved sheet/text rects (page turns crop snapshots by them).
+  /// Called during layout: record the value, don't rebuild from it.
+  final void Function(MushafSheetLayout layout)? onLayout;
 
   @override
   Widget build(BuildContext context) {
@@ -138,6 +143,7 @@ class MushafFramedSheets extends StatelessWidget {
           if (kDebugMode) {
             debugPrint('[MushafSheets] area=$area $layout');
           }
+          onLayout?.call(layout);
 
           final sides = [
             for (var i = 0; i < pages.length; i++)
