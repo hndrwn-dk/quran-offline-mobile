@@ -469,7 +469,7 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
   /// Lembar/Tanpa use the turn stage; Geser (and "Remove animations") the
   /// swipe pager. Null means the swipe pager.
   MushafTurnStyle? get _turnStyle {
-    final setting = ref.read(settingsProvider).mushafPageTurn;
+    final setting = ref.read(settingsProvider).pageTurnFor(framed: _framedMode);
     if (setting == MushafPageTurn.none) return MushafTurnStyle.none;
     if (setting == MushafPageTurn.slide ||
         MediaQuery.disableAnimationsOf(context)) {
@@ -1333,9 +1333,9 @@ class _MushafTextSettingsActionState extends State<_MushafTextSettingsAction> {
             .read(settingsProvider)
             .appLanguage;
         return IconButton(
-          icon: const Icon(Icons.text_fields),
+          icon: const Icon(Icons.tune),
           tooltip: AppLocalizations.getSettingsText(
-            'text_settings_title',
+            'mushaf_display_title',
             appLanguage,
           ),
           onPressed: () {

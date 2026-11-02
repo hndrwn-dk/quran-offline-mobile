@@ -4682,6 +4682,7 @@ class AppLocalizations {
       'text_settings_size_label' => _getTextSettingsSizeLabel(language),
       'mushaf_two_page_title' => _getMushafTwoPageTitle(language),
       'mushaf_two_page_subtitle' => _getMushafTwoPageSubtitle(language),
+      'mushaf_display_title' => _getMushafDisplayTitle(language),
       'page_turn_title' => _getPageTurnTitle(language),
       'page_turn_subtitle' => _getPageTurnSubtitle(language),
       'page_turn_curl' => _getPageTurnCurl(language),
@@ -6089,6 +6090,16 @@ class AppLocalizations {
       'zh' => '双页显示',
       'ja' => '2ページ表示',
       _ => 'Two-page view',
+    };
+  }
+
+  static String _getMushafDisplayTitle(String language) {
+    return switch (language) {
+      'id' => 'Tampilan Mushaf',
+      'en' => 'Mushaf display',
+      'zh' => '古兰经显示',
+      'ja' => 'ムスハフの表示',
+      _ => 'Mushaf display',
     };
   }
 
