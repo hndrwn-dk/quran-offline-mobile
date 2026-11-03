@@ -52,7 +52,12 @@ Future<({int surahId, int ayahNo})?> resolveSurahAyahFromLastRead(
       );
     case 'page':
       final surahId = lastRead.surahId;
-      if (surahId == null) return null;
+      if (surahId == null) {
+        // The Mushaf can save just the page; start from its first ayah.
+        final verses = await db.getVersesByPage(lastRead.id);
+        if (verses.isEmpty) return null;
+        return (surahId: verses.first.surahId, ayahNo: verses.first.ayahNo);
+      }
       return (
         surahId: surahId,
         ayahNo: (lastRead.ayahNo ?? 1).clamp(1, 999),

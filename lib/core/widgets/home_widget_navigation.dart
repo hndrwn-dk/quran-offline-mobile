@@ -63,7 +63,8 @@ class HomeWidgetNavigation {
       case 'read':
         final surah = int.tryParse(uri.queryParameters['surah'] ?? '');
         final ayah = int.tryParse(uri.queryParameters['ayah'] ?? '');
-        if (surah != null) {
+        final resume = uri.queryParameters['resume'] == '1';
+        if (surah != null && !(resume && ref.read(lastReadProvider) != null)) {
           ref.read(readerSourceProvider.notifier).state =
               SurahSource(surah, targetAyahNo: ayah);
           if (ayah != null) {

@@ -93,6 +93,14 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/quran_beranda_widget_info" />
         </receiver>
+        <!-- home_widget headless Dart callback; QuranWidgetRefreshWorker sends it daily. -->
+        <receiver
+            android:name="es.antonborri.home_widget.HomeWidgetBackgroundReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="es.antonborri.home_widget.action.BACKGROUND" />
+            </intent-filter>
+        </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

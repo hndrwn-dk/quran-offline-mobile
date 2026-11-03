@@ -5,6 +5,7 @@ import 'package:home_widget/home_widget.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran_offline/core/notifications/weekly_reminder_service.dart';
 import 'package:quran_offline/core/widgets/home_widget_keys.dart';
+import 'package:quran_offline/core/widgets/home_widget_sync.dart';
 import 'package:quran_offline/app/app.dart';
 
 Future<void> main() async {
@@ -28,6 +29,7 @@ Future<void> main() async {
   }
   try {
     await HomeWidget.setAppGroupId(HomeWidgetKeys.appGroupId);
+    await HomeWidget.registerInteractivityCallback(homeWidgetBackgroundCallback);
   } catch (e) {
     debugPrint('HomeWidget.setAppGroupId failed: $e');
   }

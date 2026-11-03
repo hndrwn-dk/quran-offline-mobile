@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_beranda_label">Quran Offline</string>
+    <string name="widget_beranda_description">本周思考与继续阅读。调整大小可查看更多内容。</string>
+    <string name="widget_continue">继续阅读</string>
+    <string name="widget_start_reading">开始阅读</string>
+    <string name="widget_start_reading_hint">你的阅读位置会显示在这里</string>
+    <string name="widget_read_reflection">阅读思考</string>
+    <string name="widget_reflection_label">本周思考</string>
+    <string name="widget_open_app_hint">打开一次应用即可显示内容</string>
+    <string name="widget_preview_translation">与艰难相伴的，确是容易，</string>
+    <string name="widget_preview_ref">Ash-Sharh 94:5</string>
+</resources>

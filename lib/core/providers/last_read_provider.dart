@@ -96,6 +96,13 @@ class LastReadNotifier extends StateNotifier<LastReadPosition?> {
 
   Future<void> _loadLastRead() async {
     final prefs = await SharedPreferences.getInstance();
+    final saved = readFromPrefs(prefs);
+    if (saved != null) state = saved;
+  }
+
+  /// Saved position, or null. Also used by the home widget's background
+  /// refresh, which has no notifier.
+  static LastReadPosition? readFromPrefs(SharedPreferences prefs) {
     final type = prefs.getString('${_key}_type');
     final id = prefs.getInt('${_key}_id');
     final ayahNo = prefs.getInt('${_key}_ayahNo');
@@ -104,7 +111,7 @@ class LastReadNotifier extends StateNotifier<LastReadPosition?> {
 
     if (type != null && id != null && timestampStr != null) {
       try {
-        state = LastReadPosition(
+        return LastReadPosition(
           type: type,
           id: id,
           ayahNo: ayahNo,
@@ -113,9 +120,9 @@ class LastReadNotifier extends StateNotifier<LastReadPosition?> {
         );
       } catch (e) {
         // Invalid data, ignore
-        state = null;
       }
     }
+    return null;
   }
 
   Future<void> saveLastRead(ReaderSource source, {int? ayahNo, int? surahId}) async {

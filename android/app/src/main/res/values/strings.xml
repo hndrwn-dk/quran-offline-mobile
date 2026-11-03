@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_beranda_label">Quran Offline — Beranda</string>
-    <string name="widget_beranda_description">Renungan harian dan lanjutkan baca Al-Qur\'an offline.</string>
+    <string name="widget_beranda_label">Quran Offline</string>
+    <string name="widget_beranda_description">Renungan minggu ini dan lanjutkan baca. Ubah ukurannya untuk melihat lebih banyak.</string>
+    <string name="widget_continue">Lanjutkan baca</string>
+    <string name="widget_start_reading">Mulai baca</string>
+    <string name="widget_start_reading_hint">Posisi bacaan kamu akan muncul di sini</string>
+    <string name="widget_read_reflection">Baca renungan</string>
+    <string name="widget_reflection_label">Renungan minggu ini</string>
+    <string name="widget_open_app_hint">Buka aplikasi sekali agar widget terisi</string>
+    <string name="widget_preview_translation">Maka sesungguhnya bersama kesulitan ada kemudahan,</string>
+    <string name="widget_preview_ref">QS Ash-Sharh 94:5</string>
 </resources>
