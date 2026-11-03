@@ -1,0 +1,28 @@
+<en-US>
+• New home screen widget: resize it to see your reading progress, this week's reflection, or both
+• This week's ayah in the same Mushaf script as the app, with its translation
+• Continue reading from where you stopped in one tap
+• Widget follows your phone's light or dark mode
+• Small fixes
+</en-US>
+<id>
+• Widget layar utama baru: ubah ukurannya untuk melihat progres baca, renungan minggu ini, atau keduanya
+• Ayat renungan minggu ini dengan tulisan Mushaf yang sama seperti di aplikasi, lengkap dengan terjemahannya
+• Lanjutkan baca dari posisi terakhir kamu dengan sekali ketuk
+• Widget mengikuti mode terang atau gelap di HP kamu
+• Perbaikan kecil
+</id>
+<zh-CN>
+• 全新主屏幕小组件：调整大小即可查看阅读进度、本周思考，或两者兼有
+• 本周经文采用与应用相同的古兰经字体，并附有译文
+• 一键从上次停下的地方继续阅读
+• 小组件跟随手机的浅色或深色模式
+• 一些小修复
+</zh-CN>
+<ja-JP>
+• 新しいホーム画面ウィジェット：サイズを変えると、読書の進み具合、今週の黙想、またはその両方を表示
+• 今週のアーヤをアプリと同じムスハフの書体で、翻訳とともに表示
+• 前回読み終えたところからワンタップで続きを読めます
+• ウィジェットは端末のライト／ダークモードに合わせて表示
+• 細かな修正
+</ja-JP>
