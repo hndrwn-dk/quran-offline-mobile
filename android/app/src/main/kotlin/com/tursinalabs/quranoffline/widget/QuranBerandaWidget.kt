@@ -167,8 +167,11 @@ private fun SmallContent(payload: WidgetPayload) {
             .semantics { contentDescription = description },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ProgressRing(percent = payload.continuePercent.coerceAtLeast(0), diameter = if (tall) 44.dp else 38.dp)
-        Spacer(GlanceModifier.width(10.dp))
+        // Nothing read yet: a "0%" ring would read as a broken value.
+        if (payload.hasContinue) {
+            ProgressRing(percent = payload.continuePercent.coerceAtLeast(0), diameter = if (tall) 44.dp else 38.dp)
+            Spacer(GlanceModifier.width(10.dp))
+        }
         Column(modifier = GlanceModifier.defaultWeight()) {
             if (payload.hasContinue) {
                 if (tall) Text(payload.continueTitle, style = label(Primary), maxLines = 1)
