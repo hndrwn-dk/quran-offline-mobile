@@ -7866,12 +7866,25 @@ class AppLocalizations {
     };
   }
 
-  static String formatWidgetProgressDescription(int percent, String language) {
-    return switch (language) {
-      'id' => 'Kamu sudah membaca $percent% surah ini',
-      'zh' => '本章已读$percent%',
-      'ja' => 'このスーラを$percent%読みました',
-      _ => "You've read $percent% of this surah",
+  /// [scope] is the continue card's progress scope: surah, juz, or page.
+  static String formatWidgetProgressDescription(
+    int percent,
+    String scope,
+    String language,
+  ) {
+    return switch ((scope, language)) {
+      ('surah', 'id') => 'Kamu sudah membaca $percent% surah ini',
+      ('juz', 'id') => 'Kamu sudah membaca $percent% juz ini',
+      (_, 'id') => "Posisi baca kamu $percent% dari Al-Qur'an",
+      ('surah', 'zh') => '本章已读$percent%',
+      ('juz', 'zh') => '本卷已读$percent%',
+      (_, 'zh') => '阅读位置：古兰经的$percent%',
+      ('surah', 'ja') => 'このスーラを$percent%読みました',
+      ('juz', 'ja') => 'このジュズを$percent%読みました',
+      (_, 'ja') => '読んでいる位置：クルアーンの$percent%',
+      ('surah', _) => "You've read $percent% of this surah",
+      ('juz', _) => "You've read $percent% of this juz",
+      _ => 'Reading position: $percent% through the Quran',
     };
   }
 }

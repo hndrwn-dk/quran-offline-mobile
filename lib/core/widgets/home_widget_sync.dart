@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reflection_lens.dart';
+import 'package:quran_offline/core/providers/last_read_progress_provider.dart';
 import 'package:quran_offline/core/providers/last_read_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/reflection_history_store.dart';
@@ -161,7 +162,11 @@ class HomeWidgetSync {
       continuePercent: cont?.percent,
       continueDescription: cont == null
           ? null
-          : AppLocalizations.formatWidgetProgressDescription(cont.percent, lang),
+          : AppLocalizations.formatWidgetProgressDescription(
+              cont.percent,
+              cont.scope,
+              lang,
+            ),
       continueHint: AppLocalizations.getWidgetStartReadingHint(lang),
       ayahRef: ayah?.ref,
       ayahTranslation: ayah?.translation,
@@ -249,6 +254,7 @@ class HomeWidgetSync {
         int ayahNo,
         int page,
         int percent,
+        String scope,
         String? juzLabel,
         String meta,
         String deepLink,
@@ -271,6 +277,16 @@ class HomeWidgetSync {
       lastRead: lastRead,
       surahDisplayName: surahName,
     );
+    // Same ring as the app's continue card: surah, juz, or Mushaf page
+    // progress depending on how the last read was saved.
+    final ring = computeLastReadProgress(
+      lastRead: lastRead,
+      surahAyahCount: lastRead.type == 'surah' || lastRead.type == 'surah_in_juz'
+          ? await db.getAyahCountForSurah(coords.surahId)
+          : null,
+      juzVerses:
+          lastRead.type == 'juz' ? await db.getVersesByJuz(lastRead.id) : null,
+    );
     final juzNo = progress?.juzNo ?? verse?.juz;
     final juzLabel =
         juzNo == null ? null : '${AppLocalizations.getMenuText('juz', lang)} $juzNo';
@@ -279,8 +295,8 @@ class HomeWidgetSync {
       surahName: surahName,
       ayahNo: coords.ayahNo,
       page: page,
-      // Same ring as the app's continue card: progress through the surah.
-      percent: progress?.surahPercent ?? widgetQuranPagePercent(page),
+      percent: ring?.percent ?? widgetQuranPagePercent(page),
+      scope: ring?.scope ?? 'page',
       juzLabel: juzLabel,
       meta: widgetContinueMeta(
         pageLabel: AppLocalizations.getWidgetPageShort(page, lang),

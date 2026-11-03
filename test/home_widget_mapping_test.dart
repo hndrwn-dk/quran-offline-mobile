@@ -101,7 +101,9 @@ void main() {
       for (final lang in ['id', 'en', 'zh', 'ja']) {
         final strings = [
           AppLocalizations.getWidgetStartReadingHint(lang),
-          AppLocalizations.formatWidgetProgressDescription(40, lang),
+          AppLocalizations.formatWidgetProgressDescription(40, 'surah', lang),
+          AppLocalizations.formatWidgetProgressDescription(40, 'juz', lang),
+          AppLocalizations.formatWidgetProgressDescription(99, 'page', lang),
           AppLocalizations.getWidgetReadReflection(lang),
         ];
         expect(strings.every((s) => s.isNotEmpty), isTrue);
