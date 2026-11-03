@@ -7797,4 +7797,81 @@ class AppLocalizations {
         '$label is not saved on your device. Tap Save to download this surah for offline playback.',
     };
   }
+
+  // Home screen widget (Android Glance). Kept short: cells are small.
+
+  static String getWidgetPageShort(int page, String language) {
+    return switch (language) {
+      'id' => 'Hal. $page',
+      'zh' => '第$page页',
+      'ja' => '$pageページ',
+      _ => 'p. $page',
+    };
+  }
+
+  static String getWidgetContinueButton(int page, String language) {
+    return switch (language) {
+      'id' => 'Lanjutkan · Hal. $page',
+      'zh' => '继续 · 第$page页',
+      'ja' => '続き · $pageページ',
+      _ => 'Continue · p. $page',
+    };
+  }
+
+  static String getWidgetReadReflection(String language) {
+    return switch (language) {
+      'id' => 'Baca renungan',
+      'zh' => '阅读思考',
+      'ja' => '黙想を読む',
+      _ => 'Read reflection',
+    };
+  }
+
+  static String formatWidgetAyahPosition(int index, int total, String language) {
+    return switch (language) {
+      'id' => '$index dari $total ayat',
+      'zh' => '第$index节，共$total节',
+      'ja' => '$total節中$index節目',
+      _ => '$index of $total verses',
+    };
+  }
+
+  static String formatWidgetAyahRef(
+    String surahName,
+    int surah,
+    int ayah,
+    String language,
+  ) {
+    return switch (language) {
+      'id' => 'QS $surahName $surah:$ayah',
+      _ => '$surahName $surah:$ayah',
+    };
+  }
+
+  static String getWidgetStartReading(String language) {
+    return switch (language) {
+      'id' => 'Mulai baca',
+      'zh' => '开始阅读',
+      'ja' => '読み始める',
+      _ => 'Start reading',
+    };
+  }
+
+  static String getWidgetStartReadingHint(String language) {
+    return switch (language) {
+      'id' => 'Posisi bacaan kamu akan muncul di sini',
+      'zh' => '你的阅读位置会显示在这里',
+      'ja' => 'あなたの読んでいる位置がここに表示されます',
+      _ => 'Your reading position will show here',
+    };
+  }
+
+  static String formatWidgetProgressDescription(int percent, String language) {
+    return switch (language) {
+      'id' => 'Kamu sudah membaca $percent% surah ini',
+      'zh' => '本章已读$percent%',
+      'ja' => 'このスーラを$percent%読みました',
+      _ => "You've read $percent% of this surah",
+    };
+  }
 }
