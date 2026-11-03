@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home widget palette: AppColors dark scheme. -->
+<resources>
+    <color name="widget_surface">#FF181D17</color>
+    <color name="widget_ink">#FFE0E4DB</color>
+    <color name="widget_muted">#FFC2C9BD</color>
+    <color name="widget_primary">#FF6F8870</color>
+    <color name="widget_on_primary">#FF1A281C</color>
+    <color name="widget_primary_container">#FF354835</color>
+    <color name="widget_on_primary_container">#FFD6E4D2</color>
+</resources>
