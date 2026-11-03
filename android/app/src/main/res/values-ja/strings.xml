@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_beranda_label">Quran Offline</string>
+    <string name="widget_beranda_description">今週の黙想と続きを読む。サイズを変えるともっと表示されます。</string>
+    <string name="widget_continue">続きを読む</string>
+    <string name="widget_start_reading">読み始める</string>
+    <string name="widget_start_reading_hint">あなたの読んでいる位置がここに表示されます</string>
+    <string name="widget_read_reflection">黙想を読む</string>
+    <string name="widget_reflection_label">今週の黙想</string>
+    <string name="widget_open_app_hint">アプリを一度開くとウィジェットに表示されます</string>
+    <string name="widget_preview_translation">本当に困難と共に，安楽はあり，</string>
+    <string name="widget_preview_ref">Ash-Sharh 94:5</string>
+</resources>

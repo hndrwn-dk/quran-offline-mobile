@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home widget palette: AppColors light scheme. Night values in values-night. -->
+<resources>
+    <color name="widget_surface">#FFF7FBF2</color>
+    <color name="widget_ink">#FF181D17</color>
+    <color name="widget_muted">#FF424940</color>
+    <color name="widget_primary">#FF5A7358</color>
+    <color name="widget_on_primary">#FFFFFFFF</color>
+    <color name="widget_primary_container">#FFD6E4D2</color>
+    <color name="widget_on_primary_container">#FF2D3F30</color>
+</resources>

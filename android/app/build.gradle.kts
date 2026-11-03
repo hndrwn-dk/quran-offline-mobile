@@ -91,6 +91,7 @@ flutter {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     implementation("androidx.glance:glance-appwidget:1.1.1")
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
     implementation("com.google.android.play:integrity:1.4.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")

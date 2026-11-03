@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_beranda_label">Quran Offline</string>
+    <string name="widget_beranda_description">This week\'s reflection and continue reading. Resize it to see more.</string>
+    <string name="widget_continue">Continue</string>
+    <string name="widget_start_reading">Start reading</string>
+    <string name="widget_start_reading_hint">Your reading position will show here</string>
+    <string name="widget_read_reflection">Read reflection</string>
+    <string name="widget_reflection_label">Reflection this week</string>
+    <string name="widget_open_app_hint">Open the app once to fill the widget</string>
+    <string name="widget_preview_translation">For indeed, with hardship will be ease.</string>
+    <string name="widget_preview_ref">Ash-Sharh 94:5</string>
+</resources>
