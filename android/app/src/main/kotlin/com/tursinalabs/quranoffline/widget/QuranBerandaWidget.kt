@@ -167,11 +167,13 @@ private fun SmallContent(payload: WidgetPayload) {
             .semantics { contentDescription = description },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Nothing read yet: a "0%" ring would read as a broken value.
-        if (payload.hasContinue) {
-            ProgressRing(percent = payload.continuePercent.coerceAtLeast(0), diameter = if (tall) 44.dp else 38.dp)
-            Spacer(GlanceModifier.width(10.dp))
-        }
+        // Nothing read yet: an empty ring with a book, since "0%" would read
+        // as a broken value.
+        ProgressRing(
+            percent = if (payload.hasContinue) payload.continuePercent.coerceAtLeast(0) else null,
+            diameter = if (tall) 44.dp else 38.dp,
+        )
+        Spacer(GlanceModifier.width(10.dp))
         Column(modifier = GlanceModifier.defaultWeight()) {
             if (payload.hasContinue) {
                 if (tall) Text(payload.continueTitle, style = label(Primary), maxLines = 1)
@@ -191,13 +193,14 @@ private fun SmallContent(payload: WidgetPayload) {
             }
         }
         // A wide 4×1 has room for the explicit action.
-        if (payload.hasContinue && size.width >= 250.dp) {
+        if (size.width >= 250.dp) {
             Spacer(GlanceModifier.width(8.dp))
             ActionButton(
                 text = payload.continueButton,
                 action = open(context, payload.readDeepLink),
                 filled = true,
-                modifier = GlanceModifier.width(140.dp),
+                // "Mulai baca" is short; the hint beside it gets the room.
+                modifier = GlanceModifier.width(if (payload.hasContinue) 140.dp else 112.dp),
             )
         }
     }
@@ -349,10 +352,10 @@ private fun ActionButton(text: String, action: Action, filled: Boolean, modifier
 /**
  * Track + arc are white masks tinted with the theme primary, so they follow
  * night mode. Glance's tint drops a color's alpha, so the track's transparency
- * lives in its bitmap.
+ * lives in its bitmap. A null [percent] (nothing read yet) shows a book instead.
  */
 @Composable
-private fun ProgressRing(percent: Int, diameter: androidx.compose.ui.unit.Dp) {
+private fun ProgressRing(percent: Int?, diameter: androidx.compose.ui.unit.Dp) {
     Box(modifier = GlanceModifier.size(diameter), contentAlignment = Alignment.Center) {
         Image(
             provider = ImageProvider(ringBitmap(100, TRACK_ALPHA)),
@@ -360,7 +363,7 @@ private fun ProgressRing(percent: Int, diameter: androidx.compose.ui.unit.Dp) {
             colorFilter = ColorFilter.tint(Primary),
             modifier = GlanceModifier.size(diameter),
         )
-        if (percent > 0) {
+        if (percent != null && percent > 0) {
             Image(
                 provider = ImageProvider(ringBitmap(percent)),
                 contentDescription = null,
@@ -368,11 +371,20 @@ private fun ProgressRing(percent: Int, diameter: androidx.compose.ui.unit.Dp) {
                 modifier = GlanceModifier.size(diameter),
             )
         }
-        Text(
-            "$percent%",
-            style = TextStyle(color = Ink, fontSize = 10.sp, fontWeight = FontWeight.Medium),
-            maxLines = 1,
-        )
+        if (percent == null) {
+            Image(
+                provider = ImageProvider(R.drawable.widget_ic_book),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(Primary),
+                modifier = GlanceModifier.size(diameter * 0.45f),
+            )
+        } else {
+            Text(
+                "$percent%",
+                style = TextStyle(color = Ink, fontSize = 10.sp, fontWeight = FontWeight.Medium),
+                maxLines = 1,
+            )
+        }
     }
 }
 
