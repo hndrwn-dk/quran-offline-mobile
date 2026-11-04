@@ -205,7 +205,9 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       weeklyReminderEnabled: weeklyReminderEnabled,
       weeklyReminderHour: weeklyReminderHour,
       weeklyReminderMinute: weeklyReminderMinute,
-      seenVersion: seenVersion,
+      // completeOnboarding / markWhatsNewSeen may have run while this load
+      // was awaiting; keep what they set over the earlier prefs read.
+      seenVersion: state.seenVersion.isNotEmpty ? state.seenVersion : seenVersion,
       onboarded: state.onboarded || onboarded,
     );
 
