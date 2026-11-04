@@ -185,13 +185,19 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     await _applyWeeklyReminderSchedule();
   }
 
+  // A reminder scheduling failure must not block the setting change itself
+  // (e.g. onboarding's language step calls updateLocale).
   Future<void> _applyWeeklyReminderSchedule() async {
-    await WeeklyReminderService.instance.rescheduleIfEnabled(
-      enabled: state.weeklyReminderEnabled,
-      hour: state.weeklyReminderHour,
-      minute: state.weeklyReminderMinute,
-      language: state.appLanguage,
-    );
+    try {
+      await WeeklyReminderService.instance.rescheduleIfEnabled(
+        enabled: state.weeklyReminderEnabled,
+        hour: state.weeklyReminderHour,
+        minute: state.weeklyReminderMinute,
+        language: state.appLanguage,
+      );
+    } catch (e) {
+      debugPrint('SettingsNotifier: weekly reminder schedule failed: $e');
+    }
   }
 
   /// Sets menu UI and Qur'an content language together.
