@@ -133,6 +133,9 @@ docs/*
 !docs/ai_search/
 !docs/ai_search/**
 !docs/followup-r8-keep-narrowing.md
+# Play release notes (whatsnew-<locale>), tracked.
+!docs/store/
+!docs/store/**
 assets/quran/*.json
 
 # Vercel feedback API (Node)

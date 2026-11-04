@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_offline/core/constants/app_colors.dart';
 import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
+import 'package:quran_offline/core/providers/app_version_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
@@ -13,7 +14,7 @@ String _splashLogoAsset(bool isDark) => isDark
     ? 'assets/icon/splash_logo_cream.png'
     : 'assets/icon/splash_logo_green.png';
 
-const String _prefKeyLanguageDone = 'language_selection_done';
+const String _prefKeyLanguageDone = kLanguageSelectionDoneKey;
 
 const List<_Option> _languageOptions = [
   _Option(lang: 'id', label: 'Bahasa Indonesia', code: 'ID', subtitle: 'Indonesian'),
@@ -36,18 +37,17 @@ Future<void> _migrateLegacyIfNeeded() async {
   if (hasAppLanguage) await prefs.setBool(_prefKeyLanguageDone, true);
 }
 
-Future<void> _markLanguageSelectionDone() async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool(_prefKeyLanguageDone, true);
-}
-
 Future<void> _onLanguageSelected(
   BuildContext context,
   WidgetRef ref,
   String lang,
 ) async {
   await ref.read(settingsProvider.notifier).updateLocale(lang);
-  await _markLanguageSelectionDone();
+  // Marks setup done and saves the current version as seen, so a new
+  // install never shows the What's new card.
+  await ref
+      .read(settingsProvider.notifier)
+      .completeOnboarding(ref.read(appVersionProvider));
   if (context.mounted) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const HomeScreen()),
