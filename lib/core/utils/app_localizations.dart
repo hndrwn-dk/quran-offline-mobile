@@ -3660,6 +3660,60 @@ class AppLocalizations {
     };
   }
 
+  // --- What's new card (Beranda) ---
+
+  static String getWhatsNewLabel(String language) {
+    return switch (language) {
+      'id' => 'Pembaruan aplikasi',
+      'en' => 'App update',
+      'zh' => '应用更新',
+      'ja' => 'アプリの更新',
+      _ => 'App update',
+    };
+  }
+
+  /// [featureVersion] is major.minor, e.g. '1.3'.
+  static String getWhatsNewTitle(String featureVersion, String language) {
+    return switch (language) {
+      'id' => 'Yang baru di $featureVersion',
+      'en' => "What's new in $featureVersion",
+      'zh' => '$featureVersion 版新功能',
+      'ja' => '$featureVersion の新機能',
+      _ => "What's new in $featureVersion",
+    };
+  }
+
+  static String getWhatsNewClose(String language) {
+    return switch (language) {
+      'id' => 'Tutup',
+      'en' => 'Close',
+      'zh' => '关闭',
+      'ja' => '閉じる',
+      _ => 'Close',
+    };
+  }
+
+  /// Feature notes of the current minor version (max 3, one or two short
+  /// lines each). A feature release (x.y.0) replaces them and the `id` list
+  /// must equal docs/store/whatsnew/whatsnew-id without the "- " prefix
+  /// (test/whats_new_test.dart checks it); a fix release leaves them as is.
+  static List<String> getWhatsNewNotes(String language) {
+    return switch (language) {
+      'id' => const [
+          'Kartu "Yang baru" di Beranda menampilkan fitur baru setelah update',
+        ],
+      'zh' => const [
+          '主页新增"新功能"卡片，更新后即可查看新功能',
+        ],
+      'ja' => const [
+          'ホームの「新機能」カードで、アップデート後の新しい機能を確認できます',
+        ],
+      _ => const [
+          'A "What\'s new" card on Home shows new features after an update',
+        ],
+    };
+  }
+
   static String getContinueOpenLastPage(String language) {
     return switch (language) {
       'id' => 'Buka halaman terakhir',

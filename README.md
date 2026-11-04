@@ -137,10 +137,23 @@ Local dev dumps (`.ui_*.xml`, `.audio_test_shots/`, `.regression_shots/`) are gi
 
 Place all required assets locally before building (see [DATA_SOURCES.md](DATA_SOURCES.md)).
 
+### Versioning
+
+- **Feature or enhancement release:** bump the minor version (1.2.x -> 1.3.0).
+- **Fix-only release:** bump the patch (1.3.0 -> 1.3.1).
+
+The Beranda "Yang baru" card compares only major.minor, so it shows once after a feature release and never after a fix release. Its notes are `AppLocalizations.getWhatsNewNotes`; on a feature release they must match `docs/store/whatsnew/whatsnew-id`. Play release notes for every release go in `docs/store/whatsnew/whatsnew-<locale>` (one `- ` line per point, max 500 characters).
+
+Release builds must pass the version name (pubspec `version:` without `+build`) as `APP_VERSION`; without it the What's new card stays hidden (debug runs and tests):
+
+```bash
+APP_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')
+```
+
 ### Android
 
 ```bash
-flutter build appbundle --release
+flutter build appbundle --release --dart-define=APP_VERSION=$APP_VERSION
 ```
 
 Output: `build/app/outputs/bundle/release/app-release.aab`
@@ -148,14 +161,14 @@ Output: `build/app/outputs/bundle/release/app-release.aab`
 APK:
 
 ```bash
-flutter build apk --release
+flutter build apk --release --dart-define=APP_VERSION=$APP_VERSION
 ```
 
 ### iOS
 
 ```bash
-flutter build ios
-flutter build ipa
+flutter build ios --dart-define=APP_VERSION=$APP_VERSION
+flutter build ipa --dart-define=APP_VERSION=$APP_VERSION
 ```
 
 ## License

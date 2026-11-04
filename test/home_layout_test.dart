@@ -9,6 +9,7 @@ import 'package:quran_offline/features/home/home_screen.dart';
 import 'package:quran_offline/features/home/widgets/home_collection_section.dart';
 import 'package:quran_offline/features/home/widgets/home_hero_card.dart';
 import 'package:quran_offline/features/home/widgets/home_search_section.dart';
+import 'package:quran_offline/features/home/widgets/home_whats_new_card.dart';
 import 'package:quran_offline/features/read/widgets/last_read_card.dart';
 import 'package:quran_offline/features/read/widgets/weekly_reflection_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -98,6 +99,7 @@ void main() {
       bodyColumn.children.map((child) => child.runtimeType).toList(),
       [
         HomeHeroCard,
+        HomeWhatsNewCard,
         LastReadCard,
         HomeSearchSection,
         WeeklyReflectionCard,

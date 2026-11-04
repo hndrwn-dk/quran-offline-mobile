@@ -11,6 +11,9 @@ enum MushafPageTurn { curl, slide, none }
 MushafPageTurn defaultMushafPageTurn({required bool framed}) =>
     framed ? MushafPageTurn.curl : MushafPageTurn.slide;
 
+/// Set when first-run setup (the language picker) has finished.
+const String kLanguageSelectionDoneKey = 'language_selection_done';
+
 MushafPageTurn? _parsePageTurn(Object? name) {
   for (final turn in MushafPageTurn.values) {
     if (turn.name == name) return turn;
@@ -39,6 +42,15 @@ class AppSettings {
   final int weeklyReminderHour;
   final int weeklyReminderMinute;
 
+  /// Last app version (`APP_VERSION`) whose What's new card the reader saw
+  /// or closed. '' = never (also builds made before the card existed).
+  final String seenVersion;
+
+  /// First-run setup finished ([kLanguageSelectionDoneKey], or a legacy
+  /// install that already had a language). Read-only here: it is not part of
+  /// [toJson]; the onboarding key is the source of truth.
+  final bool onboarded;
+
   AppSettings({
     this.language = 'en',
     this.appLanguage = 'en',
@@ -54,6 +66,8 @@ class AppSettings {
     this.weeklyReminderEnabled = false,
     this.weeklyReminderHour = 15,
     this.weeklyReminderMinute = 30,
+    this.seenVersion = '',
+    this.onboarded = false,
   });
 
   AppSettings copyWith({
@@ -71,6 +85,8 @@ class AppSettings {
     bool? weeklyReminderEnabled,
     int? weeklyReminderHour,
     int? weeklyReminderMinute,
+    String? seenVersion,
+    bool? onboarded,
   }) {
     return AppSettings(
       language: language ?? this.language,
@@ -87,6 +103,8 @@ class AppSettings {
       weeklyReminderEnabled: weeklyReminderEnabled ?? this.weeklyReminderEnabled,
       weeklyReminderHour: weeklyReminderHour ?? this.weeklyReminderHour,
       weeklyReminderMinute: weeklyReminderMinute ?? this.weeklyReminderMinute,
+      seenVersion: seenVersion ?? this.seenVersion,
+      onboarded: onboarded ?? this.onboarded,
     );
   }
 
@@ -106,6 +124,7 @@ class AppSettings {
       'weeklyReminderEnabled': weeklyReminderEnabled,
       'weeklyReminderHour': weeklyReminderHour,
       'weeklyReminderMinute': weeklyReminderMinute,
+      'seenVersion': seenVersion,
     };
   }
 
@@ -129,6 +148,7 @@ class AppSettings {
       weeklyReminderEnabled: json['weeklyReminderEnabled'] as bool? ?? false,
       weeklyReminderHour: json['weeklyReminderHour'] as int? ?? 15,
       weeklyReminderMinute: json['weeklyReminderMinute'] as int? ?? 30,
+      seenVersion: json['seenVersion'] as String? ?? '',
     );
   }
 }
@@ -159,6 +179,11 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final weeklyReminderEnabled = prefs.getBool('weeklyReminderEnabled') ?? false;
     final weeklyReminderHour = prefs.getInt('weeklyReminderHour') ?? 15;
     final weeklyReminderMinute = prefs.getInt('weeklyReminderMinute') ?? 30;
+    final seenVersion = prefs.getString('seenVersion') ?? '';
+    // Same rule as the onboarding legacy migration, so upgraders count as
+    // onboarded even if this runs before the splash migrates them.
+    final onboarded = prefs.getBool(kLanguageSelectionDoneKey) ??
+        prefs.getString('appLanguage') != null;
 
     final syncedLanguage = language;
     if (appLanguage != syncedLanguage) {
@@ -180,6 +205,10 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       weeklyReminderEnabled: weeklyReminderEnabled,
       weeklyReminderHour: weeklyReminderHour,
       weeklyReminderMinute: weeklyReminderMinute,
+      // completeOnboarding / markWhatsNewSeen may have run while this load
+      // was awaiting; keep what they set over the earlier prefs read.
+      seenVersion: state.seenVersion.isNotEmpty ? state.seenVersion : seenVersion,
+      onboarded: state.onboarded || onboarded,
     );
 
     await _applyWeeklyReminderSchedule();
@@ -209,6 +238,22 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
 
   Future<void> updateAppLanguage(String appLanguage) async {
     await updateLocale(appLanguage);
+  }
+
+  /// First-run setup finished. New installs record the current version as
+  /// seen so they never get the What's new card for it.
+  Future<void> completeOnboarding(String currentVersion) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(kLanguageSelectionDoneKey, true);
+    await prefs.setString('seenVersion', currentVersion);
+    state = state.copyWith(onboarded: true, seenVersion: currentVersion);
+  }
+
+  /// What's new card closed: saves the full [version] right away.
+  Future<void> markWhatsNewSeen(String version) async {
+    state = state.copyWith(seenVersion: version);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('seenVersion', version);
   }
 
   Future<void> updateShowTransliteration(bool show) async {
