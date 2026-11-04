@@ -3700,19 +3700,28 @@ class AppLocalizations {
   static List<String> getWhatsNewNotes(String language) {
     return switch (language) {
       'id' => const [
+          'Widget layar utama baru: lihat progres baca dan renungan minggu ini',
+          'Ayat renungan di widget memakai tulisan Mushaf, lengkap dengan terjemahan',
           'Kartu "Yang baru" di Beranda menampilkan fitur baru setelah update',
         ],
       'zh' => const [
+          '全新主屏幕小组件：查看阅读进度和本周思考',
+          '小组件以古兰经字体显示本周经文，并附译文',
           '主页新增"新功能"卡片，更新后即可查看新功能',
         ],
       'ja' => const [
+          '新しいホーム画面ウィジェット：読書の進み具合と今週の黙想を表示',
+          'ウィジェットは今週のアーヤをムスハフの書体と翻訳で表示',
           'ホームの「新機能」カードで、アップデート後の新しい機能を確認できます',
         ],
       _ => const [
+          "New home screen widget: see your reading progress and this week's reflection",
+          "The widget shows this week's ayah in Mushaf script, with its translation",
           'A "What\'s new" card on Home shows new features after an update',
         ],
     };
   }
+
 
   static String getContinueOpenLastPage(String language) {
     return switch (language) {
