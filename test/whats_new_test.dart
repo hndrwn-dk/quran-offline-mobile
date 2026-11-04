@@ -252,6 +252,23 @@ void main() {
     }
   });
 
+  test('card notes and Play notes carry no placeholders', () {
+    // Upgraders see the card on the first APP_VERSION build, fix or feature,
+    // so a placeholder note would reach real users.
+    final placeholder = RegExp(r'\[(Placeholder|占位|仮)\]|TODO|TBD');
+    for (final lang in ['id', 'en', 'zh', 'ja']) {
+      for (final note in AppLocalizations.getWhatsNewNotes(lang)) {
+        expect(placeholder.hasMatch(note), isFalse, reason: '$lang: $note');
+      }
+    }
+    for (final file in Directory('docs/store/whatsnew')
+        .listSync()
+        .whereType<File>()) {
+      final text = file.readAsStringSync();
+      expect(placeholder.hasMatch(text), isFalse, reason: file.path);
+    }
+  });
+
   group('Play release notes', () {
     final dir = Directory('docs/store/whatsnew');
     final files = dir

@@ -3697,28 +3697,19 @@ class AppLocalizations {
   /// lines each). A feature release (x.y.0) replaces them and the `id` list
   /// must equal docs/store/whatsnew/whatsnew-id without the "- " prefix
   /// (test/whats_new_test.dart checks it); a fix release leaves them as is.
-  /// TODO(release): placeholder notes for the next feature release.
   static List<String> getWhatsNewNotes(String language) {
     return switch (language) {
       'id' => const [
           'Kartu "Yang baru" di Beranda menampilkan fitur baru setelah update',
-          '[Placeholder] Fitur kedua rilis berikutnya',
-          '[Placeholder] Fitur ketiga rilis berikutnya',
         ],
       'zh' => const [
           '主页新增"新功能"卡片，更新后即可查看新功能',
-          '[占位] 下一版本的第二项功能',
-          '[占位] 下一版本的第三项功能',
         ],
       'ja' => const [
           'ホームの「新機能」カードで、アップデート後の新しい機能を確認できます',
-          '[仮] 次のリリースの2つ目の機能',
-          '[仮] 次のリリースの3つ目の機能',
         ],
       _ => const [
           'A "What\'s new" card on Home shows new features after an update',
-          '[Placeholder] Second feature of the next release',
-          '[Placeholder] Third feature of the next release',
         ],
     };
   }
