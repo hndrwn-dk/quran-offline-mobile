@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WeeklyReminderService looks up @mipmap/ic_launcher by name. DEV builds
+     (QO_APP_ID_SUFFIX) point the manifest at ic_launcher_dev, so without this
+     rule release resource shrinking drops ic_launcher and notification init
+     fails with invalid_icon. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@mipmap/ic_launcher" />
