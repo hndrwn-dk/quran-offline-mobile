@@ -23,6 +23,13 @@ Also follow the scoped rules in `.cursor/rules/` (AI search, Android R8, edge-to
 - Never touch `feat/hafalan-setoran`. Never upload anything to Play Console. Never bump the version unless asked.
 - Release builds are signed with the upload key; Play-installed builds may not update from a local build. Don't uninstall apps on my devices.
 
+## Versioning and What's new
+- A feature/enhancement release bumps the minor version (1.2.x -> 1.3.0); a fix-only release bumps the patch (1.3.0 -> 1.3.1).
+- Release builds pass `--dart-define=APP_VERSION=<versionName>` (pubspec `version:` without `+build`). Without it (debug, `flutter run`, tests) the Beranda What's new card never shows.
+- The card shows once per feature version (major.minor) to upgraders; new installs save the current version as seen at onboarding.
+- Play release notes live in `docs/store/whatsnew/whatsnew-<locale>` (id, en-US, zh-CN, ja-JP): plain text, one `- ` line per point, max 500 characters, this release's changes only (fix releases list their fixes too).
+- Feature release (x.y.0): replace `AppLocalizations.getWhatsNewNotes` (max 3 short notes) so the `id` list equals `whatsnew-id` lines; `test/whats_new_test.dart` checks it. Fix release: leave the card notes unchanged.
+
 ## Device verification
 - Devices: Pixel 8 Pro (`3A251FDJG0045D`) and Galaxy Z Fold 8 (wireless adb; ask me for the current address). Fold 8 inner screen is about 933x704dp landscape; cover about 475x751dp.
 - Two apps live side by side on both devices:
