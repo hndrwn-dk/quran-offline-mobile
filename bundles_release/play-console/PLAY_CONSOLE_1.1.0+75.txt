@@ -1,0 +1,12 @@
+<en-US>
+• A "What's new" card on Home shows new features after an update
+</en-US>
+<id>
+• Kartu "Yang baru" di Beranda menampilkan fitur baru setelah update
+</id>
+<zh-CN>
+• 主页新增"新功能"卡片，更新后即可查看新功能
+</zh-CN>
+<ja-JP>
+• ホームの「新機能」カードで、アップデート後の新しい機能を確認できます
+</ja-JP>
