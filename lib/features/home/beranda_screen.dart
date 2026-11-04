@@ -9,6 +9,7 @@ import 'package:quran_offline/features/home/widgets/home_collection_section.dart
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/home/widgets/home_hero_card.dart';
 import 'package:quran_offline/features/home/widgets/home_search_section.dart';
+import 'package:quran_offline/features/home/widgets/home_whats_new_card.dart';
 import 'package:quran_offline/features/read/widgets/last_read_card.dart';
 import 'package:quran_offline/features/read/widgets/weekly_reflection_card.dart';
 import 'package:quran_offline/features/settings/about_screen.dart';
@@ -44,6 +45,7 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         HomeHeroCard(),
+        HomeWhatsNewCard(),
         LastReadCard(forHome: true),
         HomeSearchSection(),
         WeeklyReflectionCard(forHome: true),
@@ -62,6 +64,7 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 HomeHeroCard(),
+                HomeWhatsNewCard(),
                 LastReadCard(forHome: true),
                 HomeSearchSection(),
                 WeeklyReflectionCard(forHome: true),
