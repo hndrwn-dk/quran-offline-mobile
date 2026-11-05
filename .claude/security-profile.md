@@ -1,0 +1,24 @@
+# Security profile
+
+- **Project type:** flutter-mobile, android
+- **Repo visibility:** public
+- **One-line purpose:** Offline-first Quran app (Mushaf, translations, tafsir, doa, smart search "Cari") with on-device data and Play Billing donations.
+- **Trust boundaries / attackers:**
+  - Other apps on the same device: intents, deep links (incl. the cross-promo link with Ramadan Tracker), exported components, shared storage
+  - Tampered or malformed local/bundled assets (JSON, fonts, downloaded content packs if any)
+  - Network attacker (MITM) for any content still fetched online
+- **Extra attack surfaces to prioritise:**
+  - Deep-link handling: routes, parameters, and what screens or actions a link can reach
+  - Google Play Billing donation flow: purchase verification and acknowledgement, consumable handling, no unlocks gated on unverified purchases
+  - Smart search: must answer only from in-app Quran/doa data; flag any path that sends queries or data off-device
+  - Parsing of bundled JSON assets and the reading-progress / favorites storage (corruption must not crash or lose user data)
+  - Any network fetch (Quran.com API, recitation audio via just_audio, others): TLS, fallback behaviour, what is sent
+  - Home-screen widget and notification intents (exported receivers, PendingIntent flags)
+- **Sensitive data handled:** reading progress, favorites, purchase tokens; no accounts
+- **Private dependencies not in this repo:** none known
+- **Exclude paths:** build/, .dart_tool/, android/.gradle/, ios/Pods/, **/*.g.dart, **/*.freezed.dart, assets/fonts/
+- **Test command:** flutter test
+- **Recent commits window:** 7 days
+- **Memory repo:** hndrwn-dk/security-memory
+- **Reporting:** memory-repo
+- **Timezone:** Asia/Singapore
