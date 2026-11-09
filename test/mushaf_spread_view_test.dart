@@ -344,7 +344,7 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 50));
         expect(find.text('Mushaf - Halaman 4'), findsOneWidget);
-        expect(find.byIcon(Icons.tune), findsNothing);
+        expect(find.byIcon(Icons.text_fields), findsNothing);
 
         tester.view.physicalSize = const Size(933, 704);
         tester.view.displayFeatures = [
@@ -367,7 +367,7 @@ void main() {
         await showChrome(tester);
         await tester.pump(const Duration(milliseconds: 50));
         expect(find.text('Mushaf · Halaman 3–4'), findsOneWidget);
-        expect(find.byIcon(Icons.tune), findsOneWidget);
+        expect(find.byIcon(Icons.text_fields), findsOneWidget);
       });
     }
 

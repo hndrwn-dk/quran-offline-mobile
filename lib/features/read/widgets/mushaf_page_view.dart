@@ -1345,7 +1345,7 @@ class _MushafTextSettingsActionState extends State<_MushafTextSettingsAction> {
             .read(settingsProvider)
             .appLanguage;
         return IconButton(
-          icon: const Icon(Icons.tune),
+          icon: const Icon(Icons.text_fields),
           tooltip: AppLocalizations.getSettingsText(
             'mushaf_display_title',
             appLanguage,
