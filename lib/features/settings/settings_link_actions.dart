@@ -7,8 +7,10 @@ import 'package:url_launcher/url_launcher.dart';
 class SettingsLinkActions {
   SettingsLinkActions._();
 
-  static const String privacyUrl = 'https://www.tursinalabs.com/privacy';
-  static const String termsUrl = 'https://www.tursinalabs.com/terms';
+  static const String privacyUrl =
+      'https://www.tursinalabs.com/quranoffline/privacy';
+  static const String termsUrl =
+      'https://www.tursinalabs.com/quranoffline/terms';
 
   static Future<void> openPrivacy(BuildContext context) =>
       _openUrl(context, Uri.parse(privacyUrl));
