@@ -1,0 +1,16 @@
+<en-US>
+• Privacy and Terms in Settings now open Quran Offline's own pages
+• The Tt settings icon is back in Mushaf on large screens (foldables and tablets)
+</en-US>
+<id>
+• Tautan Privasi dan Ketentuan di Pengaturan kini membuka halaman khusus Quran Offline
+• Ikon pengaturan Tt kembali muncul di Mushaf layar lebar (HP lipat dan tablet)
+</id>
+<zh-CN>
+• 设置中的“隐私”和“条款”现在打开 Quran Offline 专属页面
+• 大屏幕（折叠屏和平板）的 Mushaf 页面重新显示 Tt 设置图标
+</zh-CN>
+<ja-JP>
+• 設定の「プライバシー」と「利用規約」で Quran Offline 専用のページが開くようになりました
+• 大きな画面（折りたたみ端末やタブレット）のムスハフで Tt 設定アイコンが再び表示されます
+</ja-JP>
