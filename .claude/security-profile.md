@@ -1,0 +1,24 @@
+# Security profile
+
+- **Project type:** flutter-mobile, android, web-backend (Vercel serverless `api/`)
+- **Repo visibility:** public
+- **One-line purpose:** Offline-first Quran reader (Flutter, Riverpod, Drift) by Tursina Labs, package `com.tursinalabs.quranoffline`, with a small Vercel API that turns in-app feedback into GitHub Issues.
+- **Trust boundaries / attackers:**
+  - Other apps on the device sending intents to exported components (`MainActivity` with the `quranoffline://` deep link, `AudioService`, `MediaButtonReceiver`, the home widget receiver).
+  - Network responses from everyayah.com (recitation audio, streamed or downloaded to app storage).
+  - Anonymous internet clients calling `api/feedback` (`api/health`); requests are gated by Play Integrity, a nonce, and an IP rate limit in Upstash Redis.
+  - Feedback text becomes a public GitHub issue, so untrusted text is rendered on GitHub.
+- **Extra attack surfaces to prioritise:**
+  - `api/feedback.ts`: Play Integrity verification, nonce replay, rate limiting, markdown/mention injection into issue bodies.
+  - Deep link handling and notification payload navigation (`lib/core/notifications/`).
+  - Audio download paths and file names under app documents (`lib/core/audio/`).
+  - Google Play Billing purchase handling (`lib/core/support/`).
+  - Android manifest exported components and R8 release config.
+- **Sensitive data handled:** No accounts or user PII on a server. On device: bookmarks, notes, highlights, reading history. Server secrets (Vercel env only): `GITHUB_TOKEN`, `PLAY_INTEGRITY_SERVICE_ACCOUNT_JSON`, `UPSTASH_REDIS_REST_TOKEN`, `HEALTH_CHECK_SECRET`. Release upload keystore (not in repo).
+- **Private dependencies not in this repo:** none
+- **Exclude paths:** build/, .dart_tool/, lib/**/*.g.dart, assets/, data/
+- **Test command:** `flutter analyze && flutter test`
+- **Recent commits window:** 7 days
+- **Memory repo:** hndrwn-dk/security-memory
+- **Reporting:** memory-repo
+- **Timezone:** Asia/Singapore
