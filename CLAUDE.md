@@ -5,6 +5,8 @@ Package: `com.tursinalabs.quranoffline`. Default branch: `main`.
 
 Also follow the scoped rules in `.cursor/rules/` (AI search, Android R8, edge-to-edge).
 
+Private working notes (status, plans, release setup) live in the private repo `hndrwn-dk/agent-handoff`, folder `quran-offline-mobile/`. Read its `HANDOFF.md` at the start of a session and update it at the end. Never copy files from there into this public repo.
+
 ## Mushaf rendering
 - Mushaf uses QPC V2 per-page fonts (604 pages) and the QUL `SurahNameV2` font for surah names. Fonts load per page, so anything that rasterizes a page (snapshots, goldens) must wait for that page's font.
 - Phone and Fold cover (window width < 600dp): Mushaf must stay pixel-identical to the current goldens unless I explicitly approve a change.
