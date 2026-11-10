@@ -1,0 +1,12 @@
+<en-US>
+• Recitation controls are back in the notification while the app runs in the background
+</en-US>
+<id>
+• Kontrol murattal kembali muncul di notifikasi saat aplikasi berjalan di latar belakang
+</id>
+<zh-CN>
+• 应用在后台运行时，通知中重新显示诵读控制按钮
+</zh-CN>
+<ja-JP>
+• アプリがバックグラウンドで動作中も、通知に朗読の操作ボタンが再び表示されます
+</ja-JP>
