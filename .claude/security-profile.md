@@ -19,6 +19,5 @@
 - **Exclude paths:** build/, .dart_tool/, lib/**/*.g.dart, assets/, data/
 - **Test command:** `flutter analyze && flutter test`
 - **Recent commits window:** 7 days
-- **Memory repo:** hndrwn-dk/security-memory
 - **Reporting:** memory-repo
 - **Timezone:** Asia/Singapore
