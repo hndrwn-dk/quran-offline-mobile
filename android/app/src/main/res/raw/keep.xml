@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- WeeklyReminderService looks up @mipmap/ic_launcher by name. DEV builds
-     (QO_APP_ID_SUFFIX) point the manifest at ic_launcher_dev, so without this
-     rule release resource shrinking drops ic_launcher and notification init
-     fails with invalid_icon. -->
+<!-- Resources looked up by name at runtime, so release resource shrinking
+     cannot see them and would drop them:
+     - @mipmap/ic_launcher: WeeklyReminderService notification icon. DEV builds
+       (QO_APP_ID_SUFFIX) point the manifest at ic_launcher_dev, so without
+       this rule notification init fails with invalid_icon.
+     - @drawable/audio_service_*: audio_service (just_audio_background) builds
+       the media notification buttons from these names. Without them every
+       playback state update throws "You must specify an icon resource id to
+       build a CustomAction": no media notification, no controls, and the
+       service never becomes a foreground service. -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@mipmap/ic_launcher" />
+    tools:keep="@mipmap/ic_launcher,@drawable/audio_service_*" />
