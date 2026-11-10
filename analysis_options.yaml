@@ -10,6 +10,9 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
+    # Dead dev snapshot tool: still uses MushafSpineStyle / MushafSpreadRow,
+    # removed in #20. Its analyzer errors made release analyze fail.
+    - tools/mushaf_spread_snapshot_test.dart
 
 linter:
   rules:

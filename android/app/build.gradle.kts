@@ -68,12 +68,31 @@ android {
 
     buildTypes {
         release {
-            // Use release signing config if key.properties exists, otherwise use debug
+            // Use release signing config if key.properties exists, otherwise use
+            // debug. A debug-signed store build is refused below.
             signingConfig = if (keystorePropertiesFile.exists()) {
                 signingConfigs.getByName("release")
             } else {
                 signingConfigs.getByName("debug")
             }
+        }
+    }
+}
+
+// A release of the store app without key.properties would be debug-signed yet
+// look ready to upload. Fail those tasks instead. DEV builds (QO_APP_ID_SUFFIX)
+// may stay debug-signed, and QO_ALLOW_DEBUG_SIGNING=true opts out explicitly.
+val allowDebugSigning =
+    devAppIdSuffix != null || System.getenv("QO_ALLOW_DEBUG_SIGNING") == "true"
+// preReleaseBuild runs first in every release build (APK and AAB).
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    doFirst {
+        if (!keystorePropertiesFile.exists() && !allowDebugSigning) {
+            throw GradleException(
+                "android/key.properties is missing: refusing a debug-signed " +
+                    "release of com.tursinalabs.quranoffline. Add key.properties, " +
+                    "or set QO_ALLOW_DEBUG_SIGNING=true for a local test build.",
+            )
         }
     }
 }
