@@ -83,7 +83,14 @@ class QpcV2MushafText extends StatelessWidget {
         kMushafGlyphMinFontSize,
         kMushafGlyphReferenceFontSize,
       );
-      effectiveSize = computeQpcV2PageFontSize(
+      // Pure function of (font, cap, width): cached so a rebuild of the same
+      // page skips ~6 TextPainter layouts per line.
+      effectiveSize = computeQpcV2PageFontSizeCached(
+        cacheKey: qpcV2PageFitCacheKey(
+          fontFamily: content.fontFamily,
+          maxFontSize: cap,
+          maxWidth: contentWidth,
+        ),
         lines: glyphLines,
         maxFontSize: cap,
         maxWidth: contentWidth,

@@ -27,8 +27,17 @@ const _surahNameGlyphVerticalPad = 14.0;
 /// Smallest slider value for glyph Mushaf (avoids large empty margins).
 const kMushafGlyphMinFontSize = 28.0;
 
-const _fitCacheLimit = 64;
+const _fitCacheLimit = 128;
 final _fitCache = <String, double>{};
+
+/// Cache key for [computeQpcV2PageFontSizeCached]: the fit is a pure function
+/// of the page font, the size cap and the line width.
+String qpcV2PageFitCacheKey({
+  required String fontFamily,
+  required double maxFontSize,
+  required double maxWidth,
+}) =>
+    '$fontFamily|$maxFontSize|$maxWidth';
 
 /// Cached variant of [computeQpcV2PageFontSize] for scroll performance.
 double computeQpcV2PageFontSizeCached({

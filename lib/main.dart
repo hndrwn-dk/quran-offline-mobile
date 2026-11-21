@@ -3,13 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:quran_offline/core/mushaf/qo_widgets_binding.dart';
 import 'package:quran_offline/core/notifications/weekly_reminder_service.dart';
 import 'package:quran_offline/core/widgets/home_widget_keys.dart';
 import 'package:quran_offline/core/widgets/home_widget_sync.dart';
 import 'package:quran_offline/app/app.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  QoWidgetsBinding.ensureInitialized();
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   try {
     await JustAudioBackground.init(
