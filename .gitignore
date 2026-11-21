@@ -74,6 +74,10 @@ coverage/
 
 # Release bundles and notes
 bundles_release/
+
+# Local working files (design mockups, editor agent rules)
+canvases/
+.cursor/
 RELEASE_NOTES_*.md
 GOOGLE_PLAY_WHATS_NEW*.md
 
@@ -130,8 +134,6 @@ assets/qpc-v4-tajweed-15-lines.db.zip
 docs/*
 !docs/QURAN_TEXT_INTEGRITY.md
 !docs/followup-anr-input-dispatch-v45.md
-!docs/ai_search/
-!docs/ai_search/**
 !docs/followup-r8-keep-narrowing.md
 # Play release notes (whatsnew-<locale>), tracked.
 !docs/store/

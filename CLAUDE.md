@@ -3,7 +3,7 @@
 Offline-first Quran app by Tursina Labs. Flutter, Riverpod, Drift, Material 3.
 Package: `com.tursinalabs.quranoffline`. Default branch: `main`.
 
-Also follow the scoped rules in `.cursor/rules/` (AI search, Android R8, edge-to-edge).
+Also follow the scoped rules in `.cursor/rules/` when that folder is present (AI search, Android R8, edge-to-edge). It is local and not in git.
 
 ## Mushaf rendering
 - Mushaf uses QPC V2 per-page fonts (604 pages) and the QUL `SurahNameV2` font for surah names. Fonts load per page, so anything that rasterizes a page (snapshots, goldens) must wait for that page's font.
