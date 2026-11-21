@@ -74,12 +74,13 @@ coverage/
 
 # Release bundles and notes
 bundles_release/
-
-# Local working files (design mockups, editor agent rules)
-canvases/
-.cursor/
 RELEASE_NOTES_*.md
 GOOGLE_PLAY_WHATS_NEW*.md
+
+# Local working files (design mockups, editor and agent tool state)
+canvases/
+.cursor/
+.omc/
 
 # Build data and intermediate files
 data/
