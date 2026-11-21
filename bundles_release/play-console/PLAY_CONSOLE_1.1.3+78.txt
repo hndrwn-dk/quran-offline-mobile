@@ -1,0 +1,12 @@
+<en-US>
+• Smoother Mushaf page turns, especially on tablets and foldables
+</en-US>
+<id>
+• Membalik halaman Mushaf kini lebih mulus, terutama di tablet dan ponsel lipat
+</id>
+<zh-CN>
+• Mushaf 翻页更流畅，在平板和折叠屏设备上尤其明显
+</zh-CN>
+<ja-JP>
+• Mushaf のページめくりがよりなめらかになりました（特にタブレットや折りたたみ端末）
+</ja-JP>
