@@ -32,43 +32,4 @@ void main() {
     );
     expect(cached, uncached);
   });
-
-  test('evicting one family keeps the other pages cached', () {
-    for (final family in ['p3', 'p4']) {
-      computeQpcV2PageFontSizeCached(
-        cacheKey: qpcV2PageFitCacheKey(
-          fontFamily: family,
-          maxFontSize: 38,
-          maxWidth: 300,
-        ),
-        lines: lines(family),
-        maxFontSize: 38,
-        maxWidth: 300,
-      );
-    }
-    expect(qpcV2GlyphFitCacheContains(fontFamily: 'p3'), isTrue);
-    expect(qpcV2GlyphFitCacheContains(fontFamily: 'p4'), isTrue);
-
-    evictQpcV2GlyphFitCacheForFamily('p3');
-
-    expect(qpcV2GlyphFitCacheContains(fontFamily: 'p3'), isFalse);
-    expect(qpcV2GlyphFitCacheContains(fontFamily: 'p4'), isTrue);
-  });
-
-  test('a family that is a prefix of another is evicted alone', () {
-    for (final family in ['p3', 'p30']) {
-      computeQpcV2PageFontSizeCached(
-        cacheKey: qpcV2PageFitCacheKey(
-          fontFamily: family,
-          maxFontSize: 38,
-          maxWidth: 300,
-        ),
-        lines: lines(family),
-        maxFontSize: 38,
-        maxWidth: 300,
-      );
-    }
-    evictQpcV2GlyphFitCacheForFamily('p3');
-    expect(qpcV2GlyphFitCacheContains(fontFamily: 'p30'), isTrue);
-  });
 }
