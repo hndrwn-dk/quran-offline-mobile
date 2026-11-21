@@ -92,12 +92,11 @@ class MushafWarmup {
     _backgroundTask ??= _runBackgroundPreload();
   }
 
-  /// Lightweight: layout rows for all pages; fonts only for pages not yet loaded.
+  /// Lightweight: layout rows for all pages (no fonts).
   static Future<void> _runBackgroundPreload() async {
     if (!await QpcV2MushafLayout.isAvailable()) return;
 
     final repo = QpcV2MushafLayout.sharedRepository();
-    final layout = QpcV2MushafLayout(repo);
 
     for (var page = 1; page <= 604; page++) {
       try {
@@ -110,14 +109,9 @@ class MushafWarmup {
       }
     }
 
-    for (var page = 1; page <= 604; page++) {
-      if (_preloadedPages.contains(page)) continue;
-      QpcV2FontLoader.prefetchPages([page]);
-      unawaited(_prewarmPage(layout, page));
-      if (page % 8 == 0) {
-        await Future<void>.delayed(const Duration(milliseconds: 24));
-      }
-    }
+    // Fonts are not preloaded for all 604 pages: each registration re-lays
+    // out every paragraph in the app, and the engine keeps every font (about
+    // 200 MB for all pages). Fonts follow the reading position instead.
   }
 
   static Future<void> _preloadAround(int centerPage) async {
@@ -158,11 +152,13 @@ class MushafWarmup {
     if (towardFloor && floorPage > 1) fontPages.add(floorPage - 1);
     QpcV2FontLoader.prefetchPages(fontPages);
 
+    // Mid-swipe: rows only; fonts wait in the idle queue.
+    final layout = QpcV2MushafLayout(QpcV2MushafLayout.sharedRepository());
     if (towardCeil && ceilPage <= 604) {
-      unawaited(QpcV2MushafLayout.prewarmPage(ceilPage));
+      unawaited(layout.prewarm(ceilPage));
     }
     if (towardFloor && floorPage >= 1) {
-      unawaited(QpcV2MushafLayout.prewarmPage(floorPage));
+      unawaited(layout.prewarm(floorPage));
     }
   }
 }

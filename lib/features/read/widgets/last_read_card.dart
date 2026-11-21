@@ -27,11 +27,20 @@ class LastReadCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lastRead = ref.watch(lastReadProvider);
-    final settings = ref.watch(settingsProvider);
+    // A reader pushed over Home saves the last read page on every page turn.
+    // While Home is covered, read without subscribing so the hidden card does
+    // not rebuild: its new text re-laid out the whole hidden Home (all tabs and
+    // lists) twice per turn. ModalRoute.of rebuilds this card when Home is
+    // current again, and it then watches (and shows) the latest values.
+    final covered = !(ModalRoute.of(context)?.isCurrent ?? true);
+    T watch<T>(ProviderListenable<T> provider) =>
+        covered ? ref.read(provider) : ref.watch(provider);
+
+    final lastRead = watch(lastReadProvider);
+    final settings = watch(settingsProvider);
     final appLanguage = settings.appLanguage;
     final colorScheme = Theme.of(context).colorScheme;
-    final surahsAsync = ref.watch(surahNamesProvider);
+    final surahsAsync = watch(surahNamesProvider);
 
     if (lastRead == null) {
       if (!forHome) return const SizedBox.shrink();
@@ -84,10 +93,10 @@ class LastReadCard extends ConsumerWidget {
     }
 
     final location =
-        forHome ? ref.watch(lastReadLocationProvider).valueOrNull : null;
-    final progressAsync = forHome ? ref.watch(lastReadProgressProvider) : null;
+        forHome ? watch(lastReadLocationProvider).valueOrNull : null;
+    final progressAsync = forHome ? watch(lastReadProgressProvider) : null;
     final completion =
-        forHome ? ref.watch(continueCompletionProvider).valueOrNull : null;
+        forHome ? watch(continueCompletionProvider).valueOrNull : null;
 
     if (!lastReadCardHandlesType(lastRead.type)) {
       return const SizedBox.shrink();

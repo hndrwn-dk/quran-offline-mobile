@@ -35,9 +35,13 @@ class QpcV2MushafLayout {
     );
   }
 
+  /// Background prewarm: reads the page's layout rows now and queues its font
+  /// for idle time (registering a font re-lays out the whole app, so it must
+  /// not happen mid page turn). Use [prewarmPage] when the page opens next.
   Future<void> prewarm(int pageNumber) async {
     if (pageNumber < 1 || pageNumber > 604) return;
-    await getPageContent(pageNumber);
+    await _repository.getPageLines(pageNumber);
+    QpcV2FontLoader.prefetchPages([pageNumber]);
   }
 
   /// Load one page (font + layout) before opening Mushaf or jumping from lists.
@@ -45,7 +49,8 @@ class QpcV2MushafLayout {
     if (pageNumber < 1 || pageNumber > 604) return;
     await sharedRepository().ensureReady();
     final layout = QpcV2MushafLayout(sharedRepository());
-    await layout.prewarm(pageNumber);
+    // This page opens next: load its font now.
+    await layout.getPageContent(pageNumber);
     QpcV2FontLoader.prefetchPages({
       pageNumber - 1,
       pageNumber,
