@@ -56,8 +56,8 @@ class QpcV2FontLoader {
     _lruOrder.add(pageNumber);
     while (_lruOrder.length > _maxCachedFonts) {
       final evict = _lruOrder.removeAt(0);
-      _loadedFamilies.remove(evict);
-      clearQpcV2GlyphFitCache();
+      final family = _loadedFamilies.remove(evict);
+      if (family != null) evictQpcV2GlyphFitCacheForFamily(family);
     }
   }
 }
