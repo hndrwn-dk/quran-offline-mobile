@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
 import 'package:quran_offline/core/mushaf/mushaf_page_geometry.dart';
 import 'package:quran_offline/core/mushaf/qpc_v2_models.dart';
 import 'package:quran_offline/core/widgets/mushaf_page_frame.dart';
@@ -344,7 +345,7 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 50));
         expect(find.text('Mushaf - Halaman 4'), findsOneWidget);
-        expect(find.byIcon(Icons.text_fields), findsNothing);
+        expect(find.byType(ReaderTextSettingsAction), findsNothing);
 
         tester.view.physicalSize = const Size(933, 704);
         tester.view.displayFeatures = [
@@ -367,7 +368,7 @@ void main() {
         await showChrome(tester);
         await tester.pump(const Duration(milliseconds: 50));
         expect(find.text('Mushaf · Halaman 3–4'), findsOneWidget);
-        expect(find.byIcon(Icons.text_fields), findsOneWidget);
+        expect(find.byType(ReaderTextSettingsAction), findsOneWidget);
       });
     }
 
