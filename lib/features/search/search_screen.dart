@@ -6,7 +6,9 @@ import 'package:quran_offline/core/providers/enhanced_search_provider.dart'
 import 'package:quran_offline/core/providers/search_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/search/ai_search_query_kind.dart';
@@ -120,101 +122,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: HomeBackdrop.topTint(Theme.of(context).colorScheme),
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        toolbarHeight: 68,
-        centerTitle: false,
-        titleSpacing: 16,
-        backgroundColor: HomeBackdrop.topTint(Theme.of(context).colorScheme),
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        systemOverlayStyle: HomeBackdrop.overlayStyle(
-          Theme.of(context).colorScheme,
-        ),
-        flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(
-          Theme.of(context).colorScheme,
-        ),
-        title: Row(
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.08),
-                border: Border.all(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.18),
-                  width: 1,
-                ),
+      appBar: AppLargeTitleBar(
+        title: aiEnabled
+            ? AppLocalizations.getAiSearchHeading(settings.appLanguage)
+            : AppLocalizations.getMenuText('search', settings.appLanguage),
+        subtitle: aiEnabled
+            ? AppLocalizations.getAiSearchScreenSubtitle(settings.appLanguage)
+            : AppLocalizations.getSubtitleText(
+                'search_subtitle',
+                settings.appLanguage,
               ),
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.travel_explore,
-                size: 18,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    aiEnabled
-                        ? AppLocalizations.getAiSearchHeading(
-                            settings.appLanguage,
-                          )
-                        : AppLocalizations.getMenuText(
-                            'search',
-                            settings.appLanguage,
-                          ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.3,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    aiEnabled
-                        ? AppLocalizations.getAiSearchScreenSubtitle(
-                            settings.appLanguage,
-                          )
-                        : AppLocalizations.getSubtitleText(
-                            'search_subtitle',
-                            settings.appLanguage,
-                          ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(
-            height: 1,
-            thickness: 1,
-            color: Theme.of(context)
-                .colorScheme
-                .outlineVariant
-                .withValues(alpha: 0.3),
-          ),
-        ),
       ),
       body: HomeBackdrop(
         child: FloatingNavBarInset(
@@ -253,25 +170,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         );
                       }
                       return SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(16, 24, 16, 48),
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 48),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text(
+                            AppSectionLabel(
                               AppLocalizations.getSearchText(
                                 'search_by_label',
                                 appLanguage,
                               ),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
-                                  ?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.4,
-                                  ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 10),
+                            AppGroupedCard(
+                              dividerIndent: 60,
+                              children: [
                             _buildSearchHint(
                               context,
                               Icons.book,
@@ -289,7 +201,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               ),
                               colorScheme,
                             ),
-                            const SizedBox(height: 8),
                             _buildSearchHint(
                               context,
                               Icons.format_list_numbered,
@@ -307,7 +218,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               ),
                               colorScheme,
                             ),
-                            const SizedBox(height: 8),
                             _buildSearchHint(
                               context,
                               Icons.pages,
@@ -325,7 +235,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               ),
                               colorScheme,
                             ),
-                            const SizedBox(height: 8),
                             _buildSearchHint(
                               context,
                               Icons.numbers,
@@ -343,7 +252,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               ),
                               colorScheme,
                             ),
-                            const SizedBox(height: 8),
                             _buildSearchHint(
                               context,
                               Icons.translate,
@@ -361,7 +269,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               ),
                               colorScheme,
                             ),
-                            const SizedBox(height: 8),
                             _buildSearchHint(
                               context,
                               Icons.language,
@@ -378,6 +285,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                 settings.appLanguage,
                               ),
                               colorScheme,
+                            ),
+                              ],
                             ),
                           ],
                         ),
@@ -493,15 +402,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                           vertical: 8,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: colorScheme
-                                              .surfaceContainerHighest
-                                              .withValues(alpha: 0.6),
+                                          color: colorScheme.card,
                                           borderRadius:
                                               BorderRadius.circular(20),
-                                          border: Border.all(
-                                            color: colorScheme.outlineVariant
-                                                .withValues(alpha: 0.4),
-                                          ),
                                         ),
                                         child: Text(
                                           query.trim(),
@@ -563,11 +466,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         ),
                         if (filtered.isNotEmpty)
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 12, 16, 4),
-                            child: Text(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                            child: AppSectionLabel(
                               '${AppLocalizations.getSearchText('results_heading', appLanguage)} • ${filtered.length}',
-                              style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant),
                             ),
                           ),
                         Expanded(
@@ -611,21 +512,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     required List<SearchResult> results,
     required String query,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-          child: Text(
-            heading,
-            key: headingKey,
-            style: textTheme.labelLarge?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: AppSectionLabel(heading, key: headingKey),
         ),
         Expanded(
           child: SearchResultList(results: results, query: query),
@@ -673,21 +565,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   onTap: () => setState(() => _selectedTypeFilter = key),
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
+                    constraints: const BoxConstraints(minHeight: 36),
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.surface,
+                      color:
+                          isSelected ? colorScheme.primary : colorScheme.card,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected
-                            ? Colors.transparent
-                            : colorScheme.outline.withValues(alpha: 0.12),
-                        width: 1,
-                      ),
                     ),
                     child: Text(
                       label,
@@ -719,93 +603,83 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     Key? key,
     bool applyQuery = true,
   }) {
-    return Material(
+    return _SearchHintRow(
       key: key,
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: applyQuery
-            ? () => _applySampleQuery(sampleQuery)
-            : () => _searchFocusNode.requestFocus(),
-        borderRadius: BorderRadius.circular(16),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: colorScheme.surface.withValues(alpha: 0.94),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            child: Row(
-              children: [
-                _SearchHintIconBox(
-                  icon: icon,
-                  colorScheme: colorScheme,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurface,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        example,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              height: 1.35,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color: colorScheme.onSurfaceVariant,
-                  size: 22,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      icon: icon,
+      title: title,
+      caption: example,
+      onTap: applyQuery
+          ? () => _applySampleQuery(sampleQuery)
+          : () => _searchFocusNode.requestFocus(),
     );
   }
 }
 
-class _SearchHintIconBox extends StatelessWidget {
-  const _SearchHintIconBox({
+/// One row of a grouped "how to type" card: icon badge, sample, caption.
+class _SearchHintRow extends StatelessWidget {
+  const _SearchHintRow({
+    super.key,
     required this.icon,
-    required this.colorScheme,
+    required this.title,
+    required this.caption,
+    required this.onTap,
   });
 
   final IconData icon;
-  final ColorScheme colorScheme;
+  final String title;
+  final String caption;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: colorScheme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.35),
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              AppBadge(icon: icon),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: textTheme.titleMedium?.copyWith(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.2,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      caption,
+                      style: textTheme.bodySmall?.copyWith(
+                        fontSize: 13,
+                        color: colorScheme.onSurfaceVariant,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                size: 22,
+              ),
+            ],
+          ),
         ),
-      ),
-      alignment: Alignment.center,
-      child: Icon(
-        icon,
-        size: 18,
-        color: colorScheme.primary,
       ),
     );
   }
@@ -830,8 +704,6 @@ class _AiSearchLanding extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final typeHints = AppLocalizations.getAiSearchTypeHints(language);
 
     return CustomScrollView(
@@ -842,14 +714,9 @@ class _AiSearchLanding extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
+                AppSectionLabel(
                   AppLocalizations.getAiSearchTryLabel(language),
                   key: const Key('tanya_try_label'),
-                  style: textTheme.labelSmall?.copyWith(
-                    letterSpacing: 1.1,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
                 ),
                 const SizedBox(height: 10),
                 Wrap(
@@ -865,27 +732,25 @@ class _AiSearchLanding extends StatelessWidget {
                       ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                Text(
+                const SizedBox(height: 24),
+                AppSectionLabel(
                   AppLocalizations.getAiSearchTypeHintLabel(language),
                   key: const Key('tanya_type_hint_label'),
-                  style: textTheme.labelSmall?.copyWith(
-                    letterSpacing: 1.1,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
                 ),
                 const SizedBox(height: 10),
-                for (var i = 0; i < typeHints.length; i++) ...[
-                  if (i > 0) const SizedBox(height: 8),
-                  _SearchTypeHintRow(
-                    key: Key('tanya_type_hint_$i'),
-                    icon: _typeHintIcons[i],
-                    sample: typeHints[i].sample,
-                    caption: typeHints[i].caption,
-                    onTap: () => onExampleTap(typeHints[i].query),
-                  ),
-                ],
+                AppGroupedCard(
+                  dividerIndent: 60,
+                  children: [
+                    for (var i = 0; i < typeHints.length; i++)
+                      _SearchHintRow(
+                        key: Key('tanya_type_hint_$i'),
+                        icon: _typeHintIcons[i],
+                        title: typeHints[i].sample,
+                        caption: typeHints[i].caption,
+                        onTap: () => onExampleTap(typeHints[i].query),
+                      ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -917,101 +782,30 @@ class _SearchExampleChip extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           child: Ink(
             decoration: BoxDecoration(
-              color: colorScheme.surface.withValues(alpha: 0.94),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-              ),
+              color: colorScheme.card,
+              borderRadius: BorderRadius.circular(18),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Text(
-                label,
-                style: textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SearchTypeHintRow extends StatelessWidget {
-  const _SearchTypeHintRow({
-    super.key,
-    required this.icon,
-    required this.sample,
-    required this.caption,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String sample;
-  final String caption;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: colorScheme.surface.withValues(alpha: 0.94),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            child: Row(
-              children: [
-                _SearchHintIconBox(
-                  icon: icon,
-                  colorScheme: colorScheme,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        sample,
-                        style: textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 36),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: textTheme.labelLarge?.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: colorScheme.onSurface,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        caption,
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color: colorScheme.onSurfaceVariant,
-                  size: 22,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

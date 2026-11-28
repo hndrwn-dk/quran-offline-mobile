@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 
 class ExploreFavoritesHubCard extends StatelessWidget {
   const ExploreFavoritesHubCard({
@@ -24,14 +25,14 @@ class ExploreFavoritesHubCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
         child: Ink(
           decoration: BoxDecoration(
             color: colorScheme.primary,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppTheme.cardRadius),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               children: [
                 Container(
@@ -55,8 +56,10 @@ class ExploreFavoritesHubCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
+                        style: textTheme.titleMedium?.copyWith(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
                           color: onPrimary,
                         ),
                       ),
@@ -64,6 +67,7 @@ class ExploreFavoritesHubCard extends StatelessWidget {
                       Text(
                         subtitle,
                         style: textTheme.bodySmall?.copyWith(
+                          fontSize: 13,
                           color: onPrimary.withValues(alpha: 0.9),
                         ),
                       ),

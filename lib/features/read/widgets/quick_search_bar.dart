@@ -5,7 +5,9 @@ import 'package:quran_offline/core/providers/quick_search_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/reader/reader_screen.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
@@ -140,12 +142,8 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: colorScheme.outlineVariant.withValues(alpha: 0.2),
-                        width: 1,
-                      ),
+                      color: colorScheme.card,
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: Center(
                       child: Text(
@@ -165,116 +163,89 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
                   kAppContentHorizontalInset,
                   8,
                 ),
-                child: Container(
+                child: ConstrainedBox(
                   constraints: const BoxConstraints(maxHeight: 400),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: colorScheme.outlineVariant.withValues(alpha: 0.2),
-                      width: 1,
+                  child: Material(
+                    color: colorScheme.card,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colorScheme.shadow.withValues(alpha: 0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                        spreadRadius: 0,
+                    clipBehavior: Clip.antiAlias,
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      padding: EdgeInsets.zero,
+                      itemCount: results.length,
+                      separatorBuilder: (context, index) => Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: colorScheme.hairline,
+                        indent: 16,
                       ),
-                    ],
-                  ),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: results.length,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: colorScheme.outlineVariant.withValues(alpha: 0.1),
-                      indent: 16,
-                      endIndent: 16,
-                    ),
-                    itemBuilder: (context, index) {
-                      final result = results[index];
-                      IconData icon;
-                      Color iconColor;
-                      
-                      switch (result.type) {
-                        case 'surah':
-                          icon = Icons.menu_book_outlined;
-                          iconColor = colorScheme.primary;
-                          break;
-                        case 'juz':
-                          icon = Icons.library_books_outlined;
-                          iconColor = colorScheme.secondary;
-                          break;
-                        case 'page':
-                          icon = Icons.auto_stories_outlined;
-                          iconColor = colorScheme.tertiary;
-                          break;
-                        default:
-                          icon = Icons.search;
-                          iconColor = colorScheme.onSurfaceVariant;
-                      }
+                      itemBuilder: (context, index) {
+                        final result = results[index];
+                        IconData icon;
 
-                      return InkWell(
-                        onTap: () => _handleResultTap(result),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: iconColor.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Icon(
-                                  icon,
-                                  size: 20,
-                                  color: iconColor,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      result.title,
-                                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                    if (result.type == 'surah' &&
-                                        result.source is SurahSource) ...[
-                                      const SizedBox(height: 2),
-                                      SurahNameSearchGlyph(
-                                        surahId: (result.source as SurahSource).surahId,
-                                      ),
-                                    ] else if (result.subtitle != null) ...[
-                                      const SizedBox(height: 2),
+                        switch (result.type) {
+                          case 'surah':
+                            icon = Icons.menu_book_outlined;
+                            break;
+                          case 'juz':
+                            icon = Icons.library_books_outlined;
+                            break;
+                          case 'page':
+                            icon = Icons.auto_stories_outlined;
+                            break;
+                          default:
+                            icon = Icons.search;
+                        }
+
+                        return InkWell(
+                          onTap: () => _handleResultTap(result),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            child: Row(
+                              children: [
+                                AppBadge(icon: icon, size: 36),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
                                       Text(
-                                        result.subtitle!,
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              color: colorScheme.onSurfaceVariant,
+                                        result.title,
+                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                              fontWeight: FontWeight.w600,
                                             ),
                                       ),
+                                      if (result.type == 'surah' &&
+                                          result.source is SurahSource) ...[
+                                        const SizedBox(height: 2),
+                                        SurahNameSearchGlyph(
+                                          surahId: (result.source as SurahSource).surahId,
+                                        ),
+                                      ] else if (result.subtitle != null) ...[
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          result.subtitle!,
+                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                color: colorScheme.onSurfaceVariant,
+                                              ),
+                                        ),
+                                      ],
                                     ],
-                                  ],
+                                  ),
                                 ),
-                              ),
-                              Icon(
-                                Icons.chevron_right,
-                                size: 20,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ],
+                                Icon(
+                                  Icons.chevron_right,
+                                  size: 20,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
               );
@@ -289,12 +260,8 @@ class QuickSearchBarState extends ConsumerState<QuickSearchBar> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
+                  color: colorScheme.card,
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Center(
                   child: CircularProgressIndicator(),

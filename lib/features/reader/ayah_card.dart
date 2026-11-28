@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/audio/playback_actions.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
@@ -22,6 +23,7 @@ import 'package:quran_offline/features/settings/feedback_form_sheet.dart';
 import 'package:quran_offline/features/reader/widgets/ayah_tafsir_panel.dart';
 import 'package:quran_offline/features/reader/widgets/highlight_color_picker.dart';
 import 'package:quran_offline/features/reader/widgets/note_editor_dialog.dart';
+import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
 
 class AyahCard extends ConsumerStatefulWidget {
   final Verse verse;
@@ -36,6 +38,10 @@ class AyahCard extends ConsumerStatefulWidget {
 }
 
 class _AyahCardState extends ConsumerState<AyahCard> {
+  static const double _rowRadius = 20;
+  static const BoxConstraints _actionConstraints =
+      BoxConstraints(minWidth: 40, minHeight: 44);
+
   bool _isBookmarked = false;
 
   @override
@@ -118,19 +124,17 @@ class _AyahCardState extends ConsumerState<AyahCard> {
         audio.ayahNo == widget.verse.ayahNo;
     final isPlayingThis = isCurrentAyah && audio.isPlaying;
 
+    final playingAccent = readerOnTint(colorScheme);
+
     final BoxDecoration? decoration = isCurrentAyah
         ? BoxDecoration(
-            color: colorScheme.primary.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: colorScheme.primary.withValues(alpha: 0.4),
-              width: 1,
-            ),
+            color: readerPlayingFill(colorScheme),
+            borderRadius: BorderRadius.circular(_rowRadius),
           )
         : displayHighlight != null
             ? BoxDecoration(
                 color: displayHighlight.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(_rowRadius),
                 border: Border.all(
                   color: displayHighlight.withValues(alpha: 0.3),
                   width: 1,
@@ -141,14 +145,13 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     return GestureDetector(
       onLongPress: () => _showAyahActions(context, settings, hasNote, highlightColor),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
         decoration: decoration,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -157,9 +160,9 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                       '${widget.verse.surahId}:${widget.verse.ayahNo}',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         color: isCurrentAyah
-                            ? colorScheme.primary
+                            ? playingAccent
                             : colorScheme.onSurfaceVariant,
-                        fontWeight: isCurrentAyah ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: isCurrentAyah ? FontWeight.w700 : FontWeight.w600,
                       ),
                     ),
                     if (isCurrentAyah) ...[
@@ -167,12 +170,14 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                       Icon(
                         isPlayingThis ? Icons.graphic_eq : Icons.volume_up_outlined,
                         size: 16,
-                        color: colorScheme.primary,
+                        color: playingAccent,
                       ),
                     ],
                   ],
                 ),
-                Row(
+                Transform.translate(
+                  offset: const Offset(10, 0),
+                  child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
@@ -181,14 +186,13 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                         size: 20,
                       ),
                       color: isCurrentAyah
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                          ? playingAccent
+                          : colorScheme.onSurfaceVariant,
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      constraints: _actionConstraints,
                       onPressed: () => _togglePlay(audio),
                     ),
-                    const SizedBox(width: 4),
                     IconButton(
                       icon: Icon(
                         highlightColor != null ? Icons.format_color_fill : Icons.format_color_fill_outlined,
@@ -196,10 +200,10 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                       ),
                       color: displayHighlight != null
                           ? displayHighlight
-                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                          : colorScheme.onSurfaceVariant,
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      constraints: _actionConstraints,
                       onPressed: () => _showHighlightPicker(context),
                     ),
                     IconButton(
@@ -209,18 +213,18 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                       ),
                       color: hasNote
                           ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                          : colorScheme.onSurfaceVariant,
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      constraints: _actionConstraints,
                       onPressed: () => _showNoteEditor(context, noteAsync.valueOrNull?.note),
                     ),
                     IconButton(
                       icon: const Icon(Icons.share_outlined, size: 20),
-                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                      color: colorScheme.onSurfaceVariant,
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      constraints: _actionConstraints,
                       onPressed: () => _shareAyah(context, settings),
                     ),
                     IconButton(
@@ -230,10 +234,10 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                       ),
                       color: _isBookmarked
                           ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                          : colorScheme.onSurfaceVariant,
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      constraints: _actionConstraints,
                       onPressed: () async {
                         await toggleBookmark(
                           ref,
@@ -245,10 +249,11 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                       },
                     ),
                   ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 4),
             Semantics(
               label: 'Arabic text',
               child: Directionality(
@@ -279,7 +284,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                 translation,
                 style: TextStyle(
                   fontSize: settings.translationFontSize,
-                  color: colorScheme.onSurfaceVariant,
+                  color: colorScheme.onSurface,
                   height: 1.5,
                 ),
               ),
@@ -295,25 +300,68 @@ class _AyahCardState extends ConsumerState<AyahCard> {
   }
 
   void _showAyahActions(BuildContext context, AppSettings settings, bool hasNote, int? highlightColor) {
+    final surahs = ref.read(surahNamesProvider).valueOrNull;
+    String? surahName;
+    if (surahs != null) {
+      for (final surah in surahs) {
+        if (surah.id == widget.verse.surahId) surahName = surah.englishName;
+      }
+    }
+    final verseRef = '${widget.verse.surahId}:${widget.verse.ayahNo}';
+    final sheetLabel = surahName == null ? verseRef : '$surahName $verseRef';
+    final highlightDot =
+        highlightColor != null ? highlightDisplayColor(highlightColor) : null;
     showModalBottomSheet(
       context: context,
       useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      isScrollControlled: true,
+      showDragHandle: true,
       builder: (context) => SafeArea(
-        child: Column(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+              child: Text(
+                sheetLabel.toUpperCase(),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.7,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+              ),
+            ),
+            AppGroupedCard(
+              dividerIndent: 56,
+              children: [
             ListTile(
+              iconColor: Theme.of(context).colorScheme.primary,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              horizontalTitleGap: 14,
               leading: Icon(highlightColor != null ? Icons.format_color_fill : Icons.format_color_fill_outlined),
               title: Text(highlightColor != null ? 'Change highlight' : 'Highlight'),
+              trailing: highlightDot == null
+                  ? null
+                  : Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: highlightDot,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
               onTap: () {
                 Navigator.pop(context);
                 _showHighlightPicker(context);
               },
             ),
             ListTile(
+              iconColor: Theme.of(context).colorScheme.primary,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              horizontalTitleGap: 14,
               leading: Icon(hasNote ? Icons.note : Icons.note_outlined),
               title: Text(hasNote ? 'Edit note' : 'Add note'),
               onTap: () {
@@ -323,6 +371,9 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               },
             ),
             ListTile(
+              iconColor: Theme.of(context).colorScheme.primary,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              horizontalTitleGap: 14,
               leading: const Icon(Icons.share),
               title: Text(AppLocalizations.getShareAction(settings.appLanguage)),
               onTap: () {
@@ -331,6 +382,9 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               },
             ),
             ListTile(
+              iconColor: Theme.of(context).colorScheme.primary,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              horizontalTitleGap: 14,
               leading: const Icon(Icons.flag_outlined),
               title: Text(
                 AppLocalizations.getSettingsText(
@@ -353,6 +407,9 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               },
             ),
             ListTile(
+              iconColor: Theme.of(context).colorScheme.primary,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              horizontalTitleGap: 14,
               leading: Icon(_isBookmarked ? Icons.bookmark : Icons.bookmark_outline),
               title: Text(_isBookmarked ? 'Remove bookmark' : 'Bookmark'),
               onTap: () async {
@@ -368,6 +425,9 @@ class _AyahCardState extends ConsumerState<AyahCard> {
             ),
             if (kAiSearchEnabled)
               ListTile(
+              iconColor: Theme.of(context).colorScheme.primary,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              horizontalTitleGap: 14,
                 key: const Key('related_content_action'),
                 leading: const Icon(Icons.hub_outlined),
                 title: Text(
@@ -383,7 +443,10 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                   );
                 },
               ),
+              ],
+            ),
           ],
+          ),
         ),
       ),
     );

@@ -9,8 +9,10 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/features/bookmarks/widgets/bookmarks_tab_content.dart';
 import 'package:quran_offline/features/highlights/highlights_screen.dart';
@@ -68,70 +70,11 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
 
     return Scaffold(
       backgroundColor: topTint,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        toolbarHeight: 54,
-        centerTitle: false,
-        titleSpacing: 16,
-        backgroundColor: topTint,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
-        flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colorScheme.onSurface.withValues(alpha: 0.08),
-                border: Border.all(
-                  color: colorScheme.onSurface.withValues(alpha: 0.18),
-                  width: 1,
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.collections_bookmark,
-                size: 18,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppLocalizations.getNavMenuText('library', appLanguage),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
-                        color: colorScheme.onSurface,
-                      ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  AppLocalizations.getSubtitleText(
-                    'library_subtitle',
-                    appLanguage,
-                  ),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(
-            height: 1,
-            thickness: 1,
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-          ),
+      appBar: AppLargeTitleBar(
+        title: AppLocalizations.getNavMenuText('library', appLanguage),
+        subtitle: AppLocalizations.getSubtitleText(
+          'library_subtitle',
+          appLanguage,
         ),
       ),
       body: HomeBackdrop(
@@ -356,25 +299,23 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
     ColorScheme colorScheme,
   ) {
     return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      padding: const EdgeInsets.fromLTRB(4, 8, 4, 10),
       child: Row(
         children: [
           Text(
-            title,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            title.toUpperCase(),
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 0.4,
+                  letterSpacing: 0.5,
                   color: colorScheme.onSurfaceVariant,
                 ),
           ),
           const SizedBox(width: 8),
           DecoratedBox(
             decoration: BoxDecoration(
-              color: colorScheme.surface.withValues(alpha: 0.94),
+              color: colorScheme.tint,
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-              ),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -382,7 +323,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                 '$count',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurfaceVariant,
+                      color: colorScheme.onTint,
                     ),
               ),
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/database/database.dart' show Verse;
 import 'package:quran_offline/core/explore/explore_favorite.dart';
 import 'package:quran_offline/core/models/dua_entry.dart';
@@ -285,6 +286,18 @@ Future<void> _openHitInReader(
   await openReaderScreen(context, ref);
 }
 
+/// Marks its subtree as rows of one grouped card: an [AiResultCard] below it
+/// drops its own card surface and margin and renders as a plain row.
+class AiResultGroupScope extends InheritedWidget {
+  const AiResultGroupScope({super.key, required super.child});
+
+  static bool isGrouped(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<AiResultGroupScope>() != null;
+
+  @override
+  bool updateShouldNotify(AiResultGroupScope oldWidget) => false;
+}
+
 /// Presentational card: type, original-source title, source ref, optional kurasi.
 class AiResultCard extends StatelessWidget {
   const AiResultCard({
@@ -308,14 +321,32 @@ class AiResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final tile = _buildTile(colorScheme, textTheme);
+    if (AiResultGroupScope.isGrouped(context)) return tile;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: ListTile(
+      elevation: 0,
+      color: colorScheme.card,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      clipBehavior: Clip.antiAlias,
+      child: tile,
+    );
+  }
+
+  Widget _buildTile(ColorScheme colorScheme, TextTheme textTheme) {
+    return ListTile(
         onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         title: Text(
           title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
+          style: textTheme.titleMedium?.copyWith(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onSurface,
+          ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -343,13 +374,13 @@ class AiResultCard extends StatelessWidget {
                 key: const Key('ai_kurasi_badge'),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: colorScheme.secondaryContainer,
+                  color: colorScheme.tint,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   kurasiBadgeLabel!,
                   style: textTheme.labelSmall?.copyWith(
-                    color: colorScheme.onSecondaryContainer,
+                    color: colorScheme.onTint,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -358,8 +389,11 @@ class AiResultCard extends StatelessWidget {
           ],
         ),
         isThreeLine: true,
-        trailing: const Icon(Icons.chevron_right),
-      ),
+        trailing: Icon(
+          Icons.chevron_right,
+          size: 22,
+          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+        ),
     );
   }
 }

@@ -1,39 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 
-/// Elevated grouped card for Juz / Mushaf section surah lists on cream backdrop.
+/// Flat grouped card for Juz / Mushaf section surah lists on the canvas.
 class ReadGroupedSurahCard extends StatelessWidget {
   const ReadGroupedSurahCard({super.key, required this.child});
 
   final Widget child;
 
-  static BoxDecoration decoration(ColorScheme colorScheme) {
-    return BoxDecoration(
-      color: colorScheme.surface.withValues(alpha: 0.94),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: colorScheme.shadow.withValues(alpha: 0.04),
-          blurRadius: 12,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    );
-  }
-
-  static BoxDecoration standaloneDecoration(ColorScheme colorScheme) {
-    return decoration(colorScheme);
-  }
+  static const double radius = 20;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return DecoratedBox(
-      decoration: decoration(colorScheme),
+    return Material(
+      color: colorScheme.card,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: child,
+    );
+  }
+}
+
+/// One row of a lazily built grouped card: the first row rounds the top
+/// corners, the last rounds the bottom, and rows after the first carry the
+/// hairline, so a long sliver list reads as a single card.
+class ReadGroupedSurahTile extends StatelessWidget {
+  const ReadGroupedSurahTile({
+    super.key,
+    required this.isFirst,
+    required this.isLast,
+    required this.child,
+    this.inkKey,
+    this.onTap,
+  });
+
+  final bool isFirst;
+  final bool isLast;
+  final Widget child;
+  final Key? inkKey;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    const corner = Radius.circular(ReadGroupedSurahCard.radius);
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: isFirst ? corner : Radius.zero,
+        bottom: isLast ? corner : Radius.zero,
+      ),
+    );
+
+    return Material(
+      color: colorScheme.card,
+      shape: shape,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: inkKey,
+        onTap: onTap,
+        customBorder: shape,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!isFirst) const ReadGroupedSurahDivider(),
+            child,
+          ],
+        ),
+      ),
     );
   }
 }
@@ -49,7 +85,8 @@ class ReadGroupedSurahDivider extends StatelessWidget {
     return Divider(
       height: 1,
       thickness: 1,
-      color: colorScheme.outlineVariant.withValues(alpha: 0.35),
+      indent: 16,
+      color: colorScheme.hairline,
     );
   }
 }

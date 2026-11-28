@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
@@ -99,15 +100,16 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
             // Selection mode bar (shown when selection mode is active)
             if (_selectionMode)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.fromLTRB(
+                  kAppContentHorizontalInset,
+                  4,
+                  kAppContentHorizontalInset,
+                  4,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                 decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  border: Border(
-                    bottom: BorderSide(
-                      color: colorScheme.outlineVariant.withValues(alpha: 0.1),
-                      width: 1,
-                    ),
-                  ),
+                  color: colorScheme.tint,
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   children: [
@@ -124,7 +126,7 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
                         '${_selectedKeys.length} ${AppLocalizations.getSettingsText('selected', appLanguage)}',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
-                              color: colorScheme.onPrimaryContainer,
+                              color: colorScheme.onSurface,
                             ),
                       ),
                     ),
@@ -204,14 +206,15 @@ class _BookmarksTabContentState extends ConsumerState<BookmarksTabContent> {
                       if (!_selectionMode)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(
-                            kAppContentHorizontalInset,
+                            kAppContentHorizontalInset + 4,
                             8,
                             kAppContentHorizontalInset,
-                            0,
+                            2,
                           ),
                           child: Text(
                             '${AppLocalizations.getSettingsText('sort_by', appLanguage).toUpperCase()}: ${sortLabel.toUpperCase()}',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  fontSize: 13,
                                   color: colorScheme.onSurfaceVariant,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 0.5,

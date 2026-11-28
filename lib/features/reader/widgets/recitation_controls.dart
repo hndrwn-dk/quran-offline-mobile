@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/audio/playback_actions.dart';
 import 'package:quran_offline/core/audio/recitation_primary_action.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
 
 /// Fixed height so idle "Play surah" and active controls do not resize the header.
 const double _surahRecitationBarHeight = 48;
@@ -38,7 +40,7 @@ class SurahRecitationControls extends ConsumerWidget {
         height: _surahRecitationBarHeight,
         child: Align(
           alignment: Alignment.centerLeft,
-          child: FilledButton.tonalIcon(
+          child: FilledButton.icon(
             onPressed: () => PlaybackActions.playSurah(
               context,
               ref,
@@ -48,10 +50,8 @@ class SurahRecitationControls extends ConsumerWidget {
             icon: const Icon(Icons.play_arrow, size: 18),
             label: Text(AppLocalizations.getActionTooltip('play_surah', lang)),
             style: FilledButton.styleFrom(
-              backgroundColor: colorScheme.primaryContainer,
-              foregroundColor: colorScheme.onPrimaryContainer,
-              visualDensity: VisualDensity.compact,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              minimumSize: const Size(0, 44),
+              padding: const EdgeInsets.symmetric(horizontal: 18),
             ),
           ),
         ),
@@ -68,20 +68,17 @@ class SurahRecitationControls extends ConsumerWidget {
     return SizedBox(
       height: _surahRecitationBarHeight,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.only(left: 14, right: 4),
         decoration: BoxDecoration(
-          color: colorScheme.primaryContainer.withValues(alpha: 0.55),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: colorScheme.primary.withValues(alpha: 0.22),
-          ),
+          color: colorScheme.tint,
+          borderRadius: BorderRadius.circular(_surahRecitationBarHeight / 2),
         ),
         child: Row(
           children: [
             Icon(
               isPlaying ? Icons.graphic_eq : Icons.pause_circle_outline,
               size: 18,
-              color: colorScheme.primary,
+              color: readerOnTint(colorScheme),
             ),
             const SizedBox(width: 6),
             Expanded(
@@ -110,12 +107,12 @@ class SurahRecitationControls extends ConsumerWidget {
                       height: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: colorScheme.primary,
+                        color: readerOnTint(colorScheme),
                       ),
                     )
                   : Icon(
                       isPlaying ? Icons.pause_circle : Icons.play_circle,
-                      color: colorScheme.primary,
+                      color: readerOnTint(colorScheme),
                     ),
               tooltip: AppLocalizations.getActionTooltip(
                 recitationPrimaryAction(isPlaying: isPlaying).tooltipKey,

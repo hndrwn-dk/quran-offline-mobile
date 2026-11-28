@@ -6,7 +6,9 @@ import 'package:quran_offline/core/providers/enhanced_search_provider.dart';
 import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/utils/arabic_search_normalizer.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/home/widgets/home_cta_buttons.dart';
@@ -58,14 +60,18 @@ class SearchResultList extends ConsumerWidget {
       builder: (controller) => ListView.builder(
         controller: controller,
         primary: false,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         itemCount: results.length,
         itemBuilder: (context, index) {
+          // One grouped card, built lazily: only the first and last rows
+          // carry the card's corners, with a hairline between rows.
           return SearchResultTile(
             result: results[index],
             query: query,
             colorScheme: colorScheme,
             textTheme: textTheme,
+            isFirst: index == 0,
+            isLast: index == results.length - 1,
           );
         },
       ),
@@ -80,6 +86,8 @@ class SearchResultTile extends ConsumerWidget {
     required this.query,
     required this.colorScheme,
     required this.textTheme,
+    this.isFirst = true,
+    this.isLast = true,
   });
 
   final SearchResult result;
@@ -87,27 +95,27 @@ class SearchResultTile extends ConsumerWidget {
   final ColorScheme colorScheme;
   final TextTheme textTheme;
 
+  /// Position inside a grouped card: the first row rounds the top corners,
+  /// the last the bottom ones. A lone tile is a full card.
+  final bool isFirst;
+  final bool isLast;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     IconData icon;
-    Color? iconColor;
 
     switch (result.type) {
       case 'surah':
         icon = Icons.book;
-        iconColor = Colors.blue;
         break;
       case 'juz':
         icon = Icons.format_list_numbered;
-        iconColor = Colors.green;
         break;
       case 'page':
         icon = Icons.pages;
-        iconColor = Colors.orange;
         break;
       default:
         icon = Icons.text_fields;
-        iconColor = null;
     }
 
     final titleStyle = textTheme.titleMedium ?? const TextStyle();
@@ -187,16 +195,52 @@ class SearchResultTile extends ConsumerWidget {
             );
     }
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: iconColor?.withValues(alpha: 0.1),
-          child: Icon(icon, color: iconColor),
-        ),
+    const radius = Radius.circular(20);
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: isFirst ? radius : Radius.zero,
+        bottom: isLast ? radius : Radius.zero,
+      ),
+    );
+    return Material(
+      color: colorScheme.card,
+      shape: shape,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!isFirst)
+            Divider(
+              height: 1,
+              thickness: 1,
+              indent: 60,
+              color: colorScheme.hairline,
+            ),
+          _buildTile(context, ref, icon, titleWidget, subtitleWidget),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTile(
+    BuildContext context,
+    WidgetRef ref,
+    IconData icon,
+    Widget titleWidget,
+    Widget? subtitleWidget,
+  ) {
+    return ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        horizontalTitleGap: 12,
+        minLeadingWidth: 32,
+        leading: AppBadge(icon: icon),
         title: titleWidget,
         subtitle: subtitleWidget,
-        trailing: const Icon(Icons.chevron_right),
+        trailing: Icon(
+          Icons.chevron_right,
+          size: 22,
+          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+        ),
         onTap: () {
           if (result.type == 'page' && result.source is PageSource) {
             final pageSource = result.source as PageSource;
@@ -225,7 +269,6 @@ class SearchResultTile extends ConsumerWidget {
             );
           }
         },
-      ),
     );
   }
 }
@@ -258,7 +301,10 @@ class TranslationResultsScreen extends ConsumerWidget {
           AppLocalizations.getAiSearchTranslationJump(lang, results.length),
         ),
       ),
-      body: SearchResultList(results: results, query: query),
+      body: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: SearchResultList(results: results, query: query),
+      ),
     );
   }
 }

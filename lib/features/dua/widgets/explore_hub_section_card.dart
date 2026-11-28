@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/features/dua/explore_icons.dart';
 
 /// Hub landing row: tinted icon, title, count + hint, chevron.
@@ -27,17 +28,14 @@ class ExploreHubSectionCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
         child: Ink(
           decoration: BoxDecoration(
-            color: colorScheme.surface.withValues(alpha: 0.94),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-            ),
+            color: colorScheme.card,
+            borderRadius: BorderRadius.circular(AppTheme.cardRadius),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
                 _IconBox(
@@ -52,8 +50,10 @@ class ExploreHubSectionCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: textTheme.titleSmall?.copyWith(
+                        style: textTheme.titleMedium?.copyWith(
+                          fontSize: 17,
                           fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
                           color: colorScheme.onSurface,
                         ),
                       ),
@@ -61,6 +61,7 @@ class ExploreHubSectionCard extends StatelessWidget {
                       Text(
                         '$countLabel · $hint',
                         style: textTheme.bodySmall?.copyWith(
+                          fontSize: 13,
                           color: colorScheme.onSurfaceVariant,
                           height: 1.35,
                         ),
@@ -73,7 +74,7 @@ class ExploreHubSectionCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Icon(
                   Icons.chevron_right,
-                  color: colorScheme.onSurfaceVariant,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   size: 22,
                 ),
               ],
@@ -93,6 +94,8 @@ class ExploreTopicCard extends StatelessWidget {
     required this.refLabel,
     required this.onTap,
     this.isFavorite = false,
+    this.isFirst = true,
+    this.isLast = true,
   });
 
   final String title;
@@ -100,26 +103,23 @@ class ExploreTopicCard extends StatelessWidget {
   final VoidCallback onTap;
   final bool isFavorite;
 
+  /// Position inside a grouped card; a lone row is a full card.
+  final bool isFirst;
+  final bool isLast;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: colorScheme.surface.withValues(alpha: 0.94),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    return ExploreGroupedRow(
+      isFirst: isFirst,
+      isLast: isLast,
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Row(
               children: [
                 Expanded(
@@ -128,17 +128,18 @@ class ExploreTopicCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: textTheme.titleSmall?.copyWith(
+                        style: textTheme.titleMedium?.copyWith(
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                           height: 1.25,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         refLabel,
-                        style: textTheme.labelSmall?.copyWith(
+                        style: textTheme.bodySmall?.copyWith(
+                          fontSize: 13,
                           color: colorScheme.primary,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -154,17 +155,67 @@ class ExploreTopicCard extends StatelessWidget {
                 ],
                 Icon(
                   Icons.chevron_right,
-                  color: colorScheme.onSurfaceVariant,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   size: 22,
                 ),
               ],
             ),
-          ),
         ),
       ),
     );
   }
 }
+
+/// One row of a grouped card that is built lazily by a list: the first row
+/// rounds the top corners, the last the bottom ones, with a hairline between.
+/// A lone row ([isFirst] and [isLast]) is a full flat card.
+class ExploreGroupedRow extends StatelessWidget {
+  const ExploreGroupedRow({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.isFirst = true,
+    this.isLast = true,
+    this.dividerIndent = 16,
+  });
+
+  final Widget child;
+  final VoidCallback? onTap;
+  final bool isFirst;
+  final bool isLast;
+  final double dividerIndent;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    const radius = Radius.circular(20);
+    return Material(
+      color: colorScheme.card,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: isFirst ? radius : Radius.zero,
+          bottom: isLast ? radius : Radius.zero,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (!isFirst)
+            Divider(
+              height: 1,
+              thickness: 1,
+              indent: dividerIndent,
+              color: colorScheme.hairline,
+            ),
+          InkWell(onTap: onTap, child: child),
+        ],
+      ),
+    );
+  }
+}
+
 
 /// Featured category row — taller hero card for editorial picks (e.g. Sains cosmos).
 class ExploreFeaturedCategoryCard extends StatelessWidget {
@@ -196,14 +247,11 @@ class ExploreFeaturedCategoryCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
         child: Ink(
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow.withValues(alpha: 0.65),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-            ),
+            color: colorScheme.card,
+            borderRadius: BorderRadius.circular(AppTheme.cardRadius),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -222,11 +270,8 @@ class ExploreFeaturedCategoryCard extends StatelessWidget {
                     const Spacer(),
                     DecoratedBox(
                       decoration: BoxDecoration(
-                        color: colorScheme.surface.withValues(alpha: 0.94),
+                        color: colorScheme.tint,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                        ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -237,7 +282,7 @@ class ExploreFeaturedCategoryCard extends StatelessWidget {
                           featuredLabel,
                           style: textTheme.labelSmall?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: colorScheme.primary,
+                            color: colorScheme.onTint,
                           ),
                         ),
                       ),
@@ -247,8 +292,10 @@ class ExploreFeaturedCategoryCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   title,
-                  style: textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
                     color: colorScheme.onSurface,
                   ),
                 ),
@@ -297,17 +344,14 @@ class ExploreCategoryCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
         child: Ink(
           decoration: BoxDecoration(
-            color: colorScheme.surface.withValues(alpha: 0.94),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-            ),
+            color: colorScheme.card,
+            borderRadius: BorderRadius.circular(AppTheme.cardRadius),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
                 _IconBox(
@@ -323,8 +367,10 @@ class ExploreCategoryCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: textTheme.titleSmall?.copyWith(
+                        style: textTheme.titleMedium?.copyWith(
+                          fontSize: 17,
                           fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
                           color: colorScheme.onSurface,
                         ),
                       ),
@@ -332,6 +378,7 @@ class ExploreCategoryCard extends StatelessWidget {
                       Text(
                         subtitle,
                         style: textTheme.bodySmall?.copyWith(
+                          fontSize: 13,
                           color: colorScheme.onSurfaceVariant,
                           height: 1.35,
                         ),
@@ -344,7 +391,7 @@ class ExploreCategoryCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Icon(
                   Icons.chevron_right,
-                  color: colorScheme.onSurfaceVariant,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   size: 22,
                 ),
               ],
@@ -380,11 +427,8 @@ class _IconBox extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: colorScheme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.35),
-        ),
+        color: colorScheme.tint,
+        borderRadius: BorderRadius.circular(size * 0.3),
       ),
       alignment: Alignment.center,
       child: assetPath != null
@@ -394,20 +438,20 @@ class _IconBox extends StatelessWidget {
                 assetPath!,
                 fit: BoxFit.contain,
                 filterQuality: FilterQuality.high,
-                color: colorScheme.primary,
+                color: colorScheme.onTint,
                 colorBlendMode: BlendMode.srcIn,
                 cacheWidth: cachePx,
                 errorBuilder: (_, __, ___) => Icon(
                   icon,
                   size: size * 0.5,
-                  color: colorScheme.primary,
+                  color: colorScheme.onTint,
                 ),
               ),
             )
           : Icon(
               icon,
               size: size * 0.5,
-              color: colorScheme.primary,
+              color: colorScheme.onTint,
             ),
     );
   }

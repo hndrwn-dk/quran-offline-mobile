@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/feedback/app_feedback_content.dart';
 import 'package:quran_offline/core/feedback/feedback_context.dart';
 import 'package:quran_offline/core/feedback/feedback_email_fallback.dart';
@@ -146,6 +147,26 @@ class _FeedbackFormSheetState extends ConsumerState<FeedbackFormSheet> {
     }
   }
 
+  InputDecoration _fieldDecoration(ColorScheme colorScheme, String hint) {
+    OutlineInputBorder border(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: color, width: width),
+        );
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: colorScheme.card,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      border: border(colorScheme.hairline),
+      enabledBorder: border(colorScheme.hairline),
+      disabledBorder: border(colorScheme.hairline),
+      focusedBorder: border(colorScheme.primary, 1.5),
+      errorBorder: border(colorScheme.error),
+      focusedErrorBorder: border(colorScheme.error, 1.5),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -160,20 +181,26 @@ class _FeedbackFormSheetState extends ConsumerState<FeedbackFormSheet> {
       child: Container(
         height: sheetHeight,
         decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.12),
-              blurRadius: 24,
-              offset: const Offset(0, -4),
-            ),
-          ],
+          color: colorScheme.canvas,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppTheme.sheetRadius),
+          ),
         ),
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+              padding: const EdgeInsets.only(top: 10),
+              child: Container(
+                width: 36,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
               child: Row(
                 children: [
                   IconButton(
@@ -186,7 +213,7 @@ class _FeedbackFormSheetState extends ConsumerState<FeedbackFormSheet> {
                     child: Text(
                       _formTitle(),
                       style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -205,8 +232,8 @@ class _FeedbackFormSheetState extends ConsumerState<FeedbackFormSheet> {
                         .replaceAll('{surah}', '${widget.contextData!.surahId}')
                         .replaceAll('{ayah}', '${widget.contextData!.ayahNo}'),
                     style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onTint,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -220,7 +247,9 @@ class _FeedbackFormSheetState extends ConsumerState<FeedbackFormSheet> {
                     Text(
                       _text('feedback_title_label'),
                       style: textTheme.titleSmall?.copyWith(
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -229,12 +258,7 @@ class _FeedbackFormSheetState extends ConsumerState<FeedbackFormSheet> {
                       enabled: !_submitting,
                       maxLength: 120,
                       textInputAction: TextInputAction.next,
-                      decoration: InputDecoration(
-                        hintText: _titleHint(),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                      decoration: _fieldDecoration(colorScheme, _titleHint()),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return _text('feedback_title_required');
@@ -246,7 +270,9 @@ class _FeedbackFormSheetState extends ConsumerState<FeedbackFormSheet> {
                     Text(
                       _text('feedback_description_label'),
                       style: textTheme.titleSmall?.copyWith(
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -257,13 +283,10 @@ class _FeedbackFormSheetState extends ConsumerState<FeedbackFormSheet> {
                       minLines: 5,
                       maxLines: 12,
                       textInputAction: TextInputAction.newline,
-                      decoration: InputDecoration(
-                        hintText: _text('feedback_description_hint'),
-                        alignLabelWithHint: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                      decoration: _fieldDecoration(
+                        colorScheme,
+                        _text('feedback_description_hint'),
+                      ).copyWith(alignLabelWithHint: true),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return _text('feedback_description_required');
@@ -280,6 +303,9 @@ class _FeedbackFormSheetState extends ConsumerState<FeedbackFormSheet> {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                  ),
                   onPressed: _submitting ? null : _submit,
                   child: _submitting
                       ? Row(

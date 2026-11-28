@@ -149,6 +149,7 @@ Future<void> showRelatedContentSheet({
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
+    showDragHandle: true,
     builder: (context) => RelatedContentSheet(
       surah: surah,
       ayah: ayah,
@@ -182,7 +183,7 @@ class RelatedContentSheet extends ConsumerWidget {
           child: SizedBox(
             height: MediaQuery.sizeOf(context).height * 0.6,
             child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 12, 8, 24),
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -191,8 +192,8 @@ class RelatedContentSheet extends ConsumerWidget {
                   child: Text(
                     AppLocalizations.getRelatedContentTitle(lang),
                     key: const Key('related_content_title'),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                   ),
                 ),
@@ -207,6 +208,10 @@ class RelatedContentSheet extends ConsumerWidget {
                     child: Text(
                       AppLocalizations.getRelatedContentEmpty(lang),
                       key: const Key('related_content_empty'),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                     ),
                   )
                 else
@@ -221,9 +226,19 @@ class RelatedContentSheet extends ConsumerWidget {
                               AppLocalizations.getAiSearchTypeLabel(
                                 entry.key,
                                 lang,
-                              ),
+                              ).toUpperCase(),
                               key: Key('related_group_${entry.key}'),
-                              style: Theme.of(context).textTheme.labelLarge,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium
+                                  ?.copyWith(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
                             ),
                           ),
                           for (final hit in entry.value)

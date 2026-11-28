@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
 
-/// iOS-style segment control for Koleksi sub-tabs.
+/// Segment control for Koleksi sub-tabs.
 class LibrarySegmentTabs extends StatelessWidget {
   const LibrarySegmentTabs({
     super.key,
@@ -27,11 +28,8 @@ class LibrarySegmentTabs extends StatelessWidget {
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.45),
-          ),
+          color: colorScheme.primary.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Padding(
           padding: const EdgeInsets.all(3),
@@ -43,15 +41,14 @@ class LibrarySegmentTabs extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () => onChanged(index),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(11),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      constraints: const BoxConstraints(minHeight: 38),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       decoration: BoxDecoration(
-                        color: selected
-                            ? colorScheme.surface.withValues(alpha: 0.94)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
+                        color: selected ? colorScheme.card : Colors.transparent,
+                        borderRadius: BorderRadius.circular(11),
                       ),
                       alignment: Alignment.center,
                       child: Text(

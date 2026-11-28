@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/audio/playback_actions.dart';
 import 'package:quran_offline/core/providers/audio_player_provider.dart';
@@ -54,15 +55,9 @@ class ReaderBismillahBlock extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
           color: isReciting
-              ? colorScheme.primary.withValues(alpha: 0.10)
+              ? readerPlayingFill(colorScheme)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isReciting
-                ? colorScheme.primary.withValues(alpha: 0.40)
-                : Colors.transparent,
-            width: 1,
-          ),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,7 +74,7 @@ class ReaderBismillahBlock extends ConsumerWidget {
                       : Icons.volume_up_outlined,
                   size: 16,
                   color: isReciting
-                      ? colorScheme.primary
+                      ? readerOnTint(colorScheme)
                       : Colors.transparent,
                 ),
                 IconButton(
@@ -90,7 +85,7 @@ class ReaderBismillahBlock extends ConsumerWidget {
                     size: 20,
                   ),
                   color: isReciting
-                      ? colorScheme.primary
+                      ? readerOnTint(colorScheme)
                       : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,

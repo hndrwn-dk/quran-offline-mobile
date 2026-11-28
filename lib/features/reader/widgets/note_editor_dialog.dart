@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quran_offline/core/constants/app_colors.dart';
 import 'package:quran_offline/core/providers/notes_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
 
 class NoteEditorDialog extends ConsumerStatefulWidget {
   final int surahId;
@@ -84,7 +85,25 @@ class _NoteEditorDialogState extends ConsumerState<NoteEditorDialog> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return AlertDialog(
-      title: Text(AppLocalizations.getSettingsText('note_title', appLanguage)),
+      title: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Expanded(
+            child: Text(
+              AppLocalizations.getSettingsText('note_title', appLanguage),
+            ),
+          ),
+          Text(
+            '${widget.surahId}:${widget.ayahNo}',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ],
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(12, 0, 16, 16),
       content: SizedBox(
         width: double.maxFinite,
         child: TextField(
@@ -94,16 +113,18 @@ class _NoteEditorDialogState extends ConsumerState<NoteEditorDialog> {
           autofocus: true,
           decoration: InputDecoration(
             hintText: AppLocalizations.getSettingsText('note_hint', appLanguage),
+            filled: true,
+            fillColor: colorScheme.surface,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: colorScheme.outlineVariant),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: colorScheme.hairline),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.warmPrimary, width: 1.5),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
             ),
           ),
         ),
@@ -116,13 +137,25 @@ class _NoteEditorDialogState extends ConsumerState<NoteEditorDialog> {
             label: Text(AppLocalizations.getSettingsText('delete', appLanguage)),
             style: TextButton.styleFrom(
               foregroundColor: colorScheme.error,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
             ),
           ),
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.of(context).pop(),
+          style: FilledButton.styleFrom(
+            backgroundColor: colorScheme.tint,
+            foregroundColor: readerOnTint(colorScheme),
+            minimumSize: const Size(0, 44),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            shape: const StadiumBorder(),
+          ),
           child: Text(AppLocalizations.getSettingsText('cancel', appLanguage)),
         ),
         FilledButton(
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(0, 44),
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+          ),
           onPressed: _isSaving ? null : _saveNote,
           child: Text(AppLocalizations.getSettingsText('save', appLanguage)),
         ),

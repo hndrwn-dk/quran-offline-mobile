@@ -24,9 +24,10 @@ class HomeSectionChevronLink extends StatelessWidget {
           padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
           child: Text(
             '$label \u203A',
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: colorScheme.primary,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
                 ),
           ),
         ),
@@ -52,25 +53,31 @@ class HomeSectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                letterSpacing: 1.1,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurfaceVariant,
-              ),
-        ),
-        if (linkLabel != null && onLinkPressed != null) ...[
-          const Spacer(),
-          HomeSectionChevronLink(
-            label: linkLabel!,
-            onPressed: onLinkPressed!,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontSize: 13,
+                    letterSpacing: 0.5,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+            ),
           ),
+          if (linkLabel != null && onLinkPressed != null)
+            HomeSectionChevronLink(
+              label: linkLabel!,
+              onPressed: onLinkPressed!,
+            ),
         ],
-      ],
+      ),
     );
   }
 }

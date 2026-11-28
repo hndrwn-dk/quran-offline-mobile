@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/models/surah_qul_info.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/providers/surah_qul_info_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
+import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
 import 'package:quran_offline/features/reader/widgets/recitation_controls.dart';
 
 /// QUL surah header: name font v2 + surah info (follows translation language).
@@ -40,22 +42,9 @@ class SurahHeaderCard extends ConsumerWidget {
 
     return Container(
       key: const Key('surah_header_card'),
+      // Flat: sits directly on the reader background.
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.primary.withValues(alpha: 0.14),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -104,18 +93,16 @@ class SurahHeaderCard extends ConsumerWidget {
                 label: isMeccan
                     ? AppLocalizations.getSurahMetaMeccan(lang)
                     : AppLocalizations.getSurahMetaMedinan(lang),
-                color: isMeccan
-                    ? colorScheme.primaryContainer
-                    : colorScheme.secondaryContainer,
-                fg: isMeccan
-                    ? colorScheme.onPrimaryContainer
-                    : colorScheme.onSecondaryContainer,
+                color: colorScheme.tint,
+                fg: readerOnTint(colorScheme),
               ),
               const SizedBox(width: 8),
               _MetaChip(
                 label: AppLocalizations.formatSurahVerseCount(lang, verseCount),
-                color: colorScheme.surfaceContainerHighest,
-                fg: colorScheme.onSurfaceVariant,
+                color: colorScheme.tint,
+                fg: colorScheme.brightness == Brightness.dark
+                    ? colorScheme.onPrimaryContainer
+                    : colorScheme.onSurfaceVariant,
               ),
             ],
           ),
@@ -187,10 +174,10 @@ class _MetaChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(12),
+        color: color,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Text(
         label,
@@ -229,13 +216,10 @@ class _QulInfoLangPanel extends StatelessWidget {
     );
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colorScheme.primary.withValues(alpha: 0.12),
-        ),
+        color: colorScheme.card,
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

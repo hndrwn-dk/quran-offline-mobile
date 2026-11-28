@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/providers/app_version_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/whats_new.dart';
 
 /// "Yang baru di <major.minor>": shown once on Beranda after a feature
-/// update (see [whatsNewDue]) until the reader closes it. Same shape as the
-/// home Renungan card, in the scheme's tertiary tint so it reads apart from
-/// the green Lanjutkan baca card and the beige Renungan card. Not tappable;
-/// only the close button acts.
+/// update (see [whatsNewDue]) until the reader closes it. A flat card like
+/// the other home cards. Not tappable; only the close button acts.
 class HomeWhatsNewCard extends ConsumerWidget {
   const HomeWhatsNewCard({super.key});
 
@@ -34,11 +33,14 @@ class HomeWhatsNewCard extends ConsumerWidget {
 
     return Padding(
       key: const Key('home_whats_new_card'),
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
       child: DecoratedBox(
-        decoration: _whatsNewDecoration(colorScheme),
+        decoration: BoxDecoration(
+          color: colorScheme.card,
+          borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+        ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 4, 4, 16),
+          padding: const EdgeInsets.fromLTRB(18, 6, 6, 18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -54,7 +56,7 @@ class HomeWhatsNewCard extends ConsumerWidget {
                     child: Text(
                       AppLocalizations.getWhatsNewLabel(lang),
                       style: textTheme.labelMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                        color: colorScheme.primary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -74,7 +76,7 @@ class HomeWhatsNewCard extends ConsumerWidget {
                 ],
               ),
               Padding(
-                padding: const EdgeInsets.only(right: 10),
+                padding: const EdgeInsets.only(right: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -86,7 +88,9 @@ class HomeWhatsNewCard extends ConsumerWidget {
                           lang,
                         ),
                         style: textTheme.titleMedium?.copyWith(
+                          fontSize: 17,
                           fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
                           color: colorScheme.onSurface,
                         ),
                       ),
@@ -122,37 +126,4 @@ class HomeWhatsNewCard extends ConsumerWidget {
       ),
     );
   }
-}
-
-/// Mirrors the home Renungan decoration (radius 20, primary hairline and
-/// shadow, diagonal wash) with the scheme's tertiary container as the tint.
-BoxDecoration _whatsNewDecoration(ColorScheme colorScheme) {
-  final isDark = colorScheme.brightness == Brightness.dark;
-
-  return BoxDecoration(
-    borderRadius: BorderRadius.circular(20),
-    border: Border.all(
-      color: colorScheme.primary.withValues(alpha: isDark ? 0.22 : 0.12),
-    ),
-    gradient: LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: isDark
-          ? [
-              colorScheme.tertiaryContainer.withValues(alpha: 0.38),
-              colorScheme.surfaceContainerHigh.withValues(alpha: 0.9),
-            ]
-          : [
-              colorScheme.surfaceContainerLow,
-              colorScheme.tertiaryContainer.withValues(alpha: 0.45),
-            ],
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: colorScheme.primary.withValues(alpha: isDark ? 0.1 : 0.06),
-        blurRadius: 10,
-        offset: const Offset(0, 3),
-      ),
-    ],
-  );
 }

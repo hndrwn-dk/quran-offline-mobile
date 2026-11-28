@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/database/database.dart' show Verse;
 import 'package:quran_offline/core/models/dua_entry.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
@@ -10,6 +11,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:quran_offline/core/utils/translation_cleaner.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/core/widgets/surah_name_glyph.dart';
 import 'package:quran_offline/core/explore/explore_favorite.dart';
 import 'package:quran_offline/core/providers/explore_favorites_provider.dart';
@@ -67,7 +69,7 @@ Future<DuaAyahRef?> showExploreAyahRefPicker({
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
               child: Text(
                 AppLocalizations.getExploreChooseAyah(lang),
                 style: Theme.of(pickerContext).textTheme.titleMedium?.copyWith(
@@ -75,14 +77,23 @@ Future<DuaAyahRef?> showExploreAyahRefPicker({
                     ),
               ),
             ),
-            for (final ayahRef in ayahRefs)
-              ListTile(
-                title: Text(
-                  exploreAyahRefPickerLabel(ayahRef, lang, surahNames),
-                ),
-                onTap: () => Navigator.pop(pickerContext, ayahRef),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: AppGroupedCard(
+                children: [
+                  for (final ayahRef in ayahRefs)
+                    ListTile(
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 16),
+                      title: Text(
+                        exploreAyahRefPickerLabel(ayahRef, lang, surahNames),
+                      ),
+                      onTap: () => Navigator.pop(pickerContext, ayahRef),
+                    ),
+                ],
               ),
-            const SizedBox(height: 8),
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       );
@@ -194,7 +205,7 @@ class ExploreDetailSheet extends ConsumerWidget {
     // shrinkWrap so the sheet hugs content; ConstrainedBox caps tall content.
     final body = ListView(
       shrinkWrap: true,
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,8 +213,11 @@ class ExploreDetailSheet extends ConsumerWidget {
             Expanded(
               child: Text(
                 title.forLanguage(lang),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontSize: 24,
                       fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
+                      height: 1.2,
                     ),
               ),
             ),
@@ -241,10 +255,11 @@ class ExploreDetailSheet extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Text(
           summary.forLanguage(lang),
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 15,
                 color: colorScheme.onSurfaceVariant,
                 height: 1.45,
               ),
@@ -262,39 +277,49 @@ class ExploreDetailSheet extends ConsumerWidget {
           Text(
             sectionNote!.forLanguage(lang),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 15,
                   color: colorScheme.onSurfaceVariant,
                   height: 1.45,
                 ),
           ),
         ],
-        const SizedBox(height: 20),
-        ...ayahRefs.map(
-          (ayahRef) => ExploreAyahBlock(
-            ayahRef: ayahRef,
-            lang: lang,
-            surahNames: surahNames,
-            verses: preloadedVerses[ayahRef.rangeKey()],
-          ),
-        ),
+        const SizedBox(height: 18),
+        // Each passage is a flat card on the sheet canvas.
+        for (final ayahRef in ayahRefs)
+          if (preloadedVerses[ayahRef.rangeKey()] != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: AppCard(
+                padding: const EdgeInsets.fromLTRB(18, 16, 18, 4),
+                child: ExploreAyahBlock(
+                  ayahRef: ayahRef,
+                  lang: lang,
+                  surahNames: surahNames,
+                  verses: preloadedVerses[ayahRef.rangeKey()],
+                ),
+              ),
+            ),
       ],
     );
 
     return _ExploreSheetShell(
       child: Material(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        color: colorScheme.canvas,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppTheme.sheetRadius),
+        ),
         clipBehavior: Clip.antiAlias,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Center(
               child: Container(
-                width: 40,
-                height: 4,
+                width: 36,
+                height: 5,
                 decoration: BoxDecoration(
-                  color: colorScheme.onSurface.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(3),
                 ),
               ),
             ),
@@ -306,7 +331,7 @@ class ExploreDetailSheet extends ConsumerWidget {
             else
               body,
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
               child: SafeArea(
                 top: false,
                 child: SizedBox(
@@ -329,6 +354,13 @@ class ExploreDetailSheet extends ConsumerWidget {
                               onOpenReader(picked);
                             }
                           },
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      textStyle: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontSize: 17, fontWeight: FontWeight.w600),
+                    ),
                     icon: const Icon(Icons.menu_book_outlined),
                     label: Text(AppLocalizations.getDuaOpenInReader(lang)),
                   ),
@@ -699,13 +731,11 @@ class _FavoriteButton extends ConsumerWidget {
     final label = marked
         ? AppLocalizations.getExploreFavoritesSavedPill(lang)
         : AppLocalizations.getExploreFavoritesSavePill(lang);
+    final pillForeground =
+        marked ? colorScheme.onPrimaryContainer : colorScheme.onTint;
     return Material(
-      color: marked ? colorScheme.primaryContainer : colorScheme.surface,
-      shape: StadiumBorder(
-        side: BorderSide(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.7),
-        ),
-      ),
+      color: marked ? colorScheme.primaryContainer : colorScheme.tint,
+      shape: const StadiumBorder(),
       child: InkWell(
         customBorder: const StadiumBorder(),
         onTap: () {
@@ -750,22 +780,23 @@ class _FavoriteButton extends ConsumerWidget {
             ),
           );
         },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 44),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 marked ? Icons.favorite : Icons.favorite_border,
                 size: 18,
-                color: colorScheme.primary,
+                color: pillForeground,
               ),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.w700,
+                      color: pillForeground,
+                      fontWeight: FontWeight.w600,
                     ),
               ),
             ],

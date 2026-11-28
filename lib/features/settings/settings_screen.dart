@@ -18,15 +18,16 @@ class SettingsScreen extends ConsumerWidget {
       appBar: SettingsMenuAppBar(showBackButton: showBackButton),
       body: HomeBackdrop(
         child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           children: const [
             SettingsQuranSection(),
-            Divider(),
+            SizedBox(height: 14),
             SettingsRecitationSection(),
-            Divider(),
+            SizedBox(height: 14),
             SettingsRemindersSection(),
-            Divider(),
+            SizedBox(height: 14),
             SettingsAppSection(),
-            SizedBox(height: 16),
+            SizedBox(height: 24),
           ],
         ),
       ),

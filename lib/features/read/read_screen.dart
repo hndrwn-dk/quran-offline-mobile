@@ -6,6 +6,8 @@ import 'package:quran_offline/core/providers/reader_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/responsive.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/app/app_theme.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
@@ -69,17 +71,19 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
     });
 
     if (isLargeScreen) {
+      final colorScheme = Theme.of(context).colorScheme;
       return Scaffold(
         body: SafeArea(
           child: Row(
             children: [
-              SizedBox(
+              Container(
                 width: 320,
+                color: colorScheme.canvas,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 8, 0),
+                      padding: const EdgeInsets.fromLTRB(20, 24, 4, 4),
                       child: Row(
                         children: [
                           Expanded(
@@ -104,7 +108,11 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
                   ],
                 ),
               ),
-              const VerticalDivider(width: 1),
+              VerticalDivider(
+                width: 1,
+                thickness: 1,
+                color: colorScheme.hairline,
+              ),
               const Expanded(
                 child: ReaderScreen(),
               ),
@@ -119,28 +127,16 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
 
     return Scaffold(
       backgroundColor: topTint,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        toolbarHeight: 54,
-        centerTitle: false,
-        titleSpacing: 16,
-        backgroundColor: topTint,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
-        flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
-        title: _ReadScreenTitle(appLanguage: appLanguage),
+      appBar: AppLargeTitleBar(
+        title: AppLocalizations.getSubtitleText('read_title', appLanguage),
+        subtitle: AppLocalizations.getSubtitleText(
+          'read_subtitle',
+          appLanguage,
+        ),
         actions: [
           _ReadSearchButton(searchBarKey: _searchBarKey),
+          const SizedBox(width: 8),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(
-            height: 1,
-            thickness: 1,
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-          ),
-        ),
       ),
       body: HomeBackdrop(
         child: FloatingNavBarInset(
@@ -176,9 +172,8 @@ class _ReadSearchButton extends StatelessWidget {
     return IconButton(
       key: const Key('read_search_button'),
       icon: const Icon(Icons.search),
-      iconSize: 20,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      constraints: const BoxConstraints(),
+      iconSize: 22,
+      constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
       onPressed: () {
         searchBarKey.currentState?.toggle();
       },
@@ -186,6 +181,8 @@ class _ReadSearchButton extends StatelessWidget {
   }
 }
 
+/// Large left-aligned title for the >= 840dp column (the phone layout uses
+/// [AppLargeTitleBar]).
 class _ReadScreenTitle extends StatelessWidget {
   const _ReadScreenTitle({required this.appLanguage});
 
@@ -193,55 +190,30 @@ class _ReadScreenTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: colorScheme.onSurface.withValues(alpha: 0.08),
-            border: Border.all(
-              color: colorScheme.onSurface.withValues(alpha: 0.18),
-              width: 1,
-            ),
-          ),
-          alignment: Alignment.center,
-          child: Icon(
-            Icons.auto_stories,
-            size: 18,
+        Text(
+          AppLocalizations.getSubtitleText('read_title', appLanguage),
+          style: theme.textTheme.headlineLarge?.copyWith(
+            fontSize: 28,
             color: colorScheme.onSurface,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
-        const SizedBox(width: 10),
-        Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.getSubtitleText('read_title', appLanguage),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.3,
-                      color: colorScheme.onSurface,
-                    ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                AppLocalizations.getSubtitleText('read_subtitle', appLanguage),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+        const SizedBox(height: 4),
+        Text(
+          AppLocalizations.getSubtitleText('read_subtitle', appLanguage),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
           ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );

@@ -16,15 +16,18 @@ class AboutScreen extends ConsumerWidget {
       appBar: const SettingsMenuAppBar(),
       body: HomeBackdrop(
         child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           children: const [
+            SettingsAboutBrandHeader(),
+            SizedBox(height: 14),
             SettingsAboutAppSection(),
-            Divider(),
+            SizedBox(height: 14),
             SettingsAboutSupportSection(),
-            Divider(),
+            SizedBox(height: 14),
             SettingsAboutLegalSection(),
-            Divider(),
+            SizedBox(height: 14),
             SettingsAboutFeedbackSection(),
-            SizedBox(height: 16),
+            SizedBox(height: 24),
           ],
         ),
       ),

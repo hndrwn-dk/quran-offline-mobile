@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:quran_offline/core/database/database.dart';
@@ -598,8 +599,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             )
           : null,
       actions: [
-        IconButton(
-          icon: const Icon(Icons.text_fields),
+        ReaderTextSettingsAction(
           tooltip: AppLocalizations.getSettingsText(
             'text_settings_title',
             lang,
@@ -738,8 +738,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         error: (_, __) => ReaderAppBarTitleColumn(title: juzTitle),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.text_fields),
+        ReaderTextSettingsAction(
           tooltip: AppLocalizations.getSettingsText(
             'text_settings_title',
             lang,
@@ -876,8 +875,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   title: AppLocalizations.getPageText(pageNo, appLanguage),
                 ),
                 actions: [
-                  IconButton(
-                    icon: const Icon(Icons.text_fields),
+                  ReaderTextSettingsAction(
                     tooltip: AppLocalizations.getSettingsText(
                       'text_settings_title',
                       appLanguage,
@@ -1088,8 +1086,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                   thickness: 1,
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .outlineVariant
-                                      .withValues(alpha: 0.1),
+                                      .hairline,
                                 ),
                               ),
                             ],
@@ -1107,8 +1104,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                       thickness: 1,
                                       color: Theme.of(context)
                                           .colorScheme
-                                          .outlineVariant
-                                          .withValues(alpha: 0.1),
+                                          .hairline,
                                     ),
                                   ),
                                 ],
@@ -1168,8 +1164,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                   thickness: 1,
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .outlineVariant
-                                      .withValues(alpha: 0.1),
+                                      .hairline,
                                 ),
                               ),
                             ],
@@ -1197,8 +1192,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                   thickness: 1,
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .outlineVariant
-                                      .withValues(alpha: 0.1),
+                                      .hairline,
                                 ),
                               ),
                             ],
@@ -1214,8 +1208,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                   thickness: 1,
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .outlineVariant
-                                      .withValues(alpha: 0.1),
+                                      .hairline,
                                 ),
                               ),
                             ],
@@ -1233,8 +1226,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                       thickness: 1,
                                       color: Theme.of(context)
                                           .colorScheme
-                                          .outlineVariant
-                                          .withValues(alpha: 0.1),
+                                          .hairline,
                                     ),
                                   ),
                                 ],
@@ -1294,8 +1286,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                   thickness: 1,
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .outlineVariant
-                                      .withValues(alpha: 0.1),
+                                      .hairline,
                                 ),
                               ),
                             ],
@@ -1323,8 +1314,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                   thickness: 1,
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .outlineVariant
-                                      .withValues(alpha: 0.1),
+                                      .hairline,
                                 ),
                               ),
                             ],
@@ -1340,8 +1330,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                   thickness: 1,
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .outlineVariant
-                                      .withValues(alpha: 0.1),
+                                      .hairline,
                                 ),
                               ),
                             ],
@@ -1359,8 +1348,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                       thickness: 1,
                                       color: Theme.of(context)
                                           .colorScheme
-                                          .outlineVariant
-                                          .withValues(alpha: 0.1),
+                                          .hairline,
                                     ),
                                   ),
                                 ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/highlights_provider.dart';
@@ -231,58 +232,35 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
     bool isSelected,
     VoidCallback onTap,
   ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     IconData? icon;
     if (color != null) {
-      icon = getHighlightIcon(color.value);
+      icon = getHighlightIcon(color.toARGB32());
     }
-    
-    // Adjust colors for dark mode
-    Color? chipBackgroundColor;
-    Color chipBorderColor;
-    Color iconContainerColor;
-    
+
+    // Flat chips: "All" fills with primary when selected; a color chip keeps
+    // its swatch and gets a soft fill plus a ring of its own color.
+    final Color chipBackgroundColor;
+    final Color labelColor;
     if (color != null) {
-      if (isSelected) {
-        // Selected: use muted color in dark mode, full color in light mode
-        chipBackgroundColor = isDark 
-            ? color.withValues(alpha: 0.25) 
-            : color.withValues(alpha: 0.15);
-        chipBorderColor = isDark 
-            ? color.withValues(alpha: 0.6) 
-            : color;
-      } else {
-        // Unselected: very subtle in dark mode
-        chipBackgroundColor = isDark 
-            ? colorScheme.surfaceVariant 
-            : color.withValues(alpha: 0.1);
-        chipBorderColor = isDark 
-            ? colorScheme.outline.withValues(alpha: 0.2)
-            : colorScheme.outline.withValues(alpha: 0.3);
-      }
-      iconContainerColor = color;
+      chipBackgroundColor =
+          isSelected ? color.withValues(alpha: 0.22) : colorScheme.card;
+      labelColor = colorScheme.onSurface;
     } else {
-      // "All" chip
-      chipBackgroundColor = isSelected 
-          ? colorScheme.primaryContainer 
-          : colorScheme.surfaceVariant;
-      chipBorderColor = isSelected 
-          ? colorScheme.primary 
-          : colorScheme.outline.withValues(alpha: 0.3);
-      iconContainerColor = colorScheme.primary;
+      chipBackgroundColor = isSelected ? colorScheme.primary : colorScheme.card;
+      labelColor = isSelected ? colorScheme.onPrimary : colorScheme.onSurface;
     }
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        constraints: const BoxConstraints(minHeight: 36),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: chipBackgroundColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: chipBorderColor,
-            width: isSelected ? 2 : 1,
-          ),
+          borderRadius: BorderRadius.circular(18),
+          border: color != null && isSelected
+              ? Border.all(color: color, width: 1.5)
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -292,19 +270,13 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: iconContainerColor,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: isDark 
-                        ? colorScheme.outline.withValues(alpha: 0.2)
-                        : colorScheme.outline.withValues(alpha: 0.3),
-                    width: 1,
-                  ),
+                  color: color,
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Icon(
                   icon,
                   size: 12,
-                  color: _getContrastColor(iconContainerColor),
+                  color: _getContrastColor(color),
                 ),
               ),
               if (label != null) const SizedBox(width: 6),
@@ -312,13 +284,9 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
             if (label != null)
               Text(
                 label,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: isSelected
-                          ? (color != null && isDark
-                              ? color.withValues(alpha: 0.9)
-                              : color ?? colorScheme.onPrimaryContainer)
-                          : colorScheme.onSurfaceVariant,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: labelColor,
+                      fontWeight: FontWeight.w500,
                     ),
               ),
           ],
@@ -398,11 +366,7 @@ class _HighlightsScreenState extends ConsumerState<HighlightsScreen> {
             height: 32,
             decoration: BoxDecoration(
               color: color,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-                width: 1,
-              ),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               icon,

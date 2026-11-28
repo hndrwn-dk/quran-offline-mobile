@@ -169,6 +169,7 @@ Same as QUL (section 4). Tafsir works have their own scholarly copyrights; use o
 | `assets/fonts/ScheherazadeNew-Regular.ttf` | ScheherazadeNew | [SIL](https://software.sil.org/scheherazade/) (OFL) |
 | `assets/fonts/surah_name_v2.ttf` | SurahNameV2 | [QUL Surah name font v2](https://qul.tarteel.ai/) |
 | `assets/fonts/qpc_v2/p1.ttf` … `p604.ttf` | `QpcV2Page{n}` | [QUL QPC V2 page fonts](https://qul.tarteel.ai/) |
+| `assets/fonts/roboto/Roboto-{Regular,Medium,SemiBold,Bold}.ttf` | Roboto (UI text) | [Roboto](https://github.com/google/fonts/tree/main/ofl/roboto) v3.015 (OFL 1.1, `assets/fonts/roboto/OFL.txt`). Static 400/500/600/700 instances of the variable font at normal width, subset to Latin ranges. Glyphs outside the subset fall back to the system font. |
 
 Mushaf pages use **QPC V2** only (QUL 15-line layout + word script + 604 page fonts). QPC V4 Tajweed is not in the app and is not bundled.
 

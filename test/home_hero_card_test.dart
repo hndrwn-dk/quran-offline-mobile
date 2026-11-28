@@ -92,8 +92,8 @@ void main() {
 
     final salam = tester.widget<Text>(find.text('Assalamu\'alaikum'));
     expect(salam.style?.color, scheme.onSurface);
-    expect(salam.style?.fontSize, 26);
-    expect(salam.style?.letterSpacing, -0.5);
+    expect(salam.style?.fontSize, 34);
+    expect(salam.style?.letterSpacing, -0.7);
   });
 
   testWidgets('greeting has no Arabic fragment, tagline, or card box', (

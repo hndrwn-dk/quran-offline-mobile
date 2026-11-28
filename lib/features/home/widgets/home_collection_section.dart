@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
@@ -10,6 +11,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/features/home/widgets/home_section_link.dart';
 import 'package:quran_offline/features/reader/open_reader_screen.dart';
 
@@ -124,8 +126,23 @@ class HomeCollectionSection extends ConsumerWidget {
       HomeCollectionKind.highlight: highlights.length,
     };
 
+    final chips = [
+      for (final kind in HomeCollectionKind.values)
+        if (counts[kind]! > 0)
+          _CountChip(
+            key: Key('home_collection_chip_${kind.name}'),
+            kind: kind,
+            label: AppLocalizations.formatHomeCollectionCount(
+              kind.name,
+              counts[kind]!,
+              lang,
+            ),
+            onTap: () => _openLibrary(ref, kind),
+          ),
+    ];
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -134,72 +151,40 @@ class HomeCollectionSection extends ConsumerWidget {
             linkLabel: AppLocalizations.getHomeSeeAllLink(lang),
             onLinkPressed: () => _openLibrary(ref),
           ),
-          const SizedBox(height: 8),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.65),
-              ),
-              color: colorScheme.surface.withValues(alpha: 0.94),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 4, 14, 8),
-              child: feed.isEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Text(
-                        AppLocalizations.getHomeCollectionEmpty(lang),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              height: 1.45,
-                            ),
-                      ),
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8, bottom: 4),
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 6,
-                            children: [
-                              for (final kind in HomeCollectionKind.values)
-                                if (counts[kind]! > 0)
-                                  _CountChip(
-                                    key: Key(
-                                        'home_collection_chip_${kind.name}'),
-                                    kind: kind,
-                                    label: AppLocalizations
-                                        .formatHomeCollectionCount(
-                                      kind.name,
-                                      counts[kind]!,
-                                      lang,
-                                    ),
-                                    onTap: () => _openLibrary(ref, kind),
-                                  ),
-                            ],
-                          ),
-                        ),
-                        for (var i = 0; i < feed.length; i++)
-                          _CollectionRow(
-                            key: Key('home_collection_row_$i'),
-                            item: feed[i],
-                            surahName: _surahName(surahs, feed[i].surahId),
-                            lang: lang,
-                            isLast: i == feed.length - 1,
-                            onTap: () => _openAyah(
-                              context,
-                              ref,
-                              feed[i].surahId,
-                              feed[i].ayahNo,
-                            ),
-                          ),
-                      ],
+          const SizedBox(height: 10),
+          if (feed.isEmpty)
+            AppCard(
+              child: Text(
+                AppLocalizations.getHomeCollectionEmpty(lang),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      height: 1.45,
                     ),
+              ),
+            )
+          else ...[
+            if (chips.isNotEmpty) ...[
+              Wrap(spacing: 8, runSpacing: 8, children: chips),
+              const SizedBox(height: 10),
+            ],
+            AppGroupedCard(
+              children: [
+                for (var i = 0; i < feed.length; i++)
+                  _CollectionRow(
+                    key: Key('home_collection_row_$i'),
+                    item: feed[i],
+                    surahName: _surahName(surahs, feed[i].surahId),
+                    lang: lang,
+                    onTap: () => _openAyah(
+                      context,
+                      ref,
+                      feed[i].surahId,
+                      feed[i].ayahNo,
+                    ),
+                  ),
+              ],
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -239,6 +224,13 @@ IconData _iconFor(HomeCollectionKind kind) => switch (kind) {
       HomeCollectionKind.highlight => Icons.border_color_outlined,
     };
 
+/// Foreground on the tint fill. Dark primary is too close to the dark tint
+/// to read, so dark mode uses the container's own foreground.
+Color _onTint(ColorScheme colorScheme) =>
+    colorScheme.brightness == Brightness.dark
+        ? colorScheme.onPrimaryContainer
+        : colorScheme.primary;
+
 class _CountChip extends StatelessWidget {
   const _CountChip({
     super.key,
@@ -255,23 +247,24 @@ class _CountChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Material(
-      color: colorScheme.primaryContainer.withValues(alpha: 0.45),
-      borderRadius: BorderRadius.circular(20),
+      color: colorScheme.tint,
+      shape: const StadiumBorder(),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 6, 12, 6),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 36),
+          padding: const EdgeInsets.fromLTRB(12, 6, 14, 6),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(_iconFor(kind), size: 15, color: colorScheme.primary),
+              Icon(_iconFor(kind), size: 16, color: _onTint(colorScheme)),
               const SizedBox(width: 6),
               Text(
                 label,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: colorScheme.onSurface,
-                      fontWeight: FontWeight.w600,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: _onTint(colorScheme),
+                      fontWeight: FontWeight.w500,
                     ),
               ),
             ],
@@ -288,14 +281,12 @@ class _CollectionRow extends StatelessWidget {
     required this.item,
     required this.surahName,
     required this.lang,
-    required this.isLast,
     required this.onTap,
   });
 
   final HomeCollectionItem item;
   final String surahName;
   final String lang;
-  final bool isLast;
   final VoidCallback onTap;
 
   static String? _snippet(String? raw) {
@@ -313,7 +304,7 @@ class _CollectionRow extends StatelessWidget {
       HomeCollectionKind.highlight => item.highlightColor != null
           ? highlightDisplayColor(item.highlightColor!)
           : colorScheme.secondary,
-      _ => colorScheme.primary,
+      _ => _onTint(colorScheme),
     };
     final refLabel = AppLocalizations.formatDuaAyahRef(
       item.surahId,
@@ -337,33 +328,12 @@ class _CollectionRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            border: isLast
-                ? null
-                : Border(
-                    bottom: BorderSide(
-                      color: colorScheme.outlineVariant.withValues(alpha: 0.45),
-                    ),
-                  ),
-          ),
+          constraints: const BoxConstraints(minHeight: 56),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest
-                      .withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Icon(_iconFor(item.kind), size: 16, color: accent),
-              ),
-              const SizedBox(width: 10),
+              AppBadge(icon: _iconFor(item.kind), foreground: accent),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,8 +342,10 @@ class _CollectionRow extends StatelessWidget {
                       '$surahName · $refLabel',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: textTheme.labelMedium?.copyWith(
+                      style: textTheme.titleMedium?.copyWith(
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        letterSpacing: -0.1,
                         color: colorScheme.onSurface,
                       ),
                     ),
@@ -383,6 +355,7 @@ class _CollectionRow extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: textTheme.bodySmall?.copyWith(
+                        fontSize: 13,
                         color: colorScheme.onSurfaceVariant,
                         fontStyle:
                             noteSnippet != null ? FontStyle.italic : null,
@@ -394,8 +367,9 @@ class _CollectionRow extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 AppLocalizations.formatHomeRelativeTime(item.at, lang),
-                style: textTheme.labelSmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.85),
+                style: textTheme.bodySmall?.copyWith(
+                  fontSize: 13,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],

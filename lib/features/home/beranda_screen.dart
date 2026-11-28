@@ -41,50 +41,60 @@ class _BerandaScreenState extends ConsumerState<BerandaScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final isLargeScreen = Responsive.isLargeScreen(context);
 
-    const phoneBody = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        HomeHeroCard(),
-        HomeWhatsNewCard(),
-        LastReadCard(forHome: true),
-        HomeSearchSection(),
-        WeeklyReflectionCard(forHome: true),
-        HomeCollectionSection(),
-        SizedBox(height: 8),
-      ],
+    // Home sections carry a 10dp side inset (half the column gap); the body
+    // adds the rest of the screen gutter: 20dp on phones, 32dp on wide layouts.
+    const phoneBody = Padding(
+      padding: EdgeInsets.symmetric(horizontal: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          HomeHeroCard(),
+          HomeWhatsNewCard(),
+          LastReadCard(forHome: true),
+          HomeSearchSection(),
+          WeeklyReflectionCard(forHome: true),
+          HomeCollectionSection(),
+          SizedBox(height: 8),
+        ],
+      ),
     );
 
     const tabletBody = Padding(
-      padding: EdgeInsets.only(bottom: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: EdgeInsets.fromLTRB(22, 0, 22, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                HomeHeroCard(),
-                HomeWhatsNewCard(),
-                LastReadCard(forHome: true),
-                HomeSearchSection(),
-                WeeklyReflectionCard(forHome: true),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                HomeCollectionSection(),
-              ],
-            ),
+          HomeHeroCard(),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    HomeWhatsNewCard(),
+                    LastReadCard(forHome: true),
+                    HomeSearchSection(),
+                    WeeklyReflectionCard(forHome: true),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    HomeCollectionSection(),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: HomeBackdrop.topTint(colorScheme),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         toolbarHeight: 48,

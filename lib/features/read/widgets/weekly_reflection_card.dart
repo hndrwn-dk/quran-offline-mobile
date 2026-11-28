@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/models/reflection_lens.dart';
 import 'package:quran_offline/core/providers/reflection_pick_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
@@ -39,31 +40,18 @@ class WeeklyReflectionCard extends ConsumerWidget {
         final contextSnippet = entry.summary.forLanguage(lang);
 
         return Padding(
-          padding: EdgeInsets.fromLTRB(16, 8, 16, forHome ? 8 : 4),
+          padding: forHome
+              ? const EdgeInsets.fromLTRB(10, 10, 10, 10)
+              : const EdgeInsets.fromLTRB(16, 8, 16, 4),
           child: Material(
-            color: Colors.transparent,
+            color: colorScheme.card,
+            borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+            clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () => _openDetail(context, ref, pick, lang),
-              borderRadius: BorderRadius.circular(forHome ? 20 : 16),
               child: Ink(
-                decoration: forHome
-                    ? _homeReflectionDecoration(colorScheme)
-                    : BoxDecoration(
-                        color: colorScheme.secondaryContainer
-                            .withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: colorScheme.secondary.withValues(alpha: 0.25),
-                          width: 1,
-                        ),
-                      ),
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    forHome ? 14 : 16,
-                    forHome ? 16 : 16,
-                    forHome ? 14 : 16,
-                    forHome ? 16 : 16,
-                  ),
+                  padding: EdgeInsets.fromLTRB(18, 18, 18, forHome ? 10 : 18),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -87,7 +75,9 @@ class WeeklyReflectionCard extends ConsumerWidget {
                                   .textTheme
                                   .labelMedium
                                   ?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
+                                    color: forHome
+                                        ? colorScheme.primary
+                                        : colorScheme.onSurfaceVariant,
                                     fontWeight: FontWeight.w600,
                                   ),
                             ),
@@ -99,24 +89,8 @@ class WeeklyReflectionCard extends ConsumerWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: forHome
-                                    ? (colorScheme.brightness == Brightness.dark
-                                        ? colorScheme.surface
-                                            .withValues(alpha: 0.35)
-                                        : Colors.white.withValues(alpha: 0.58))
-                                    : colorScheme.secondary
-                                        .withValues(alpha: 0.12),
+                                color: colorScheme.tint,
                                 borderRadius: BorderRadius.circular(8),
-                                border: forHome
-                                    ? Border.all(
-                                        color: colorScheme.primary.withValues(
-                                          alpha: colorScheme.brightness ==
-                                                  Brightness.dark
-                                              ? 0.28
-                                              : 0.16,
-                                        ),
-                                      )
-                                    : null,
                               ),
                               child: Text(
                                 AppLocalizations.getReflectionBadge(
@@ -127,9 +101,7 @@ class WeeklyReflectionCard extends ConsumerWidget {
                                     .textTheme
                                     .labelSmall
                                     ?.copyWith(
-                                      color: forHome
-                                          ? colorScheme.primary
-                                          : colorScheme.secondary,
+                                      color: _onTint(colorScheme),
                                       fontWeight: FontWeight.w600,
                                     ),
                               ),
@@ -141,7 +113,9 @@ class WeeklyReflectionCard extends ConsumerWidget {
                         entry.title.forLanguage(lang),
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontSize: forHome ? 17 : null,
                                   fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.2,
                                   color: colorScheme.onSurface,
                                 ),
                       ),
@@ -172,7 +146,7 @@ class WeeklyReflectionCard extends ConsumerWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF5F6459),
+                              color: colorScheme.onSurfaceVariant,
                               height: 1.4,
                               fontSize: (Theme.of(context)
                                           .textTheme
@@ -183,7 +157,7 @@ class WeeklyReflectionCard extends ConsumerWidget {
                             ),
                       ),
                       if (forHome) ...[
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         Align(
                           alignment: Alignment.centerLeft,
                           child: TextButton(
@@ -191,10 +165,7 @@ class WeeklyReflectionCard extends ConsumerWidget {
                                 _openDetail(context, ref, pick, lang),
                             style: TextButton.styleFrom(
                               foregroundColor: colorScheme.primary,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 8,
-                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                               minimumSize: const Size(0, 44),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
@@ -229,42 +200,12 @@ class WeeklyReflectionCard extends ConsumerWidget {
   }
 }
 
-BoxDecoration _homeReflectionDecoration(ColorScheme colorScheme) {
-  final isDark = colorScheme.brightness == Brightness.dark;
-
-  return BoxDecoration(
-    borderRadius: BorderRadius.circular(20),
-    border: Border.all(
-      color: colorScheme.primary.withValues(alpha: isDark ? 0.22 : 0.12),
-    ),
-    gradient: LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: isDark
-          ? [
-              colorScheme.secondaryContainer.withValues(alpha: 0.38),
-              colorScheme.surfaceContainerHigh.withValues(alpha: 0.9),
-            ]
-          : [
-              const Color(0xFFF7F4EC),
-              const Color(0xFFEFE9DF),
-              Color.lerp(
-                const Color(0xFFE6DFD3),
-                colorScheme.primary,
-                0.08,
-              )!,
-            ],
-      stops: isDark ? null : const [0.0, 0.52, 1.0],
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: colorScheme.primary.withValues(alpha: isDark ? 0.1 : 0.06),
-        blurRadius: 10,
-        offset: const Offset(0, 3),
-      ),
-    ],
-  );
-}
+/// Foreground on the tint fill. Dark primary is too close to the dark tint
+/// to read, so dark mode uses the container's own foreground.
+Color _onTint(ColorScheme colorScheme) =>
+    colorScheme.brightness == Brightness.dark
+        ? colorScheme.onPrimaryContainer
+        : colorScheme.primary;
 
 void _openDetail(
   BuildContext context,

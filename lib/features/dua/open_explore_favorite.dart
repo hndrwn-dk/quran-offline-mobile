@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/explore/explore_favorite.dart';
 import 'package:quran_offline/core/explore/favorite_display.dart';
 import 'package:quran_offline/core/providers/asma_catalog_provider.dart';
@@ -285,11 +286,11 @@ class _FavoritesFilters extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _chip(null, 'all', total),
+                _chip(context, null, 'all', total),
                 for (final kind in ExploreFavoriteKind.values)
                   if (counts[kind] != null) ...[
                     const SizedBox(width: 8),
-                    _chip(kind, kind.name, counts[kind]!),
+                    _chip(context, kind, kind.name, counts[kind]!),
                   ],
               ],
             ),
@@ -308,8 +309,18 @@ class _FavoritesFilters extends StatelessWidget {
     );
   }
 
-  Widget _chip(ExploreFavoriteKind? kind, String key, int count) {
+  Widget _chip(
+    BuildContext context,
+    ExploreFavoriteKind? kind,
+    String key,
+    int count,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return FilterChip(
+      backgroundColor: colorScheme.card,
+      selectedColor: colorScheme.tint,
+      side: BorderSide.none,
+      shape: const StadiumBorder(),
       label: Text(
         AppLocalizations.getExploreFavoriteFilterChip(key, count, lang),
       ),
@@ -339,14 +350,14 @@ class _FavoritesEmpty extends ConsumerWidget {
               width: 88,
               height: 88,
               decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
+                color: colorScheme.tint,
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
               child: Icon(
                 Icons.favorite_border,
                 size: 36,
-                color: colorScheme.primary,
+                color: colorScheme.onTint,
               ),
             ),
             const SizedBox(height: 20),

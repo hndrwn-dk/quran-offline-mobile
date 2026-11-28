@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -146,45 +147,48 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildSplashIcon(120, splashLogo),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
                   Text(
                     'Quran Offline',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: -0.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.6,
+                      color: colorScheme.onSurface,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Text(
                     AppLocalizations.getSplashTagline(splashLang),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontSize: 15,
                       color: colorScheme.onSurfaceVariant,
-                      height: 1.5,
+                      height: 1.45,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   if (isInitializing) ...[
-                    const SizedBox(height: 48),
-                    Text(
-                      AppLocalizations.getSplashPleaseWait(splashLang),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 38),
                     SizedBox(
                       width: 200,
                       child: LinearProgressIndicator(
                         value: progress.progress,
-                        minHeight: 2,
-                        borderRadius: BorderRadius.circular(1),
-                        backgroundColor: colorScheme.surfaceContainerHighest,
+                        minHeight: 4,
+                        borderRadius: BorderRadius.circular(2),
+                        backgroundColor: colorScheme.tint,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          colorScheme.primaryContainer,
+                          colorScheme.primary,
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      AppLocalizations.getSplashPleaseWait(splashLang),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 13,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ],

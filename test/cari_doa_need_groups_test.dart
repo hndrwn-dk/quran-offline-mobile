@@ -120,12 +120,24 @@ void main() {
       ),
     );
 
-    expect(find.text(AppLocalizations.getAiSearchTypeLabel('dua', 'id')), findsOneWidget);
     expect(
-      find.text(AppLocalizations.getAiSearchTypeLabel('quran_dua', 'id')),
+      find.text(
+        AppLocalizations.getAiSearchTypeLabel('dua', 'id').toUpperCase(),
+      ),
       findsOneWidget,
     );
-    expect(find.text(AppLocalizations.getAiSearchTypeLabel('ayah', 'id')), findsOneWidget);
+    expect(
+      find.text(
+        AppLocalizations.getAiSearchTypeLabel('quran_dua', 'id').toUpperCase(),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.text(
+        AppLocalizations.getAiSearchTypeLabel('ayah', 'id').toUpperCase(),
+      ),
+      findsOneWidget,
+    );
     expect(
       find.text(AppLocalizations.getDoaNeedTier3Header('id')),
       findsNothing,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
@@ -72,24 +73,24 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
         sheetHeightFactor: 0.94,
         horizontalPadding: 20,
         sectionGap: 12,
-        cardRadius: 14,
+        cardRadius: 18,
         compactToggles: true,
       );
     }
     if (height < 800) {
       return const _TextSettingsLayout(
         sheetHeightFactor: 0.90,
-        horizontalPadding: 24,
+        horizontalPadding: 20,
         sectionGap: 16,
-        cardRadius: 16,
+        cardRadius: 20,
         compactToggles: true,
       );
     }
     return const _TextSettingsLayout(
       sheetHeightFactor: 0.86,
-      horizontalPadding: 24,
-      sectionGap: 20,
-      cardRadius: 16,
+      horizontalPadding: 20,
+      sectionGap: 18,
+      cardRadius: 20,
       compactToggles: false,
     );
   }
@@ -111,15 +112,10 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
       child: Container(
         height: sheetHeight,
         decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.12),
-              blurRadius: 24,
-              offset: const Offset(0, -4),
-            ),
-          ],
+          color: colorScheme.canvas,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppTheme.sheetRadius),
+          ),
         ),
         child: Column(
           children: [
@@ -133,11 +129,11 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
               child: Column(
                 children: [
                   Container(
-                    width: 40,
-                    height: 4,
+                    width: 36,
+                    height: 5,
                     decoration: BoxDecoration(
-                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
-                      borderRadius: BorderRadius.circular(2),
+                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -146,7 +142,6 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                     child: Text(
                       AppLocalizations.getSettingsText('text_settings_title', appLanguage),
                       style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
                         color: colorScheme.onSurface,
                       ),
                     ),
@@ -183,10 +178,7 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                             textTheme: textTheme,
                             onChanged: (value) => setState(() => _currentArabicSize = value),
                           ),
-                          Divider(
-                            height: 1,
-                            color: colorScheme.outlineVariant.withValues(alpha: 0.35),
-                          ),
+                          _SettingsDivider(colorScheme: colorScheme),
                           _FontSizeSlider(
                             label: AppLocalizations.getSettingsText(
                               'text_settings_translation_size',
@@ -222,8 +214,9 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
                           collapsedShape: const RoundedRectangleBorder(),
                           title: Text(
                             AppLocalizations.getSettingsText('language_title', appLanguage),
-                            style: textTheme.titleMedium?.copyWith(
+                            style: textTheme.titleSmall?.copyWith(
                               color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                           subtitle: Text(
@@ -300,24 +293,17 @@ class _TextSettingsDialogState extends ConsumerState<TextSettingsDialog> {
               width: double.infinity,
               padding: EdgeInsets.fromLTRB(
                 layout.horizontalPadding,
-                12,
+                8,
                 layout.horizontalPadding,
                 12 + safeBottom,
               ),
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                border: Border(
-                  top: BorderSide(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.35),
-                  ),
-                ),
-              ),
+              color: colorScheme.canvas,
               child: FilledButton(
                 onPressed: _applySettings,
                 style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                  minimumSize: const Size.fromHeight(50),
+                  textStyle: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 child: Text(AppLocalizations.getSettingsText('apply', appLanguage)),
@@ -361,14 +347,12 @@ class _SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+    return Material(
+      color: colorScheme.card,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.25),
-        ),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Padding(
         padding: padding,
         child: child,
@@ -386,9 +370,9 @@ class _SettingsDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Divider(
       height: 1,
+      thickness: 1,
       indent: 16,
-      endIndent: 16,
-      color: colorScheme.outlineVariant.withValues(alpha: 0.35),
+      color: colorScheme.hairline,
     );
   }
 }
@@ -437,7 +421,7 @@ class _FontSizeSlider extends StatelessWidget {
               Text(
                 '$sizeLabel: ${value.toInt()}',
                 style: textTheme.labelLarge?.copyWith(
-                  color: colorScheme.primary,
+                  color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w600,
                 ),
               ),

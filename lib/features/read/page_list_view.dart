@@ -64,7 +64,7 @@ class PageListView extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
+                              padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -76,18 +76,22 @@ class PageListView extends ConsumerWidget {
                                         ref,
                                         pageNo,
                                       ),
-                                      child: Text(
-                                        AppLocalizations.getPageText(
-                                          pageNo,
-                                          settings.appLanguage,
+                                      child: _ReadSectionTapTarget(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          AppLocalizations.getPageText(
+                                            pageNo,
+                                            settings.appLanguage,
+                                          ),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleLarge
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: -0.3,
+                                                color: colorScheme.onSurface,
+                                              ),
                                         ),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleLarge
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                              color: colorScheme.onSurface,
-                                            ),
                                       ),
                                     ),
                                   ),
@@ -97,27 +101,28 @@ class PageListView extends ConsumerWidget {
                                       ref,
                                       pageNo,
                                     ),
-                                    child: Text(
-                                      AppLocalizations.getReadPage(
-                                        settings.appLanguage,
+                                    child: _ReadSectionTapTarget(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        AppLocalizations.getReadPage(
+                                          settings.appLanguage,
+                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500,
+                                              color: colorScheme.primary,
+                                            ),
                                       ),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            color: colorScheme.primary,
-                                            decoration:
-                                                TextDecoration.underline,
-                                            decorationColor:
-                                                colorScheme.primary,
-                                          ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.only(bottom: 12),
                               child: ReadGroupedSurahCard(
                                 child: Column(
                                   children: [
@@ -165,7 +170,9 @@ class PageListView extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 color: colorScheme.surfaceContainerHighest
                                     .withValues(alpha: 0.35),
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(
+                                  ReadGroupedSurahCard.radius,
+                                ),
                               ),
                             ),
                           ],
@@ -225,12 +232,33 @@ class _PageSurahRow extends StatelessWidget {
     final meaning = surahInfo.getMeaning(appLanguage);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
+      padding: ReadSurahListRow.padding,
       child: ReadSurahListRow(
         surahId: surahInfo.id,
         name: surahInfo.englishName,
         meaning: meaning.isEmpty ? null : meaning,
         trailingDetail: null,
+      ),
+    );
+  }
+}
+
+/// Gives the section title and its "read" link a 44dp tap height.
+class _ReadSectionTapTarget extends StatelessWidget {
+  const _ReadSectionTapTarget({required this.alignment, required this.child});
+
+  final Alignment alignment;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 44),
+      child: Align(
+        alignment: alignment,
+        widthFactor: 1,
+        heightFactor: 1,
+        child: child,
       ),
     );
   }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/core/widgets/quran_arabic_text.dart';
 
-/// Premium flat card for Koleksi list rows (bookmarks, notes, highlights).
+/// Flat card for Koleksi list rows (bookmarks, notes, highlights).
 class LibraryItemCard extends StatelessWidget {
   const LibraryItemCard({
     super.key,
@@ -42,105 +44,114 @@ class LibraryItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final badgeFill = accentColor != null
-        ? accentColor!.withValues(alpha: 0.18)
-        : colorScheme.surfaceContainerHighest;
-    final badgeBorder = accentColor ?? colorScheme.outlineVariant.withValues(alpha: 0.35);
-    final badgeTextColor =
-        accentColor ?? colorScheme.onSurfaceVariant;
+    final accent = accentColor;
+    // Accent badges keep the item's own color; the number is the same hue
+    // pulled toward the ink color so it stays readable on the soft fill.
+    final badgeFill = accent?.withValues(alpha: 0.2) ??
+        (selected ? colorScheme.card : null);
+    final badgeTextColor = accent == null
+        ? null
+        : Color.lerp(accent, colorScheme.onSurface, 0.45);
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+    );
+    final hasArabic = arabicText != null && arabicText!.isNotEmpty;
+    final hasTranslation = translation != null && translation!.isNotEmpty;
+    final hasNote = noteText != null && noteText!.isNotEmpty;
+    final hasTrailing = trailingAction != null;
 
     return Padding(
       padding: EdgeInsets.only(bottom: marginBottom),
       child: Material(
-        color: Colors.transparent,
+        color: selected ? colorScheme.tint : colorScheme.card,
+        shape: shape,
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           onLongPress: onLongPress,
-          borderRadius: BorderRadius.circular(16),
-          child: Ink(
-            decoration: BoxDecoration(
-              color: selected
-                  ? colorScheme.primaryContainer.withValues(alpha: 0.45)
-                  : colorScheme.surface.withValues(alpha: 0.94),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: selected
-                    ? colorScheme.primary.withValues(alpha: 0.45)
-                    : colorScheme.outlineVariant.withValues(alpha: 0.55),
-                width: selected ? 1.5 : 1,
-              ),
+          customBorder: shape,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              selectionMode ? 8 : 18,
+              hasTrailing ? 8 : 16,
+              hasTrailing ? 6 : 14,
+              16,
             ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (selectionMode) ...[
-                    Checkbox(
-                      value: selected,
-                      onChanged: onSelectionChanged,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    const SizedBox(width: 4),
-                  ],
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: badgeFill,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: badgeBorder,
-                        width: accentColor != null ? 1.5 : 1,
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '$surahId',
-                      style: textTheme.labelMedium?.copyWith(
-                        color: badgeTextColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                surahName,
-                                style: textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '$ayahNo',
-                              style: textTheme.labelSmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    if (selectionMode) ...[
+                      Checkbox(
+                        value: selected,
+                        onChanged: onSelectionChanged,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                        if (arabicText != null && arabicText!.isNotEmpty) ...[
-                          const SizedBox(height: 6),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+                    AppBadge(
+                      label: '$surahId',
+                      background: badgeFill,
+                      foreground: badgeTextColor,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        surahName,
+                        style: textTheme.titleMedium?.copyWith(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '$ayahNo',
+                      style: textTheme.bodySmall?.copyWith(
+                        fontSize: 13,
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (hasTrailing)
+                      trailingAction!
+                    else if (showChevron && !selectionMode)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 2),
+                        child: Icon(
+                          Icons.chevron_right,
+                          size: 22,
+                          color: colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.6),
+                        ),
+                      ),
+                  ],
+                ),
+                if (hasArabic || hasTranslation || hasNote)
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: selectionMode ? 10 : 0,
+                      right: hasTrailing ? 12 : 4,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (hasArabic) ...[
+                          SizedBox(height: hasTrailing ? 2 : 8),
                           Directionality(
                             textDirection: TextDirection.rtl,
                             child: Text(
                               arabicText!,
                               style: QuranArabicText.arabicDisplayStyle(
-                                fontSize: textTheme.bodyMedium?.fontSize ?? 14,
+                                fontSize: 22,
                                 color: colorScheme.onSurface,
-                                height: 1.55,
+                                height: 1.7,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -148,38 +159,36 @@ class LibraryItemCard extends StatelessWidget {
                             ),
                           ),
                         ],
-                        if (translation != null && translation!.isNotEmpty) ...[
-                          const SizedBox(height: 4),
+                        if (hasTranslation) ...[
+                          const SizedBox(height: 6),
                           Text(
                             translation!,
-                            style: textTheme.bodySmall?.copyWith(
+                            style: textTheme.bodyMedium?.copyWith(
+                              fontSize: 15,
                               color: colorScheme.onSurfaceVariant,
-                              height: 1.35,
+                              height: 1.45,
                             ),
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
-                        if (noteText != null && noteText!.isNotEmpty) ...[
-                          const SizedBox(height: 8),
+                        if (hasNote) ...[
+                          const SizedBox(height: 10),
                           DecoratedBox(
                             decoration: BoxDecoration(
-                              color: colorScheme.surfaceContainerHighest
-                                  .withValues(alpha: 0.65),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: colorScheme.outlineVariant
-                                    .withValues(alpha: 0.45),
-                              ),
+                              color: selected
+                                  ? colorScheme.card
+                                  : colorScheme.canvas,
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 8,
+                                horizontal: 12,
+                                vertical: 10,
                               ),
                               child: Text(
                                 noteText!,
-                                style: textTheme.bodySmall?.copyWith(
+                                style: textTheme.bodyMedium?.copyWith(
                                   color: colorScheme.onSurface,
                                   height: 1.45,
                                 ),
@@ -192,19 +201,7 @@ class LibraryItemCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (trailingAction != null)
-                    trailingAction!
-                  else if (showChevron && !selectionMode)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 4, top: 6),
-                      child: Icon(
-                        Icons.chevron_right,
-                        size: 22,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                ],
-              ),
+              ],
             ),
           ),
         ),

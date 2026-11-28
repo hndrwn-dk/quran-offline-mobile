@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/highlights_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
@@ -26,12 +28,13 @@ class HighlightColorPicker extends ConsumerWidget {
 
     return AlertDialog(
       title: Text(AppLocalizations.getSettingsText('highlight_title', appLanguage)),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Wrap(
-            spacing: 16,
-            runSpacing: 20,
+            spacing: 8,
+            runSpacing: 16,
             alignment: WrapAlignment.center,
             children: highlightColors.map((colorValue) {
               final color = Color(colorValue);
@@ -54,26 +57,26 @@ class HighlightColorPicker extends ConsumerWidget {
                       height: 48,
                       decoration: BoxDecoration(
                         color: color,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.outline.withValues(alpha: 0.3),
-                          width: isSelected ? 3 : 1,
-                        ),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: colorScheme.primary.withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ]
-                            : null,
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Stack(
                         alignment: Alignment.center,
+                        clipBehavior: Clip.none,
                         children: [
+                          // Selected: a ring in the swatch color.
+                          if (isSelected)
+                            Positioned(
+                              left: -5,
+                              top: -5,
+                              right: -5,
+                              bottom: -5,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(19),
+                                  border: Border.all(color: color, width: 2),
+                                ),
+                              ),
+                            ),
                           Icon(
                             icon,
                             color: _getContrastColor(color),
@@ -81,8 +84,8 @@ class HighlightColorPicker extends ConsumerWidget {
                           ),
                           if (isSelected)
                             Positioned(
-                              top: 2,
-                              right: 2,
+                              top: -4,
+                              right: -4,
                               child: Container(
                                 width: 16,
                                 height: 16,
@@ -90,9 +93,9 @@ class HighlightColorPicker extends ConsumerWidget {
                                   color: colorScheme.primary,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.check,
-                                  color: Colors.white,
+                                  color: colorScheme.onPrimary,
                                   size: 12,
                                 ),
                               ),
@@ -100,9 +103,9 @@ class HighlightColorPicker extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     SizedBox(
-                      width: 48,
+                      width: 56,
                       child: Text(
                         colorDescription,
                         textAlign: TextAlign.center,
@@ -138,13 +141,21 @@ class HighlightColorPicker extends ConsumerWidget {
         ],
       ),
       actions: [
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.of(context).pop(),
+          style: _tonalStyle(colorScheme),
           child: Text(AppLocalizations.getSettingsText('cancel', appLanguage)),
         ),
       ],
     );
   }
+
+  ButtonStyle _tonalStyle(ColorScheme colorScheme) => FilledButton.styleFrom(
+        backgroundColor: colorScheme.tint,
+        foregroundColor: readerOnTint(colorScheme),
+        minimumSize: const Size(0, 44),
+        shape: const StadiumBorder(),
+      );
 
   Color _getContrastColor(Color color) {
     // Calculate relative luminance
