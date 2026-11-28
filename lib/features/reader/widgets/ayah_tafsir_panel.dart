@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/tafsir_content.dart';
 import 'package:quran_offline/core/models/tafsir_entry.dart';
@@ -27,7 +29,7 @@ class AyahTafsirPanel extends ConsumerWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final appLang = settings.appLanguage;
-    final mutedColor = colorScheme.onSurfaceVariant.withValues(alpha: 0.6);
+    final mutedColor = colorScheme.onSurfaceVariant;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -35,7 +37,8 @@ class AyahTafsirPanel extends ConsumerWidget {
         const SizedBox(height: 8),
         Divider(
           height: 1,
-          color: colorScheme.outlineVariant.withValues(alpha: 0.7),
+          thickness: 1,
+          color: colorScheme.hairline,
         ),
         Material(
           color: Colors.transparent,
@@ -98,9 +101,6 @@ class AyahTafsirPanel extends ConsumerWidget {
       useSafeArea: true,
       showDragHandle: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (sheetContext) {
         return DraggableScrollableSheet(
           expand: false,
@@ -161,7 +161,7 @@ class _TafsirSheetBody extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 12, 12),
+          padding: const EdgeInsets.fromLTRB(20, 0, 16, 14),
           child: Row(
             children: [
               Expanded(
@@ -174,8 +174,8 @@ class _TafsirSheetBody extends ConsumerWidget {
                         surahId,
                         ayahNo,
                       ),
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: colorScheme.onSurface,
                           ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -192,14 +192,27 @@ class _TafsirSheetBody extends ConsumerWidget {
               ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close),
+                icon: Container(
+                  width: 36,
+                  height: 36,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: colorScheme.tint,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: readerOnTint(colorScheme),
+                  ),
+                ),
                 tooltip: AppLocalizations.getActionTooltip('close', appLanguage),
-                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
               ),
             ],
           ),
         ),
-        Divider(height: 1, color: colorScheme.outlineVariant),
+        Divider(height: 1, thickness: 1, color: colorScheme.hairline),
         Expanded(
           child: tafsirAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -490,13 +503,13 @@ class _RevelationChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: colorScheme.secondaryContainer.withValues(alpha: 0.65),
+          color: colorScheme.tint,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: colorScheme.onSecondaryContainer,
+                color: readerOnTint(colorScheme),
                 fontWeight: FontWeight.w600,
               ),
         ),

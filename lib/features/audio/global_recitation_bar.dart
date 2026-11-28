@@ -1,5 +1,8 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/audio/recitation_primary_action.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
@@ -50,6 +53,9 @@ class GlobalRecitationBar extends ConsumerWidget {
 
   final bool padForSystemBottomInset;
 
+  static const double _capsuleHeight = 56;
+  static const double _horizontalMargin = 16;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (!ref.watch(showGlobalRecitationBarProvider)) {
@@ -69,15 +75,48 @@ class GlobalRecitationBar extends ConsumerWidget {
       isBismillah: audio.isPlayingBismillah,
     );
 
-    return Semantics(
-      container: true,
-      label: AppLocalizations.formatMiniPlayerSemanticsLabel(lang, title),
-      child: Material(
-        elevation: 8,
-        color: colorScheme.surfaceContainerHigh,
-        child: padForSystemBottomInset
-            ? SafeArea(
-                top: false,
+    final isDark = colorScheme.brightness == Brightness.dark;
+    // Solid when the user asked for more contrast.
+    final solid = MediaQuery.highContrastOf(context);
+    final radius = BorderRadius.circular(_capsuleHeight / 2);
+
+    final capsule = Padding(
+      padding: EdgeInsets.fromLTRB(
+        _horizontalMargin,
+        6,
+        _horizontalMargin,
+        padForSystemBottomInset ? 12 : 8,
+      ),
+      child: DecoratedBox(
+        key: const Key('global_recitation_capsule'),
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow.withValues(alpha: isDark ? 0.45 : 0.14),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: radius,
+          child: BackdropFilter(
+            enabled: !solid,
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Material(
+              color: colorScheme.card.withValues(alpha: solid ? 1 : 0.78),
+              shape: RoundedRectangleBorder(
+                borderRadius: radius,
+                side: BorderSide(
+                  color: isDark
+                      ? colorScheme.outlineVariant
+                      : Colors.white.withValues(alpha: 0.7),
+                ),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: SizedBox(
+                height: _capsuleHeight,
                 child: _buildControls(
                   context,
                   ref,
@@ -88,18 +127,19 @@ class GlobalRecitationBar extends ConsumerWidget {
                   colorScheme,
                   isPlaying,
                 ),
-              )
-            : _buildControls(
-                context,
-                ref,
-                title,
-                lang,
-                audio,
-                notifier,
-                colorScheme,
-                isPlaying,
               ),
+            ),
+          ),
+        ),
       ),
+    );
+
+    return Semantics(
+      container: true,
+      label: AppLocalizations.formatMiniPlayerSemanticsLabel(lang, title),
+      child: padForSystemBottomInset
+          ? SafeArea(top: false, child: capsule)
+          : capsule,
     );
   }
 
@@ -113,100 +153,114 @@ class GlobalRecitationBar extends ConsumerWidget {
     ColorScheme colorScheme,
     bool isPlaying,
   ) {
+    const buttonConstraints = BoxConstraints(minWidth: 40, minHeight: 44);
+    // 40x44 targets; the default 48 leaves too little room for the title.
+    final buttonStyle = IconButton.styleFrom(
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
     return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () => openPlayingRecitation(context, ref),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 6,
+      padding: const EdgeInsets.only(left: 8, right: 2),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: () => openPlayingRecitation(context, ref),
+              borderRadius: BorderRadius.circular(_capsuleHeight / 2),
+              child: SizedBox(
+                height: 44,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isPlaying ? Icons.graphic_eq : Icons.volume_up_outlined,
+                        size: 18,
+                        color: colorScheme.primary,
                       ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            isPlaying
-                                ? Icons.graphic_eq
-                                : Icons.volume_up_outlined,
-                            size: 20,
-                            color: colorScheme.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              title,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
-                                  ?.copyWith(
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          title,
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.w600,
+                                    letterSpacing: 0,
+                                    color: colorScheme.onSurface,
                                   ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          Icon(
-                            Icons.chevron_right,
-                            size: 22,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.skip_previous, size: 22),
-                  tooltip: AppLocalizations.getActionTooltip('previous_ayah', lang),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: notifier.previous,
-                ),
-                IconButton(
-                  iconSize: 28,
-                  icon: audio.isLoading
-                      ? SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: colorScheme.primary,
-                          ),
-                        )
-                      : Icon(
-                          isPlaying ? Icons.pause_circle : Icons.play_circle,
-                          color: colorScheme.primary,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                  tooltip: AppLocalizations.getActionTooltip(
-                    recitationPrimaryAction(isPlaying: isPlaying).tooltipKey,
-                    lang,
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 16,
+                        color: colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.7),
+                      ),
+                    ],
                   ),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: audio.isLoading
-                      ? null
-                      : (isPlaying ? notifier.pause : notifier.restart),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.skip_next, size: 22),
-                  tooltip: AppLocalizations.getActionTooltip('next_ayah', lang),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: notifier.next,
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.close,
-                    size: 20,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  tooltip: AppLocalizations.getActionTooltip('stop_recitation', lang),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: notifier.stop,
-                ),
-              ],
+              ),
             ),
-          );
+          ),
+          IconButton(
+            icon: const Icon(Icons.skip_previous_rounded, size: 24),
+            color: colorScheme.onSurface,
+            tooltip: AppLocalizations.getActionTooltip('previous_ayah', lang),
+            padding: EdgeInsets.zero,
+            constraints: buttonConstraints,
+            style: buttonStyle,
+            onPressed: notifier.previous,
+          ),
+          IconButton(
+            iconSize: 26,
+            icon: audio.isLoading
+                ? SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.primary,
+                    ),
+                  )
+                : Icon(
+                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    color: colorScheme.primary,
+                  ),
+            tooltip: AppLocalizations.getActionTooltip(
+              recitationPrimaryAction(isPlaying: isPlaying).tooltipKey,
+              lang,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: buttonConstraints,
+            style: buttonStyle,
+            onPressed: audio.isLoading
+                ? null
+                : (isPlaying ? notifier.pause : notifier.restart),
+          ),
+          IconButton(
+            icon: const Icon(Icons.skip_next_rounded, size: 24),
+            color: colorScheme.onSurface,
+            tooltip: AppLocalizations.getActionTooltip('next_ayah', lang),
+            padding: EdgeInsets.zero,
+            constraints: buttonConstraints,
+            style: buttonStyle,
+            onPressed: notifier.next,
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.close_rounded,
+              size: 20,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            tooltip: AppLocalizations.getActionTooltip('stop_recitation', lang),
+            padding: EdgeInsets.zero,
+            constraints: buttonConstraints,
+            style: buttonStyle,
+            onPressed: notifier.stop,
+          ),
+        ],
+      ),
+    );
   }
 }

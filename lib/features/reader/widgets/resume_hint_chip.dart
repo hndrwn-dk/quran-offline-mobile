@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/database/database.dart';
 import 'package:quran_offline/core/providers/last_read_resolve.dart';
@@ -118,7 +119,7 @@ class _ResumeHintChipState extends ConsumerState<ResumeHintChip> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
-      color: colorScheme.surfaceContainerHigh,
+      color: colorScheme.card,
       elevation: 1,
       shadowColor: colorScheme.shadow.withValues(alpha: 0.12),
       borderRadius: BorderRadius.circular(22),
@@ -127,7 +128,7 @@ class _ResumeHintChipState extends ConsumerState<ResumeHintChip> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.55),
+            color: colorScheme.hairline,
           ),
         ),
         child: Row(

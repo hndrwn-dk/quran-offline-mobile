@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/features/reader/widgets/reader_app_bar.dart';
 
 const int kAyatKursiSurahId = 2;
 const int kAyatKursiAyahNo = 255;
@@ -24,6 +26,7 @@ class GoToAyahAppBarChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final onTint = readerOnTint(colorScheme);
 
     return Tooltip(
       message: tooltip,
@@ -33,13 +36,11 @@ class GoToAyahAppBarChip extends StatelessWidget {
           onTap: onPressed,
           borderRadius: BorderRadius.circular(20),
           child: Container(
-            padding: const EdgeInsets.fromLTRB(10, 6, 6, 6),
+            constraints: const BoxConstraints(minHeight: 40),
+            padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.55),
+              color: colorScheme.tint,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: colorScheme.primary.withValues(alpha: 0.22),
-              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -47,7 +48,7 @@ class GoToAyahAppBarChip extends StatelessWidget {
                 Icon(
                   Icons.tag,
                   size: 16,
-                  color: colorScheme.primary,
+                  color: onTint,
                 ),
                 const SizedBox(width: 6),
                 Flexible(
@@ -55,7 +56,7 @@ class GoToAyahAppBarChip extends StatelessWidget {
                     label,
                     style: textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurface,
+                      color: onTint,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -63,7 +64,7 @@ class GoToAyahAppBarChip extends StatelessWidget {
                 Icon(
                   Icons.expand_more,
                   size: 20,
-                  color: colorScheme.primary,
+                  color: onTint,
                 ),
               ],
             ),
@@ -212,13 +213,25 @@ class _GoToAyahSheetState extends ConsumerState<GoToAyahSheet> {
       verseCount: widget.verseCount,
     );
 
+    final stepperStyle = IconButton.styleFrom(
+      minimumSize: const Size(52, 52),
+      backgroundColor: colorScheme.tint,
+      foregroundColor: readerOnTint(colorScheme),
+    );
+    final fieldBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide.none,
+    );
+
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 32),
         decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          color: colorScheme.canvas,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppTheme.sheetRadius),
+          ),
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -227,23 +240,24 @@ class _GoToAyahSheetState extends ConsumerState<GoToAyahSheet> {
             children: [
               Center(
                 child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
+                  width: 36,
+                  height: 5,
+                  margin: const EdgeInsets.only(bottom: 18),
                   decoration: BoxDecoration(
                     color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(3),
                   ),
                 ),
               ),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
                 children: [
                   Expanded(
                     child: Text(
                       AppLocalizations.getGoToAyahSheetTitle(appLanguage),
                       style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -256,7 +270,7 @@ class _GoToAyahSheetState extends ConsumerState<GoToAyahSheet> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 AppLocalizations.formatGoToAyahSheetHint(
                   appLanguage,
@@ -276,6 +290,7 @@ class _GoToAyahSheetState extends ConsumerState<GoToAyahSheet> {
                         ? () => _setAyah(_selectedAyah - 1)
                         : null,
                     icon: const Icon(Icons.remove),
+                    style: stepperStyle,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -283,15 +298,26 @@ class _GoToAyahSheetState extends ConsumerState<GoToAyahSheet> {
                       controller: _controller,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
+                      style: textTheme.headlineSmall?.copyWith(
+                        color: colorScheme.onSurface,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: InputDecoration(
                         isDense: true,
+                        filled: true,
+                        fillColor: colorScheme.card,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
-                          vertical: 14,
+                          vertical: 12,
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                        border: fieldBorder,
+                        enabledBorder: fieldBorder,
+                        focusedBorder: fieldBorder.copyWith(
+                          borderSide: BorderSide(
+                            color: colorScheme.primary,
+                            width: 1.5,
+                          ),
                         ),
                       ),
                       onSubmitted: (_) => _applyFromField(),
@@ -303,6 +329,7 @@ class _GoToAyahSheetState extends ConsumerState<GoToAyahSheet> {
                         ? () => _setAyah(_selectedAyah + 1)
                         : null,
                     icon: const Icon(Icons.add),
+                    style: stepperStyle,
                   ),
                 ],
               ),
@@ -321,6 +348,19 @@ class _GoToAyahSheetState extends ConsumerState<GoToAyahSheet> {
                           : '${shortcut.label} (${shortcut.ayahNo})',
                     ),
                     selected: selected,
+                    showCheckmark: false,
+                    shape: const StadiumBorder(),
+                    side: BorderSide.none,
+                    backgroundColor: colorScheme.card,
+                    selectedColor: colorScheme.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    materialTapTargetSize: MaterialTapTargetSize.padded,
+                    labelStyle: textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: selected
+                          ? colorScheme.onPrimary
+                          : colorScheme.onSurface,
+                    ),
                     onSelected: (_) => _setAyah(shortcut.ayahNo),
                   );
                 }).toList(),
@@ -328,6 +368,12 @@ class _GoToAyahSheetState extends ConsumerState<GoToAyahSheet> {
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: _jump,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  textStyle: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 child: Text(
                   AppLocalizations.formatGoToAyahJump(
                     appLanguage,

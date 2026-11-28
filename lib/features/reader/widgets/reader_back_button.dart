@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 
 /// Reader-family back affordance: a 48x48 dp target with the circular arrow
 /// used by the Beranda cards.
@@ -50,25 +51,13 @@ class ReaderBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = colorScheme.brightness == Brightness.dark;
     final label =
         tooltip ?? MaterialLocalizations.of(context).backButtonTooltip;
 
     final decoration = BoxDecoration(
-      color: isDark
-          ? colorScheme.surface.withValues(alpha: 0.88)
-          : Colors.white.withValues(alpha: 0.92),
+      color: colorScheme.card,
       shape: BoxShape.circle,
-      border: Border.all(
-        color: colorScheme.primary.withValues(alpha: isDark ? 0.28 : 0.16),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: colorScheme.primary.withValues(alpha: isDark ? 0.2 : 0.1),
-          blurRadius: 6,
-          offset: const Offset(0, 2),
-        ),
-      ],
+      border: Border.all(color: colorScheme.hairline),
     );
 
     return Semantics(
@@ -88,7 +77,7 @@ class ReaderBackButton extends StatelessWidget {
                 child: DecoratedBox(
                   decoration: decoration,
                   child: Padding(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(9),
                     child: Icon(icon, size: 18, color: colorScheme.primary),
                   ),
                 ),
