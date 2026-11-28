@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/audio/audio_offline_prompts.dart';
 import 'package:quran_offline/core/models/reciter.dart';
 import 'package:quran_offline/core/providers/audio_download_provider.dart';
@@ -7,6 +8,7 @@ import 'package:quran_offline/core/providers/reciter_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/features/home/widgets/home_backdrop.dart';
 import 'package:quran_offline/features/home/widgets/home_cta_buttons.dart';
 
@@ -192,17 +194,12 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                   ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-                    child: Text(
+                    padding: const EdgeInsets.fromLTRB(16, 18, 16, 10),
+                    child: AppSectionLabel(
                       AppLocalizations.getRecitationText(
                         'surahs_section',
                         appLanguage,
                       ),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
                     ),
                   ),
                 ),
@@ -216,26 +213,17 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                       final progress = downloads.progressFor(reciter.id, surah.id);
                       final isFirst = index == 0;
                       final isLast = index == surahs.length - 1;
-                      final outline = colorScheme.outlineVariant.withValues(alpha: 0.55);
 
-                      return DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: colorScheme.surface,
+                      // One grouped card, built lazily row by row.
+                      return Material(
+                        color: colorScheme.card,
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.vertical(
-                            top: isFirst ? const Radius.circular(16) : Radius.zero,
-                            bottom: isLast ? const Radius.circular(16) : Radius.zero,
-                          ),
-                          border: Border(
-                            left: BorderSide(color: outline),
-                            right: BorderSide(color: outline),
-                            top: isFirst ? BorderSide(color: outline) : BorderSide.none,
-                            bottom: BorderSide(
-                              color: colorScheme.outlineVariant.withValues(
-                                alpha: isLast ? 0.55 : 0.45,
-                              ),
-                            ),
+                            top: isFirst ? const Radius.circular(20) : Radius.zero,
+                            bottom: isLast ? const Radius.circular(20) : Radius.zero,
                           ),
                         ),
+                        clipBehavior: Clip.antiAlias,
                         child: _SurahDownloadRow(
                           surahId: surah.id,
                           surahName: surah.englishName,
@@ -284,16 +272,13 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-          ),
+      child: Material(
+        color: colorScheme.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.cardRadius),
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          padding: const EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -308,19 +293,18 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                           AppLocalizations.getRecitationText(
                             'selected_reciter_label',
                             appLanguage,
-                          ),
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
+                          ).toUpperCase(),
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                color: colorScheme.onTint,
                                 fontWeight: FontWeight.w600,
-                                letterSpacing: 0.6,
+                                letterSpacing: 0.7,
                               ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           reciter.name,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: -0.2,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                color: colorScheme.onSurface,
                               ),
                         ),
                       ],
@@ -333,10 +317,20 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                     ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               if (_storageLoading)
                 const LinearProgressIndicator(minHeight: 2)
               else ...[
+                if (bulk == null) ...[
+                  LinearProgressIndicator(
+                    value: savedCount / totalSurahs,
+                    minHeight: 6,
+                    borderRadius: BorderRadius.circular(3),
+                    backgroundColor: colorScheme.tint,
+                    color: colorScheme.primary,
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 Text(
                   AppLocalizations.recHeroStorageLine(
                     savedCount,
@@ -365,7 +359,10 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                 const SizedBox(height: 12),
                 LinearProgressIndicator(
                   value: bulk.fraction,
-                  borderRadius: BorderRadius.circular(4),
+                  minHeight: 6,
+                  borderRadius: BorderRadius.circular(3),
+                  backgroundColor: colorScheme.tint,
+                  color: colorScheme.primary,
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -385,7 +382,12 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: bulk != null
-                      ? OutlinedButton(
+                      ? FilledButton.tonal(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: colorScheme.tint,
+                            foregroundColor: colorScheme.onTint,
+                            minimumSize: const Size.fromHeight(50),
+                          ),
                           onPressed: () => ref
                               .read(audioDownloadProvider.notifier)
                               .cancelBulkDownload(),
@@ -397,6 +399,9 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                           ),
                         )
                       : FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size.fromHeight(50),
+                          ),
                           onPressed: () => ref
                               .read(audioDownloadProvider.notifier)
                               .downloadAllSurahs(reciter),
@@ -474,6 +479,7 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
             AppLocalizations.getRecitationText('storage_on_phone', appLanguage),
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
                 ),
           ),
           const SizedBox(height: 8),
@@ -490,11 +496,10 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 elevation: 0,
+                color: colorScheme.card,
+                surfaceTintColor: Colors.transparent,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-                  ),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: ListTile(
                   dense: true,
@@ -536,6 +541,9 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colorScheme.error,
+                  shape: const StadiumBorder(),
+                  minimumSize: const Size.fromHeight(44),
+                  side: BorderSide(color: colorScheme.hairline),
                 ),
               ),
             ),
@@ -610,7 +618,7 @@ class _AudioDownloadsScreenState extends ConsumerState<AudioDownloadsScreen> {
     return _CircleActionButton(
       colorScheme: colorScheme,
       icon: progress?.failed == true ? Icons.refresh : Icons.download_outlined,
-      iconColor: colorScheme.primary,
+      iconColor: colorScheme.onTint,
       tooltip: AppLocalizations.getRecitationText('save', appLanguage),
       onPressed: () {
         ref.read(audioDownloadProvider.notifier).downloadSurah(reciter, surahId);
@@ -660,31 +668,14 @@ class _SurahDownloadRow extends StatelessWidget {
             ? colorScheme.primary
             : colorScheme.onSurfaceVariant;
 
-    return InkWell(
-      onTap: null,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(
           children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.35),
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                '$surahId',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-              ),
-            ),
+            AppBadge(label: '$surahId'),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -692,8 +683,9 @@ class _SurahDownloadRow extends StatelessWidget {
                 children: [
                   Text(
                     surahName,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
                         ),
                   ),
                   const SizedBox(height: 2),
@@ -701,7 +693,7 @@ class _SurahDownloadRow extends StatelessWidget {
                     subtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: subtitleColor,
-                          fontSize: 11,
+                          fontSize: 13,
                         ),
                   ),
                 ],
@@ -710,7 +702,15 @@ class _SurahDownloadRow extends StatelessWidget {
             trailing,
           ],
         ),
-      ),
+        ),
+        if (!isLast)
+          Divider(
+            height: 1,
+            thickness: 1,
+            indent: 16,
+            color: colorScheme.hairline,
+          ),
+      ],
     );
   }
 }
@@ -733,14 +733,14 @@ class _CircleActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: colorScheme.surfaceContainerHighest,
+      color: colorScheme.tint,
       shape: const CircleBorder(),
       clipBehavior: Clip.antiAlias,
       child: IconButton(
         icon: Icon(icon, size: 20, color: iconColor),
         tooltip: tooltip,
         visualDensity: VisualDensity.compact,
-        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
         padding: EdgeInsets.zero,
         onPressed: onPressed,
       ),
@@ -761,7 +761,7 @@ class _HeaderStatChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer.withValues(alpha: 0.65),
+        color: colorScheme.tint,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Padding(
@@ -770,7 +770,7 @@ class _HeaderStatChip extends StatelessWidget {
           label,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onPrimaryContainer,
+                color: colorScheme.onTint,
               ),
         ),
       ),

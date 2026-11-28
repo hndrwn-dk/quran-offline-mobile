@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 
 class LibraryEmptyState extends ConsumerWidget {
   const LibraryEmptyState({
@@ -25,34 +27,23 @@ class LibraryEmptyState extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: colorScheme.surface.withValues(alpha: 0.94),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                icon,
-                size: 28,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 16),
+            AppBadge(icon: icon, size: 64),
+            const SizedBox(height: 14),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: colorScheme.onSurface,
                   ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             FilledButton.tonal(
+              style: FilledButton.styleFrom(
+                backgroundColor: colorScheme.tint,
+                foregroundColor: colorScheme.onTint,
+                minimumSize: const Size(0, 44),
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+              ),
               onPressed: () {
                 ref.read(currentTabProvider.notifier).state = AppTab.read;
               },

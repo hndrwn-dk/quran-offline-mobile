@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/providers/bookmark_provider.dart';
 import 'package:quran_offline/core/providers/highlights_provider.dart';
 import 'package:quran_offline/core/providers/notes_provider.dart';
@@ -27,7 +28,7 @@ class LibraryStatsRow extends ConsumerWidget {
         kAppContentHorizontalInset,
         kAppBodyTopInset,
         kAppContentHorizontalInset,
-        0,
+        8,
       ),
       child: Wrap(
         spacing: 8,
@@ -85,18 +86,15 @@ class _StatChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.94),
+        color: colorScheme.card,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         child: Text(
           label,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: colorScheme.onSurface,
                 fontWeight: FontWeight.w500,
               ),
         ),

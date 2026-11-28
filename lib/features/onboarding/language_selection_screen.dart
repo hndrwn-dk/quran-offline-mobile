@@ -1,13 +1,12 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:quran_offline/core/constants/app_colors.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/mushaf/mushaf_warmup.dart';
 import 'package:quran_offline/core/providers/app_version_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/features/home/home_screen.dart';
 
 String _splashLogoAsset(bool isDark) => isDark
@@ -129,9 +128,9 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
     );
 
     return Scaffold(
+      backgroundColor: colorScheme.canvas,
       body: Stack(
         children: [
-          const Positioned.fill(child: _OnboardingBackdrop()),
           SafeArea(
             child: Center(
               child: ConstrainedBox(
@@ -147,34 +146,32 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
                           child: Column(
                             children: [
                               _buildLogo(colorScheme, isDark),
-                              const SizedBox(height: 28),
+                              const SizedBox(height: 20),
                               Text(
-                                AppLocalizations.getOnboardingWelcome(hintLang),
-                                style: textTheme.headlineSmall?.copyWith(
+                                'Quran Offline'.toUpperCase(),
+                                style: textTheme.labelMedium?.copyWith(
+                                  letterSpacing: 0.7,
                                   fontWeight: FontWeight.w600,
-                                  letterSpacing: -0.3,
-                                  color: colorScheme.onSurface,
+                                  color: colorScheme.onTint,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Quran Offline',
-                                style: textTheme.labelLarge?.copyWith(
-                                  letterSpacing: 1.2,
-                                  fontWeight: FontWeight.w500,
-                                  color: colorScheme.primary,
+                                AppLocalizations.getOnboardingWelcome(hintLang),
+                                style: textTheme.headlineLarge?.copyWith(
+                                  color: colorScheme.onSurface,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 10),
                               Text(
                                 AppLocalizations.getOnboardingLanguageHeadline(
                                   hintLang,
                                 ),
-                                style: textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: colorScheme.onSurface,
+                                style: textTheme.bodyLarge?.copyWith(
+                                  fontSize: 15,
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -188,56 +185,53 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
                                 ),
                                 textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 14),
-                              Text(
-                                AppLocalizations.getOnboardingSettingsHint(
-                                  hintLang,
-                                ),
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant.withValues(
-                                    alpha: 0.9,
-                                  ),
-                                  height: 1.5,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 32),
-                        ...List.generate(_languageOptions.length, (index) {
-                          final opt = _languageOptions[index];
-                          return AnimatedBuilder(
-                            animation: _entranceController,
-                            builder: (context, child) {
-                              return Transform.translate(
-                                offset: Offset(0, _cardSlides[index].value),
-                                child: Opacity(
-                                  opacity: _cardFades[index].value,
-                                  child: child,
-                                ),
-                              );
-                            },
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                bottom: index == _languageOptions.length - 1
-                                    ? 0
-                                    : 12,
+                        const SizedBox(height: 28),
+                        AnimatedBuilder(
+                          animation: _entranceController,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0, _cardSlides.first.value),
+                              child: Opacity(
+                                opacity: _cardFades.first.value,
+                                child: child,
                               ),
-                              child: _LanguageTile(
-                                option: opt,
-                                colorScheme: colorScheme,
-                                textTheme: textTheme,
-                                isDark: isDark,
-                                onTap: () => _onLanguageSelected(
-                                  context,
-                                  ref,
-                                  opt.lang,
+                            );
+                          },
+                          child: AppGroupedCard(
+                            children: [
+                              for (final opt in _languageOptions)
+                                _LanguageTile(
+                                  option: opt,
+                                  onTap: () => _onLanguageSelected(
+                                    context,
+                                    ref,
+                                    opt.lang,
+                                  ),
                                 ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        FadeTransition(
+                          opacity: _heroFade,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              AppLocalizations.getOnboardingSettingsHint(
+                                hintLang,
                               ),
+                              style: textTheme.bodySmall?.copyWith(
+                                fontSize: 13,
+                                color: colorScheme.onSurfaceVariant,
+                                height: 1.4,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                          );
-                        }),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -251,286 +245,83 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
   }
 
   Widget _buildLogo(ColorScheme colorScheme, bool isDark) {
-    const size = 96.0;
-    final ringColor = colorScheme.primary.withValues(alpha: isDark ? 0.22 : 0.14);
-    final glowColor = colorScheme.primary.withValues(alpha: isDark ? 0.08 : 0.06);
-
-    return Container(
-      width: size + 36,
-      height: size + 36,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: glowColor,
-            blurRadius: 32,
-            spreadRadius: 4,
-          ),
-        ],
-      ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: ringColor, width: 1.5),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              colorScheme.surface.withValues(alpha: 0.95),
-              colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
-            ],
-          ),
-        ),
-        child: Center(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Image.asset(
-              _splashLogoAsset(isDark),
-              width: size,
-              height: size,
-              fit: BoxFit.contain,
-              cacheWidth:
-                  (size * MediaQuery.devicePixelRatioOf(context)).ceil(),
-              errorBuilder: (_, __, ___) => Icon(
-                Icons.menu_book_rounded,
-                size: 48,
-                color: colorScheme.primary,
-              ),
-            ),
-          ),
-        ),
+    const size = 104.0;
+    return Image.asset(
+      _splashLogoAsset(isDark),
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).ceil(),
+      errorBuilder: (_, __, ___) => Icon(
+        Icons.menu_book_rounded,
+        size: 48,
+        color: colorScheme.primary,
       ),
     );
   }
 }
 
-class _OnboardingBackdrop extends StatelessWidget {
-  const _OnboardingBackdrop();
+class _LanguageTile extends StatelessWidget {
+  const _LanguageTile({required this.option, required this.onTap});
+
+  final _Option option;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = colorScheme.brightness == Brightness.dark;
+    final textTheme = Theme.of(context).textTheme;
 
-    final topTint = isDark
-        ? colorScheme.primary.withValues(alpha: 0.12)
-        : AppColors.neutralCream;
-    final bottomTint = isDark
-        ? colorScheme.surface
-        : colorScheme.surface.withValues(alpha: 0.98);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [topTint, bottomTint],
-        ),
-      ),
-      child: CustomPaint(
-        painter: _OnboardingPatternPainter(
-          color: colorScheme.primary.withValues(alpha: isDark ? 0.06 : 0.05),
-        ),
-      ),
-    );
-  }
-}
-
-class _OnboardingPatternPainter extends CustomPainter {
-  _OnboardingPatternPainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    const spacing = 56.0;
-    for (var x = -spacing; x < size.width + spacing; x += spacing) {
-      for (var y = -spacing; y < size.height + spacing; y += spacing) {
-        canvas.drawCircle(Offset(x, y), 18, paint);
-      }
-    }
-
-    final arcPaint = Paint()
-      ..color = color.withValues(alpha: 0.55)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-
-    final arcRect = Rect.fromCircle(
-      center: Offset(size.width * 0.82, size.height * 0.12),
-      radius: 120,
-    );
-    canvas.drawArc(arcRect, 2.4, 1.2, false, arcPaint);
-
-    final arcRect2 = Rect.fromCircle(
-      center: Offset(size.width * 0.12, size.height * 0.88),
-      radius: 90,
-    );
-    canvas.drawArc(arcRect2, -0.8, 1.0, false, arcPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _OnboardingPatternPainter oldDelegate) {
-    return oldDelegate.color != color;
-  }
-}
-
-class _LanguageTile extends StatefulWidget {
-  final _Option option;
-  final ColorScheme colorScheme;
-  final TextTheme textTheme;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _LanguageTile({
-    required this.option,
-    required this.colorScheme,
-    required this.textTheme,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  State<_LanguageTile> createState() => _LanguageTileState();
-}
-
-class _LanguageTileState extends State<_LanguageTile> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = widget.colorScheme;
-    final textTheme = widget.textTheme;
-
-    final shadowOpacity = widget.isDark ? 0.28 : 0.08;
-    final surfaceColor = widget.isDark
-        ? colorScheme.surfaceContainerHigh.withValues(alpha: 0.92)
-        : colorScheme.surface.withValues(alpha: 0.94);
-
-    return AnimatedScale(
-      scale: _pressed ? 0.985 : 1,
-      duration: const Duration(milliseconds: 120),
-      curve: Curves.easeOut,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: shadowOpacity),
-              blurRadius: _pressed ? 8 : 18,
-              offset: Offset(0, _pressed ? 2 : 6),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-            child: Material(
-              color: surfaceColor,
-              child: InkWell(
-                onTap: widget.onTap,
-                onHighlightChanged: (value) => setState(() => _pressed = value),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 16,
-                  ),
-                  child: Row(
-                    children: [
-                      _LanguageBadge(
-                        code: widget.option.code,
-                        colorScheme: colorScheme,
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 68),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              AppBadge(label: option.code, size: 40),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      option.label,
+                      style: textTheme.titleMedium?.copyWith(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                        letterSpacing: -0.2,
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.option.label,
-                              style: textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
-                                letterSpacing: -0.2,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              widget.option.subtitle,
-                              style: textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      option.subtitle,
+                      style: textTheme.bodySmall?.copyWith(
+                        fontSize: 13,
+                        color: colorScheme.onSurfaceVariant,
                       ),
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer.withValues(
-                            alpha: widget.isDark ? 0.55 : 0.85,
-                          ),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(
-                            Icons.arrow_forward_rounded,
-                            size: 18,
-                            color: colorScheme.onPrimaryContainer,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LanguageBadge extends StatelessWidget {
-  const _LanguageBadge({
-    required this.code,
-    required this.colorScheme,
-  });
-
-  final String code;
-  final ColorScheme colorScheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colorScheme.primaryContainer,
-            colorScheme.primaryContainer.withValues(alpha: 0.65),
-          ],
-        ),
-      ),
-      child: SizedBox(
-        width: 48,
-        height: 48,
-        child: Center(
-          child: Text(
-            code,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onPrimaryContainer,
-                  letterSpacing: 0.6,
+              Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: colorScheme.tint,
+                  shape: BoxShape.circle,
                 ),
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 18,
+                  color: colorScheme.onTint,
+                ),
+              ),
+            ],
           ),
         ),
       ),
