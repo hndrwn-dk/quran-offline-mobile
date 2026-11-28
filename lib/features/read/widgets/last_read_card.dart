@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/models/reader_source.dart';
 import 'package:quran_offline/core/providers/completed_reading_provider.dart';
 import 'package:quran_offline/core/providers/last_read_location_provider.dart';
@@ -16,7 +17,7 @@ import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/surah_names_provider.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
-import 'package:quran_offline/features/home/widgets/home_cta_buttons.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/features/read/widgets/mushaf_page_view.dart';
 import 'package:quran_offline/features/reader/open_reader_screen.dart';
 
@@ -45,7 +46,7 @@ class LastReadCard extends ConsumerWidget {
     if (lastRead == null) {
       if (!forHome) return const SizedBox.shrink();
       return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
         child: _HomeLastReadShell(
           onTap: () {
             ref.read(currentTabProvider.notifier).state = AppTab.read;
@@ -56,34 +57,28 @@ class LastReadCard extends ConsumerWidget {
               _HomeContinuePill(
                 label: AppLocalizations.getHomeStartPill(appLanguage),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 AppLocalizations.getHomeStartReadingTitle(appLanguage),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.2,
-                      color: colorScheme.onSurface,
-                    ),
+                style: _homeCardTitleStyle(context),
               ),
               const SizedBox(height: 4),
               Text(
                 AppLocalizations.getHomeStartReadingBody(appLanguage),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      height: 1.4,
-                    ),
+                style: _homeCardDetailStyle(context),
               ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: HomeCircleArrowButton(
-                  onPressed: () {
-                    ref.read(currentTabProvider.notifier).state = AppTab.read;
-                  },
-                  tooltip: AppLocalizations.getHomeStartButton(appLanguage),
-                  semanticsLabel:
-                      AppLocalizations.getHomeStartReadingTitle(appLanguage),
-                  onTintedCard: true,
+              const SizedBox(height: 16),
+              Tooltip(
+                message: AppLocalizations.getHomeStartButton(appLanguage),
+                child: Semantics(
+                  button: true,
+                  label: AppLocalizations.getHomeStartReadingTitle(appLanguage),
+                  child: _HomeCardButton(
+                    label: AppLocalizations.getHomeStartButton(appLanguage),
+                    onPressed: () {
+                      ref.read(currentTabProvider.notifier).state = AppTab.read;
+                    },
+                  ),
                 ),
               ),
             ],
@@ -285,7 +280,7 @@ class LastReadCard extends ConsumerWidget {
                         );
 
           return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
             child: _HomeLastReadShell(
               onTap: onTap,
               child: Column(
@@ -303,29 +298,16 @@ class LastReadCard extends ConsumerWidget {
                                 appLanguage,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 4),
                             Text(
                               view.title,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: -0.2,
-                                    color: colorScheme.onSurface,
-                                  ),
+                              style: _homeCardTitleStyle(context),
                             ),
                             if (view.detail.isNotEmpty) ...[
-                              const SizedBox(height: 3),
+                              const SizedBox(height: 4),
                               Text(
                                 view.detail,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                      height: 1.35,
-                                    ),
+                                style: _homeCardDetailStyle(context),
                               ),
                             ],
                           ],
@@ -367,32 +349,8 @@ class LastReadCard extends ConsumerWidget {
                       ],
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          actionLabel,
-                          style:
-                              Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    color: colorScheme.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                        ),
-                      ),
-                      Icon(
-                        Icons.arrow_forward,
-                        size: 18,
-                        color: colorScheme.primary,
-                      ),
-                    ],
-                  ),
+                  const SizedBox(height: 16),
+                  _HomeCardButton(label: actionLabel, onPressed: onTap),
                 ],
               ),
             ),
@@ -401,91 +359,66 @@ class LastReadCard extends ConsumerWidget {
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: InkWell(
+          child: AppCard(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: colorScheme.primary.withValues(alpha: 0.2),
-                  width: 1,
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                AppBadge(
+                  icon: icon,
+                  size: 44,
+                  foreground: colorScheme.brightness == Brightness.dark
+                      ? colorScheme.onPrimaryContainer
+                      : colorScheme.primary,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.shadow.withValues(alpha: 0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                    spreadRadius: 0,
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      icon,
-                      color: colorScheme.primary,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppLocalizations.getLastRead(appLanguage),
+                        style:
+                            Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        title,
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.onSurface,
+                                ),
+                      ),
+                      if (subtitle.isNotEmpty) ...[
+                        const SizedBox(height: 2),
                         Text(
-                          AppLocalizations.getLastRead(appLanguage),
+                          subtitle,
                           style:
-                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: colorScheme.onSurfaceVariant,
-                                    fontWeight: FontWeight.w500,
                                   ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          title,
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: colorScheme.onSurface,
-                                  ),
-                        ),
-                        if (subtitle.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            subtitle,
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
-                          ),
-                        ],
                       ],
-                    ),
+                    ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 20),
-                    color: colorScheme.onSurfaceVariant,
-                    onPressed: onClear,
-                    tooltip:
-                        AppLocalizations.getActionTooltip('clear', appLanguage),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.chevron_right,
-                    color: colorScheme.primary,
-                  ),
-                ],
-              ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  color: colorScheme.onSurfaceVariant,
+                  onPressed: onClear,
+                  tooltip:
+                      AppLocalizations.getActionTooltip('clear', appLanguage),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.chevron_right,
+                  color: colorScheme.primary,
+                ),
+              ],
             ),
           ),
         );
@@ -494,6 +427,25 @@ class LastReadCard extends ConsumerWidget {
       error: (_, __) => const SizedBox.shrink(),
     );
   }
+}
+
+TextStyle? _homeCardTitleStyle(BuildContext context) {
+  final theme = Theme.of(context);
+  return theme.textTheme.titleLarge?.copyWith(
+    fontSize: 22,
+    height: 1.2,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.3,
+    color: theme.colorScheme.onSurface,
+  );
+}
+
+TextStyle? _homeCardDetailStyle(BuildContext context) {
+  final theme = Theme.of(context);
+  return theme.textTheme.bodyMedium?.copyWith(
+    color: theme.colorScheme.onSurfaceVariant,
+    height: 1.4,
+  );
 }
 
 class _HomeLastReadShell extends StatelessWidget {
@@ -507,59 +459,11 @@ class _HomeLastReadShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isDark = colorScheme.brightness == Brightness.dark;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color:
-                  colorScheme.primary.withValues(alpha: isDark ? 0.22 : 0.14),
-            ),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark
-                  ? [
-                      colorScheme.primaryContainer.withValues(alpha: 0.42),
-                      colorScheme.surfaceContainerHigh.withValues(alpha: 0.92),
-                    ]
-                  : [
-                      const Color(0xFFF4F7F0),
-                      const Color(0xFFE8F0E4),
-                      Color.lerp(
-                        const Color(0xFFDCE8D8),
-                        colorScheme.primary,
-                        0.12,
-                      )!,
-                    ],
-              stops: isDark ? null : const [0.0, 0.5, 1.0],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color:
-                    colorScheme.primary.withValues(alpha: isDark ? 0.12 : 0.07),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
-            child: child,
-          ),
-        ),
-      ),
-    );
+    return AppCard(onTap: onTap, child: child);
   }
 }
 
+/// Eyebrow above the card title ("Lanjutkan", "Mulai baca").
 class _HomeContinuePill extends StatelessWidget {
   const _HomeContinuePill({required this.label});
 
@@ -568,26 +472,48 @@ class _HomeContinuePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = colorScheme.brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: isDark
-            ? colorScheme.surface.withValues(alpha: 0.35)
-            : Colors.white.withValues(alpha: 0.58),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: colorScheme.primary.withValues(alpha: isDark ? 0.28 : 0.18),
-        ),
-      ),
+      padding: const EdgeInsets.only(bottom: 2),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
               color: colorScheme.primary,
               fontWeight: FontWeight.w600,
-              letterSpacing: 0.1,
+              letterSpacing: 0.4,
             ),
+      ),
+    );
+  }
+}
+
+/// Full-width filled action at the bottom of the home card: label + arrow.
+class _HomeCardButton extends StatelessWidget {
+  const _HomeCardButton({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        minimumSize: const Size.fromHeight(50),
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+        shape: const StadiumBorder(),
+        textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0,
+            ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Flexible(child: Text(label, textAlign: TextAlign.center)),
+          const SizedBox(width: 8),
+          const Icon(Icons.arrow_forward, size: 18),
+        ],
       ),
     );
   }
@@ -607,23 +533,8 @@ class _HomeProgressRing extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = colorScheme.brightness == Brightness.dark;
 
-    const outerSize = 54.0;
-    const pillWidth = 40.0;
-    const pillHeight = 26.0;
-
-    final ringTrack = colorScheme.primary.withValues(
-      alpha: isDark ? 0.22 : 0.16,
-    );
-    final ringProgress =
-        colorScheme.primary.withValues(alpha: isDark ? 0.78 : 0.58);
-    final fillTop = isDark
-        ? colorScheme.surface.withValues(alpha: 0.82)
-        : Colors.white.withValues(alpha: 0.9);
-    final fillBottom = isDark
-        ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
-        : const Color(0xFFF0F5EC).withValues(alpha: 0.85);
+    const outerSize = 56.0;
 
     return SizedBox(
       width: outerSize,
@@ -632,44 +543,31 @@ class _HomeProgressRing extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           SizedBox(
-            width: outerSize,
-            height: outerSize,
+            width: outerSize - 5,
+            height: outerSize - 5,
             child: CircularProgressIndicator(
               value: fraction.clamp(0.0, 1.0),
-              strokeWidth: 2.5,
+              strokeWidth: 5,
               strokeCap: StrokeCap.round,
-              backgroundColor: ringTrack,
-              color: ringProgress,
+              backgroundColor: colorScheme.tint,
+              color: colorScheme.primary,
             ),
           ),
-          Container(
-            width: pillWidth,
-            height: pillHeight,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(9),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [fillTop, fillBottom],
-              ),
-            ),
-            alignment: Alignment.center,
-            child: completed
-                ? Icon(
-                    Icons.check_rounded,
-                    size: 20,
-                    color: colorScheme.primary,
-                  )
-                : Text(
-                    '$percent%',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 10.5,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                          color: colorScheme.onSurface,
-                        ),
-                  ),
-          ),
+          completed
+              ? Icon(
+                  Icons.check_rounded,
+                  size: 22,
+                  color: colorScheme.primary,
+                )
+              : Text(
+                  '$percent%',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                        color: colorScheme.onSurface,
+                      ),
+                ),
         ],
       ),
     );

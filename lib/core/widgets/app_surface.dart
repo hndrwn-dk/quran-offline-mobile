@@ -139,7 +139,7 @@ class AppBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final fg = foreground ?? colorScheme.primary;
+    final fg = foreground ?? colorScheme.onTint;
     return Container(
       width: size,
       height: size,

@@ -36,7 +36,7 @@ class HomeHeroCard extends ConsumerWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+      padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -53,15 +53,15 @@ class HomeHeroCard extends ConsumerWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             AppLocalizations.getHomeWelcomeTransliteration(lang),
-            style: textTheme.headlineSmall?.copyWith(
+            style: textTheme.headlineLarge?.copyWith(
               color: colorScheme.onSurface,
-              fontSize: 26,
+              fontSize: 34,
               fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
-              height: 1.1,
+              letterSpacing: -0.7,
+              height: 1.08,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

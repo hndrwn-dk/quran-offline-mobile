@@ -98,7 +98,10 @@ extension AppSurfaces on ColorScheme {
   Color get card => _isDark ? surfaceContainer : surfaceContainerLowest;
 
   /// Soft fill for badges, tonal buttons and the selected tab.
-  Color get tint => _isDark ? primaryContainer : surfaceContainerHighest;
+  Color get tint => _isDark ? surfaceContainerHigh : surfaceContainerHighest;
+
+  /// Text and icons on [tint]. Primary is too dim on the dark tint.
+  Color get onTint => _isDark ? onPrimaryContainer : primary;
 
   /// 1px separator inside cards.
   Color get hairline => onSurface.withValues(alpha: _isDark ? 0.14 : 0.10);

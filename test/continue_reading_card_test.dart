@@ -334,7 +334,8 @@ void main() {
     expect(find.text('Buka halaman terakhir'), findsOneWidget);
     expect(find.byIcon(Icons.arrow_forward), findsOneWidget);
     expect(find.byType(HomeCircleArrowButton), findsNothing);
-    expect(find.byType(Divider), findsOneWidget);
+    expect(find.byType(FilledButton), findsOneWidget);
+    expect(find.byType(Divider), findsNothing);
   });
 
   testWidgets('the ring exposes percent and scope to screen readers', (

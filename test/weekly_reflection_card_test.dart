@@ -68,7 +68,12 @@ void main() {
     );
     expect(reflectionText.maxLines, 2);
     expect(reflectionText.overflow, TextOverflow.ellipsis);
-    expect(reflectionText.style?.color, const Color(0xFF5F6459));
+    expect(
+      reflectionText.style?.color,
+      Theme.of(tester.element(find.byType(WeeklyReflectionCard)))
+          .colorScheme
+          .onSurfaceVariant,
+    );
   });
 
   testWidgets('home card replaces the round arrow with a text action', (

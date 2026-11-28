@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/providers/search_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
@@ -19,14 +20,14 @@ class HomeSearchSection extends ConsumerWidget {
             const <HomeSearchSuggestion>[];
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           HomeSectionHeader(
             title: AppLocalizations.getHomeSearchSectionTitle(lang),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           TextField(
             key: const Key('home_search_field'),
             readOnly: true,
@@ -38,42 +39,36 @@ class HomeSearchSection extends ConsumerWidget {
               if (query.isEmpty) return;
               openSearchTab(ref, query: query);
             },
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: colorScheme.onSurface,
                 ),
             decoration: InputDecoration(
               hintText: AppLocalizations.getHomeSearchPlaceholder(lang),
-              hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+              hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
                   ),
               prefixIcon: Icon(
                 Icons.search,
-                size: 20,
+                size: 22,
                 color: colorScheme.onSurfaceVariant,
               ),
               filled: true,
-              fillColor: colorScheme.surface.withValues(alpha: 0.94),
+              fillColor: colorScheme.card,
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 14,
+                horizontal: 14,
+                vertical: 13,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.7),
-                ),
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.7),
-                ),
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(
-                  color: colorScheme.primary.withValues(alpha: 0.55),
-                ),
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
               ),
             ),
           ),
@@ -116,24 +111,18 @@ class _SuggestionChip extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
-      color: Colors.transparent,
+      color: colorScheme.card,
+      shape: const StadiumBorder(),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
         child: Container(
           constraints: const BoxConstraints(minHeight: 44),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow.withValues(alpha: 0.65),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-            ),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Text(
             label,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
                   color: colorScheme.onSurface,
                 ),
           ),
