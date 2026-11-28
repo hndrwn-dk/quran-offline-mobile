@@ -44,10 +44,9 @@ void main() {
     final tint = HomeBackdrop.topTint(scheme);
 
     expect(tint.a, 1.0);
-    expect(tint, isNot(scheme.surface));
   });
 
-  test('light topTint stays an opaque cream wash', () {
+  test('light topTint stays opaque', () {
     final scheme = ColorScheme.fromSeed(seedColor: const Color(0xFF2E7D32));
     expect(HomeBackdrop.topTint(scheme).a, 1.0);
   });

@@ -35,6 +35,9 @@ class AppColors {
   static const Color onPrimaryDark = Color(0xFF1A281C);
   static const Color neutralCreamLift = Color(0xFFF4F6F0);
 
+  /// Flat canvas behind cards on tab roots and settings pages (light).
+  static const Color neutralCanvas = Color(0xFFEDF2E8);
+
   static const Color brandSeed = primary;
 
   /// Legacy names — prefer [primary] / [primaryBright] / [primaryDeep].
@@ -55,7 +58,9 @@ class AppColors {
       secondary: secondaryMuted,
       secondaryContainer: neutralCream,
       onSecondaryContainer: onSecondaryContainer,
+      surfaceContainerLowest: Colors.white,
       surfaceContainerLow: neutralMist,
+      surfaceContainer: neutralCanvas,
       surfaceContainerHigh: neutralCream,
       surfaceContainerHighest: neutralSageWash,
       outline: primary.withValues(alpha: 0.38),

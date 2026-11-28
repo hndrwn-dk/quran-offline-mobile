@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:quran_offline/core/constants/app_colors.dart';
+import 'package:quran_offline/app/app_theme.dart';
 
-/// Cream wash for tab roots, plus a header-only right-corner hairline arc.
+/// Flat canvas for tab roots, plus a header-only right-corner hairline arc.
 ///
 /// The arc lives in [AppBar.flexibleSpace] so it never crosses body cards.
 /// Not used on Mushaf / verse reader.
@@ -16,15 +16,9 @@ class HomeBackdrop extends StatelessWidget {
   static const double _arcCenterFromRight = 2;
 
   static Color topTint(ColorScheme colorScheme) {
-    final isDark = colorScheme.brightness == Brightness.dark;
-    if (!isDark) return AppColors.neutralCream;
-    // Blend onto surface so Scaffold/AppBar stay opaque. A 12% primary
-    // wash as backgroundColor composites during Android page transitions
-    // and flashes the previous Jelajahi list in dark mode.
-    return Color.alphaBlend(
-      colorScheme.primary.withValues(alpha: 0.12),
-      colorScheme.surface,
-    );
+    // Always opaque: a translucent backgroundColor composites during Android
+    // page transitions and flashes the previous Jelajahi list in dark mode.
+    return colorScheme.canvas;
   }
 
   /// Icon contrast only. Android 15 deprecated bar colours, and the app bar
@@ -65,23 +59,7 @@ class HomeBackdrop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = colorScheme.brightness == Brightness.dark;
-
-    final topTintColor = topTint(colorScheme);
-    final bottomTint = isDark
-        ? colorScheme.surface
-        : colorScheme.surface.withValues(alpha: 0.98);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [topTintColor, bottomTint],
-        ),
-      ),
-      child: child,
-    );
+    return ColoredBox(color: topTint(colorScheme), child: child);
   }
 }
 

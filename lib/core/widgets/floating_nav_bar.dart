@@ -1,7 +1,9 @@
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/utils/system_bottom_inset.dart';
 
 /// Space tab content needs so it clears the floating pill.
@@ -68,6 +70,7 @@ class FloatingNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = colorScheme.brightness == Brightness.dark;
+    final solid = MediaQuery.highContrastOf(context);
 
     return SafeArea(
       top: false,
@@ -91,46 +94,58 @@ class FloatingNavBar extends StatelessWidget {
               ),
             ],
           ),
-          child: Material(
-            color: colorScheme.surfaceContainerHigh,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(32),
-              side: BorderSide(color: colorScheme.outlineVariant),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: SizedBox(
-              height: barHeight,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final selectedMax = math.max(
-                      itemExtent,
-                      constraints.maxWidth -
-                          itemExtent * (destinations.length - 1),
-                    );
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        for (var index = 0;
-                            index < destinations.length;
-                            index++)
-                          _FloatingNavButton(
-                            destination: destinations[index],
-                            selected: index == selectedIndex,
-                            maxWidth: index == selectedIndex
-                                ? selectedMax
-                                : itemExtent,
-                            onTap: () {
-                              if (index != selectedIndex) {
-                                HapticFeedback.selectionClick();
-                              }
-                              onDestinationSelected(index);
-                            },
-                          ),
-                      ],
-                    );
-                  },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(32),
+            child: BackdropFilter(
+              // Solid when the user asked for more contrast.
+              enabled: !solid,
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Material(
+                color: colorScheme.card.withValues(alpha: solid ? 1 : 0.78),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(32),
+                  side: BorderSide(
+                    color: isDark
+                        ? colorScheme.outlineVariant
+                        : Colors.white.withValues(alpha: 0.7),
+                  ),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: SizedBox(
+                  height: barHeight,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final selectedMax = math.max(
+                          itemExtent,
+                          constraints.maxWidth -
+                              itemExtent * (destinations.length - 1),
+                        );
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            for (var index = 0;
+                                index < destinations.length;
+                                index++)
+                              _FloatingNavButton(
+                                destination: destinations[index],
+                                selected: index == selectedIndex,
+                                maxWidth: index == selectedIndex
+                                    ? selectedMax
+                                    : itemExtent,
+                                onTap: () {
+                                  if (index != selectedIndex) {
+                                    HapticFeedback.selectionClick();
+                                  }
+                                  onDestinationSelected(index);
+                                },
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -202,9 +217,7 @@ class _FloatingNavButton extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        selected
-                            ? destination.selectedIcon
-                            : destination.icon,
+                        selected ? destination.selectedIcon : destination.icon,
                         size: selected ? 20 : 22,
                         color: foreground,
                       ),

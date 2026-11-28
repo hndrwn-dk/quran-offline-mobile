@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 
 /// Standard horizontal inset for search fields and list cards on tab screens.
 const double kAppContentHorizontalInset = 16;
@@ -77,11 +78,8 @@ class _AppSearchFieldState extends State<AppSearchField> {
       color: Colors.transparent,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.94),
+          color: colorScheme.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-          ),
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(14, 4, hasText ? 4 : 4, 4),
@@ -100,7 +98,8 @@ class _AppSearchFieldState extends State<AppSearchField> {
                   decoration: InputDecoration(
                     hintText: widget.hintText,
                     hintStyle: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.85),
+                      color:
+                          colorScheme.onSurfaceVariant.withValues(alpha: 0.85),
                     ),
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(
