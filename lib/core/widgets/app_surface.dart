@@ -177,12 +177,13 @@ class AppLargeTitleBar extends StatelessWidget implements PreferredSizeWidget {
   final String? subtitle;
   final List<Widget>? actions;
 
-  static const double _plainHeight = 60;
-  static const double _subtitleHeight = 84;
+  static const double _titleHeight = 60;
+  static const double _subtitleHeight = 26;
 
   @override
-  Size get preferredSize =>
-      Size.fromHeight(subtitle == null ? _plainHeight : _subtitleHeight);
+  Size get preferredSize => Size.fromHeight(
+        _titleHeight + (subtitle == null ? 0 : _subtitleHeight),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +191,7 @@ class AppLargeTitleBar extends StatelessWidget implements PreferredSizeWidget {
     final colorScheme = theme.colorScheme;
     return AppBar(
       automaticallyImplyLeading: false,
-      toolbarHeight: preferredSize.height,
+      toolbarHeight: _titleHeight,
       centerTitle: false,
       titleSpacing: 20,
       backgroundColor: HomeBackdrop.topTint(colorScheme),
@@ -198,31 +199,37 @@ class AppLargeTitleBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: 0,
       systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
       flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.headlineLarge?.copyWith(
-              color: colorScheme.onSurface,
-            ),
-          ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              subtitle!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+      title: Text(
+        title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.headlineLarge?.copyWith(
+          color: colorScheme.onSurface,
+        ),
+      ),
+      // The subtitle sits under the actions so it can use the full width.
+      bottom: subtitle == null
+          ? null
+          : PreferredSize(
+              preferredSize: const Size.fromHeight(_subtitleHeight),
+              child: SizedBox(
+                height: _subtitleHeight,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Align(
+                    alignment: AlignmentDirectional.topStart,
+                    child: Text(
+                      subtitle!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
-          ],
-        ],
-      ),
       actions: actions,
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/providers/tab_provider.dart';
@@ -42,6 +43,11 @@ class ReadModeSegmentTabs extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final appLanguage = ref.watch(settingsProvider).appLanguage;
     final colorScheme = Theme.of(context).colorScheme;
+    // The selected segment must read as raised: in dark the card fill is
+    // darker than the tint, so the two swap.
+    final isDark = colorScheme.brightness == Brightness.dark;
+    final trackColor = isDark ? colorScheme.card : colorScheme.tint;
+    final selectedColor = isDark ? colorScheme.tint : colorScheme.card;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -52,11 +58,8 @@ class ReadModeSegmentTabs extends ConsumerWidget {
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.45),
-          ),
+          color: trackColor,
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Padding(
           padding: const EdgeInsets.all(3),
@@ -68,18 +71,20 @@ class ReadModeSegmentTabs extends ConsumerWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () => onModeChanged(mode),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(11),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
+                      constraints: const BoxConstraints(minHeight: 38),
+                      alignment: Alignment.center,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 4,
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
                         color: selected
-                            ? colorScheme.surface.withValues(alpha: 0.94)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
+                            ? selectedColor
+                            : selectedColor.withValues(alpha: 0),
+                        borderRadius: BorderRadius.circular(11),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
