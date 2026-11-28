@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/models/asma_entry.dart';
 import 'package:quran_offline/core/models/dua_entry.dart';
@@ -11,6 +12,7 @@ import 'package:quran_offline/core/providers/science_catalog_provider.dart';
 import 'package:quran_offline/core/providers/theme_catalog_provider.dart';
 import 'package:quran_offline/core/providers/settings_provider.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/core/widgets/app_search_field.dart';
 import 'package:quran_offline/core/widgets/floating_nav_bar.dart';
 import 'package:quran_offline/core/widgets/explore_detail_sheet.dart';
@@ -94,74 +96,9 @@ class DuaScreen extends ConsumerWidget {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: HomeBackdrop.topTint(colorScheme),
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        toolbarHeight: 68,
-        centerTitle: false,
-        titleSpacing: 16,
-        backgroundColor: HomeBackdrop.topTint(colorScheme),
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        systemOverlayStyle: HomeBackdrop.overlayStyle(colorScheme),
-        flexibleSpace: HomeBackdrop.cornerArcFlexibleSpace(colorScheme),
-        title: Row(
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colorScheme.onSurface.withValues(alpha: 0.08),
-                border: Border.all(
-                  color: colorScheme.onSurface.withValues(alpha: 0.18),
-                  width: 1,
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.library_books,
-                size: 18,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.getMenuText('dua', lang),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.3,
-                          color: colorScheme.onSurface,
-                        ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    AppLocalizations.getSubtitleText('dua_subtitle', lang),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(
-            height: 1,
-            thickness: 1,
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-          ),
-        ),
+      appBar: AppLargeTitleBar(
+        title: AppLocalizations.getMenuText('dua', lang),
+        subtitle: AppLocalizations.getSubtitleText('dua_subtitle', lang),
       ),
       body: catalogAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -430,12 +367,13 @@ class _ExploreHubBodyState extends ConsumerState<_ExploreHubBody> {
                   kAppContentHorizontalInset,
                   24,
                 ),
-                sliver: SliverList.separated(
+                sliver: SliverList.builder(
                   itemCount: catalogHits.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final hit = catalogHits[index];
                     return ExploreTopicCard(
+                      isFirst: index == 0,
+                      isLast: index == catalogHits.length - 1,
                       title: hit.title,
                       refLabel: hit.subtitle,
                       isFavorite: _searchHitIsFavorite(ref, hit),
@@ -587,12 +525,13 @@ class _AsmaListView extends ConsumerWidget {
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          sliver: SliverList.separated(
+          sliver: SliverList.builder(
             itemCount: entries.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               final entry = entries[index];
               return _AsmaListTile(
+                isFirst: index == 0,
+                isLast: index == entries.length - 1,
                 entry: entry,
                 lang: lang,
                 colorScheme: colorScheme,
@@ -618,6 +557,8 @@ class _AsmaListTile extends StatelessWidget {
     required this.colorScheme,
     required this.onTap,
     this.isFavorite = false,
+    this.isFirst = true,
+    this.isLast = true,
   });
 
   final AsmaEntry entry;
@@ -625,6 +566,8 @@ class _AsmaListTile extends StatelessWidget {
   final ColorScheme colorScheme;
   final VoidCallback onTap;
   final bool isFavorite;
+  final bool isFirst;
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
@@ -637,40 +580,18 @@ class _AsmaListTile extends StatelessWidget {
           )
         : AppLocalizations.formatThemeAyahLabel(entry.ayahRefs.length, lang);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: colorScheme.surface.withValues(alpha: 0.94),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    return ExploreGroupedRow(
+      isFirst: isFirst,
+      isLast: isLast,
+      dividerIndent: 60,
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 68),
+        child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '${entry.number}',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: colorScheme.primary,
-                        ),
-                  ),
-                ),
+                AppBadge(label: '${entry.number}'),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -678,8 +599,10 @@ class _AsmaListTile extends StatelessWidget {
                     children: [
                       Text(
                         entry.transliteration,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.2,
                             ),
                       ),
                       const SizedBox(height: 2),
@@ -729,11 +652,11 @@ class _AsmaListTile extends StatelessWidget {
                 const SizedBox(width: 4),
                 Icon(
                   Icons.chevron_right,
-                  color: colorScheme.onSurfaceVariant,
+                  size: 22,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                 ),
               ],
             ),
-          ),
         ),
       ),
     );
@@ -942,9 +865,8 @@ class _LifeSituationCategoryBody extends ConsumerWidget {
       slivers.add(
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          sliver: SliverList.separated(
+          sliver: SliverList.builder(
             itemCount: bucket.duas.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               final entry = bucket.duas[index];
               final ayahRef = entry.primaryRef;
@@ -960,6 +882,8 @@ class _LifeSituationCategoryBody extends ConsumerWidget {
                       lang,
                     );
               return ExploreTopicCard(
+                isFirst: index == 0,
+                isLast: index == bucket.duas.length - 1,
                 title: entry.title.forLanguage(lang),
                 refLabel: refLabel,
                 isFavorite: _entryIsFavorite(
@@ -989,9 +913,8 @@ class _LifeSituationCategoryBody extends ConsumerWidget {
       slivers.add(
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-          sliver: SliverList.separated(
+          sliver: SliverList.builder(
             itemCount: bucket.reflections.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               final entry = bucket.reflections[index];
               final ayahRef = entry.primaryRef;
@@ -1007,6 +930,8 @@ class _LifeSituationCategoryBody extends ConsumerWidget {
                       lang,
                     );
               return ExploreTopicCard(
+                isFirst: index == 0,
+                isLast: index == bucket.reflections.length - 1,
                 title: entry.title.forLanguage(lang),
                 refLabel: refLabel,
                 isFavorite: _entryIsFavorite(
@@ -1033,18 +958,9 @@ class _LifeSituationSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: Text(
-        title,
-        style: textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w700,
-          color: colorScheme.onSurface,
-        ),
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: AppSectionLabel(title),
     );
   }
 }
@@ -1213,8 +1129,8 @@ class _ExploreTabScrollViewState extends State<_ExploreTabScrollView> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        colorScheme.surface.withValues(alpha: 0),
-                        colorScheme.surface.withValues(alpha: 0.94),
+                        colorScheme.canvas.withValues(alpha: 0),
+                        colorScheme.canvas.withValues(alpha: 0.94),
                       ],
                     ),
                   ),
@@ -1230,13 +1146,8 @@ class _ExploreTabScrollViewState extends State<_ExploreTabScrollView> {
                 child: Center(
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest
-                          .withValues(alpha: 0.95),
+                      color: colorScheme.tint,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color:
-                            colorScheme.outlineVariant.withValues(alpha: 0.5),
-                      ),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
@@ -1249,7 +1160,7 @@ class _ExploreTabScrollViewState extends State<_ExploreTabScrollView> {
                           Icon(
                             Icons.expand_more,
                             size: 18,
-                            color: colorScheme.primary,
+                            color: colorScheme.onTint,
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -1298,9 +1209,8 @@ class _DuaListView extends ConsumerWidget {
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          sliver: SliverList.separated(
+          sliver: SliverList.builder(
             itemCount: entries.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               final entry = entries[index];
               final ayahRef = entry.primaryRef;
@@ -1311,6 +1221,8 @@ class _DuaListView extends ConsumerWidget {
                 lang,
               );
               return ExploreTopicCard(
+                isFirst: index == 0,
+                isLast: index == entries.length - 1,
                 title: entry.title.forLanguage(lang),
                 refLabel: refLabel,
                 isFavorite: _entryIsFavorite(
@@ -1454,9 +1366,8 @@ class _ScienceTopicListView extends ConsumerWidget {
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          sliver: SliverList.separated(
+          sliver: SliverList.builder(
             itemCount: entries.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               final entry = entries[index];
               final ayahRef = entry.primaryRef;
@@ -1467,6 +1378,8 @@ class _ScienceTopicListView extends ConsumerWidget {
                 lang,
               );
               return ExploreTopicCard(
+                isFirst: index == 0,
+                isLast: index == entries.length - 1,
                 title: entry.title.forLanguage(lang),
                 refLabel: refLabel,
                 isFavorite: _entryIsFavorite(

@@ -47,9 +47,12 @@ class ExploreSectionScaffold extends StatelessWidget {
           children: [
             Text(
               title,
-              style: textTheme.titleMedium?.copyWith(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: textTheme.titleLarge?.copyWith(
+                fontSize: 20,
                 fontWeight: FontWeight.w700,
-                letterSpacing: -0.2,
+                letterSpacing: -0.3,
               ),
             ),
             if (resolvedSubtitle != null) ...[
@@ -64,14 +67,6 @@ class ExploreSectionScaffold extends StatelessWidget {
           ],
         ),
         actions: actions,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(
-            height: 1,
-            thickness: 1,
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-          ),
-        ),
       ),
       body: HomeBackdrop(
         child: Padding(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/explore/favorite_display.dart';
 import 'package:quran_offline/features/dua/explore_icons.dart';
 import 'package:quran_offline/features/dua/widgets/arabic_snippet.dart';
@@ -29,17 +30,14 @@ class FavoriteItemCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
         child: Ink(
           decoration: BoxDecoration(
-            color: colorScheme.surface.withValues(alpha: 0.94),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-            ),
+            color: colorScheme.card,
+            borderRadius: BorderRadius.circular(AppTheme.cardRadius),
           ),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+            padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -68,8 +66,9 @@ class FavoriteItemCard extends StatelessWidget {
                         display.title,
                         maxLines: compact ? 2 : 3,
                         overflow: TextOverflow.ellipsis,
-                        style: textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
+                        style: textTheme.titleMedium?.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                           height: 1.25,
                         ),
                       ),

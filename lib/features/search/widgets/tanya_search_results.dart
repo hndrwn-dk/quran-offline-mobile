@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quran_offline/core/providers/ai_search_provider.dart';
+import 'package:quran_offline/app/app_theme.dart';
 import 'package:quran_offline/core/utils/app_localizations.dart';
+import 'package:quran_offline/core/widgets/app_surface.dart';
 import 'package:quran_offline/features/search/tanya_result_layout.dart';
 import 'package:quran_offline/features/search/widgets/ai_result_card.dart';
 import 'package:quran_offline/features/search/widgets/inset_clamping_scroll.dart';
@@ -52,22 +54,24 @@ class _TanyaSearchResultsState extends State<TanyaSearchResults> {
         key: const Key('tanya_results_scroll'),
         controller: controller,
         primary: false,
-        padding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
         if (laid.isEmpty)
           Padding(
             key: const Key('tanya_empty'),
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
-            child: Column(
+            padding: const EdgeInsets.only(top: 16, bottom: 16),
+            child: AppCard(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+              child: Column(
               children: [
                 Icon(
                   Icons.search_off,
-                  size: 56,
-                  color: colorScheme.onSurface.withValues(alpha: 0.35),
+                  size: 32,
+                  color: colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 Text(
                   AppLocalizations.getAiSearchEmpty(widget.lang),
                   textAlign: TextAlign.center,
@@ -78,7 +82,7 @@ class _TanyaSearchResultsState extends State<TanyaSearchResults> {
                 ),
                 if (widget.translationCount > 0 &&
                     widget.onJumpToTranslation != null) ...[
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   FilledButton.tonal(
                     key: const Key('tanya_see_translations'),
                     onPressed: widget.onJumpToTranslation,
@@ -88,25 +92,28 @@ class _TanyaSearchResultsState extends State<TanyaSearchResults> {
                   ),
                 ],
               ],
+              ),
             ),
           ),
         for (final group in laid) ...[
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Text(
+            padding: const EdgeInsets.only(top: 12, bottom: 8),
+            child: AppSectionLabel(
               AppLocalizations.getAiSearchTypeLabel(group.type, widget.lang),
               key: Key('ai_search_group_${group.type}'),
-              style: textTheme.labelLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
-              ),
             ),
           ),
-          for (final hit in tanyaVisibleHits(
-            group,
-            expanded: _expandedTypes.contains(group.type),
-          ))
-            widget.cardBuilder(hit, widget.lang),
+          AiResultGroupScope(
+            child: AppGroupedCard(
+              children: [
+                for (final hit in tanyaVisibleHits(
+                  group,
+                  expanded: _expandedTypes.contains(group.type),
+                ))
+                  widget.cardBuilder(hit, widget.lang),
+              ],
+            ),
+          ),
           if (tanyaNeedsSeeAll(group) && !_expandedTypes.contains(group.type))
             Align(
               alignment: Alignment.centerLeft,
@@ -134,16 +141,25 @@ class _TanyaSearchResultsState extends State<TanyaSearchResults> {
       widget.translationCount,
     );
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
-      child: Card(
+      padding: const EdgeInsets.only(top: 16, bottom: 8),
+      child: Material(
+        color: colorScheme.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        clipBehavior: Clip.antiAlias,
         child: ListTile(
           key: const Key('tanya_translation_jump'),
-          leading: CircleAvatar(
-            backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
-            child: Icon(Icons.translate, color: colorScheme.primary),
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          horizontalTitleGap: 12,
+          minLeadingWidth: 32,
+          leading: const AppBadge(icon: Icons.translate),
           title: Text(label),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: Icon(
+            Icons.chevron_right,
+            size: 22,
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+          ),
           onTap: widget.onJumpToTranslation,
         ),
       ),
